@@ -1,0 +1,31 @@
+<div class="profile">
+    <img class="profile-avatar" alt="avatar" src= <%- url_for(theme.avatar) %> >
+    <div class="profile-name"><%- theme.author || config.author %></div>
+    <% if(theme.signature && theme.signature.length !== 0) {%>
+    <div class="profile-signature">
+        <%= theme.signature %>
+    </div>
+    <% } %>
+    <% if(theme.social) { %>
+    <div class="profile-social">
+        <%- partial('base-social') %>
+    </div>
+    <% } %>
+    <% if(theme.friends) { %>
+        <div class="friends">
+            <div>FRIENDS</div>
+            <% for (name in theme.friends) { %>
+                <% if(theme.friends[name]) { %>
+                    <span>
+                        <a href= <%- theme.friends[name] %> target="_black"><%- name %></a>
+                    </span>
+                <% } %>
+            <% } %>
+        </div>
+    <% } %>
+    <% if(theme.about.enable) { %>
+        <div class="about-me">
+            <a href = "<%- url_for("/about") %>" >ABOUT ME</a>
+        </div>
+    <% } %>
+</div>

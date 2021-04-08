@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="<%- config.language %>">
+    <%- partial('_partial/base-head') %>
+    <% if (is_home()) { %>
+        <body class="home-body">
+    <% } else if(is_post()){ %>
+        <body class="post-body">
+    <% } else if(page.layout === "404") { %>
+        <body class="four-zero-four-body">
+    <% } else if(page.layout === "about") { %>
+        <body class="about-body">
+    <% } %>
+    <%- partial('_partial/base-header') %>
+    <div class="wrapper">
+        <%- partial('_partial/base-background-image') %>
+        <%- partial('_partial/script/font-loader') %>        
+        <img class="loading" src="<%- url_for('assets/loading.svg') %>" style="display: block; margin: 6rem auto 0 auto; width: 6rem; height: 6rem;" />
+        <div class="container container-unloaded">
+            <%- body %>
+            <!-- profile -->
+            <% if (is_home()) { %>
+            <%- partial('_partial/base-profile') %>
+            <% } %>
+        </div>
+        <%- partial('_partial/base-footer', {}, {cache: true}) %>
+    </div>
+    <!-- toc -->
+    <% if(is_post() && theme.toc) { %>
+    <div class="toc-wrapper" style=
+    <%- partial('_partial/intro-height', {attr: 'top'}) %>
+    >
+        <div class="toc-catalog">
+            <span class="iconfont-archer catalog-icon">&#xe613;</span><span>CATALOG</span>
+        </div>
+        <%- toc(page.content, {class: 'toc', list_number: true}) %>
+    </div>
+    <% } %>
+    <div class="back-top iconfont-archer">&#xe639;</div>
+    <%- partial('_partial/sidebar/base-sidebar', {}, {cache: true}) %>
+    <%- partial('./site-meta.ejs') %>
+    <!-- CDN failover -->
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js"></script>
+    <script type="text/javascript">
+        if (typeof window.$ === 'undefined')
+        {
+            console.warn('jquery load from jsdelivr failed, will load local script')
+            document.write('<script src="<%- url_for('lib/jquery.min.js') %>">\x3C/script>')
+        }
+    </script>
+    <script src="<%- url_for('/scripts/main.js') %>"></script>
+    <!-- algolia -->
+    <% if (theme.algolia_search.enable) { %>
+        <%- partial('_partial/algolia') %>
+        <script src="https://cdn.jsdelivr.net/npm/instantsearch.js@2.8.0/dist/instantsearch.min.js" defer></script>
+        <script src="<%- url_for('/scripts/search.js') %>" defer></script>
+    <% } %>
+    <!-- busuanzi  -->
+    <% if (theme.busuanzi) { %>
+    <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <% } %>
+    <!-- CNZZ  -->
+    <% if (theme.CNZZ_analytics) { %>
+    <div style="display: none">
+        <script src="https://s13.cnzz.com/z_stat.php?id=<%- theme.CNZZ_analytics %>&web_id=<%- theme.CNZZ_analytics %>" language="JavaScript"></script>
+        <% } %>
+    </div>
+    <!-- async load share.js -->
+    <% if(is_post()) { %>
+        <script src="<%- url_for('/scripts/share.js') %>" async></script>    
+    <% } %> 
+    </body>
+</html>
+
+
