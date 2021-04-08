@@ -354,23 +354,85 @@
     
     
     <article class="index-post">
-        <a class="abstract-title" href = "/2021/04/08/hello-world/" >
+        <a class="abstract-title" href = "/2021/04/06/iOS/RunLoop/" >
             
-                <span>Hello World</span>
+                <span>AutoreleasePool</span>
         </a>
         <div class="abstract-content">
-            Welcome to Hexo! This is your very first post. Check documentation for more info. If you get any problems when using Hexo, you can find the answer in troubleshooting or you can ask me on GitHub.
-Quick StartCreate a new post1$ hexo new &quot;My New Post&quot;
-
-More info: Writing
-Run server1$ hexo ...
+            一、Autorelease简介iOS开发中的Autorelease机制是为了延时释放对象。自动释放的概念看上去很像ARC，但实际上这更类似于C语言中自动变量的特性。
+自动变量：在超出变量作用域后将被废弃； 自动释放池：在超出释放池生命周期后，向其管理的对象实例的发送release消息。
+1.1 MRC下使用自动释放池在MRC环境中使用自动释放池需要用到NSAutoreleasePool对象，其生命周期就相当于C语言变量的作用域。对于所有调用过autorelease方法的对象，在废弃NSAutoreleasePool对象时，都将调用release实例方法。用源代码表示如下：
+1234567...
         </div>
         <div class="abstract-post-meta">
             <!-- date  -->
             <div class="abstract-date">
-                <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2021/04/08</span>
+                <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2021/04/06</span>
             </div>
             <!-- tags  -->
+            
+            <div class= abstract-tags >
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags = "RunLoop">RunLoop</a>
+    
+</div>
+            
+        </div>
+    </article>
+    
+    
+    
+    
+    
+    
+    <article class="index-post">
+        <a class="abstract-title" href = "/2021/04/06/iOS/Interview/" >
+            
+                <span>iOS-interview</span>
+        </a>
+        <div class="abstract-content">
+            一、算法与数据结构
+链表中是否有环
+
+一个整型数组，将所有元素拼接成一个最大数输出
+
+大型数组里面装了几万个数，找到前5个，不能用for循环。TopK问题，建小/大顶堆
+
+贪心
+
+LRU
+
+N万个点勾勒一个国家的范围，然后染色
+
+剑指offer 42：连续子数组的最大和
+
+hash表
+
+用底层设计一个缓存，上限是40mb
+
+二叉树按层次遍历
+
+数组链表的使用场景
+
+数组底层内存如何优化
+
+10进制转16进制 算法。
+
+
+二、OC相关知识2.1 TaggedPointer123456789@property (nonatomic, strong) NSString *strongStrin...
+        </div>
+        <div class="abstract-post-meta">
+            <!-- date  -->
+            <div class="abstract-date">
+                <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2021/04/06</span>
+            </div>
+            <!-- tags  -->
+            
+            <div class= abstract-tags >
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags = "interview">interview</a>
+    
+</div>
             
         </div>
     </article>
@@ -483,9 +545,16 @@ Run server1$ hexo ...
     
     
     
+    
+    
+    
+    
+    
+    
+    
     <div class="total-and-search">
         <div class="total-archive">
-        Total : 1
+        Total : 2
         </div>
         <!-- search  -->
         
@@ -501,13 +570,22 @@ Run server1$ hexo ...
     
     
         <li class="archive-post-item">
-            <span class="archive-post-date">04/08</span><a class="archive-post-title" href= "/2021/04/08/hello-world/" >Hello World</a>
+            <span class="archive-post-date">04/06</span><a class="archive-post-title" href= "/2021/04/06/iOS/RunLoop/" >AutoreleasePool</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/06</span><a class="archive-post-title" href= "/2021/04/06/iOS/Interview/" >iOS-interview</a>
         </li>
     
     </div>
   </div>
         <div class="sidebar-panel-tags">
     <div class="sidebar-tags-name">
+    
+        <span class="sidebar-tag-name" data-tags="RunLoop"><span class="iconfont-archer">&#xe606;</span>RunLoop</span>
+    
+        <span class="sidebar-tag-name" data-tags="interview"><span class="iconfont-archer">&#xe606;</span>interview</span>
     
     </div>
     <div class="iconfont-archer sidebar-tags-empty">&#xe678;</div>
@@ -541,6 +619,8 @@ jsonContent:
 </div>
         <div class="sidebar-panel-categories">
     <div class="sidebar-categories-name">
+    
+        <span class="sidebar-category-name" data-categories="iOS"><span class="iconfont-archer">&#xe60a;</span>iOS</span>
     
     </div>
     <div class="iconfont-archer sidebar-categories-empty">&#xe678;</div>
