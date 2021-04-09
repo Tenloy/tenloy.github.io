@@ -3,10 +3,15 @@ language: node_js
 node_js:
     - 12
 cache: npm
+before_install:
+    - sudo apt-get update -qq
+    - sudo apt-get install -y pandoc
+    - chmod +x ./build.sh
 branches:
     only:
       - master # build master branch only
 script:
+    - ./build.sh
     - hexo generate
 deploy:
     provider: pages
