@@ -1,20 +1,21 @@
 # ========== Profile ========== #
 # avatar
-avatar: /avatar/Misaka.jpg
+avatar: /avatar/avatar.png
 # author name
-author: fi3ework
+author: Tenloy
 # signature
-signature: witness me
+signature: iOS Developer
 # SNS (you can custom the order)
 social:
-  email: 12345@qq.com
-  github: //github.com/fi3ework
+  email: luotengoto@163.com
+  github: //github.com/Tenloy
+  others: https://www.jianshu.com/u/8db1bc12db9f
   # wechat and qq should be a path of qr-code image
-  wechat: /assets/example_qr.png
+  # wechat: /assets/example_qr.png
   qq: 
   telegram: 
   weibo: 
-  zhihu: 
+  zhihu:
   douban: 
   facebook: 
   twitter: 
@@ -25,30 +26,26 @@ social:
   v2ex: 
   bilibili: 
   linkedin: 
-  steam: 
-  others: 
-  rss: 
+  steam:
+  rss: /atom.xml
 # friends
-friends:
-  friendA: //www.baidu.com
-  friendB: //www.google.com
-  friendC: 
+friends: 
 about:
-  enable: true
+  enable: false
   image: '/intro/about-bg.jpg'
 
 # ========== Site ========== #
 # title of the site (good for SEO)
-SEO_title: fi3ework's Studio
+SEO_title: Tenloy's Blog
 # keywords for site (good for SEO)
 SEO_keywords:
-  - hexo
-  - 'hexo-theme'
-  - 'hexo-blog'
+  - Tenloy
+  - iOS
+  - Swift
 # main title shown in header image
-main_title: fi3ework's Studio.
+main_title: Tenloy's Blog
 # subtitle
-subtitle: it's better to burn out than to fade away
+subtitle: 你有多自律，就会有多自由
 # site haeder image
 site_header_image: '/intro/index-bg.jpg'
 # post haeder image
@@ -115,17 +112,17 @@ CNZZ_analytics:
 # favicon
 favicon: /assets/favicon.ico
 # truncate length of abstracts in index page (the default is 300, there will be no abstruct if you input 0)
-truncate_length: 
+truncate_length: 100
 # enable toc
 toc: true
 # word count & reading time
 reading_info: true
 # intro height (the default is 50 percents of the screen, you can input other number)
-index_intro_height: 50
-post_intro_height: 50
-about_intro_height: 50
+index_intro_height: 35
+post_intro_height: 40
+about_intro_height: 30
 # copyright
 copyright:
   enable: true
   # https://creativecommons.org/
-  license: '本文采用<a rel="license" href="http://creativecommons.org/licenses/by-nc/4.0/">知识共享署名-非商业性使用 4.0 国际许可协议</a>进行许可'
+  license: '本文采用<a rel="license" href="http://creativecommons.org/licenses/by-nc/4.0/">Crative Commons 4.0 许可协议</a>进行许可'

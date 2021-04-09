@@ -3,17 +3,17 @@
 ## Source: https://github.com/hexojs/hexo/
 
 # Site
-title: Hexo
-subtitle: ''
-description: ''
-keywords:
-author: John Doe
+title: Tenloy's Blog
+subtitle: '学习 记录'
+description: 'iOS开发 | Tenloy，iOS Developer | Tenloy的个人博客'
+keywords: 'Tenloy, iOS, Tenloy Blog, 博客，Swift, 编译, 计算机'
+author: Tenloy
 language: en
 timezone: ''
 
 # URL
 ## Set your site url here. For example, if you use GitHub Page, set url as 'https://username.github.io/project'
-url: http://example.com
+url: https://tenloy.github.io/
 permalink: :year/:month/:day/:title/
 permalink_defaults:
 pretty_urls:
@@ -40,7 +40,7 @@ external_link:
   exclude: ''
 filename_case: 0
 render_drafts: false
-post_asset_folder: false
+post_asset_folder: false # 当资源文件管理功能打开后，Hexo将会在你每一次通过 hexo new [layout] <title> 命令创建新文章时自动创建一个文件夹。这个资源文件夹将会有与这个文章文件一样的名字。将所有与你的文章有关的资源放在这个关联文件夹中之后，你可以通过相对路径来引用它们
 relative_link: false
 future: true
 highlight:
@@ -122,5 +122,5 @@ jsonContent:
 ## Docs: https://hexo.io/docs/one-command-deployment
 deploy:
   type: git
-  repo: git@github.com:Tenloy/tenloy.github.io.git
+#  repo: git@github.com:Tenloy/tenloy.github.io.git
   branch: gh-pages
