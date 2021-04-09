@@ -36,13 +36,13 @@ NSLog(@"打印obj：%@", obj);
 
 理解`NSAutoreleasePool`对象的生命周期，如下图所示：
 
-<img src="AutoreleasePool5.png" width = "50%" alt="" align=center />
+<img src="/images/RunLoop/AutoreleasePool5.png" width = "50%" alt="" align=center />
 
 ### 1.2 ARC下使用自动释放池
 
 ARC环境不能使用`NSAutoreleasePool`类也不能调用`autorelease`方法，代替它们实现对象自动释放的是`@autoreleasepool`块和`__autoreleasing`修饰符。比较两种环境下的代码差异如下图：
 
-<img src="AutoreleasePool4.png" width = "60%" alt="" align=center />
+<img src="/images/RunLoop/AutoreleasePool4.png" width = "60%" alt="" align=center />
 
 如图所示，`@autoreleasepool`块替换了`NSAutoreleasePoool`类对象的生成、持有及废弃这一过程。而附有`__autoreleasing`修饰符的变量替代了`autorelease`方法，将对象注册到了`Autoreleasepool`；由于ARC的优化，`__autorelease`是可以被省略的，所以简化后的ARC代码如下：
 
@@ -178,7 +178,7 @@ class AutoreleasePoolPage {
 
 其实，**每个自动释放池都是是由若干个`AutoreleasePoolPage`组成的双向链表结构**，如下图所示:
 
-<img src="AutoreleasePool3.png" width = "90%" alt="" align=center />
+<img src="/images/RunLoop/AutoreleasePool3.png" width = "90%" alt="" align=center />
 
 `AutoreleasePoolPage`中拥有`parent`和`child`指针，分别指向上一个和下一个`page`；当前一个`page`的空间被占满(每个`AutorelePoolPage`的大小为4096字节)时，就会新建一个`AutorelePoolPage`对象并连接到链表中，后来的  Autorelease对象也会添加到新的`page`中；
 
@@ -378,7 +378,7 @@ static inline void pop(void *token)   //POOL_BOUNDARY的地址
 
 分析主线程`RunLoop`管理自动释放池并释放对象的详细过程，我们在如下Demo中的主线程中设置断点，并执行lldb命令：`po [NSRunLoop currentRunLoop]`，具体效果如下：
 
-<img src="AutoreleasePool2.png" width = "70%" alt="" align=center />
+<img src="/images/RunLoop/AutoreleasePool2.png" width = "70%" alt="" align=center />
 
 我们看到主线程`RunLoop`中有两个与自动释放池相关的`Observer`，它们的 `activities`分别为`0x1`和`0xa0`这两个十六进制的数，转为二进制分别为`1`和`10100000`，对应`CFRunLoopActivity`的类型如下：
 
@@ -404,7 +404,7 @@ typedef CF_OPTIONS(CFOptionFlags, CFRunLoopActivity) {
 
 最后，也可以结合图示理解主线程上自动释放对象的具体流程：
 
-<img src="AutoreleasePool.png" width = "70%" alt="" align=center />
+<img src="/images/RunLoop/AutoreleasePool.png" width = "70%" alt="" align=center />
 
 1. 程序启动到加载完成后，主线程对应的`RunLoop`会停下来等待用户交互
 2. 用户的每一次交互都会启动一次运行循环，来处理用户所有的点击事件、触摸事件。
