@@ -124,3 +124,9 @@ deploy:
   type: git
 #  repo: git@github.com:Tenloy/tenloy.github.io.git
   branch: gh-pages
+
+algolia:
+  applicationID: 'V0HYXBS9FB'
+  apiKey: '6550d5de786935564142097c3e78c380'
+  indexName: 'law_blog_index'
+  chunkSize: 5000
