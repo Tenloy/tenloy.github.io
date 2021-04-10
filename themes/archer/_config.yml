@@ -9,13 +9,14 @@ signature: iOS Developer
 social:
   email: luotengoto@163.com
   github: //github.com/Tenloy
-  others: https://www.jianshu.com/u/8db1bc12db9f
+  jianshu: https://www.jianshu.com/u/8db1bc12db9f
+  rss: /atom.xml
   # wechat and qq should be a path of qr-code image
   # wechat: /assets/example_qr.png
   qq: 
   telegram: 
   weibo: 
-  zhihu:
+  zhihu: 
   douban: 
   facebook: 
   twitter: 
@@ -26,8 +27,8 @@ social:
   v2ex: 
   bilibili: 
   linkedin: 
-  steam:
-  rss: /atom.xml
+  steam: 
+  others: 
 # friends
 friends: 
 about:
