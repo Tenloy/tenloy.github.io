@@ -16,5 +16,14 @@
             </div>
     </div>
     <% } %>
-    <a class="home-link" href=<%- config.root %>><%- theme.main_title || config.title %></a>
+    <!-- 将home-link的操作改为应用到header-top-right上 -->
+    <div class="header-top-right">
+        <!-- search  -->
+        <% if (theme.algolia_search.enable) { %>
+            <div class="site-search popup-trigger tl-search">
+                <span class="iconfont-jian tl-search-icon">&#xe7fc;搜索</span>
+            </div>
+            <% } %>
+        <a class="home-link" href=<%- config.root %>><%- theme.main_title || config.title %></a>
+    </div>
 </header>

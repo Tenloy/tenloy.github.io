@@ -137,16 +137,35 @@ var initAlgolia = function initAlgolia() {
       }
     })].forEach(search.addWidget, search);
     search.start();
+    $(document).on("click",".algolia-pop-overlay",function(){
+      $('.popup-btn-close').trigger('click');
+    })
+
+    var bodyEl = document.body
+    var top = 0
+    function stopBodyScroll (isFixed) {
+      if (isFixed) {
+        top = window.scrollY
+        bodyEl.style.position = 'fixed'
+        bodyEl.style.top = -top + 'px'
+      } else {
+        bodyEl.style.position = ''
+        bodyEl.style.top = ''
+        window.scrollTo(0, top) // 回到原先的top
+      }
+    }
+
     $('.popup-trigger').on('click', function (e) {
       e.stopPropagation();
-      $('body').append('<div class="search-popup-overlay algolia-pop-overlay"></div>').css('overflow', 'hidden');
+      $('body').append('<div class="search-popup-overlay algolia-pop-overlay"></div>');
       $('.popup').toggle();
       $('#algolia-search-input').find('input').focus();
+      stopBodyScroll(true)
     });
     $('.popup-btn-close').click(function () {
       $('.popup').hide();
       $('.algolia-pop-overlay').remove();
-      $('body').css('overflow', '');
+      stopBodyScroll(false)
     });
   });
 };
