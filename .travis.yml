@@ -8,6 +8,7 @@ branches:
       - master # build master branch only
 script:
     - hexo clean && hexo generate
+    - export HEXO_ALGOLIA_INDEXING_KEY=$Algolia_APIKey
     - hexo algolia
 deploy:
     provider: pages
