@@ -344,7 +344,7 @@
   right: 1%;
   overflow: hidden;
   max-width: calc((100% - 42.8125rem - 4rem) / 2);
-  z-index: 9999;
+  z-index: 9997;
   margin: calc(#{$header-height} + 1rem) 0 0 0;
   transform: translate3d(0, 0, 0);
   transition: transform 0.3s ease-out 0s;
