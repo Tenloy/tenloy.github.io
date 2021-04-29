@@ -1,0 +1,975 @@
+<!DOCTYPE html>
+<html lang="en">
+    <!-- title -->
+
+
+
+
+<!-- keywords -->
+
+
+
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" >
+    <meta name="author" content="Tenloy">
+    <meta name="renderer" content="webkit">
+    <meta name="copyright" content="Tenloy">
+    
+    <meta name="keywords" content="Tenloy,iOS,Swift">
+    
+    <meta name="description" content="学习 生活 记录 回忆">
+    <meta name="description" content="一、同步 协调，实现步调一致。两个或几个随时间变化的量，在变化过程中(在时域序列上相对位置)保持一定的相对&#x2F;约束关系(这个关系分很多种：可以是两者 同时做指定的事、也可以是两者 先后做指定的事等)。  比如：  音画同步、动作同步等。指某人&#x2F;事 同时产生，同时进行。 云同步等。在时间上保持一致性与统一化的现象。 同步。两部分任务之间按照 先后顺序进行。 线程同步：一者暂停(在时域中是一个横线)，等">
+<meta property="og:type" content="article">
+<meta property="og:title" content="同步和异步解读及编程中的使用场景">
+<meta property="og:url" content="https://tenloy.github.io/2021/04/20/03_Sync-Async/index.html">
+<meta property="og:site_name" content="Tenloy&#39;s Blog">
+<meta property="og:description" content="一、同步 协调，实现步调一致。两个或几个随时间变化的量，在变化过程中(在时域序列上相对位置)保持一定的相对&#x2F;约束关系(这个关系分很多种：可以是两者 同时做指定的事、也可以是两者 先后做指定的事等)。  比如：  音画同步、动作同步等。指某人&#x2F;事 同时产生，同时进行。 云同步等。在时间上保持一致性与统一化的现象。 同步。两部分任务之间按照 先后顺序进行。 线程同步：一者暂停(在时域中是一个横线)，等">
+<meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2021-04-20T20:05:13.000Z">
+<meta property="article:modified_time" content="2021-04-29T11:42:36.657Z">
+<meta property="article:author" content="Tenloy">
+<meta property="article:tag" content="多线程">
+<meta name="twitter:card" content="summary">
+    <meta http-equiv="Cache-control" content="no-cache">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"/>
+    
+    <title>同步和异步解读及编程中的使用场景 · Tenloy&#39;s Blog</title>
+    <style type="text/css">
+    @font-face {
+        font-family: 'Oswald-Regular';
+        src: url("/font/Oswald-Regular.ttf");
+    }
+
+    body {
+        margin: 0;
+    }
+
+    header,
+    footer,
+    .back-top,
+    .sidebar,
+    .container,
+    .site-intro-meta,
+    .toc-wrapper {
+        display: none;
+    }
+
+    .site-intro {
+        position: relative;
+        z-index: 3;
+        width: 100%;
+        /* height: 50vh; */
+        overflow: hidden;
+    }
+
+    .site-intro-placeholder {
+        position: absolute;
+        z-index: -2;
+        top: 0;
+        left: 0;
+        width: calc(100% + 300px);
+        height: 100%;
+        background: repeating-linear-gradient(-45deg, #444 0, #444 80px, #333 80px, #333 160px);
+        background-position: center center;
+        transform: translate3d(-226px, 0, 0);
+        animation: gradient-move 2.5s ease-out 0s infinite;
+    }
+
+    @keyframes gradient-move {
+        0% {
+            transform: translate3d(-226px, 0, 0);
+        }
+        100% {
+            transform: translate3d(0, 0, 0);
+        }
+    }
+
+</style>
+
+    <link rel="preload" href= "/css/style.css?v=20180824" as="style" onload="this.onload=null;this.rel='stylesheet'" />
+    <link rel="stylesheet" href= "/css/mobile.css?v=20180824" media="(max-width: 980px)">
+    
+    <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.2.5/jquery.fancybox.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'" />
+    
+    <!-- /*! loadCSS. [c]2017 Filament Group, Inc. MIT License */
+/* This file is meant as a standalone workflow for
+- testing support for link[rel=preload]
+- enabling async CSS loading in browsers that do not support rel=preload
+- applying rel preload css once loaded, whether supported or not.
+*/ -->
+<script>
+(function( w ){
+	"use strict";
+	// rel=preload support test
+	if( !w.loadCSS ){
+		w.loadCSS = function(){};
+	}
+	// define on the loadCSS obj
+	var rp = loadCSS.relpreload = {};
+	// rel=preload feature support test
+	// runs once and returns a function for compat purposes
+	rp.support = (function(){
+		var ret;
+		try {
+			ret = w.document.createElement( "link" ).relList.supports( "preload" );
+		} catch (e) {
+			ret = false;
+		}
+		return function(){
+			return ret;
+		};
+	})();
+
+	// if preload isn't supported, get an asynchronous load by using a non-matching media attribute
+	// then change that media back to its intended value on load
+	rp.bindMediaToggle = function( link ){
+		// remember existing media attr for ultimate state, or default to 'all'
+		var finalMedia = link.media || "all";
+
+		function enableStylesheet(){
+			link.media = finalMedia;
+		}
+
+		// bind load handlers to enable media
+		if( link.addEventListener ){
+			link.addEventListener( "load", enableStylesheet );
+		} else if( link.attachEvent ){
+			link.attachEvent( "onload", enableStylesheet );
+		}
+
+		// Set rel and non-applicable media type to start an async request
+		// note: timeout allows this to happen async to let rendering continue in IE
+		setTimeout(function(){
+			link.rel = "stylesheet";
+			link.media = "only x";
+		});
+		// also enable media after 3 seconds,
+		// which will catch very old browsers (android 2.x, old firefox) that don't support onload on link
+		setTimeout( enableStylesheet, 3000 );
+	};
+
+	// loop through link elements in DOM
+	rp.poly = function(){
+		// double check this to prevent external calls from running
+		if( rp.support() ){
+			return;
+		}
+		var links = w.document.getElementsByTagName( "link" );
+		for( var i = 0; i < links.length; i++ ){
+			var link = links[ i ];
+			// qualify links to those with rel=preload and as=style attrs
+			if( link.rel === "preload" && link.getAttribute( "as" ) === "style" && !link.getAttribute( "data-loadcss" ) ){
+				// prevent rerunning on link
+				link.setAttribute( "data-loadcss", true );
+				// bind listeners to toggle media back
+				rp.bindMediaToggle( link );
+			}
+		}
+	};
+
+	// if unsupported, run the polyfill
+	if( !rp.support() ){
+		// run once at least
+		rp.poly();
+
+		// rerun poly on an interval until onload
+		var run = w.setInterval( rp.poly, 500 );
+		if( w.addEventListener ){
+			w.addEventListener( "load", function(){
+				rp.poly();
+				w.clearInterval( run );
+			} );
+		} else if( w.attachEvent ){
+			w.attachEvent( "onload", function(){
+				rp.poly();
+				w.clearInterval( run );
+			} );
+		}
+	}
+
+
+	// commonjs
+	if( typeof exports !== "undefined" ){
+		exports.loadCSS = loadCSS;
+	}
+	else {
+		w.loadCSS = loadCSS;
+	}
+}( typeof global !== "undefined" ? global : this ) );
+</script>
+
+    <link rel="icon" href= "/assets/favicon.ico" />
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.min.js" as="script" />
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js" as="script" />
+    <link rel="preload" href="/scripts/main.js" as="script" />
+    <link rel="preload" as="font" href="/font/Oswald-Regular.ttf" crossorigin>
+    <link rel="preload" as="font" href="https://at.alicdn.com/t/font_327081_1dta1rlogw17zaor.woff" crossorigin>
+    
+        <!-- algolia -->
+        <script>
+            
+            var hits = JSON.parse('{"per_page":10}')
+            var labels = JSON.parse('{"input_placeholder":"Search for Posts","hits_empty":"没有找到任何搜索结果: ${query}","hits_stats":"找到约${hits}条结果（用时${time}ms）"}')
+
+            var algolia = {
+                applicationID: 'V0HYXBS9FB',
+                apiKey: '6550d5de786935564142097c3e78c380',
+                indexName: 'law_blog_index',
+                hits: hits,
+                labels: labels
+            }
+        </script>
+    
+    <!-- fancybox -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.2.5/jquery.fancybox.min.js" defer></script>
+    <!-- 百度统计  -->
+    
+    <!-- 谷歌统计  -->
+    
+<meta name="generator" content="Hexo 5.4.0"><link rel="alternate" href="/atom.xml" title="Tenloy's Blog" type="application/atom+xml">
+</head>
+
+    
+        <body class="post-body">
+    
+    
+<header class="header">
+
+    <div class="read-progress"></div>
+    <div class="header-sidebar-menu">&#xe775;</div>
+    <!-- post页的toggle banner  -->
+    
+    <div class="banner">
+            <div class="blog-title">
+                <a href="/" >Tenloy&#39;s Blog</a>
+            </div>
+            <div class="post-title">
+                <a href="#" class="post-name">同步和异步解读及编程中的使用场景</a>
+            </div>
+    </div>
+    
+    <!-- 将home-link的操作改为应用到header-top-right上 -->
+    <div class="header-top-right">
+        <!-- search  -->
+        
+            <div class="site-search popup-trigger tl-search">
+                <span class="iconfont-jian tl-search-icon">&#xe7fc;搜索</span>
+            </div>
+            
+        <a class="home-link" href=/>Tenloy's Blog</a>
+    </div>
+</header>
+    <div class="wrapper">
+        <div class="site-intro" style="
+
+
+
+
+
+
+
+height:40vh;
+">
+    
+    <!-- 主页  -->
+    
+    
+    <!-- 404页  -->
+            
+    <div class="site-intro-placeholder"></div>
+    <div class="site-intro-img" style="background-image: url(/intro/post-bg.jpg)"></div>
+    <div class="site-intro-meta">
+        <!-- 标题  -->
+        <h1 class="intro-title">
+            <!-- 主页  -->
+            
+            同步和异步解读及编程中的使用场景
+            <!-- 404 -->
+            
+        </h1>
+        <!-- 副标题 -->
+        <p class="intro-subtitle">
+            <!-- 主页副标题  -->
+            
+            
+            <!-- 404 -->
+            
+        </p>
+        <!-- 文章页meta -->
+        
+            <div class="post-intros">
+                <!-- 文章页标签  -->
+                
+                    <div class= post-intro-tags >
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags = "多线程">多线程</a>
+    
+</div>
+                
+                
+                    <div class="post-intro-read">
+                        <span>Word count: <span class="post-count word-count">4.2k</span>Reading time: <span class="post-count reading-time">14 min</span></span>
+                    </div>
+                
+                <div class="post-intro-meta">
+                    <span class="post-intro-calander iconfont-archer">&#xe676;</span>
+                    <span class="post-intro-time">2021/04/20</span>
+                    
+                    <span id="busuanzi_container_page_pv" class="busuanzi-pv">
+                        <span class="iconfont-archer">&#xe602;</span>
+                        <span id="busuanzi_value_page_pv"></span>
+                    </span>
+                    
+                    <span class="shareWrapper">
+                        <span class="iconfont-archer shareIcon">&#xe71d;</span>
+                        <span class="shareText">Share</span>
+                        <ul class="shareList">
+                            <li class="iconfont-archer share-qr" data-type="qr">&#xe75b;
+                                <div class="share-qrcode"></div>
+                            </li>
+                            <li class="iconfont-archer" data-type="weibo">&#xe619;</li>
+                            <li class="iconfont-archer" data-type="qzone">&#xe62e;</li>
+                            <li class="iconfont-archer" data-type="twitter">&#xe634;</li>
+                            <li class="iconfont-archer" data-type="facebook">&#xe67a;</li>
+                        </ul>
+                    </span>
+                </div>
+            </div>
+        
+    </div>
+</div>
+        <script>
+ 
+  // get user agent
+  var browser = {
+    versions: function () {
+      var u = window.navigator.userAgent;
+      return {
+        userAgent: u,
+        trident: u.indexOf('Trident') > -1, //IE内核
+        presto: u.indexOf('Presto') > -1, //opera内核
+        webKit: u.indexOf('AppleWebKit') > -1, //苹果、谷歌内核
+        gecko: u.indexOf('Gecko') > -1 && u.indexOf('KHTML') == -1, //火狐内核
+        mobile: !!u.match(/AppleWebKit.*Mobile.*/), //是否为移动终端
+        ios: !!u.match(/\(i[^;]+;( U;)? CPU.+Mac OS X/), //ios终端
+        android: u.indexOf('Android') > -1 || u.indexOf('Linux') > -1, //android终端或者uc浏览器
+        iPhone: u.indexOf('iPhone') > -1 || u.indexOf('Mac') > -1, //是否为iPhone或者安卓QQ浏览器
+        iPad: u.indexOf('iPad') > -1, //是否为iPad
+        webApp: u.indexOf('Safari') == -1, //是否为web应用程序，没有头部与底部
+        weixin: u.indexOf('MicroMessenger') == -1, //是否为微信浏览器
+        uc: u.indexOf('UCBrowser') > -1 //是否为android下的UC浏览器
+      };
+    }()
+  }
+  console.log("userAgent:" + browser.versions.userAgent);
+
+  // callback
+  function fontLoaded() {
+    console.log('font loaded');
+    if (document.getElementsByClassName('site-intro-meta')) {
+      document.getElementsByClassName('intro-title')[0].classList.add('intro-fade-in');
+      document.getElementsByClassName('intro-subtitle')[0].classList.add('intro-fade-in');
+      var postIntros = document.getElementsByClassName('post-intros')[0]
+      if (postIntros) {
+        postIntros.classList.add('post-fade-in');
+      }
+    }
+  }
+
+  // UC不支持跨域，所以直接显示
+  function asyncCb(){
+    if (browser.versions.uc) {
+      console.log("UCBrowser");
+      fontLoaded();
+    } else {
+      WebFont.load({
+        custom: {
+          families: ['Oswald-Regular']
+        },
+        loading: function () {  //所有字体开始加载
+          // console.log('loading');
+        },
+        active: function () {  //所有字体已渲染
+          fontLoaded();
+        },
+        inactive: function () { //字体预加载失败，无效字体或浏览器不支持加载
+          console.log('inactive: timeout');
+          fontLoaded();
+        },
+        timeout: 5000 // Set the timeout to two seconds
+      });
+    }
+  }
+
+  function asyncErr(){
+    console.warn('script load from CDN failed, will load local script')
+  }
+
+  // load webfont-loader async, and add callback function
+  function async(u, cb, err) {
+    var d = document, t = 'script',
+      o = d.createElement(t),
+      s = d.getElementsByTagName(t)[0];
+    o.src = u;
+    if (cb) { o.addEventListener('load', function (e) { cb(null, e); }, false); }
+    if (err) { o.addEventListener('error', function (e) { err(null, e); }, false); }
+    s.parentNode.insertBefore(o, s);
+  }
+
+  var asyncLoadWithFallBack = function(arr, success, reject) {
+      var currReject = function(){
+        reject()
+        arr.shift()
+        if(arr.length)
+          async(arr[0], success, currReject)
+        }
+
+      async(arr[0], success, currReject)
+  }
+
+  asyncLoadWithFallBack([
+    "https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.min.js", 
+    "https://cdn.bootcss.com/webfont/1.6.28/webfontloader.js",
+    "/lib/webfontloader.min.js"
+  ], asyncCb, asyncErr)
+</script>        
+        <img class="loading" src="/assets/loading.svg" style="display: block; margin: 6rem auto 0 auto; width: 6rem; height: 6rem;" />
+        <div class="container container-unloaded">
+            <main class="main post-page">
+    <article class="article-entry">
+        <h2 id="一、同步"><a href="#一、同步" class="headerlink" title="一、同步"></a>一、同步</h2><blockquote>
+<p>协调，实现步调一致。两个或几个随时间变化的量，在变化过程中(在时域序列上相对位置)保持一定的相对/约束关系(这个关系分很多种：可以是两者 <code>同时</code>做指定的事、也可以是两者 <code>先后</code>做指定的事等)。</p>
+</blockquote>
+<p>比如：</p>
+<ul>
+<li>音画同步、动作同步等。指某人/事 <code>同时</code>产生，同时进行。</li>
+<li>云同步等。在时间上保持一致性与统一化的现象。</li>
+<li>同步。两部分任务之间按照 <code>先后</code>顺序进行。<ul>
+<li>线程同步：一者暂停(在时域中是一个横线)，等另一者执行完成，再继续</li>
+</ul>
+</li>
+</ul>
+<p>注意：</p>
+<blockquote>
+<p>简单来说：同步就是一段时间内，规定<code>同一时间标准的每一刻</code>（注解1），每个模块(设备/部件/线程)分别应该完成什么(变化)，且各模块的<code>变化之间有一定的相对/约束关系</code>(注解2)</p>
+</blockquote>
+<ol>
+<li><code>当两个设备需要有同步关系的时候，需要在两个设备之间规定一个共同的时间参考(时钟)。</code>即由同宽同距(同频同相)的时钟信号控制每个设备(部件/线程)，分别完成相应的操作</li>
+<li>这两(多)个量的变化之间 <code>可能</code>没有联系，突出的是这两(多)个量<code>一段时间段内随时间的变化过程之间的对应关系</code>。比如上述第一个例子中两者的变化没有联系，而第二个例子中是一者的变化引起另一者的变化</li>
+</ol>
+<h2 id="二、异步"><a href="#二、异步" class="headerlink" title="二、异步"></a>二、异步</h2><blockquote>
+<p>与同步概念相反，两(多)者在随时间变化过程中没有相对/约束关系</p>
+</blockquote>
+<p>比如：</p>
+<ul>
+<li>异步：多线程异步、进程异步</li>
+<li>异步传输：一种通讯方式，对设备需求简单，异步双方不需要共同的时钟。</li>
+</ul>
+<h2 id="三、编程中的使用"><a href="#三、编程中的使用" class="headerlink" title="三、编程中的使用"></a>三、编程中的使用</h2><p>在操作系统中：同步执行的代码的执行过程有顺序性。而并发带来的异步性，每个进(线)程的代码都以其相对独立的不可预知的速度向前推进。</p>
+<p>在计算机中，同步异步常见的两处使用场景：</p>
+<ul>
+<li>线程同步、异步</li>
+<li>同步通信、异步通信(指的是计算机内部件之间的通信)</li>
+<li>同步传输、异步传输(指的是计算机网络中的数据传输，原理基本上与上相同，增加了一些内容，详见下文)1<h3 id="3-1-线程同步、异步"><a href="#3-1-线程同步、异步" class="headerlink" title="3.1 线程同步、异步"></a>3.1 线程同步、异步</h3></li>
+</ul>
+<h4 id="3-1-1-同步"><a href="#3-1-1-同步" class="headerlink" title="3.1.1 同步"></a>3.1.1 同步</h4><p>线程之间存在一定的约束关系，在执行过程中，存在一定的<code>前后顺序</code>。可能是出于临界资源的占用，也可能是等待另一条线程执行结果的返回等原因，需要执行完前一个，才能再执行下一个，<code>需要等待、协调运行</code></p>
+<h4 id="3-1-1-异步"><a href="#3-1-1-异步" class="headerlink" title="3.1.1 异步"></a>3.1.1 异步</h4><p>紧贴上面的概念，异步可以解释为两(多)者之间在随时间的执行过程中，两者之间没有约束关系，相互独立，在等待某事件的过程中继续做自己的事，不需要等待这一事件完成后再工作。</p>
+<p><code>异步和多线程并不是一个同等关系，异步是最终目的，多线程只是我们实现异步的一种手段</code>。异步是当一个调用请求发送给被调用者，而调用者不用等待其结果的返回而可以做其它的事情。实现异步可以采用多线程技术或则交给另外的进程来处理。</p>
+<h3 id="3-2-同步通信、异步通信"><a href="#3-2-同步通信、异步通信" class="headerlink" title="3.2 同步通信、异步通信"></a>3.2 同步通信、异步通信</h3><p>总线通信控制主要解决通信双方如何获知传输开始和传输结束，以及通信双方如何协调如何配合，通常用4种方式：同步通信、异步通信、半同步通信、分离式通信。</p>
+<ul>
+<li><p>同步通信中通信双方由统一时标控制数据传送。即双方按统一的传输周期进行信息传输，双方按约定好的时序进行联络，在规定的时钟周期内分别完成相应的操作。</p>
+</li>
+<li><p>异步通信中没有公共的时钟标准，不要求所有部件严格的统一操作时间，而是采用应答方式(又称握手方式)，即当主模块发出请求信号时，一直等待从模块反馈回来响应信号后，才开始通信。</p>
+</li>
+<li><p>异步通信的应答方式又可分为不互锁、半互锁和全互锁三种类型。不互锁方式通信双方没有相互制约关系；半互锁方式通信双方有简单的制约关系；全互锁方式通信双方有完全的制约关系。其中全互锁通信可靠性最高；</p>
+</li>
+</ul>
+<p>详见总线通信控制 ——《计组》</p>
+<h3 id="3-3-同步、异步传输"><a href="#3-3-同步、异步传输" class="headerlink" title="3.3 同步、异步传输"></a>3.3 同步、异步传输</h3><p>在网络通信过程中，通信双方要交换数据，需要高度的协同工作。为了正确的解释信号，接收方必须确切地知道信号应当何时接收和处理，因此定时是至关重要的。</p>
+<p>在计算机网络中，定时的因素称为位同步。同步是要接收方按照发送方发送的每个位的起止时刻和速率来接收数据，否则会产生误差。</p>
+<p>通常可以采用同步或异步的传输方式对位进行同步处理。</p>
+<p>首先是两者的不同<br>|          | 同步传输                                                   | 异步传输                                                   |<br>| ——– | ———————————————————- | ———————————————————- |<br>| <code>同步</code>   | <code>外同步</code>                                                   | <code>自同步</code>（见底部总结）                                     |<br>| 传输格式 | 面向 <code>比特</code>的传输，每个信息帧中包含若干个字符( <code>单位是帧</code>) | 面向 <code>字符</code>的传输，每个字符帧只包含一个字符( <code>单位是字符</code>) |<br>| 时钟     | 要求接收时钟和发送时钟同频同相，通过特定的时钟线路协调时序 | 不要求接收时钟和发送时钟完全同步，对时序的要求较低         |<br>| 数据流   | 发送端发送<code>连续</code>的比特流                                   | 发送端发送完一个字节后，可经过任意长的时间间隔再发送       |<br><code>是否拥有同一个时钟序列进行工作，或者是以数据块为单位进行数据传输，是同步传输和异步传输之间的差别；</code><br>同步效率更高，更加适合对速度要求高的传输，当然这种通信对时序的要求也更高，硬件更复杂。</p>
+<h4 id="3-3-1-位同步"><a href="#3-3-1-位同步" class="headerlink" title="3.3.1 位同步"></a>3.3.1 位同步</h4><p>要求接收端根据发送端发送数据的起止时间和时钟频率，来校正自己的时间基准和时钟频率，这个过程叫位同步。可见，位同步的目的是使接收端接收的每一位信息都与发送端保持同步。</p>
+<img src = '/images/OS/bit_sync.png' width = '80%'>
+
+<h4 id="3-3-2-同步通信"><a href="#3-3-2-同步通信" class="headerlink" title="3.3.2 同步通信"></a>3.3.2 同步通信</h4><p>同步通信是一种比特同步通信技术，要求发收双方具有同频同相的同步时钟信号，只需在传送报文的最前面附加特定的同步字符，当接收端确认接收到同步字符后，发收双方建立同步，此后便在 <code>同步时钟的控制下</code>逐位发送/接收。</p>
+<p>同步通信是一种连续串行传送数据的通信方式，一次通信只传送一帧信息，<code>由同步字符、数据字符和校验字符（CRC）组成。(见上图)</code></p>
+<ul>
+<li>同步字符：位于帧的开头，用于确认数据字符的开始；</li>
+<li>数据字符：在同步字符之后，个数没有限制，由所需传输的数据块长度来决定；</li>
+<li>校验字符：有1到2个，用于接收端对接收到的字符序列进行正确性的校验</li>
+</ul>
+<p>同步这种方式中因为分组相比异步大得多，很长一段数据才会有额外的辅助位负载，所以效率更高，更加适合对速度要求高的传输，当然这种通信对时序的要求也更高。</p>
+<p>随着数据帧中实际数据比特位的增加，开销比特所占的百分比将相应地减少。但是，数据比特位越长，缓存数据所需要的缓冲区也越大，这就限制了一个帧的大小。</p>
+<p>另外，帧越大，它占据传输媒体的连续时间也越长。在极端的情况下，这将导致其他用户等得太久。</p>
+<blockquote>
+<p>“同步通信”的通信双方必须先建立同步，即双方的时钟要调整到同一个频率。收发双方不停地发送和接收连续的同步比特流。但这时还有两种不同的同步方式。一种是使用全网同步，用一个非常精确的主时钟对全网所有结点上的时钟进行同步。另一种是使用准同步，各结点的时钟之间允许有微小的误差，然后采用其他措施实现同步传输。</p>
+</blockquote>
+<h4 id="3-3-3-异步通信"><a href="#3-3-3-异步通信" class="headerlink" title="3.3.3 异步通信"></a>3.3.3 异步通信</h4><blockquote>
+<p>异步通信指两个互不同步的设备通过计时机制或其他技术进行数据传输。异步通信中两个字符之间的时间间隔是不固定的，而在一个字符内各位的时间间隔是固定的。基本上，发送方可以随时传输数据，而接收方必须在信息到达时准备好接收。</p>
+</blockquote>
+<p>这种传输通常是很小的分组，比如一个字符为一组，为这个组配备起始位和结束位。所以这种传输方式的效率是比较低的，毕竟额外加入了很多的辅助位作为负载，常用在低速的传输中。</p>
+<p>异步通信，是以字符或者字节为单位组成字符帧进行传输。<code>字符帧格式中包括空闲位、起始位、资料位、奇偶校验位、停止位。(见上图)</code></p>
+<p>以RS232协议规定为例，异步通信一个字符一个字符地传输，每个字符一位一位地传输，并且传输一个字符时：</p>
+<ul>
+<li>总是以“起始位”开始（低电平，逻辑值0），以“停止位”结束，字符之间没有固定的时间间隔要求。</li>
+<li>字符数据本身由5~8位数据位组成，接着字符后面是一位校验位（也可以没有校验位）</li>
+<li>最后是一位或一位半或二位停止位</li>
+<li>停止位后面是不定长的空闲位(处于逻辑“1”状态，表示当前线路上没有资料传送)。</li>
+<li>停止位和空闲位都规定为高电平（逻辑值１），这样就保证起始位开始处一定有一个下跳沿。</li>
+</ul>
+<p>异步通信是按字符传输的，接收设备在收到起始信号之后只要在一个字符的传输时间内能和发送设备保持同步就能正确接收。下一个字符起始位的到来又使同步重新校准(<code>依靠检测起始位来实现发送与接收方的时钟 自同步的</code>)。这样，只要发送端和接收端协商好字符帧格式和波特率，就可以由各自的时钟来控制数据的发送和接收。</p>
+<p>举个例子，我们的键盘按下一个按键，发出一个字符信号，异步传输机制就会为它加上前后的辅助同步信息，帮助接收方识别到我们按下了哪一个按键。因为我们敲击键盘的节奏不固定，所以异步是一种很适合的方式</p>
+<p>用于异步通信的连接在OSI(开放系统互连)参考模型的物理层中被定义。</p>
+<blockquote>
+<p>“异步通信”是一种很常用的通信方式。</p>
+<p>异步通信在发送字符时，所发送的字符之间的时间间隔可以是任意的。当然，接收端必须时刻做好接收的准备（如果接收端主机的电源都没有加上，那么发送端发送字符就没有意义，因为接收端根本无法接收）。发送端可以在任意时刻开始发送字符，因此必须在每一个字符的开始和结束的地方加上标志，即加上开始位和停止位，以便使接收端能够正确地将每一个字符接收下来。</p>
+</blockquote>
+<p>异步通信的好处是通信设备简单、便宜，但传输效率较低（因为开始位和停止位的开销所占比例较大）。</p>
+<p>异步通信也可以是以帧作为发送的单位。接收端必须随时做好接收帧的准备。这时，帧的首部必须设有一些特殊的比特组合，使得接收端能够找出一帧的开始。这也称为 <code>帧定界</code>。</p>
+<p>帧定界还包含确定帧的结束位置，这有两种方法：</p>
+<ul>
+<li>一种是在帧的尾部设有某种特殊的比特组合来标志帧的结束</li>
+<li>在帧首部中设有帧长度的字段</li>
+</ul>
+<p>需要注意的是，在异步发送帧时，并不是说发送端对帧中的每一个字符都必须加上开始位和停止位后再发送出去，而是说，发送端可以在任意时间发送一个帧，而帧与帧之间的时间间隔也可以是任意的。在一帧中的所有比特是连续发送的。发送端不需要在发送一帧之前和接收端进行协调（不需要先进行比特同步）。</p>
+<h4 id="3-3-4-总结"><a href="#3-3-4-总结" class="headerlink" title="3.3.4 总结"></a>3.3.4 总结</h4><h5 id="1-异步通信方式的特点"><a href="#1-异步通信方式的特点" class="headerlink" title="1.异步通信方式的特点"></a>1.异步通信方式的特点</h5><p>异步通信是按字符传输的。每传输一个字符就用起始位来进行收、发双方的同步。不会因收发双方的时钟频率的小的偏差导致错误。</p>
+<p>这种传输方式利用每一帧的起、止信号来建立发送与接收之间的同步。特点是：<code>每帧内部各位均采用固定的时间间隔，而帧与帧之间的间隔时随即的</code>。接收机完全靠每一帧的起始位和停止位来识别字符时正在进行传输还是传输结束。</p>
+<p>（使用串口USART中的串行异步通信是一个代表）</p>
+<h5 id="2-同步通信方式的特点"><a href="#2-同步通信方式的特点" class="headerlink" title="2.同步通信方式的特点"></a>2.同步通信方式的特点</h5><p>进行数据传输时，发送和接收双方要保持完全的同步，因此，要求接收和发送设备必须使用同一时钟。</p>
+<p>优点是可以实现高速度、大容量的数据传送；缺点是要求发生时钟和接收时钟保持严格同步，同时硬件复杂。</p>
+<p>（SPI总线是一个典型代表）</p>
+<h5 id="3-对比："><a href="#3-对比：" class="headerlink" title="3.对比："></a>3.对比：</h5><p>可以这样说，不管是异步通信还是同步通信都需要进行同步，只是异步通信通过传送字符内的起始位来进行同步，而同步通信采用共用外部时钟来进行同步。所以，可以说前者是 <code>自同步</code>，后者是 <code>外同步</code>。同时，同步要求收发两端对时间的精确度要求很高，异步没有同步要求那么高。</p>
+<p>自同步、外同步：</p>
+<ul>
+<li>同步传输：是发送端的发送、接收端的接收是同步的，在统一的时钟信号下进行，发一位，接一位。同步传输的数据格式是一种外同步方式所采用的数据格式。对这种方式，在发送的一帧数据中不包含同步字符。同步信号SYNC通过专门的控制线加到串行的接口上。当SYNC一到达，表明数据部分开始，接口就连续接收数据和CRC校验码。    </li>
+<li>异步传输：发送端的发送、接收端的接收不用时钟同步。发送端发一个字符，接收端等接收到之后按字符的始、止位来实现自同步，处理一个字符。</li>
+</ul>
+<h5 id="4-应用"><a href="#4-应用" class="headerlink" title="4. 应用"></a>4. 应用</h5><p>在大量使用异步与同步传输的大型机/终端环境中</p>
+<ul>
+<li>异步传输用于传输来自用户周期性按键的终端的字符。接收系统知道等待下一次按键，即使这会花费较多的时间。</li>
+<li>相反，同步传输用作定期传输大量信息的大型系统之间的数据链路。协议为在公用电话系统上利用慢速链路而进行了优化，因此无关位将从传输中删除，并且时钟用于隔开字符。</li>
+</ul>
+
+    </article>
+    <!-- license  -->
+    
+        <div class="license-wrapper">
+            <p>Author：<a href="https://tenloy.github.io">Tenloy</a>
+            <p>原文链接：<a href="https://tenloy.github.io/2021/04/20/03_Sync-Async/">https://tenloy.github.io/2021/04/20/03_Sync-Async/</a>
+            <p>发表日期：2021.04.20 , 8:05 PM</p>
+            <p>更新日期：2021.04.29 , 11:42 AM</p>
+            <p>版权声明：本文采用<a rel="license noopener" target="_blank" href="http://creativecommons.org/licenses/by-nc/4.0/">Crative Commons 4.0 许可协议</a>进行许可</p>
+        </div>
+    
+    <!-- paginator  -->
+    <ul class="post-paginator">
+        <li class="next">
+            
+                <div class="nextSlogan">Next Post</div>
+                <a href= "/2021/04/28/04_Containers/" title= "常见的容器概念：Linux容器、Docker容器、服务器容器">
+                    <div class="nextTitle">常见的容器概念：Linux容器、Docker容器、服务器容器</div>
+                </a>
+            
+        </li>
+        <li class="previous">
+            
+                <div class="prevSlogan">Previous Post</div>
+                <a href= "/2021/04/12/02_CI-CD/" title= "CI-CD">
+                    <div class="prevTitle">CI-CD</div>
+                </a>
+            
+        </li>
+    </ul>
+    <!-- 评论插件 -->
+    <!-- 来必力City版安装代码 -->
+
+<!-- City版安装代码已完成 -->
+    
+    
+    <!-- gitalk评论 -->
+
+    <!-- utteranc评论 -->
+
+    <!-- partial('_partial/comment/changyan') -->
+    <!--PC版-->
+
+
+    
+    
+
+    <!-- 评论 -->
+</main>
+            <!-- profile -->
+            
+        </div>
+        <footer class="footer footer-unloaded">
+    <!-- social  -->
+    
+    <div class="social">
+        
+    
+        
+            
+                <a href="mailto:luotengoto@163.com" class="iconfont-archer email" title=email ></a>
+            
+        
+    
+        
+            
+                <a href="//github.com/Tenloy" class="iconfont-archer github" target="_blank" title=github></a>
+            
+        
+    
+        
+            
+                <a href="https://www.jianshu.com/u/8db1bc12db9f" class="iconfont-jian jianshu" target="_blank" title=jianshu></a>
+            
+        
+    
+        
+            
+                <a href="/atom.xml" class="iconfont-archer rss" target="_blank" title=rss></a>
+            
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+
+    </div>
+    
+    <!-- powered by Hexo  -->
+    <div class="copyright">
+        <span id="hexo-power">Powered by <a href="https://hexo.io/" target="_blank">Hexo</a></span><span class="iconfont-archer power">&#xe635;</span><span id="theme-info">theme <a href="https://github.com/fi3ework/hexo-theme-archer" target="_blank">Archer</a></span>
+    </div>
+    <!-- 不蒜子  -->
+    
+    <div class="busuanzi-container">
+    
+     
+    <span id="busuanzi_container_site_pv">PV: <span id="busuanzi_value_site_pv"></span> :)</span>
+    
+    </div>
+    
+</footer>
+    </div>
+    <!-- toc -->
+    
+    <div class="toc-wrapper" style=
+    
+
+
+
+
+
+
+
+top:40vh;
+
+    >
+        <div class="toc-catalog">
+            <span class="iconfont-archer catalog-icon">&#xe613;</span><span>CATALOG</span>
+        </div>
+        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E3%80%81%E5%90%8C%E6%AD%A5"><span class="toc-text">一、同步</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8C%E3%80%81%E5%BC%82%E6%AD%A5"><span class="toc-text">二、异步</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%89%E3%80%81%E7%BC%96%E7%A8%8B%E4%B8%AD%E7%9A%84%E4%BD%BF%E7%94%A8"><span class="toc-text">三、编程中的使用</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#3-1-%E7%BA%BF%E7%A8%8B%E5%90%8C%E6%AD%A5%E3%80%81%E5%BC%82%E6%AD%A5"><span class="toc-text">3.1 线程同步、异步</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#3-1-1-%E5%90%8C%E6%AD%A5"><span class="toc-text">3.1.1 同步</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3-1-1-%E5%BC%82%E6%AD%A5"><span class="toc-text">3.1.1 异步</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-2-%E5%90%8C%E6%AD%A5%E9%80%9A%E4%BF%A1%E3%80%81%E5%BC%82%E6%AD%A5%E9%80%9A%E4%BF%A1"><span class="toc-text">3.2 同步通信、异步通信</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-3-%E5%90%8C%E6%AD%A5%E3%80%81%E5%BC%82%E6%AD%A5%E4%BC%A0%E8%BE%93"><span class="toc-text">3.3 同步、异步传输</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#3-3-1-%E4%BD%8D%E5%90%8C%E6%AD%A5"><span class="toc-text">3.3.1 位同步</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3-3-2-%E5%90%8C%E6%AD%A5%E9%80%9A%E4%BF%A1"><span class="toc-text">3.3.2 同步通信</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3-3-3-%E5%BC%82%E6%AD%A5%E9%80%9A%E4%BF%A1"><span class="toc-text">3.3.3 异步通信</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3-3-4-%E6%80%BB%E7%BB%93"><span class="toc-text">3.3.4 总结</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#1-%E5%BC%82%E6%AD%A5%E9%80%9A%E4%BF%A1%E6%96%B9%E5%BC%8F%E7%9A%84%E7%89%B9%E7%82%B9"><span class="toc-text">1.异步通信方式的特点</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#2-%E5%90%8C%E6%AD%A5%E9%80%9A%E4%BF%A1%E6%96%B9%E5%BC%8F%E7%9A%84%E7%89%B9%E7%82%B9"><span class="toc-text">2.同步通信方式的特点</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#3-%E5%AF%B9%E6%AF%94%EF%BC%9A"><span class="toc-text">3.对比：</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#4-%E5%BA%94%E7%94%A8"><span class="toc-text">4. 应用</span></a></li></ol></li></ol></li></ol></li></ol>
+    </div>
+    
+    <div class="back-top iconfont-archer">&#xe639;</div>
+    <div class="sidebar sidebar-hide">
+    <ul class="sidebar-tabs sidebar-tabs-active-0">
+        <li class="sidebar-tab-archives"><span class="iconfont-archer">&#xe67d;</span><span class="tab-name">Archive</span></li>
+        <li class="sidebar-tab-tags"><span class="iconfont-archer">&#xe61b;</span><span class="tab-name">Tag</span></li>
+        <li class="sidebar-tab-categories"><span class="iconfont-archer">&#xe666;</span><span class="tab-name">Cate</span></li>
+    </ul>
+    <div class="sidebar-content sidebar-content-show-archive">
+          <div class="sidebar-panel-archives">
+    <!-- 在ejs中将archive按照时间排序 -->
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    <div class="total-and-search">
+        <div class="total-archive">
+        Total : 8
+        </div>
+        <!-- search  -->
+        
+            <div class="site-search popup-trigger tl-side-search"> 
+                <span class="iconfont-jian search-icon">&#xe7fc;搜索</span>
+            </div>
+        
+    </div>
+    
+    <div class="post-archive">
+    
+    
+    
+    
+    <div class="archive-year"> 2021 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/29</span><a class="archive-post-title" href= "/2021/04/29/06_Corss-Platform/" >从Hybrid到RN，再到Flutter</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/29</span><a class="archive-post-title" href= "/2021/04/29/05_Dock-Reprinted-from-RuanYIFeng/" >[转]Docker入门教程</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/28</span><a class="archive-post-title" href= "/2021/04/28/04_Containers/" >常见的容器概念：Linux容器、Docker容器、服务器容器</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/20</span><a class="archive-post-title" href= "/2021/04/20/03_Sync-Async/" >同步和异步解读及编程中的使用场景</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/12</span><a class="archive-post-title" href= "/2021/04/12/02_CI-CD/" >CI-CD</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/10</span><a class="archive-post-title" href= "/2021/04/10/01_GithubPages-Hexo/" >使用Hexo+Github Pages搭建个人博客</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/06</span><a class="archive-post-title" href= "/2021/04/06/iOS/RunLoop/" >AutoreleasePool</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/06</span><a class="archive-post-title" href= "/2021/04/06/iOS/Interview/" >iOS-interview</a>
+        </li>
+    
+    </div>
+  </div>
+        <div class="sidebar-panel-tags">
+    <div class="sidebar-tags-name">
+    
+        <span class="sidebar-tag-name" data-tags="hexo"><span class="iconfont-archer">&#xe606;</span>hexo</span>
+    
+        <span class="sidebar-tag-name" data-tags="CI/CD"><span class="iconfont-archer">&#xe606;</span>CI/CD</span>
+    
+        <span class="sidebar-tag-name" data-tags="多线程"><span class="iconfont-archer">&#xe606;</span>多线程</span>
+    
+        <span class="sidebar-tag-name" data-tags="Docker"><span class="iconfont-archer">&#xe606;</span>Docker</span>
+    
+        <span class="sidebar-tag-name" data-tags="RunLoop"><span class="iconfont-archer">&#xe606;</span>RunLoop</span>
+    
+        <span class="sidebar-tag-name" data-tags="interview"><span class="iconfont-archer">&#xe606;</span>interview</span>
+    
+    </div>
+    <div class="iconfont-archer sidebar-tags-empty">&#xe678;</div>
+    <div class="tag-load-fail" style="display: none; color: #ccc; font-size: 0.6rem;">
+    缺失模块。<br/>
+    1、请确保node版本大于6.2<br/>
+    2、在博客根目录（注意不是archer根目录）执行以下命令：<br/>
+    <span style="color: #f75357; font-size: 1rem; line-height: 2rem;">npm i hexo-generator-json-content --save</span><br/>
+    3、在根目录_config.yml里添加配置：
+    <pre style="color: #787878; font-size: 0.6rem;">
+jsonContent:
+  meta: false
+  pages: false
+  posts:
+    title: true
+    date: true
+    path: true
+    text: false
+    raw: false
+    content: false
+    slug: false
+    updated: false
+    comments: false
+    link: false
+    permalink: false
+    excerpt: false
+    categories: true
+    tags: true</pre>
+    </div> 
+    <div class="sidebar-tags-list"></div>
+</div>
+        <div class="sidebar-panel-categories">
+    <div class="sidebar-categories-name">
+    
+        <span class="sidebar-category-name" data-categories="软件工程-化"><span class="iconfont-archer">&#xe60a;</span>软件工程-化</span>
+    
+        <span class="sidebar-category-name" data-categories="操作系统"><span class="iconfont-archer">&#xe60a;</span>操作系统</span>
+    
+        <span class="sidebar-category-name" data-categories="跨平台"><span class="iconfont-archer">&#xe60a;</span>跨平台</span>
+    
+        <span class="sidebar-category-name" data-categories="容器化"><span class="iconfont-archer">&#xe60a;</span>容器化</span>
+    
+        <span class="sidebar-category-name" data-categories="iOS"><span class="iconfont-archer">&#xe60a;</span>iOS</span>
+    
+    </div>
+    <div class="iconfont-archer sidebar-categories-empty">&#xe678;</div>
+    <div class="sidebar-categories-list"></div>
+</div>
+    </div>
+</div> 
+    <script>
+    var siteMeta = {
+        root: "/",
+        author: "Tenloy"
+    }
+</script>
+    <!-- CDN failover -->
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js"></script>
+    <script type="text/javascript">
+        if (typeof window.$ === 'undefined')
+        {
+            console.warn('jquery load from jsdelivr failed, will load local script')
+            document.write('<script src="/lib/jquery.min.js">\x3C/script>')
+        }
+    </script>
+    <script src="/scripts/main.js"></script>
+    <!-- algolia -->
+    
+        <div class="site-search">
+  <div class="algolia-popup popup">
+    <div class="algolia-search">
+      <div class="algolia-search-input-icon">
+        <i class="fa fa-search"></i>
+      </div>
+      <div class="algolia-search-input" id="algolia-search-input"></div>
+    </div>
+
+    <div class="algolia-results">
+      <div id="algolia-stats"></div>
+      <div id="algolia-hits"></div>
+      <div id="algolia-pagination" class="algolia-pagination"></div>
+    </div>
+
+    <span class="popup-btn-close">
+      <i class="iconfont-archer">&#xe609;</i>
+    </span>
+  </div>
+</div>
+        <script src="https://cdn.jsdelivr.net/npm/instantsearch.js@2.8.0/dist/instantsearch.min.js" defer></script>
+        <script src="/scripts/search.js" defer></script>
+    
+    <!-- busuanzi  -->
+    
+    <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    
+    <!-- CNZZ  -->
+    
+    </div>
+    <!-- async load share.js -->
+    
+        <script src="/scripts/share.js" async></script>    
+     
+    </body>
+</html>
+
+
