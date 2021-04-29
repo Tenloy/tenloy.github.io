@@ -10,8 +10,9 @@ categories:
 
 ## 一、算法与数据结构
 
-- 链表中是否有环
+>  TLE	Time Limit Exceed(超时)
 
+- 链表中是否有环
 - 一个整型数组，将所有元素拼接成一个最大数输出
 - 大型数组里面装了几万个数，找到前5个，不能用for循环。TopK问题，建小/大顶堆
 - 贪心
@@ -23,7 +24,9 @@ categories:
 - 二叉树按层次遍历
 - 数组链表的使用场景
 - 数组底层内存如何优化
-- 10进制转16进制 算法。
+- 10进制转16进制 算法
+- 寻找两个正序数组的中位数
+- 接雨水
 
 
 
@@ -48,6 +51,7 @@ NSLog(@"%@", _weakString);
 ### 2.2 KVO
 
 - 为什么KVO不释放 会闪退
+- 推荐了一个facebook的安全使用kvo
 
 ### 2.3 KVC 
 
@@ -247,7 +251,7 @@ objc_msgSend()函数会依据接受者（调用方法的对象）的类型和选
 
 - 分类文件 +声明 -实现，调用会崩溃吗，为什么
 
-- 用runtime 关联对象 为什么就能实现增加属性？内部数据结构怎么处理的的
+- 分类为什么不能扩展属性？用runtime 关联对象 为什么就能实现增加属性？内部数据结构怎么处理的的
 
 
 
@@ -414,7 +418,9 @@ union isa_t
 
 - weak哈希表怎么保存键值对的，说说哈希表的实现，以什么作为key保存到哈希表的
 
-![SideTables](/images/Interview/SideTables.png)
+![SideTables](../../images/Interview/SideTables.png)
+
+- 弱引用表在APP中存在什么位置？(微博) MachO哪个段？数据段吧
 
 ##### 5) C指针需要自己管理释放
 
@@ -438,7 +444,7 @@ union isa_t
 
 
 
-#### 2.7.3 内存管理2：weak的实现原理
+#### 2.7.3 weak的实现原理
 
 ```objective-c
 ▼ dealloc
@@ -451,6 +457,14 @@ union isa_t
           ▶ _object_remove_assocations  //移除关联对象
           ▶ clearDeallocating           //将指向当前对象的弱指针置为nil
         ▶ free
+```
+
+```javascript
+- (void)dealloc {
+	__weak typeof(self) weakSelf = self;
+	[weakSelf method];  // 是否有问题？会崩溃，weak源码里会判断是否是deallocing，是这个状态的话就直接抛出异常了
+}
+- (void)method{}
 ```
 
 
@@ -491,15 +505,21 @@ union isa_t
 
 
 
-#### 2.8.2 copy strong的底层实现
+#### 2.8.2 copy strong的底层实现(百度)
 
 https://www.jianshu.com/p/bc16a644784d
+
+**结论**
+
+- `copy`和`strong`修饰的属性在底层编译的不一致，主要还是llvm中对其进行了不同的处理的结果。`copy`的赋值是通过`objc_setProperty`，而strong的赋值时通过`self + 内存平移`（即将指针通过平移移至name所在的位置，然后赋值），然后还原成 `strong`类型
+- `strong & copy` 在底层调用`objc_storeStrong`，本质是`新值retain，旧值release`
+- `weak` 在底层调用`objc_initWeak`
 
 
 
 ## 三、运行库与三方库API
 
-### 3.1 UIKit、QuartzCore
+### 3.1 UI — UIKit 与 QuartzCore
 
 #### 3.1.1 触摸事件的分发机制
 
@@ -550,17 +570,30 @@ UIView的显示是通过CALayer实现的，CALayer的显示则是通过contents�
 
 #### 3.1.5 Core Animation
 
-与UIView动画的关系：
+- 与UIView动画的关系：UIView动画其实就是对Core Animation的一种封装，向客户程序员呈现更简洁的接口
 
-- UIView动画其实就是对Core Animation的一种封装，向客户程序员呈现更简洁的接口
-
-动画执行过程中是否响应事件？
-
-- UIView的block animation在执行过程中不能响应其自身的触摸事件。
+- 动画执行过程中是否响应事件？UIView的block animation在执行过程中不能响应其自身的触摸事件。
+- 动画的属性（字节）
+  - CAAnimation  anchorpoint fillmode fillModeforward
 
 #### 3.1.6 UITableView重用机制
 
+#### 3.1.7 CADisplayLink
 
+**CADisplayLink是一个定时器对象，它可以让你与屏幕刷新频率相同的速率来刷新你的视图**
+ 目前iOS中的屏幕刷新速率是60Hz。也就是每秒刷新60次。那么我们可以利用CADisplayLink对象使我们想要执行的代码块每秒执行60次。当然我们也可以设置CADisplayLink的属性`preferredFramesPerSecond`来改变刷新次数为30次或15次。
+
+CADisplayLink为什么比NSTimer精确？
+
+- CADisplayLink 和 NSTimer 都需要注册到 runloop 的 model
+
+- iOS设备的屏幕刷新频率是固定的，CADisplayLink在正常情况下会在每次刷新结束都被调用，精确度相当高。
+
+  那如果掉帧，CADisplayLink肯定也受影响吧
+
+-  既然都依赖 runloop，为什么NSTimer就会被runloop影响的不精确，CADisaplyLink就没事呢？
+
+- https://www.cnblogs.com/xyq-208910/p/6590829.html
 
 ### 3.2 Foundation
 
@@ -592,7 +625,7 @@ UIView的显示是通过CALayer实现的，CALayer的显示则是通过contents�
 - 看过什么源码
 - 是带着问题看的，还是系统得看
 - 带着什么问题，找到答案了吗。比如atomic的实现
-- SD 和YYCache的缓存机制的区别，以及淘汰规则，最后设计一个LRU的方案
+- 二面确实就是问优化的东西：SD 和YYCache的缓存机制的区别，以及淘汰规则，最后设计一个LRU的方案
 - lottie的原理：lottie json 描述了 关键帧和参数，iOS通过解析iOS，转为代码 就可以实现动画
 
 
@@ -604,79 +637,30 @@ UIView的显示是通过CALayer实现的，CALayer的显示则是通过contents�
 - webp 和 Lottie 在对动图的优化，webp压缩算法 丢弃了什么(通过丢掉 高频部分，达到一定程度的压缩??)
   - webp 虽然解码时间边长了，但是100k的图片能压缩到4k不到？
 
+### 3.6 音视频相关
 
+- [极致首帧播放方案 - 零首帧解决方案 — 字节](https://mp.weixin.qq.com/s/IGA3caeXMB-upTFiV8MuYg)
+- 学习资料，见《多读书》
 
-## 四、计算机网络
+### 3.6 Others
 
-### 4.1 HTTP（霜神的HTTP网络全套的blog）
-
-- HTTPS与HTTP的关系，就是加了个SSL？SSL与TLS的关系
-- HTTP2.0了解吗，相比之前的优化
-  - 报文压缩
-  - 请求头压缩，是怎么压缩的？
-  - 多路复用、分用
-  - 服务器推送？
-
-### 4.1 HTTPS
-
-https://juejin.cn/post/6844903901037084686
-
-#### 4.1.1 连接过程
-
-- HTTPS的连接过程：TLS SSL 预置密钥
-- 握手阶段细分为五步: 
-
-  1. 客户端发送出协议版本号，一个客户端生成的随机数，以及客户端支持的加密方法。 
-  2. 服务端确认双方使用的加密方法，并给出数字证书以及一个服务器生成的随机数。
-  3. 客户端确认数字证书有效，然后生成一个新的随机数，并使用数字证书中的公钥加密这个随机数，发送给服务端。
-  4. 服务端使用自己的私钥，解密出随机数。 
-  5. 客户端和服务端根据约定的加密方法，使用前面的三个随机数生成对话密钥，用来加密接下来的对话。
-- 预备主密钥？？
-- 如果第4步失败了，两端会怎么办？不知道是不是下面这个答案 https://halfrost.com/https_tls1-2_handshake/#toc-6
-  - Server 拿到 EncryptedPreMasterSecret 以后，用自己的 RSA 私钥解密。解密以后还需要再次校验 PreMasterSecret 中的 ProtocolVersion 和 ClientHello 中传递的 ProtocolVersion 是否一致。如果不相等，校验失败，Server 会根据下面说的规则重新生成 PreMasterSecret，并继续进行握手。
-  - 在任何情况下，如果处理一个 RSA 加密的预备主密钥消息失败的时候，或版本号不是期望的时候，一个 TLS Server 一定不能产生一个警报。作为替代，它必须以一个随机生成的预备主密钥继续握手流程。出于定位问题的意图将失败的真正原因记录在日志中可能是有帮助的。但必须注意避免泄露信息给攻击者（例如，计时，日志文件或其它渠道）
-
-#### 4.1.2 CA证书
-
-其中有什么内容：颁发机构、过期时间、密钥
-
-### 4.2 TCP
-
-- TCP协议的流量控制机制、分片原理
-
-- 三次握手与四次挥手
-
-  - 讲一下三次握手与四次挥手的过程。握手为什么要三次、挥手为什么要四次？
-
-  - 三次握手与四次挥手：https://mp.weixin.qq.com/s/CzhBX1H_H37xFWEiYkumZw
-
-  - 三次握手：https://mp.weixin.qq.com/s/EEAADJBQwvgPiVwagUxUcg
-
-  - 四次挥手：https://mp.weixin.qq.com/s/oRBCqEcvfX7HEOWWx9i1RA
-
-### 4.3 Socket
-
-- socket保证连接，心跳包
+- App 换肤(字节)
+- 骨架屏：https://github.com/tigerAndBull/TABAnimated
+- 一个UIView如何实现UIScrollView，思路？加手势 调整 bounds？
 
 
 
-### 4.4 断点下载实现原理
+## 四、操作系统
+
+### 4.1 多线程
+
+#### 4.1.1 概念
+
+![Thread](../../images/Interview/Thread.png)
 
 
 
-### 4.5 POST数据格式
-
-默认POST提交方式是application/x-www-form-urlencoded，这个是application/json
-
-
-
-## 五、OS之多线程
-
-### 5.1 概念
-
-![Thread](/images/Interview/Thread.png)
-
-### 5.2 多线程的几种方案
+#### 4.1.2 多线程的几种方案
 
 NSThread、GCD、NSOperationQueue的区别？各自的一些优点，以及应用场景
 
@@ -684,7 +668,35 @@ NSThread、GCD、NSOperationQueue的区别？各自的一些优点，以及应�
 - GCD：dispatch_group、dispatch_barry、
 - NSOperationQueue：面向对象的封装，可以监控任务的状态、取消任务
 
-### 5.3 常见的线程同步的手段
+#### 4.1.3 串行/并行、同步/异步
+
+- 串行与并行是队列的属性：一个队列中，可以放很多task任务。`影响的是任务的执行方式`
+  - 串行队列：队列中的任务依次执行，一个执行完成之后，下一个才能开始(一次放出一个)
+  - 并行队列：队列中的任务并发执行，一个执行的同时，另一个可以同时执行(每当CPU访问该队列就放出一个)
+- 同步与异步是，同步异步函数赐予任务task的属性。`影响的是能不能开启新的线程`
+- 异步和一个并行队列结合：发布一次任务，就创建一个子线程，所以发布了多少个任务，会同时存在多少个线程(假设任务执行时间够长、系统不限制最大线程数)
+- 异步和一个串行队列结合：发布一次任务，就创建一个子线程，但是无论发布多少次任务，都是同时只存在一个子线程(因为上一个任务完成，线程就回收了)
+
+```objective-c
+//微博一面：下面程序的耗时、打印顺序。A方法耗时2s
+dispatch_queue_t aSerialQueue = dispatch_queue_create(“xxx_name”,DISPATCH_QUEUE_SERIAL);
+
+dispatch_async(aSerialQueue, ^(void) {
+// 1.执行方法A 
+});
+
+dispatch_sync(aSerialQueue, ^(void) {
+// 2.执行方法A 
+});
+
+// 3.执行方法A
+
+//答：1-2-3, 6s
+```
+
+
+
+#### 4.1.4 常见的线程同步的手段
 
 - 原子操作
 
@@ -718,7 +730,7 @@ NSThread、GCD、NSOperationQueue的区别？各自的一些优点，以及应�
   performSelector:onThread:withObject:waitUntilDone:
   ```
 
-### 5.4 都有哪些锁
+#### 4.1.4 都有哪些锁
 
 互斥锁、递归锁、读写锁、分布锁、自旋锁、双重检查锁等等
 
@@ -738,7 +750,7 @@ NSThread、GCD、NSOperationQueue的区别？各自的一些优点，以及应�
 - NSConditionLock
 - @synchronized
 
-### 5.5 死锁
+#### 4.1.5 死锁
 
 死锁的原因：只有4个条件都满足时，才会出现死锁。
 
@@ -749,24 +761,22 @@ NSThread、GCD、NSOperationQueue的区别？各自的一些优点，以及应�
 
 如何解决？
 
-
-
-### 5.5 其他常见问题
+#### 4.1.6 其他常见问题
 
 - 如果要在GCD里面取消任务 怎么操作
 
 - 创建队列的时候， 这个 label 你有没有用到过
 
   ```objective-c
-   dispatch_queue_t concurrentQueue = dispatch_queue_create("test", DISPATCH_QUEUE_CONCURRENT);
+  dispatch_queue_t concurrentQueue = dispatch_queue_create("test", DISPATCH_QUEUE_CONCURRENT);
   ```
 
 - 多线程并发，多少比较合适，有没有了解过相关的标准。AFN、SD中都是多少
 
 - 如果有多个任务来回做，它们有优先级的处理，要怎么做？（线程的优先级、任务的优先级可以理解为一个东西，都是任务的优先级，它与线程是绑定的）
-  
+
 - 已经执行的任务可能干扰不了，那排队未执行的任务根据优先级要怎么调整
-  
+
 - 多个异步任务依赖的处理方案
 
 - 多读单写的实现：pthread_rwlock、dispatch_barrier_async
@@ -777,56 +787,222 @@ NSThread、GCD、NSOperationQueue的区别？各自的一些优点，以及应�
 
   或者说，若属性是指针类型，只能保证对属性这个指针变量本身的读写是线程安全的，并不保证对指针指向的内存空间的读写是否线程安全
 
+- 题目：启动N个线程，这N个线程要不间断按顺序打印数字1-N
+
+- 多线程的线程安全问题(微博)
+
+### 4.2 文件系统
+
+请尽可能详细地描述从磁盘上读取一份数据到CPU进行处理的过程中发生了什么？（网易，以下非标准答案）
+
+1. 代码申请fopen，通过syscall中断进入内核态
+2. 内核开始在自己的结构体中寻找文件指向的vnode，检查文件权限和状态之后，创建file descriptor返回给程序
+3. 程序继续运行，申请读取文件，再次陷入内核态
+4. 内核发起IO中断，由文件系统驱动handle文件系统驱动进一步联系磁盘驱动，磁盘驱动转专交IO中断处理权给硬件
+5. 硬件读取文件内容进入mapped IO virtual memory就绪以后再次启动IO中断返回内核
+6. 内核从mapped vm内读取内容，在SMAP机制的设备上会继续调用copy_out将数据从内核态转移到进程的user space vm内
+7. 程序开始读取内核转交的内存
 
 
-## 六、设计模式与框架
 
-### 6.1 Apple MVC与传统MVC
+## 五、计算机网络
 
-### 6.1 MVVM
+请尽可能详细的描述在浏览器上输入一个网页地址到整个网页完全展示的过程中发生了什么？(网易，以下非标准答案)
+
+1. 解析URL浏览器识别scheme头，识别类型http:// https:// mailto:// schemeHeaders://等，并应用用户的设置
+2. 解析URL识别到网页URI，发起dns请求定向主机，成功以后，开始准备协议: http协议、https协议。发起tcp连接，Chrome浏览器可能在一次tcp中传输多个http内容
+3. https证书校验。强制https设置检查，检查是否有https网站请求了http资源，检查完成以后开始下载资源
+4. 网页html开始加载。通过chromium， webkit等引擎渲染网页，每一个资源下载完成都会触发一次差异渲染，但也有浏览器策略会要求全部css和js下载完成才开始渲染内容
+5. 调用网页申请的初始化js
+6. 渲染完成以后进入runloop监听事件，处理用户输入，调用js
+
+
+
+1. 首先是DNS解析。
+2. 数据链路层-源mac本机，如果是局域网，目的mac就是服务器的mac。如果是广域网目的mac就是路由器的mac。
+3. ip层-源ip本机，如果是局域网，目的ip就是服务器的ip。如果是广域网目的ip就是路由器的ip。
+4. tcp层-源端口系统随机分配，目的端口HTTP的话默认是80端口 HTTPS443
+5. tcp三次握手，如果是https还有tls四次握手。
+6. 开始传输http数据。
+
+### 5.1 HTTP1.1 2.0
+
+- 霜神的HTTP网络全套的blog
+
+- HTTPS与HTTP的关系，就是加了个SSL？SSL与TLS的关系
+- HTTP2.0了解吗，相比之前的优化
+  - 报文压缩
+  - 请求头压缩，是怎么压缩的？
+  - 多路复用、分用
+  - 服务器推送？
+
+### 5.2 HTTPS
+
+https://juejin.cn/post/6844903901037084686
+
+#### 5.2.1 连接过程
+
+- HTTPS的连接过程：TLS SSL 预置密钥
+- 握手阶段细分为五步: 
+
+  1. 客户端发送出协议版本号，一个客户端生成的随机数，以及客户端支持的加密方法。 
+  2. 服务端确认双方使用的加密方法，并给出数字证书以及一个服务器生成的随机数。
+  3. 客户端确认数字证书有效，然后生成一个新的随机数，并使用数字证书中的公钥加密这个随机数，发送给服务端。
+  4. 服务端使用自己的私钥，解密出随机数。 
+  5. 客户端和服务端根据约定的加密方法，使用前面的三个随机数生成对话密钥，用来加密接下来的对话。
+- 预备主密钥？？
+- 如果第4步失败了，两端会怎么办？不知道是不是下面这个答案 https://halfrost.com/https_tls1-2_handshake/#toc-6
+  - Server 拿到 EncryptedPreMasterSecret 以后，用自己的 RSA 私钥解密。解密以后还需要再次校验 PreMasterSecret 中的 ProtocolVersion 和 ClientHello 中传递的 ProtocolVersion 是否一致。如果不相等，校验失败，Server 会根据下面说的规则重新生成 PreMasterSecret，并继续进行握手。
+  - 在任何情况下，如果处理一个 RSA 加密的预备主密钥消息失败的时候，或版本号不是期望的时候，一个 TLS Server 一定不能产生一个警报。作为替代，它必须以一个随机生成的预备主密钥继续握手流程。出于定位问题的意图将失败的真正原因记录在日志中可能是有帮助的。但必须注意避免泄露信息给攻击者（例如，计时，日志文件或其它渠道）
+
+#### 5.2.2 CA证书
+
+其中有什么内容：颁发机构、过期时间、密钥
+
+### 5.3 TCP
+
+- TCP协议的流量控制机制、分片原理
+
+- 三次握手与四次挥手
+
+  - 讲一下三次握手与四次挥手的过程。握手为什么要三次、挥手为什么要四次？
+
+  - 三次握手与四次挥手：https://mp.weixin.qq.com/s/CzhBX1H_H37xFWEiYkumZw
+
+  - 三次握手：https://mp.weixin.qq.com/s/EEAADJBQwvgPiVwagUxUcg
+
+  - 四次挥手：https://mp.weixin.qq.com/s/oRBCqEcvfX7HEOWWx9i1RA
+
+### 5.4 Socket
+
+- socket保证连接，心跳包
+
+
+
+### 5.5 断点下载实现原理
+
+
+
+### 5.6 POST数据格式
+
+默认POST提交方式是application/x-www-form-urlencoded，这个是application/json
+
+
+
+## 六、编译、链接、装载
+
+- 编译过程
+  - 中间的binding过程，可以做什么优化：减少动态库、动态库改静态库？
+- app启动流程，从启动经历了哪些步骤
+- 堆栈符号化定位
+- 写一个APP，原则上一个文件就能搞定所有的事情，我们为什么还搞那么多文件，那么多类
+- 内存和虚拟内存 如何映射
+- 混合架构的framework 静态库 需要分离么
+- 静态库中包含分类文件，如何调用。
+- 为什么需要加Objc，静态库的加载流程，Objc的语义？
+- 组件化编译慢怎么解决？
+
+
+
+## 七、数据库
+
+- 以txt文本文件为例，实现类似数据库的增删改查，比如存储信息为通讯录：姓名 电话 手机号 超长的介绍
+- 存储 文件和数据库 选择
+- 比fmdb更好的优化方案
+
+### 7.1 Protocol Buffers(PB)
+
+Protocol Buffers(简称Protobuf, PB) ，是Google出品的序列化框架，与开发语言无关，和平台无关，具有良好的可扩展性。Protobuf和所有的序列化框架一样，都可以用于数据存储、通讯协议。
+
+Protobuf支持生成代码的语言包括Java、Python、C++、Go、JavaNano、Ruby、C#，[官网地址](https://link.jianshu.com?t=https://developers.google.com/protocol-buffers/)。
+
+Portobuf的序列化的结果体积要比XML、JSON小很多，XML和JSON的描述信息太多了，导致消息要大；此外Portobuf还使用了Varint 编码，减少数据对空间的占用。
+
+Portobuf序列化和反序列化速度比XML、JSON快很多，是直接把对象和字节数组做转换，而XML和JSON还需要构建成XML或者JSON对象结构。
+
+https://juejin.cn/post/6844903622266847246
+
+- protobuf 是怎么进行解析的， 有啥可以优化点
+
+
+
+## 八、软件工程
+
+### 8.1 工程化
+
+
+
+### 8.2 UML
+
+[UML](https://zh.wikipedia.org/wiki/统一建模语言) 是统一建模语言的简称，它是一种由一整套图表组成的标准化建模语言。UML用于帮助系统开发人员阐明，展示，构建和记录软件系统的产出。UML代表了一系列在大型而复杂系统建模中被证明是成功的做法，是开发面向对象软件和软件开发过程中非常重要的一部分。UML主要使用图形符号来表示软件项目的设计，使用UML可以帮助项目团队沟通、探索潜在的设计和验证软件的架构设计。
+
+UML 图表可大致分为结构性图表和行为性图表两种。
+
+- 结构性图表显示了系统在不同抽象层次和实现层次上的静态结构以及它们之间的相互关系。
+
+- 结构性图表中的元素表示系统中具意义的概念，可能包括抽象的、现实的和實作的概念。
+
+- 结构性图表有七种类型：类图、组件图...
+
+类图可以没用过，但最起码能看懂会画
+
+
+
+## 九、设计模式与框架
+
+### 9.1 Apple MVC与传统MVC
+
+### 9.2 MVVM
 
 - RAC 冷信号
 - RAC 数据流
 - RAC 如果出现 A->B->C->A, 那么怎么断环
 
-### 6.2 MVP
+### 9.3 MVP
 
 优点：说了相比MVC的改进
 
 缺点：说了相比MVVM的不足
 
-### 6.3 组件化
+### 9.4 组件化
 
 - 模块解耦：中心化 去中心化
-
 - 组件化、模块化的理解：划分粒度
+- 组件化：多仓库、路由
+- 组件化二进制化
+  - 有赞：https://tech.youzan.com/you-zan-ji-yu-er-jin-zhi-de-bian-yi-ti-xiao-ce-lue/
+  - 知乎：https://www.infoq.cn/article/hxh8ceu6st5xwolyynt8
 
-### 6.4 设计模式
+### 9.5 设计模式
 
-常用的设计模式，熟练哪一个，用纸笔画一下类图，什么结构、联系
+- 常用的设计模式，熟练哪一个，用纸笔画一下类图，什么结构、联系
 
-平时会画类图吗，如果不画，那平时设计架构，怎么跟别人沟通讲解呢，每个类在干什么、具体什么联系、别人怎么修改你的
+- 平时会画类图吗，如果不画，那平时设计架构，怎么跟别人沟通讲解呢，每个类在干什么、具体什么联系、别人怎么修改你的
 
+- 一些设计模式的优缺点
 
+- 看过AF源码 ，AF用了哪些设计模式（58同城）
 
+  
 
+## 十、性能问题监测及优化(必问)
 
-## 七、性能问题监测及优化
-
-### 7.1 流畅性(FPS)
-
-例如runloop能检测卡顿 是在runloop哪个阶段 多线程runloop收集到卡顿 如何告诉主线程
+### 10.1 流畅性(FPS)
 
 - [iOS 性能优化 - TimeProfiler分析代码耗时](https://blog.csdn.net/Hello_Hwc/article/details/84311933?utm_source=app&app_version=4.5.7)
+- 卡顿检测：
+  - 例如runloop能检测卡顿 是在runloop哪个阶段 多线程runloop收集到卡顿 如何告诉主线程
+  - 子线程一直去ping主线程 算不算？
+  - 不然就是FPS监控 CADisplayLink 其他不知道了
 
-### 7.2 内存
+### 10.2 内存
 
 > OOM，是 Out of Memory 的缩写，指的是 App 占用的内存达到了 iOS 系统对单个 App 占用内存上限后，而被系统强杀掉的现象
 
 - 内存过高被杀死，如何定位大概位置
 - 内存泄露监控，说一下思路（如果你自己写一个检测内存泄露的工具，你会怎么写）
 
-### 7.3 崩溃
+### 10.3 崩溃
 
 >  检测、采集、防崩溃
 
@@ -864,15 +1040,33 @@ NSThread、GCD、NSOperationQueue的区别？各自的一些优点，以及应�
 
 - Crash收集防护怎么做，常见的Crash场景，怎么收集上报的，OOM性能怎么监控，如果让你打造一款Bugly,你会考虑怎么设计
 
-### 7.4 网络层优化
+- swift的crash怎么捕捉，好像oc的不适用？不知道swift的 但是Mach异常捕获 Unix信号捕获 应该都可以用
+
+- https://faisalmemon.github.io/ios-crash-dump-analysis-book/zh/
+
+### 10.4 网络层优化
 
 - 安全性
   - 防中间人攻击？单向校验，双向校验还是双向认证
   - AFN中关于安全校验的一些API
   - 了解榕树贷款的证书机制
-  - 了解别人能抓包的原因，配置的什么证书就可以了？为什么可以？处于证书信任链中？
+- 了解别人能抓包的原因，配置的什么证书就可以了？为什么可以？处于证书信任链中？
+  - https抓包是怎么实现的？就是charls原理 中间人劫持 模拟发送请求
+  - https://www.jianshu.com/p/405f9d76f8c4
+- HTTPDNS
+- 弱网优化
+  - 一般是可以通过重试和改用udp来改善用户体验
+    - 疑问：目的是提高弱网下的请求成功率。重试的话，请求太多也会造成问题吧？这里应该有更细的策略。
+    - 然后UDP，我可以理解为减少了握手所以更快资源更少，但UDP怎么解决可靠性问题？
+      - QUIC 全称 Quick UDP Internet Connection, 是谷歌公司研发的一种基于 UDP 协议的低时延互联网传输协议。在2018年IETF会议中，HTTP-over-QUIC协议被重命名为HTTP/3，并成为 HTTP 协议的第三个正式版本。参考链接：[QUIC网络协议简介](https://cloud.tencent.com/developer/article/1407615)
+  - apns携带一部分数据过去，用户即使网络不好，通过通知打开应用也能展示
+    - APNS Payload 不能超过4096，之前貌似是256 提高到4096的
 
-### 7.5 启动速度优化
+### 10.5 启动速度优化
+
+先知道启动流程 — 从点击图标到展示完成
+
+每个节点的底层原理，premain之前的优化，didfinish的优化。
 
 > 优化方案及数据
 
@@ -893,37 +1087,46 @@ NSThread、GCD、NSOperationQueue的区别？各自的一些优点，以及应�
 
 
 
-### 7.6 包体积优化
+### 10.6 包体积优化
 
-- 优化手段
+- 优化手段：资源瘦身、代码瘦身等
+- 怎么检测项目中无用代码
+  - 背后的检测原理知道吗
+  - 检测出来的无用代码都是没有用的吗（可能是有用的，runtime会换方法）
 
-- 怎么检测项目中无用代码，背后的检测原理知道吗
+注意：搞点高技术含量的，别说一些烂大街的
 
 
 
-### 7.7 LLVM中间代码优化
+### 10.7 LLVM中间代码优化
 
 > LLVM pass是否了解过，有编写过吗
 
 
 
-### 7.8 应用安全
+### 10.8 应用安全
 
-#### 7.8.1 网络安全
+#### 10.8.1 网络安全
 
-#### 7.8.2 防逆向
+#### 10.8.2 防逆向
 
 
 
-### 7.9 Xcode提供的优化手段
+### 10.9 电量优化
 
-#### 7.9.1 Analyze静态分析
+如果应用要一直更新定位，怎样操作才省电？
+
+- pushkit
+
+### 10.10 Xcode提供的优化手段
+
+#### 10.10.1 Analyze静态分析
 
 僵尸对象诊断可以帮助快速定位多数情况下的野指针问题，但也有时候不能奏效，这个时候只能利用Xcode的Analyze静态分析帮助检查可能出问题的地方，仔细检查问题所在，比较费时。
 
 使用方法很简单，选中Xcode顶部导航栏Product-Analyze或使用快捷键Command+Shift+B，分析需要花一些时间，然后左侧会列出编辑器发现的存在潜在问题的地方，选中蓝色图标对应的问题项会跳到问题项所在的代码行。但这只能给出一些潜在提示，帮助搜索问题所在，不一定和我们的bug相关。
 
-### 7.10 常见面试题
+### 10.11 常见面试题
 
 - 做过哪些性能优化
 - 线上有做性能检测措施吗？比如卡顿(FPS检查)上报(上报堆栈)
@@ -933,58 +1136,33 @@ NSThread、GCD、NSOperationQueue的区别？各自的一些优点，以及应�
 - APM （Application Performance Management，即应用性能管理，在分布式领域也称为分布式跟踪管理）对企业的应用系统进行实时监控，它是用于实现对应用程序性能管理和故障管理的系统化的解决方案。
   - matrix(矩阵、模型)  —— 微信开源的工具 https://github.com/Tencent/matrix
 - [微信高性能线上日志系统xlog剖析 — SatanWoo](https://satanwoo.github.io/2017/07/30/xlog/)
+- 知道苹果原生出的性能检测框架吗？（百度）
+  - 说是新特性
+  - [使用 XCTest 消除动画卡顿？](https://mp.weixin.qq.com/s/66UvtkfPP3vDObLNk6W3Yg)
 
 
 
-## 八、编译、链接、装载
-
-- 编译过程
-  - 中间的binding过程，可以做什么优化：减少动态库、动态库改静态库？
-- app启动流程
-
-- 堆栈符号化定位
-
-- 写一个APP，原则上一个文件就能搞定所有的事情，我们为什么还搞那么多文件，那么多类
-
-- 内存和虚拟内存 如何映射
-- 混合架构的framework 静态库 需要分离么
-- 静态库中包含分类文件，如何调用。
-- 为什么需要加Objc，静态库的加载流程，Objc的语义？
-- 
-
-## 九、数据库
-
-- 以txt文本文件为例，实现类似数据库的增删改查，比如存储信息为通讯录：姓名 电话 手机号 超长的介绍
-- 存储 文件和数据库 选择
-- 比fmdb更好的优化方案
-
-### 9.1 Protocol Buffers(PB)
-
-Protocol Buffers(简称Protobuf, PB) ，是Google出品的序列化框架，与开发语言无关，和平台无关，具有良好的可扩展性。Protobuf和所有的序列化框架一样，都可以用于数据存储、通讯协议。
-
-Protobuf支持生成代码的语言包括Java、Python、C++、Go、JavaNano、Ruby、C#，[官网地址](https://link.jianshu.com?t=https://developers.google.com/protocol-buffers/)。
-
-Portobuf的序列化的结果体积要比XML、JSON小很多，XML和JSON的描述信息太多了，导致消息要大；此外Portobuf还使用了Varint 编码，减少数据对空间的占用。
-
-Portobuf序列化和反序列化速度比XML、JSON快很多，是直接把对象和字节数组做转换，而XML和JSON还需要构建成XML或者JSON对象结构。
-
-https://juejin.cn/post/6844903622266847246
-
-- protobuf 是怎么进行解析的， 有啥可以优化点
-
-
-
-## 十、Swift
+## 十一、Swift
 
 - oc怎么转换成SwiftUI
+
 - swift 为什么推荐使用 结构体，swift数组为什么选择使用 结构体。类和结构体的区别
+
 - 静态库中swift与OC如何实现混编？
+
 - swift 与 OC混编 module的原理是什么？
+
 - swift 与 OC 混编 module的配置流程？
+
 - oc的 KVO 你已经知道了，那么 swift 的KVO 原理懂么
+
 - Swift的修饰词
 
-## 十一、JavaScript与RN
+- 转JSON：kakaJson、HandlyJson https://www.jianshu.com/p/e9d933ce7c74
+
+  ![Thread](../../images/Interview/JSONParsePerformance.jpeg)
+
+## 十二、JavaScript与RN
 
 - 跨平台的方案分析，选型以及优化点
 
@@ -1015,15 +1193,15 @@ https://www.jianshu.com/p/7b4fe125aa92
 
 
 
-## 十二、开放题
+## 十三、开放题
 
-### 12.1 项目
+### 13.1 项目
 
 - 感觉有亮点的项目讲一下
 - 遇到了哪些问题以及怎么解决的
 - 开发中遇到问题是怎么排查的，讲一下解决问题的思路及手段
 
-### 12.2 其他
+### 13.2 其他
 
 - 哪个项目是你觉得最有经验、心得的？
 - 最有成就感的一项技术产出是什么
@@ -1117,3 +1295,4 @@ iOS7及以上系统默认：
 iOS7之后也增加了一个self.tabBarController.tabBar.translucent的属性，默认为YES。效果同上
 
 注意：在viewDidLoad中打印self.view.frame是屏幕宽高，在viewWillAppear及之后的生命周期方法中，才会因为上面的设置而改变
+
