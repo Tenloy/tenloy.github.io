@@ -20,15 +20,15 @@
     <meta name="keywords" content="Tenloy,iOS,Swift">
     
     <meta name="description" content="学习 生活 记录 回忆">
-    <meta name="description" content="一、Hexo配置 Hexo 是一个快速、简洁且高效的博客框架。Hexo 使用 Markdown(或其他渲染引擎) 解析文章，在几秒内，即可利用靓丽的主题生成静态网页。  hexo文档 二、主题配置fork的theme 根据喜好随便改：配置简书、RSS GIT子模块：  现在我们的Blog项目受GitHub管理，是个仓库，其中包含了一个主题仓库。其中对主题仓库的修改，要在外层仓库、theme仓库分别">
+    <meta name="description" content="一、Hexo配置和基本使用1.1 概述 Hexo 是一个快速、简洁且高效的博客框架。Hexo 使用 Markdown(或其他渲染引擎) 解析文章，在几秒内，即可利用靓丽的主题生成静态网页。  hexo文档 1.2 常用命令1.2.1 init1hexo init [folder] # 新建一个网站。如果没有设置folder，Hexo默认在目前的文件夹建立网站。  本命令相当于执行了以下几步：  G">
 <meta property="og:type" content="article">
 <meta property="og:title" content="使用Hexo+Github Pages搭建个人博客">
 <meta property="og:url" content="https://tenloy.github.io/2021/04/10/01_GithubPages-Hexo/index.html">
 <meta property="og:site_name" content="Tenloy&#39;s Blog">
-<meta property="og:description" content="一、Hexo配置 Hexo 是一个快速、简洁且高效的博客框架。Hexo 使用 Markdown(或其他渲染引擎) 解析文章，在几秒内，即可利用靓丽的主题生成静态网页。  hexo文档 二、主题配置fork的theme 根据喜好随便改：配置简书、RSS GIT子模块：  现在我们的Blog项目受GitHub管理，是个仓库，其中包含了一个主题仓库。其中对主题仓库的修改，要在外层仓库、theme仓库分别">
+<meta property="og:description" content="一、Hexo配置和基本使用1.1 概述 Hexo 是一个快速、简洁且高效的博客框架。Hexo 使用 Markdown(或其他渲染引擎) 解析文章，在几秒内，即可利用靓丽的主题生成静态网页。  hexo文档 1.2 常用命令1.2.1 init1hexo init [folder] # 新建一个网站。如果没有设置folder，Hexo默认在目前的文件夹建立网站。  本命令相当于执行了以下几步：  G">
 <meta property="og:locale" content="en_US">
 <meta property="article:published_time" content="2021-04-10T10:25:24.000Z">
-<meta property="article:modified_time" content="2021-04-29T11:54:46.849Z">
+<meta property="article:modified_time" content="2021-05-27T09:20:16.900Z">
 <meta property="article:author" content="Tenloy">
 <meta property="article:tag" content="hexo">
 <meta name="twitter:card" content="summary">
@@ -310,7 +310,7 @@ height:40vh;
                 
                 
                     <div class="post-intro-read">
-                        <span>Word count: <span class="post-count word-count">651</span>Reading time: <span class="post-count reading-time">2 min</span></span>
+                        <span>Word count: <span class="post-count word-count">1.9k</span>Reading time: <span class="post-count reading-time">7 min</span></span>
                     </div>
                 
                 <div class="post-intro-meta">
@@ -439,10 +439,120 @@ height:40vh;
         <div class="container container-unloaded">
             <main class="main post-page">
     <article class="article-entry">
-        <h2 id="一、Hexo配置"><a href="#一、Hexo配置" class="headerlink" title="一、Hexo配置"></a>一、Hexo配置</h2><blockquote>
+        <h2 id="一、Hexo配置和基本使用"><a href="#一、Hexo配置和基本使用" class="headerlink" title="一、Hexo配置和基本使用"></a>一、Hexo配置和基本使用</h2><h3 id="1-1-概述"><a href="#1-1-概述" class="headerlink" title="1.1 概述"></a>1.1 概述</h3><blockquote>
 <p>Hexo 是一个快速、简洁且高效的博客框架。Hexo 使用 Markdown(或其他渲染引擎) 解析文章，在几秒内，即可利用靓丽的主题生成静态网页。</p>
 </blockquote>
 <p><a target="_blank" rel="noopener" href="https://hexo.io/zh-cn/docs/github-pages">hexo文档</a></p>
+<h3 id="1-2-常用命令"><a href="#1-2-常用命令" class="headerlink" title="1.2 常用命令"></a>1.2 常用命令</h3><h4 id="1-2-1-init"><a href="#1-2-1-init" class="headerlink" title="1.2.1 init"></a>1.2.1 init</h4><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">hexo init [folder] <span class="comment"># 新建一个网站。如果没有设置folder，Hexo默认在目前的文件夹建立网站。</span></span><br></pre></td></tr></table></figure>
+
+<p>本命令相当于执行了以下几步：</p>
+<ol>
+<li>Git clone <a target="_blank" rel="noopener" href="https://github.com/hexojs/hexo-starter">hexo-starter</a> 和 <a target="_blank" rel="noopener" href="https://github.com/hexojs/hexo-theme-landscape">hexo-theme-landscape</a> 主题到当前目录或指定目录。</li>
+<li>使用 <a target="_blank" rel="noopener" href="https://classic.yarnpkg.com/lang/en/">Yarn 1</a>、<a target="_blank" rel="noopener" href="https://pnpm.js.org/">pnpm</a> 或 <a target="_blank" rel="noopener" href="https://docs.npmjs.com/cli/install">npm</a> 包管理器下载依赖（如有已安装多个，则列在前面的优先）。npm 默认随 <a target="_blank" rel="noopener" href="https://hexo.io/docs/#Install-Node-js">Node.js</a> 安装。</li>
+</ol>
+<h4 id="1-2-2-new"><a href="#1-2-2-new" class="headerlink" title="1.2.2 new"></a>1.2.2 new</h4><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">hexo new [layout] &lt;title&gt; <span class="comment"># 新建一篇文章</span></span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>如果没有设置 <code>layout</code> 的话，默认使用 <a target="_blank" rel="noopener" href="https://hexo.io/zh-cn/docs/configuration">_config.yml</a> 中的 <code>default_layout</code> 参数代替。</li>
+<li>如果标题包含空格的话，请使用引号括起来。</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th align="left">参数</th>
+<th align="left">描述</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left"><code>-p</code>, <code>--path</code></td>
+<td align="left">自定义新文章的路径</td>
+</tr>
+<tr>
+<td align="left"><code>-r</code>, <code>--replace</code></td>
+<td align="left">如果存在同名文章，将其替换</td>
+</tr>
+<tr>
+<td align="left"><code>-s</code>, <code>--slug</code></td>
+<td align="left">文章的 Slug，作为新文章的文件名和发布后的 URL</td>
+</tr>
+</tbody></table>
+<p>默认情况下，Hexo 会使用文章的标题来决定文章文件的路径。对于独立页面来说，Hexo 会创建一个以标题为名字的目录，并在目录中放置一个 <code>index.md</code> 文件。你可以使用 <code>--path</code> 参数来覆盖上述行为、自行决定文件的目录：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">hexo new page --path about/me <span class="string">&quot;About me&quot;</span></span><br><span class="line"><span class="comment"># 以上命令会创建一个 `source/about/me.md` 文件，同时 Front Matter 中的 title 为 `&quot;About me&quot;`</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 注意！title 是必须指定的！如果你这么做并不能达到你的目的：</span></span><br><span class="line">hexo new page --path about/me</span><br><span class="line"><span class="comment"># 此时 Hexo 会创建 `source/_posts/about/me.md`，同时 `me.md` 的 Front Matter 中的 title 为 `&quot;page&quot;`。这是因为在上述命令中，hexo-cli 将 `page` 视为指定文章的标题、并采用默认的 `layout`。</span></span><br></pre></td></tr></table></figure>
+
+<h4 id="1-2-3-generate"><a href="#1-2-3-generate" class="headerlink" title="1.2.3 generate"></a>1.2.3 generate</h4><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">hexo generate  <span class="comment"># 生成静态文件。可以简写为hexo g</span></span><br></pre></td></tr></table></figure>
+
+<table>
+<thead>
+<tr>
+<th align="left">选项</th>
+<th align="left">描述</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left"><code>-d</code>, <code>--deploy</code></td>
+<td align="left">文件生成后立即部署网站。<code>hexo g -d</code> 与 <code>hexo d -g</code> 两个命令的作用是相同的。</td>
+</tr>
+<tr>
+<td align="left"><code>-w</code>, <code>--watch</code></td>
+<td align="left">监视文件变动。Hexo 能够监视文件变动并立即重新生成静态文件，在生成时会比对文件的 SHA1 checksum，只有变动的文件才会写入。</td>
+</tr>
+<tr>
+<td align="left"><code>-b</code>, <code>--bail</code></td>
+<td align="left">生成过程中如果发生任何未处理的异常则抛出异常</td>
+</tr>
+<tr>
+<td align="left"><code>-f</code>, <code>--force</code></td>
+<td align="left">强制重新生成文件 Hexo 引入了差分机制，如果 <code>public</code> 目录存在，那么 <code>hexo g</code> 只会重新生成改动的文件。 使用该参数的效果接近 <code>hexo clean &amp;&amp; hexo generate</code></td>
+</tr>
+<tr>
+<td align="left"><code>-c</code>, <code>--concurrency</code></td>
+<td align="left">最大同时生成文件的数量，默认无限制</td>
+</tr>
+</tbody></table>
+<h4 id="1-2-4-deploy"><a href="#1-2-4-deploy" class="headerlink" title="1.2.4 deploy"></a>1.2.4 deploy</h4><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">hexo deploy <span class="comment"># 部署网站。可以简写为：hexo d</span></span><br></pre></td></tr></table></figure>
+
+<table>
+<thead>
+<tr>
+<th align="left">参数</th>
+<th align="left">描述</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left"><code>-g</code>, <code>--generate</code></td>
+<td align="left">部署之前预先生成静态文件</td>
+</tr>
+</tbody></table>
+<h4 id="1-2-5-server"><a href="#1-2-5-server" class="headerlink" title="1.2.5 server"></a>1.2.5 server</h4><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">hexo server  <span class="comment"># 启动服务器。可以简写为：hexo s</span></span><br></pre></td></tr></table></figure>
+
+<p>默认情况下，访问网址为： <code>http://localhost:4000/</code>。</p>
+<table>
+<thead>
+<tr>
+<th align="left">选项</th>
+<th align="left">描述</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left"><code>-p</code>, <code>--port</code></td>
+<td align="left">重设端口</td>
+</tr>
+<tr>
+<td align="left"><code>-s</code>, <code>--static</code></td>
+<td align="left">只使用静态文件</td>
+</tr>
+<tr>
+<td align="left"><code>-l</code>, <code>--log</code></td>
+<td align="left">启动日记记录，使用覆盖记录格式</td>
+</tr>
+</tbody></table>
+<h4 id="1-2-6-clean"><a href="#1-2-6-clean" class="headerlink" title="1.2.6 clean"></a>1.2.6 clean</h4><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">hexo clean  <span class="comment"># 清除缓存文件 (`db.json`) 和已生成的静态文件 (`public`)。</span></span><br></pre></td></tr></table></figure>
+
+<p>在某些情况（尤其是更换主题后），如果发现您对站点的更改无论如何也不生效，您可能需要运行该命令。</p>
+<h4 id="1-2-7-其他"><a href="#1-2-7-其他" class="headerlink" title="1.2.7 其他"></a>1.2.7 其他</h4><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">hexo publish [layout] &lt;filename&gt; <span class="comment"># 发表草稿</span></span><br><span class="line">hexo render &lt;file1&gt; [file2] ... <span class="comment"># 渲染文件。可通过参数-o,--output来设置输出路径</span></span><br><span class="line">hexo migrate &lt;<span class="built_in">type</span>&gt; <span class="comment"># 从其他博客系统 迁移内容 https://hexo.io/zh-cn/docs/migration</span></span><br><span class="line">hexo list &lt;<span class="built_in">type</span>&gt;  <span class="comment">#列出网站资料</span></span><br><span class="line">hexo version  <span class="comment"># 显示 Hexo 版本</span></span><br></pre></td></tr></table></figure>
+
+
+
 <h2 id="二、主题配置"><a href="#二、主题配置" class="headerlink" title="二、主题配置"></a>二、主题配置</h2><p><a target="_blank" rel="noopener" href="https://github.com/Tenloy/hexo-theme-archer">fork的theme</a></p>
 <p>根据喜好随便改：配置简书、RSS</p>
 <p><strong>GIT</strong>子模块：</p>
@@ -466,6 +576,32 @@ height:40vh;
 <h2 id="五、评论系统配置"><a href="#五、评论系统配置" class="headerlink" title="五、评论系统配置"></a>五、评论系统配置</h2><p><a target="_blank" rel="noopener" href="https://www.heson10.com/posts/3217.html">https://www.heson10.com/posts/3217.html</a></p>
 <p><a target="_blank" rel="noopener" href="https://blog.shuiba.co/comment-systems-recommendation">https://blog.shuiba.co/comment-systems-recommendation</a></p>
 <p>gitalk</p>
+<h2 id="附：GitBook的使用注意点"><a href="#附：GitBook的使用注意点" class="headerlink" title="附：GitBook的使用注意点"></a>附：GitBook的使用注意点</h2><h3 id="6-1-不支持本地导出HTML"><a href="#6-1-不支持本地导出HTML" class="headerlink" title="6.1 不支持本地导出HTML"></a>6.1 不支持本地导出HTML</h3><p>新版本不支持本地导出的HTML跳转，解决方案：</p>
+<ul>
+<li><p>在_book文件夹中找到gitbook-&gt;theme.js文件。</p>
+</li>
+<li><p>在代码中搜索 <code>if(m)for(n.handler&amp;&amp;</code></p>
+</li>
+<li><p>将<code>if(m)</code>改成<code>if(false)</code>，再重新打开index.html即可 </p>
+</li>
+</ul>
+<p>缺点：每次都会重置侧边栏。如果是部署后访问，侧边栏点击跳转后，不会重置状态</p>
+<h3 id="6-2-默认主题运行报错"><a href="#6-2-默认主题运行报错" class="headerlink" title="6.2 默认主题运行报错"></a>6.2 默认主题运行报错</h3><p>在使用该主题的过程中，发现经常会在控制台报下面的错误，没有找到是哪里的原因，官方也一直没有修复。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">theme.js:4UncaughtTypeError:Cannot read property&#39;split&#39; of undefined</span><br></pre></td></tr></table></figure>
+
+<p>后来在 <a target="_blank" rel="noopener" href="https://github.com/maxkoryukov/theme-default/commit/811fcca17fcc84ad9ff3f940a4194dbffa62a31d">这里</a> 看到一个解决方法，需要修改本地的 GitBook Theme 模板。下面是具体步骤：</p>
+<ul>
+<li><p>进入 GitBook 默认主题所在的文件夹 <code>用户主目录</code> -&gt; <code>.gitbook</code> -&gt; <code>versions</code> -&gt; <code>3.2.2</code> -&gt; <code>node_modules</code> -&gt; <code>gitbook-plugin-theme-default</code> -&gt; <code>src</code> -&gt; <code>js</code> -&gt; <code>theme</code>，打开 <code>navigation.js</code>，找到 <code>getChapterHash</code> 函数</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">getChapterHash</span>(<span class="params">$chapter</span>)</span>&#123;</span><br><span class="line">  <span class="keyword">var</span> $link = $chapter.children(<span class="string">&#x27;a&#x27;</span>),      </span><br><span class="line">      hash = $link.attr(<span class="string">&#x27;href&#x27;</span>).split(<span class="string">&#x27;#&#x27;</span>)[<span class="number">1</span>];</span><br><span class="line">  </span><br><span class="line">  <span class="keyword">if</span>(hash) hash =<span class="string">&#x27;#&#x27;</span>+hash;</span><br><span class="line">  <span class="keyword">return</span>(!!hash)? hash :<span class="string">&#x27;&#x27;</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+<li><p>将该函数修改为下面的形式:</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">getChapterHash</span>(<span class="params">$chapter</span>)</span>&#123;</span><br><span class="line">  <span class="keyword">var</span> $link = $chapter.children(<span class="string">&#x27;a&#x27;</span>),      </span><br><span class="line">      hash,      </span><br><span class="line">      href,      </span><br><span class="line">      parts;</span><br><span class="line">  <span class="keyword">if</span>($link.length)&#123;      </span><br><span class="line">    href = $link.attr(<span class="string">&#x27;href&#x27;</span>)</span><br><span class="line">    <span class="keyword">if</span>(href)&#123;          </span><br><span class="line">      parts = href.split(<span class="string">&#x27;#&#x27;</span>);</span><br><span class="line">      <span class="keyword">if</span>(parts.length&gt;<span class="number">1</span>)&#123;              </span><br><span class="line">        hash = parts[<span class="number">1</span>];</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">if</span>(hash) hash =<span class="string">&#x27;#&#x27;</span>+hash;</span><br><span class="line">  <span class="keyword">return</span>(!!hash)? hash :<span class="string">&#x27;&#x27;</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+<li><p>回到 <code>gitbook-plugin-theme-default</code> 文件夹，运行 <code>npm install</code> 重新编译文件。</p>
+</li>
+</ul>
+<h3 id="6-3-anchor-navigation-ex插件回到顶部"><a href="#6-3-anchor-navigation-ex插件回到顶部" class="headerlink" title="6.3 anchor-navigation-ex插件回到顶部"></a>6.3 <code>anchor-navigation-ex</code>插件回到顶部</h3><ul>
+<li>如果文章有1级标题就必定好使</li>
+<li>如果没有就：第一次好使，之后不好使。锚点设置的有问题</li>
+</ul>
 
     </article>
     <!-- license  -->
@@ -474,7 +610,7 @@ height:40vh;
             <p>Author：<a href="https://tenloy.github.io">Tenloy</a>
             <p>原文链接：<a href="https://tenloy.github.io/2021/04/10/01_GithubPages-Hexo/">https://tenloy.github.io/2021/04/10/01_GithubPages-Hexo/</a>
             <p>发表日期：2021.04.10 , 10:25 AM</p>
-            <p>更新日期：2021.04.29 , 11:54 AM</p>
+            <p>更新日期：2021.05.27 , 9:20 AM</p>
             <p>版权声明：本文采用<a rel="license noopener" target="_blank" href="http://creativecommons.org/licenses/by-nc/4.0/">Crative Commons 4.0 许可协议</a>进行许可</p>
         </div>
     
@@ -616,7 +752,7 @@ top:40vh;
         <div class="toc-catalog">
             <span class="iconfont-archer catalog-icon">&#xe613;</span><span>CATALOG</span>
         </div>
-        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E3%80%81Hexo%E9%85%8D%E7%BD%AE"><span class="toc-text">一、Hexo配置</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8C%E3%80%81%E4%B8%BB%E9%A2%98%E9%85%8D%E7%BD%AE"><span class="toc-text">二、主题配置</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%89%E3%80%81Travis-CI%E9%85%8D%E7%BD%AE"><span class="toc-text">三、Travis CI配置</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9B%9B%E3%80%81algolia%E7%AB%99%E5%86%85%E6%90%9C%E7%B4%A2%E9%85%8D%E7%BD%AE"><span class="toc-text">四、algolia站内搜索配置</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%94%E3%80%81%E8%AF%84%E8%AE%BA%E7%B3%BB%E7%BB%9F%E9%85%8D%E7%BD%AE"><span class="toc-text">五、评论系统配置</span></a></li></ol>
+        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E3%80%81Hexo%E9%85%8D%E7%BD%AE%E5%92%8C%E5%9F%BA%E6%9C%AC%E4%BD%BF%E7%94%A8"><span class="toc-text">一、Hexo配置和基本使用</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-1-%E6%A6%82%E8%BF%B0"><span class="toc-text">1.1 概述</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-2-%E5%B8%B8%E7%94%A8%E5%91%BD%E4%BB%A4"><span class="toc-text">1.2 常用命令</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#1-2-1-init"><span class="toc-text">1.2.1 init</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#1-2-2-new"><span class="toc-text">1.2.2 new</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#1-2-3-generate"><span class="toc-text">1.2.3 generate</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#1-2-4-deploy"><span class="toc-text">1.2.4 deploy</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#1-2-5-server"><span class="toc-text">1.2.5 server</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#1-2-6-clean"><span class="toc-text">1.2.6 clean</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#1-2-7-%E5%85%B6%E4%BB%96"><span class="toc-text">1.2.7 其他</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8C%E3%80%81%E4%B8%BB%E9%A2%98%E9%85%8D%E7%BD%AE"><span class="toc-text">二、主题配置</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%89%E3%80%81Travis-CI%E9%85%8D%E7%BD%AE"><span class="toc-text">三、Travis CI配置</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9B%9B%E3%80%81algolia%E7%AB%99%E5%86%85%E6%90%9C%E7%B4%A2%E9%85%8D%E7%BD%AE"><span class="toc-text">四、algolia站内搜索配置</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%94%E3%80%81%E8%AF%84%E8%AE%BA%E7%B3%BB%E7%BB%9F%E9%85%8D%E7%BD%AE"><span class="toc-text">五、评论系统配置</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%99%84%EF%BC%9AGitBook%E7%9A%84%E4%BD%BF%E7%94%A8%E6%B3%A8%E6%84%8F%E7%82%B9"><span class="toc-text">附：GitBook的使用注意点</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#6-1-%E4%B8%8D%E6%94%AF%E6%8C%81%E6%9C%AC%E5%9C%B0%E5%AF%BC%E5%87%BAHTML"><span class="toc-text">6.1 不支持本地导出HTML</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-2-%E9%BB%98%E8%AE%A4%E4%B8%BB%E9%A2%98%E8%BF%90%E8%A1%8C%E6%8A%A5%E9%94%99"><span class="toc-text">6.2 默认主题运行报错</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-3-anchor-navigation-ex%E6%8F%92%E4%BB%B6%E5%9B%9E%E5%88%B0%E9%A1%B6%E9%83%A8"><span class="toc-text">6.3 anchor-navigation-ex插件回到顶部</span></a></li></ol></li></ol>
     </div>
     
     <div class="back-top iconfont-archer">&#xe639;</div>
@@ -705,9 +841,38 @@ top:40vh;
     
     
     
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
     <div class="total-and-search">
         <div class="total-archive">
-        Total : 8
+        Total : 11
         </div>
         <!-- search  -->
         
@@ -727,7 +892,22 @@ top:40vh;
     
     
         <li class="archive-post-item">
-            <span class="archive-post-date">04/29</span><a class="archive-post-title" href= "/2021/04/29/06_Corss-Platform/" >从Hybrid到RN，再到Flutter</a>
+            <span class="archive-post-date">05/27</span><a class="archive-post-title" href= "/2021/05/27/09_Fiber/" >[转]最通俗的 React Fiber(时间分片)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/27</span><a class="archive-post-title" href= "/2021/05/27/08_Coroutine/" >[转]什么是协程</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/30</span><a class="archive-post-title" href= "/2021/04/30/07_Common-Programming-Paradigm/" >常见的编程范式知识点汇总</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/29</span><a class="archive-post-title" href= "/2021/04/29/06_Corss-Platform/" >iOS中的工程化</a>
         </li>
     
     
@@ -776,9 +956,13 @@ top:40vh;
     
         <span class="sidebar-tag-name" data-tags="多线程"><span class="iconfont-archer">&#xe606;</span>多线程</span>
     
+        <span class="sidebar-tag-name" data-tags="协程"><span class="iconfont-archer">&#xe606;</span>协程</span>
+    
         <span class="sidebar-tag-name" data-tags="Docker"><span class="iconfont-archer">&#xe606;</span>Docker</span>
     
         <span class="sidebar-tag-name" data-tags="RunLoop"><span class="iconfont-archer">&#xe606;</span>RunLoop</span>
+    
+        <span class="sidebar-tag-name" data-tags="Fiber"><span class="iconfont-archer">&#xe606;</span>Fiber</span>
     
         <span class="sidebar-tag-name" data-tags="interview"><span class="iconfont-archer">&#xe606;</span>interview</span>
     
@@ -817,13 +1001,17 @@ jsonContent:
     
         <span class="sidebar-category-name" data-categories="软件工程-化"><span class="iconfont-archer">&#xe60a;</span>软件工程-化</span>
     
-        <span class="sidebar-category-name" data-categories="操作系统"><span class="iconfont-archer">&#xe60a;</span>操作系统</span>
+        <span class="sidebar-category-name" data-categories="OS"><span class="iconfont-archer">&#xe60a;</span>OS</span>
     
-        <span class="sidebar-category-name" data-categories="跨平台"><span class="iconfont-archer">&#xe60a;</span>跨平台</span>
+        <span class="sidebar-category-name" data-categories="工程化"><span class="iconfont-archer">&#xe60a;</span>工程化</span>
+    
+        <span class="sidebar-category-name" data-categories="编程范式"><span class="iconfont-archer">&#xe60a;</span>编程范式</span>
     
         <span class="sidebar-category-name" data-categories="容器化"><span class="iconfont-archer">&#xe60a;</span>容器化</span>
     
         <span class="sidebar-category-name" data-categories="iOS"><span class="iconfont-archer">&#xe60a;</span>iOS</span>
+    
+        <span class="sidebar-category-name" data-categories="React"><span class="iconfont-archer">&#xe60a;</span>React</span>
     
     </div>
     <div class="iconfont-archer sidebar-categories-empty">&#xe678;</div>

@@ -28,7 +28,7 @@
 <meta property="og:description" content="一、容器1.1 定义汉语释义：  容器(Container)是一种基础工具。泛指任何可以用于容纳其它物品的工具。  容器的特性：  可以部分或完全封闭。— 隔离性  被用于容纳、储存、运输物品。 — 便携性、换到程序的概念就是可移植性  物体可以被放置在容器中，而容器则可以保护内容物。— 安全   二、Linux容器与Docker容器2.1 诞生背景—环境配置的难题软件开发最大的麻烦事之一，就是环">
 <meta property="og:locale" content="en_US">
 <meta property="article:published_time" content="2021-04-28T15:10:28.000Z">
-<meta property="article:modified_time" content="2021-04-29T11:54:46.849Z">
+<meta property="article:modified_time" content="2021-05-27T09:20:16.904Z">
 <meta property="article:author" content="Tenloy">
 <meta property="article:tag" content="Tenloy, iOS, Tenloy Blog, 博客，Swift, 编译, 计算机">
 <meta name="twitter:card" content="summary">
@@ -304,7 +304,7 @@ height:40vh;
                 
                 
                     <div class="post-intro-read">
-                        <span>Word count: <span class="post-count word-count">6.2k</span>Reading time: <span class="post-count reading-time">22 min</span></span>
+                        <span>Word count: <span class="post-count word-count">6.4k</span>Reading time: <span class="post-count reading-time">22 min</span></span>
                     </div>
                 
                 <div class="post-intro-meta">
@@ -665,7 +665,25 @@ height:40vh;
 <li>如果是动态请求，则转发到后面的Tomcat应用服务器，处理动态请求的业务逻辑。</li>
 </ul>
 <p><a target="_blank" rel="noopener" href="https://blog.csdn.net/tjiyu/article/details/53148174">参考链接 — 各种容器与服务器的区别与联系</a></p>
-<h2 id="五、iOS的容器化"><a href="#五、iOS的容器化" class="headerlink" title="五、iOS的容器化"></a>五、iOS的容器化</h2>
+<h2 id="五、iOS的容器化"><a href="#五、iOS的容器化" class="headerlink" title="五、iOS的容器化"></a>五、iOS的容器化</h2><h2 id="六、小结"><a href="#六、小结" class="headerlink" title="六、小结"></a>六、小结</h2><p>容器在不同场景下的含义</p>
+<ol>
+<li>字面意思，容器就是指容纳小物品的事物，比如：<ol>
+<li>UIStackview</li>
+<li>自定义的Container视图组件</li>
+<li>前端组件化开发中的页面充当的角色(将一个页面分成很多个组件，此处页面就相当于是个纯粹的容器)</li>
+</ol>
+</li>
+<li>数据的解析/渲染环境。比如：<ol>
+<li>美团，后端返回协商好的结构化的数据，移动端对数据进行解析，还原成界面的layout。进行视图创建、渲染</li>
+</ol>
+</li>
+<li>应用程序的运行环境。比如：<ol>
+<li>上面的Docker容器</li>
+<li>服务器容器</li>
+</ol>
+</li>
+</ol>
+
     </article>
     <!-- license  -->
     
@@ -673,7 +691,7 @@ height:40vh;
             <p>Author：<a href="https://tenloy.github.io">Tenloy</a>
             <p>原文链接：<a href="https://tenloy.github.io/2021/04/28/04_Containers/">https://tenloy.github.io/2021/04/28/04_Containers/</a>
             <p>发表日期：2021.04.28 , 3:10 PM</p>
-            <p>更新日期：2021.04.29 , 11:54 AM</p>
+            <p>更新日期：2021.05.27 , 9:20 AM</p>
             <p>版权声明：本文采用<a rel="license noopener" target="_blank" href="http://creativecommons.org/licenses/by-nc/4.0/">Crative Commons 4.0 许可协议</a>进行许可</p>
         </div>
     
@@ -815,7 +833,7 @@ top:40vh;
         <div class="toc-catalog">
             <span class="iconfont-archer catalog-icon">&#xe613;</span><span>CATALOG</span>
         </div>
-        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E3%80%81%E5%AE%B9%E5%99%A8"><span class="toc-text">一、容器</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-1-%E5%AE%9A%E4%B9%89"><span class="toc-text">1.1 定义</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8C%E3%80%81Linux%E5%AE%B9%E5%99%A8%E4%B8%8EDocker%E5%AE%B9%E5%99%A8"><span class="toc-text">二、Linux容器与Docker容器</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#2-1-%E8%AF%9E%E7%94%9F%E8%83%8C%E6%99%AF%E2%80%94%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AE%E7%9A%84%E9%9A%BE%E9%A2%98"><span class="toc-text">2.1 诞生背景—环境配置的难题</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-2-%E8%99%9A%E6%8B%9F%E6%9C%BA"><span class="toc-text">2.2 虚拟机</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-3-Linux%E5%AE%B9%E5%99%A8"><span class="toc-text">2.3 Linux容器</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#2-3-1-%E5%AE%9A%E4%B9%89"><span class="toc-text">2.3.1 定义</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2-3-2-%E4%BC%98%E5%8A%BF"><span class="toc-text">2.3.2 优势</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2-3-3-%E4%BD%BF%E7%94%A8"><span class="toc-text">2.3.3 使用</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-4-Docker%E5%AE%B9%E5%99%A8"><span class="toc-text">2.4 Docker容器</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#2-4-1-%E6%A6%82%E8%BF%B0"><span class="toc-text">2.4.1 概述</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2-4-2-%E7%94%A8%E9%80%94"><span class="toc-text">2.4.2 用途</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2-4-3-%E9%95%9C%E5%83%8FImage"><span class="toc-text">2.4.3 镜像Image</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#1-%E5%BC%95%E8%87%AADocker%E7%BD%91%E7%AB%99"><span class="toc-text">1) 引自Docker网站</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#2-%E5%BC%95%E8%87%AA%E9%98%AE%E4%B8%80%E5%B3%B0"><span class="toc-text">2) 引自阮一峰</span></a></li></ol></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-5-%E5%AE%B9%E5%99%A8%E4%B8%8E%E8%99%9A%E6%8B%9F%E6%9C%BA%E7%9A%84%E5%8C%BA%E5%88%AB"><span class="toc-text">2.5 容器与虚拟机的区别</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-6-%E5%AE%B9%E5%99%A8%E5%8C%96%E7%9A%84%E4%BC%98%E5%8A%BF"><span class="toc-text">2.6 容器化的优势</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%89%E3%80%81%E6%9C%8D%E5%8A%A1%E5%99%A8%E4%B8%8E%E5%AE%B9%E5%99%A8"><span class="toc-text">三、服务器与容器</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#3-1-%E6%9C%8D%E5%8A%A1%E5%99%A8-server"><span class="toc-text">3.1 服务器(server)</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#3-1-1-%E4%BD%9C%E4%B8%BA%E7%A1%AC%E4%BB%B6"><span class="toc-text">3.1.1 作为硬件</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3-1-2-%E4%BD%9C%E4%B8%BA%E8%BD%AF%E4%BB%B6"><span class="toc-text">3.1.2 作为软件</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-2-%E5%AE%B9%E5%99%A8"><span class="toc-text">3.2 容器</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#3-2-1-Servlet%E5%AE%B9%E5%99%A8"><span class="toc-text">3.2.1 Servlet容器</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3-2-2-Java-WEB%E5%AE%B9%E5%99%A8"><span class="toc-text">3.2.2 Java WEB容器</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3-2-3-Java-EE%E5%AE%B9%E5%99%A8"><span class="toc-text">3.2.3 Java EE容器</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-3-%E4%B8%BE%E4%BE%8B%E8%AF%B4%E6%98%8E%E5%AE%B9%E5%99%A8%E4%B8%8E%E6%9C%8D%E5%8A%A1%E5%99%A8%E7%9A%84%E8%81%94%E7%B3%BB"><span class="toc-text">3.3 举例说明容器与服务器的联系</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#3-3-1-Apache%E3%80%81Nginx%E3%80%81IIS"><span class="toc-text">3.3.1 Apache、Nginx、IIS</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3-3-2-Tomcat%E5%8F%8A%E5%B8%B8%E8%A7%81%E7%9A%84JavaEE%E5%BA%94%E7%94%A8%E6%9C%8D%E5%8A%A1%E5%99%A8"><span class="toc-text">3.3.2 Tomcat及常见的JavaEE应用服务器</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3-3-3-Nginx-Tomcat%E7%9A%84WEB%E5%BA%94%E7%94%A8%E6%9C%8D%E5%8A%A1%E5%99%A8-%E9%9B%86%E7%BE%A4"><span class="toc-text">3.3.3 Nginx + Tomcat的WEB应用服务器(集群)</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%94%E3%80%81iOS%E7%9A%84%E5%AE%B9%E5%99%A8%E5%8C%96"><span class="toc-text">五、iOS的容器化</span></a></li></ol>
+        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E3%80%81%E5%AE%B9%E5%99%A8"><span class="toc-text">一、容器</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-1-%E5%AE%9A%E4%B9%89"><span class="toc-text">1.1 定义</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8C%E3%80%81Linux%E5%AE%B9%E5%99%A8%E4%B8%8EDocker%E5%AE%B9%E5%99%A8"><span class="toc-text">二、Linux容器与Docker容器</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#2-1-%E8%AF%9E%E7%94%9F%E8%83%8C%E6%99%AF%E2%80%94%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AE%E7%9A%84%E9%9A%BE%E9%A2%98"><span class="toc-text">2.1 诞生背景—环境配置的难题</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-2-%E8%99%9A%E6%8B%9F%E6%9C%BA"><span class="toc-text">2.2 虚拟机</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-3-Linux%E5%AE%B9%E5%99%A8"><span class="toc-text">2.3 Linux容器</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#2-3-1-%E5%AE%9A%E4%B9%89"><span class="toc-text">2.3.1 定义</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2-3-2-%E4%BC%98%E5%8A%BF"><span class="toc-text">2.3.2 优势</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2-3-3-%E4%BD%BF%E7%94%A8"><span class="toc-text">2.3.3 使用</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-4-Docker%E5%AE%B9%E5%99%A8"><span class="toc-text">2.4 Docker容器</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#2-4-1-%E6%A6%82%E8%BF%B0"><span class="toc-text">2.4.1 概述</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2-4-2-%E7%94%A8%E9%80%94"><span class="toc-text">2.4.2 用途</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2-4-3-%E9%95%9C%E5%83%8FImage"><span class="toc-text">2.4.3 镜像Image</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#1-%E5%BC%95%E8%87%AADocker%E7%BD%91%E7%AB%99"><span class="toc-text">1) 引自Docker网站</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#2-%E5%BC%95%E8%87%AA%E9%98%AE%E4%B8%80%E5%B3%B0"><span class="toc-text">2) 引自阮一峰</span></a></li></ol></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-5-%E5%AE%B9%E5%99%A8%E4%B8%8E%E8%99%9A%E6%8B%9F%E6%9C%BA%E7%9A%84%E5%8C%BA%E5%88%AB"><span class="toc-text">2.5 容器与虚拟机的区别</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-6-%E5%AE%B9%E5%99%A8%E5%8C%96%E7%9A%84%E4%BC%98%E5%8A%BF"><span class="toc-text">2.6 容器化的优势</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%89%E3%80%81%E6%9C%8D%E5%8A%A1%E5%99%A8%E4%B8%8E%E5%AE%B9%E5%99%A8"><span class="toc-text">三、服务器与容器</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#3-1-%E6%9C%8D%E5%8A%A1%E5%99%A8-server"><span class="toc-text">3.1 服务器(server)</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#3-1-1-%E4%BD%9C%E4%B8%BA%E7%A1%AC%E4%BB%B6"><span class="toc-text">3.1.1 作为硬件</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3-1-2-%E4%BD%9C%E4%B8%BA%E8%BD%AF%E4%BB%B6"><span class="toc-text">3.1.2 作为软件</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-2-%E5%AE%B9%E5%99%A8"><span class="toc-text">3.2 容器</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#3-2-1-Servlet%E5%AE%B9%E5%99%A8"><span class="toc-text">3.2.1 Servlet容器</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3-2-2-Java-WEB%E5%AE%B9%E5%99%A8"><span class="toc-text">3.2.2 Java WEB容器</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3-2-3-Java-EE%E5%AE%B9%E5%99%A8"><span class="toc-text">3.2.3 Java EE容器</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-3-%E4%B8%BE%E4%BE%8B%E8%AF%B4%E6%98%8E%E5%AE%B9%E5%99%A8%E4%B8%8E%E6%9C%8D%E5%8A%A1%E5%99%A8%E7%9A%84%E8%81%94%E7%B3%BB"><span class="toc-text">3.3 举例说明容器与服务器的联系</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#3-3-1-Apache%E3%80%81Nginx%E3%80%81IIS"><span class="toc-text">3.3.1 Apache、Nginx、IIS</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3-3-2-Tomcat%E5%8F%8A%E5%B8%B8%E8%A7%81%E7%9A%84JavaEE%E5%BA%94%E7%94%A8%E6%9C%8D%E5%8A%A1%E5%99%A8"><span class="toc-text">3.3.2 Tomcat及常见的JavaEE应用服务器</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3-3-3-Nginx-Tomcat%E7%9A%84WEB%E5%BA%94%E7%94%A8%E6%9C%8D%E5%8A%A1%E5%99%A8-%E9%9B%86%E7%BE%A4"><span class="toc-text">3.3.3 Nginx + Tomcat的WEB应用服务器(集群)</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%94%E3%80%81iOS%E7%9A%84%E5%AE%B9%E5%99%A8%E5%8C%96"><span class="toc-text">五、iOS的容器化</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%AD%E3%80%81%E5%B0%8F%E7%BB%93"><span class="toc-text">六、小结</span></a></li></ol>
     </div>
     
     <div class="back-top iconfont-archer">&#xe639;</div>
@@ -904,9 +922,38 @@ top:40vh;
     
     
     
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
     <div class="total-and-search">
         <div class="total-archive">
-        Total : 8
+        Total : 11
         </div>
         <!-- search  -->
         
@@ -926,7 +973,22 @@ top:40vh;
     
     
         <li class="archive-post-item">
-            <span class="archive-post-date">04/29</span><a class="archive-post-title" href= "/2021/04/29/06_Corss-Platform/" >从Hybrid到RN，再到Flutter</a>
+            <span class="archive-post-date">05/27</span><a class="archive-post-title" href= "/2021/05/27/09_Fiber/" >[转]最通俗的 React Fiber(时间分片)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/27</span><a class="archive-post-title" href= "/2021/05/27/08_Coroutine/" >[转]什么是协程</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/30</span><a class="archive-post-title" href= "/2021/04/30/07_Common-Programming-Paradigm/" >常见的编程范式知识点汇总</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/29</span><a class="archive-post-title" href= "/2021/04/29/06_Corss-Platform/" >iOS中的工程化</a>
         </li>
     
     
@@ -975,9 +1037,13 @@ top:40vh;
     
         <span class="sidebar-tag-name" data-tags="多线程"><span class="iconfont-archer">&#xe606;</span>多线程</span>
     
+        <span class="sidebar-tag-name" data-tags="协程"><span class="iconfont-archer">&#xe606;</span>协程</span>
+    
         <span class="sidebar-tag-name" data-tags="Docker"><span class="iconfont-archer">&#xe606;</span>Docker</span>
     
         <span class="sidebar-tag-name" data-tags="RunLoop"><span class="iconfont-archer">&#xe606;</span>RunLoop</span>
+    
+        <span class="sidebar-tag-name" data-tags="Fiber"><span class="iconfont-archer">&#xe606;</span>Fiber</span>
     
         <span class="sidebar-tag-name" data-tags="interview"><span class="iconfont-archer">&#xe606;</span>interview</span>
     
@@ -1016,13 +1082,17 @@ jsonContent:
     
         <span class="sidebar-category-name" data-categories="软件工程-化"><span class="iconfont-archer">&#xe60a;</span>软件工程-化</span>
     
-        <span class="sidebar-category-name" data-categories="操作系统"><span class="iconfont-archer">&#xe60a;</span>操作系统</span>
+        <span class="sidebar-category-name" data-categories="OS"><span class="iconfont-archer">&#xe60a;</span>OS</span>
     
-        <span class="sidebar-category-name" data-categories="跨平台"><span class="iconfont-archer">&#xe60a;</span>跨平台</span>
+        <span class="sidebar-category-name" data-categories="工程化"><span class="iconfont-archer">&#xe60a;</span>工程化</span>
+    
+        <span class="sidebar-category-name" data-categories="编程范式"><span class="iconfont-archer">&#xe60a;</span>编程范式</span>
     
         <span class="sidebar-category-name" data-categories="容器化"><span class="iconfont-archer">&#xe60a;</span>容器化</span>
     
         <span class="sidebar-category-name" data-categories="iOS"><span class="iconfont-archer">&#xe60a;</span>iOS</span>
+    
+        <span class="sidebar-category-name" data-categories="React"><span class="iconfont-archer">&#xe60a;</span>React</span>
     
     </div>
     <div class="iconfont-archer sidebar-categories-empty">&#xe678;</div>
