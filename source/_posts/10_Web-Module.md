@@ -255,64 +255,61 @@ sayHello('kobe');
  */
 ```
 
-- **在node中每一个文件都是一个独立的模块，有自己的作用域**。
+**在node中每一个文件都是一个独立的模块，有自己的作用域**。在一个模块内变量、函数、对象都属于这个模块，对外是封闭的。
 
-- 每个模块(文件)中包括CommonJS规范的核心变量：exports、module、require；
+为了实现模块的导出，Node中使用的是Module的类(提供了一个Module构造函数)，每一个模块都是Module的一个实例，也就是module；
 
-  - module：每个模块内部，都有一个module对象，代表当前模块。module 是一个全局对象，里面保存了模块的信息路径、父子结构信息、曝露出的对象信息。
+每个模块(文件)中都包括CommonJS规范的核心变量：exports、module、require；
 
-    ```js
-    module.id	           //带有绝对路径的模块文件名
-    module.filename      //模块的文件名，带有绝对路径
-    module.loaded	       //表示模块是否已经完成加载
-    module.parent		     //返回一个对象，表示调用该模块的模块。
-    module.children      //返回一个数组，表示该模块要用到的其他模块。
-    module.exports	     //模块对外输出的值。
-    ```
+- module：是一个全局对象，代表当前模块。里面保存了模块的信息路径、父子结构信息、曝露出的对象信息。
 
-  - exports和module.exports可以负责对模块中的内容进行导出；
+  ```js
+  module.id	           //带有绝对路径的模块文件名
+  module.filename      //模块的文件名，带有绝对路径
+  module.loaded	       //表示模块是否已经完成加载
+  module.parent		     //返回一个对象，表示调用该模块的模块。
+  module.children      //返回一个数组，表示该模块要用到的其他模块。
+  module.exports	     //模块对外输出的值。需要打破模块封装性曝露的方法和属性，都要挂载到module.exports上。其它文件加载该模块,实际上就是读取module.exports属性
+  
+  // 在 /Users/computer/Desktop/ccc/lib.js 文件中 console.log(module);
+  Module {
+    id: '.',
+    path: '/Users/computer/Desktop/ccc',
+    exports: { name: 'test' },
+    parent: null,
+    filename: '/Users/computer/Desktop/ccc/main.js',
+    loaded: false,
+    children: [
+      Module {...}
+    ],
+    paths: [ //查找路径
+      '/Users/computer/Desktop/ccc/node_modules',
+      '/Users/computer/Desktop/node_modules',
+      '/Users/computer/node_modules',
+      '/Users/node_modules',
+      '/node_modules'
+    ]
+  }
+  ```
 
-  - require函数可以帮助我们导入其他模块（自定义模块、系统模块、第三方库模块）中的内容；
+- exports是module.exports的引用。一起负责对模块中的内容进行导出；
 
-- 模块作用域：在一个模块内变量、函数、对象都属于这个模块，对外是封闭的。
-- module.exports：模块有封装性，需要打破封装性曝露的方法和属性，要挂载到module.exports
-
-举例：
-
-```js
-// 在 /Users/computer/Desktop/ccc/lib.js 文件中 console.log(module);
-Module {
-  id: '.',
-  path: '/Users/computer/Desktop/ccc',
-  exports: { name: 'test' },
-  parent: null,
-  filename: '/Users/computer/Desktop/ccc/main.js',
-  loaded: false,
-  children: [
-    Module {...}
-  ],
-  paths: [
-    '/Users/computer/Desktop/ccc/node_modules',
-    '/Users/computer/Desktop/node_modules',
-    '/Users/computer/node_modules',
-    '/Users/node_modules',
-    '/node_modules'
-  ]
-}
-```
+- require函数可以帮助我们导入其他模块（自定义模块、系统模块、第三方库模块）中的内容；
 
 在Node.js中，模块分为两类：
 
 - 第一类，系统核心模块(原生模块)，node自带。用名称直接可以加载。
 
-  + fs(file system) 文件操作
-  + http 网络操作
-  + os 提供了与操作系统相关的实用方法和属性
-  + path 路径操作
-  + querystring 查询参数解析
-  + url url解析
+  + fs(file system)：与文件系统交互
+  + http：提供http服务器功能
+  + os：提供了与操作系统相关的实用方法和属性
+  + path：处理文件路径
+  + querystring：解析url查询字符串
+  + url：解析url
+  + util：提供一系列实用小工具
   + Buffer 
   + 等等很多，见[官方文档](http://api.nodejs.cn/)
+  + **核心模块的源码都在Node的lib子目录中。为了提高运行速度，它们安装的时候都会被编译成二进制文件**
 
 - 第二类，文件模块，也称自定义模块。用路径加载。
 
@@ -378,29 +375,17 @@ sayHello('kobe');
 
 - CommonJS中是没有module.exports的概念的；
 - 但是为了实现模块的导出，Node中使用的是Module的类(提供了一个Module构造函数)，每一个模块都是Module的一个实例，也就是module；
-- 所以在Node中**真正用于导出的其实根本不是exports，而是module.exports**；
-- 因为module才是导出的真正实现者；
-
-但是，为什么exports也可以导出呢？
-
-- 这是因为module对象的exports属性是exports对象的一个引用；相当于在每个模块头部，有这样一行命令：`var exports = module.exports;`
-- 也就是说 `module.exports = exports = main中的bar`；
+- **module才是导出的真正实现者；**
+- 所以在Node中**真正用于导出的其实根本不是exports，而是module.exports**。只是为了实现CommonJS的规范，也为了使用方便，Node为每个模块提供了一个exports对象，让其对module.exports有一个引用而已。
+- 相当于在每个模块头部，有这样一行命令：`var exports = module.exports;`
 
 <img src="/images/webmodule/export1.jpg" alt="图片" style="zoom:67%;" />
 
-注意：真正导出的模块内容的核心其实是module.exports，只是为了实现CommonJS的规范，刚好module.exports对exports对象有一个引用而已；
-
-那么，如果我的代码这样修改了：
+**不能直接给exports、module.exports赋值，这样等于切断了exports和module.exports的联系。最终输出的结果只会是module.exports的值**。比如代码这样修改了：
 
 <img src="/images/webmodule/export2.jpg" alt="图片" style="zoom:67%;" />
 
-内存中会有怎么样的表现呢？
-
-- 结论：和exports对象没有任何关系了，exports你随便玩自己的吧；
-- module.exports我现在导出一个自己的对象，不带着你玩了；
-- 新的对象取代了exports对象的导出，那么就意味着require导入的对象是新的对象；
-
-<img src="/images/webmodule/moduleexports.jpg" alt="moduleexports" style="zoom:70%;" />
+<img src="/images/webmodule/moduleexports.jpg" alt="moduleexports" style="zoom:68%;" />
 
 #### 2.2.4 require
 
@@ -408,69 +393,59 @@ sayHello('kobe');
 
 前面已经说过，CommonJS 的一个模块，就是一个脚本文件。
 
-- `require`命令第一次加载模块时，会执行整个模块(脚本文件)中的js代码。然后在内存生成一个对象。
+- CommonJS是同步加载。模块加载的顺序，按照其在代码中出现的顺序
 
-```js
-// aaa.js
-const name = 'coderwhy';
-console.log("Hello aaa");
+- `require`命令第一次加载模块时，会执行整个模块(脚本文件)中的js代码，返回该模块的module.exports接口数据。会在内存生成一个该模块对应的module对象。
 
-setTimeout(() => {
-  console.log("setTimeout");
-}, 1000);
+  ```js
+  // aaa.js
+  const name = 'coderwhy';
+  console.log("Hello aaa");
+  
+  setTimeout(() => {
+    console.log("setTimeout");
+  }, 1000);
+  
+  // main.js
+  const aaa = require('./aaa'); // aaa.js中的代码在引入时会被运行一次
+  ```
 
-// main.js
-const aaa = require('./aaa'); // aaa.js中的代码在引入时会被运行一次
-```
+  生成的对象：
 
-生成的对象：
+  ```javascript
+  {
+    id: '...',  // 模块名
+    exports: { ... },  // 模块输出的各个接口
+    loaded: true,   // 是一个布尔值，为false表示还没有加载，为true表示已经加载完毕。这是保证每个模块只加载、运行一次的关键。
+    ...
+  }
+  ```
 
-```javascript
-{
-  id: '...',
-  exports: { ... },
-  loaded: true,
-  ...
-}
-```
+- 以后需要用到这个模块的时候，就会到`exports`属性上面取值。
+- 模块被多次引入时（多次执行`require`命令），CommonJS 模块**只会在第一次加载时运行一次**，以后再加载，会去缓存中取出第一次加载时生成的module对象并返回module.exports。除非手动清除系统缓存。
 
-上面代码就是 Node 内部加载模块后生成的一个对象。该对象的`id`属性是模块名，`exports`属性是模块输出的各个接口，`loaded`属性是一个布尔值，表示该模块的脚本是否执行完毕。其他还有很多属性，这里都省略了。
-
-以后需要用到这个模块的时候，就会到`exports`属性上面取值。即使再次执行`require`命令，也不会再次执行该模块，而是到缓存之中取值。也就是说，CommonJS 模块无论加载多少次，都只会在第一次加载时运行一次，以后再加载，就返回第一次运行的结果，除非手动清除系统缓存。
-
-- **模块被多次引入时，因为缓存的原因，最终只加载（运行）一次，之后直接返回缓存的值**
-
-```js
-// main.js
-const aaa = require('./aaa');
-const bbb = require('./bbb');
-
-// aaa.js
-const ccc = require("./ccc");
-
-// bbb.js
-const ccc = require("./ccc");
-
-// ccc.js
-console.log('ccc被加载');  // ccc中的代码只会运行一次。
-```
-
-**为什么只会加载运行一次呢？**
-
-- 这是因为每个模块对象module都有一个属性：loaded。
-- 为false表示还没有加载，为true表示已经加载；
+  ```js
+  // main.js
+  const aaa = require('./aaa');
+  const bbb = require('./bbb');
+  
+  // aaa.js
+  const ccc = require("./ccc");
+  
+  // bbb.js
+  const ccc = require("./ccc");
+  
+  // ccc.js
+  console.log('ccc被加载');  // ccc中的代码只会运行一次。
+  ```
 
 ##### 2. require的查找规则
 
-我们现在已经知道，require是一个函数，可以帮助我们引入一个文件（模块）中导入的对象。
+我们现在已经知道，require是一个函数，可以帮助我们引入一个文件（模块）中导出的对象。
 
-那么，require的查找规则是怎么样的呢？
+那么，require的查找规则是怎么样的呢？[官方文档](https://nodejs.org/dist/latest-v14.x/docs/api/modules.html#modules_all_together)
 
-- https://nodejs.org/dist/latest-v14.x/docs/api/modules.html#modules_all_together
-
-**这里我总结比较常见的查找规则：**
-
-导入格式如下：require(X)
+**这里我总结比较常见的查找规则：**导入格式如下：require(X)
 
 - 情况一：X是一个核心模块，比如path、http。直接返回核心模块，并且停止查找
 
@@ -1464,7 +1439,7 @@ export const foo = cjsModule.foo;
 
 上面代码指定`require()`和`import`，加载该模块会自动切换到不一样的入口文件。
 
-## 五、Node.js中的模块化
+## 五、Node.js开发中的模块化
 
 ### 5.1 Node中支持 ES6 Module
 
