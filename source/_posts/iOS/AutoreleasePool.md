@@ -2,7 +2,7 @@
 title: AutoreleasePool
 date: 2021-04-06 19:16:47
 tags:
-    - RunLoop
+    - AutoreleasePool
 categories:
 	- iOS
 ---
