@@ -250,7 +250,7 @@ th {
 }
 
 html {
-    font-size: 16px;
+    font-size: 15px;
     font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, "PingFang SC", "Hiragino Sans GB", STHeiti, "Microsoft YaHei", "Microsoft JhengHei", "Source Han Sans SC", "Noto Sans CJK SC", "Source Han Sans CN", "Noto Sans SC", "Source Han Sans TC", "Noto Sans CJK TC", "WenQuanYi Micro Hei", SimSun, sans-serif;
     overflow-x: hidden
 }
@@ -288,7 +288,8 @@ body {
     min-width: 42.8125rem;
     flex-grow: 0;
     padding: 0 0 0 0;
-    margin-left: 3rem
+    margin-left: 3rem;
+    font-size:15px
 }
 
 .container {
@@ -325,8 +326,8 @@ li {
 .back-top {
     position: fixed;
     display: block;
-    left: 1rem;
-    bottom: 1rem;
+    right: 2rem;
+    bottom: 2rem;
     z-index: 10;
     opacity: 0;
     width: 1.5rem;
@@ -335,7 +336,8 @@ li {
     line-height: 1.5rem;
     border: 2px solid #000;
     background-color: rgba(255, 255, 255, 0.8);
-    cursor: pointer
+    cursor: pointer;
+    z-index: 9997
 }
 
 .back-top:hover {
@@ -1644,10 +1646,11 @@ html::-webkit-scrollbar-track:hover,
 .abstract-content code,
 .article-entry code {
     background: #eee;
-    padding: 1px 0.4rem;
+    padding: 1px 0.3rem;
     border-radius: 2px;
     margin: 0 0.2rem;
-    border: none
+    border: none;
+    font-size: 0.9em
 }
 
 .abstract-content pre code,
@@ -2014,8 +2017,8 @@ html::-webkit-scrollbar-track:hover,
 .sidebar-tags-name,
 .sidebar-categories-name {
     flex-grow: 0;
-    width: 100%;
-    padding: 0 0 1rem 0;
+    width: 97%;
+    padding: 0 0 1rem 3%;
     max-height: 28rem;
     overflow: auto
 }
@@ -2023,8 +2026,11 @@ html::-webkit-scrollbar-track:hover,
 .sidebar-tag-name,
 .sidebar-category-name {
     display: inline-block;
-    border: 1px solid #fff;
-    border-radius: 5rem;
+    width: 42%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    /*border:1px solid #fff;
+    border-radius:5rem;*/
     padding: 0.07rem 0.4rem 0.1rem 0.4rem;
     margin: 0.2rem 0;
     white-space: nowrap;
@@ -2526,17 +2532,27 @@ html::-webkit-scrollbar-track:hover,
 }
 
 .abstract-content ul,
-.abstract-content ul li,
-.article-entry ul,
-.article-entry ul li {
+.abstract-content ul li {
     list-style-type: initial
 }
 
+.article-entry ul,
+.article-entry ul li {
+    list-style-type: initial;
+    margin: 4px 0;
+    line-height: 1.5rem
+}
+
 .abstract-content ol,
-.abstract-content ol li,
+.abstract-content ol li {
+    list-style-type: decimal-leading-zero
+}
+
 .article-entry ol,
 .article-entry ol li {
-    list-style-type: decimal-leading-zero
+    list-style-type: decimal;
+    margin: 4px 0;
+    line-height: 1.5rem
 }
 
 .abstract-content h1:first-child,
@@ -2703,7 +2719,7 @@ html::-webkit-scrollbar-track:hover,
     right: 1%;
     overflow: hidden;
     max-width: calc((100% - 42.8125rem - 4rem) / 2);
-    z-index: 9997;
+    z-index: 9996;
     margin: calc(3.5rem + 1rem) 0 0 0;
     transform: translate3d(0, 0, 0);
     transition: transform 0.3s ease-out 0s
@@ -2855,4 +2871,10 @@ html::-webkit-scrollbar-track:hover,
 
 .social .jianshu:hover::before {
     color: #ea6f5a
+}
+
+.profile-disclaimer {
+  font-size: 0.7rem; 
+  text-align: center; 
+  margin-top: 1rem;
 }

@@ -28,4 +28,9 @@
             <a href = "<%- url_for("/about") %>" >ABOUT ME</a>
         </div>
     <% } %>
+    <% if(theme.disclaimer && theme.disclaimer.length !== 0) {%>
+        <div class="profile-disclaimer">
+            <%= theme.disclaimer %>
+        </div>
+    <% } %>
 </div>

@@ -4,7 +4,7 @@ avatar: /avatar/avatar.png
 # author name
 author: Tenloy
 # signature
-signature: iOS Developer
+signature: 一个努力自律，希望能自由的 iOS Developer.
 # SNS (you can custom the order)
 social:
   email: luotengoto@163.com
@@ -34,6 +34,8 @@ friends:
 about:
   enable: false
   image: '/intro/about-bg.jpg'
+# disclaimer
+disclaimer: 按自己的记忆方式结构化记录下学习的知识。空间中有些内容非原创，基本都会注明出处，如有侵犯，烦请联系我删除，谢谢。
 
 # ========== Site ========== #
 # title of the site (good for SEO)
@@ -113,7 +115,7 @@ CNZZ_analytics:
 # favicon
 favicon: /assets/favicon.ico
 # truncate length of abstracts in index page (the default is 300, there will be no abstruct if you input 0)
-truncate_length: 100
+truncate_length: 120
 # enable toc
 toc: true
 # word count & reading time
