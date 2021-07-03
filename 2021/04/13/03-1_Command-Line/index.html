@@ -1,0 +1,1443 @@
+<!DOCTYPE html>
+<html lang="en">
+    <!-- title -->
+
+
+
+
+<!-- keywords -->
+
+
+
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" >
+    <meta name="author" content="Tenloy">
+    <meta name="renderer" content="webkit">
+    <meta name="copyright" content="Tenloy">
+    
+    <meta name="keywords" content="Tenloy,iOS,Swift">
+    
+    <meta name="description" content="学习 生活 记录 回忆">
+    <meta name="description" content="命令行界面已经使用了很久，平时也有很多常用的命令行工具，但是对一些相关的概念(终端、Shell、命令、脚本等)却一直有些似懂非懂，今天记录一下，一是梳理自己的思路，二也是希望能对读到这篇博客的人有所帮助。  命令行界面(CLI)和命令(行) —— 是一种页面交互风格，对比于GUI 终端(Terminal) —— 人与机器交互的接口，负责数据的输入与输出 现在的一些叫法名词(本小节可只看这一段) 历">
+<meta property="og:type" content="article">
+<meta property="og:title" content="CLI-Shell-Terminal-脚本概念梳理">
+<meta property="og:url" content="https://tenloy.github.io/2021/04/13/03-1_Command-Line/index.html">
+<meta property="og:site_name" content="Tenloy&#39;s Blog">
+<meta property="og:description" content="命令行界面已经使用了很久，平时也有很多常用的命令行工具，但是对一些相关的概念(终端、Shell、命令、脚本等)却一直有些似懂非懂，今天记录一下，一是梳理自己的思路，二也是希望能对读到这篇博客的人有所帮助。  命令行界面(CLI)和命令(行) —— 是一种页面交互风格，对比于GUI 终端(Terminal) —— 人与机器交互的接口，负责数据的输入与输出 现在的一些叫法名词(本小节可只看这一段) 历">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://tenloy.github.io/images/OS/CLI/2181780-b141590ef0c0c8aa.png">
+<meta property="og:image" content="https://tenloy.github.io/images/OS/CLI/2181780-878e469efcfcc763.png">
+<meta property="og:image" content="https://tenloy.github.io/images/OS/CLI/2181780-3f00874b5ac917a8.png">
+<meta property="og:image" content="https://tenloy.github.io/images/OS/CLI/2181780-b851c9a27de69622.jpg">
+<meta property="og:image" content="https://tenloy.github.io/images/OS/CLI/2181780-ab038b7a3beed6b0.jpg">
+<meta property="og:image" content="https://tenloy.github.io/images/OS/CLI/2181780-845bfa4fdf6a9bc7.png">
+<meta property="og:image" content="https://tenloy.github.io/images/OS/CLI/2181780-9b4168b70942c326.jpg">
+<meta property="og:image" content="https://tenloy.github.io/images/OS/CLI/2181780-32c55593fee90d0c.png">
+<meta property="article:published_time" content="2021-04-13T15:00:20.000Z">
+<meta property="article:modified_time" content="2021-07-03T15:03:00.603Z">
+<meta property="article:author" content="Tenloy">
+<meta property="article:tag" content="CLI">
+<meta property="article:tag" content="Shell">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://tenloy.github.io/images/OS/CLI/2181780-b141590ef0c0c8aa.png">
+    <meta http-equiv="Cache-control" content="no-cache">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"/>
+    
+    <title>CLI-Shell-Terminal-脚本概念梳理 · Tenloy&#39;s Blog</title>
+    <style type="text/css">
+    @font-face {
+        font-family: 'Oswald-Regular';
+        src: url("/font/Oswald-Regular.ttf");
+    }
+
+    body {
+        margin: 0;
+    }
+
+    header,
+    footer,
+    .back-top,
+    .sidebar,
+    .container,
+    .site-intro-meta,
+    .toc-wrapper {
+        display: none;
+    }
+
+    .site-intro {
+        position: relative;
+        z-index: 3;
+        width: 100%;
+        /* height: 50vh; */
+        overflow: hidden;
+    }
+
+    .site-intro-placeholder {
+        position: absolute;
+        z-index: -2;
+        top: 0;
+        left: 0;
+        width: calc(100% + 300px);
+        height: 100%;
+        background: repeating-linear-gradient(-45deg, #444 0, #444 80px, #333 80px, #333 160px);
+        background-position: center center;
+        transform: translate3d(-226px, 0, 0);
+        animation: gradient-move 2.5s ease-out 0s infinite;
+    }
+
+    @keyframes gradient-move {
+        0% {
+            transform: translate3d(-226px, 0, 0);
+        }
+        100% {
+            transform: translate3d(0, 0, 0);
+        }
+    }
+
+</style>
+
+    <link rel="preload" href= "/css/style.css?v=20180824" as="style" onload="this.onload=null;this.rel='stylesheet'" />
+    <link rel="stylesheet" href= "/css/mobile.css?v=20180824" media="(max-width: 980px)">
+    
+    <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.2.5/jquery.fancybox.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'" />
+    
+    <!-- /*! loadCSS. [c]2017 Filament Group, Inc. MIT License */
+/* This file is meant as a standalone workflow for
+- testing support for link[rel=preload]
+- enabling async CSS loading in browsers that do not support rel=preload
+- applying rel preload css once loaded, whether supported or not.
+*/ -->
+<script>
+(function( w ){
+	"use strict";
+	// rel=preload support test
+	if( !w.loadCSS ){
+		w.loadCSS = function(){};
+	}
+	// define on the loadCSS obj
+	var rp = loadCSS.relpreload = {};
+	// rel=preload feature support test
+	// runs once and returns a function for compat purposes
+	rp.support = (function(){
+		var ret;
+		try {
+			ret = w.document.createElement( "link" ).relList.supports( "preload" );
+		} catch (e) {
+			ret = false;
+		}
+		return function(){
+			return ret;
+		};
+	})();
+
+	// if preload isn't supported, get an asynchronous load by using a non-matching media attribute
+	// then change that media back to its intended value on load
+	rp.bindMediaToggle = function( link ){
+		// remember existing media attr for ultimate state, or default to 'all'
+		var finalMedia = link.media || "all";
+
+		function enableStylesheet(){
+			link.media = finalMedia;
+		}
+
+		// bind load handlers to enable media
+		if( link.addEventListener ){
+			link.addEventListener( "load", enableStylesheet );
+		} else if( link.attachEvent ){
+			link.attachEvent( "onload", enableStylesheet );
+		}
+
+		// Set rel and non-applicable media type to start an async request
+		// note: timeout allows this to happen async to let rendering continue in IE
+		setTimeout(function(){
+			link.rel = "stylesheet";
+			link.media = "only x";
+		});
+		// also enable media after 3 seconds,
+		// which will catch very old browsers (android 2.x, old firefox) that don't support onload on link
+		setTimeout( enableStylesheet, 3000 );
+	};
+
+	// loop through link elements in DOM
+	rp.poly = function(){
+		// double check this to prevent external calls from running
+		if( rp.support() ){
+			return;
+		}
+		var links = w.document.getElementsByTagName( "link" );
+		for( var i = 0; i < links.length; i++ ){
+			var link = links[ i ];
+			// qualify links to those with rel=preload and as=style attrs
+			if( link.rel === "preload" && link.getAttribute( "as" ) === "style" && !link.getAttribute( "data-loadcss" ) ){
+				// prevent rerunning on link
+				link.setAttribute( "data-loadcss", true );
+				// bind listeners to toggle media back
+				rp.bindMediaToggle( link );
+			}
+		}
+	};
+
+	// if unsupported, run the polyfill
+	if( !rp.support() ){
+		// run once at least
+		rp.poly();
+
+		// rerun poly on an interval until onload
+		var run = w.setInterval( rp.poly, 500 );
+		if( w.addEventListener ){
+			w.addEventListener( "load", function(){
+				rp.poly();
+				w.clearInterval( run );
+			} );
+		} else if( w.attachEvent ){
+			w.attachEvent( "onload", function(){
+				rp.poly();
+				w.clearInterval( run );
+			} );
+		}
+	}
+
+
+	// commonjs
+	if( typeof exports !== "undefined" ){
+		exports.loadCSS = loadCSS;
+	}
+	else {
+		w.loadCSS = loadCSS;
+	}
+}( typeof global !== "undefined" ? global : this ) );
+</script>
+
+    <link rel="icon" href= "/assets/favicon.ico" />
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.min.js" as="script" />
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js" as="script" />
+    <link rel="preload" href="/scripts/main.js" as="script" />
+    <link rel="preload" as="font" href="/font/Oswald-Regular.ttf" crossorigin>
+    <link rel="preload" as="font" href="https://at.alicdn.com/t/font_327081_1dta1rlogw17zaor.woff" crossorigin>
+    
+        <!-- algolia -->
+        <script>
+            
+            var hits = JSON.parse('{"per_page":10}')
+            var labels = JSON.parse('{"input_placeholder":"Search for Posts","hits_empty":"没有找到任何搜索结果: ${query}","hits_stats":"找到约${hits}条结果（用时${time}ms）"}')
+
+            var algolia = {
+                applicationID: 'V0HYXBS9FB',
+                apiKey: '6550d5de786935564142097c3e78c380',
+                indexName: 'law_blog_index',
+                hits: hits,
+                labels: labels
+            }
+        </script>
+    
+    <!-- fancybox -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.2.5/jquery.fancybox.min.js" defer></script>
+    <!-- 百度统计  -->
+    
+    <!-- 谷歌统计  -->
+    
+<meta name="generator" content="Hexo 5.4.0"><link rel="alternate" href="/atom.xml" title="Tenloy's Blog" type="application/atom+xml">
+</head>
+
+    
+        <body class="post-body">
+    
+    
+<header class="header">
+
+    <div class="read-progress"></div>
+    <div class="header-sidebar-menu">&#xe775;</div>
+    <!-- post页的toggle banner  -->
+    
+    <div class="banner">
+            <div class="blog-title">
+                <a href="/" >Tenloy&#39;s Blog</a>
+            </div>
+            <div class="post-title">
+                <a href="#" class="post-name">CLI-Shell-Terminal-脚本概念梳理</a>
+            </div>
+    </div>
+    
+    <!-- 将home-link的操作改为应用到header-top-right上 -->
+    <div class="header-top-right">
+        <!-- search  -->
+        
+            <div class="site-search popup-trigger tl-search">
+                <span class="iconfont-jian tl-search-icon">&#xe7fc;搜索</span>
+            </div>
+            
+        <a class="home-link" href=/>Tenloy's Blog</a>
+    </div>
+</header>
+    <div class="wrapper">
+        <div class="site-intro" style="
+
+
+
+
+
+
+
+height:40vh;
+">
+    
+    <!-- 主页  -->
+    
+    
+    <!-- 404页  -->
+            
+    <div class="site-intro-placeholder"></div>
+    <div class="site-intro-img" style="background-image: url(/intro/post-bg.jpg)"></div>
+    <div class="site-intro-meta">
+        <!-- 标题  -->
+        <h1 class="intro-title">
+            <!-- 主页  -->
+            
+            CLI-Shell-Terminal-脚本概念梳理
+            <!-- 404 -->
+            
+        </h1>
+        <!-- 副标题 -->
+        <p class="intro-subtitle">
+            <!-- 主页副标题  -->
+            
+            
+            <!-- 404 -->
+            
+        </p>
+        <!-- 文章页meta -->
+        
+            <div class="post-intros">
+                <!-- 文章页标签  -->
+                
+                    <div class= post-intro-tags >
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags = "CLI">CLI</a>
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags = "Shell">Shell</a>
+    
+</div>
+                
+                
+                    <div class="post-intro-read">
+                        <span>Word count: <span class="post-count word-count">8.1k</span>Reading time: <span class="post-count reading-time">28 min</span></span>
+                    </div>
+                
+                <div class="post-intro-meta">
+                    <span class="post-intro-calander iconfont-archer">&#xe676;</span>
+                    <span class="post-intro-time">2021/04/13</span>
+                    
+                    <span id="busuanzi_container_page_pv" class="busuanzi-pv">
+                        <span class="iconfont-archer">&#xe602;</span>
+                        <span id="busuanzi_value_page_pv"></span>
+                    </span>
+                    
+                    <span class="shareWrapper">
+                        <span class="iconfont-archer shareIcon">&#xe71d;</span>
+                        <span class="shareText">Share</span>
+                        <ul class="shareList">
+                            <li class="iconfont-archer share-qr" data-type="qr">&#xe75b;
+                                <div class="share-qrcode"></div>
+                            </li>
+                            <li class="iconfont-archer" data-type="weibo">&#xe619;</li>
+                            <li class="iconfont-archer" data-type="qzone">&#xe62e;</li>
+                            <li class="iconfont-archer" data-type="twitter">&#xe634;</li>
+                            <li class="iconfont-archer" data-type="facebook">&#xe67a;</li>
+                        </ul>
+                    </span>
+                </div>
+            </div>
+        
+    </div>
+</div>
+        <script>
+ 
+  // get user agent
+  var browser = {
+    versions: function () {
+      var u = window.navigator.userAgent;
+      return {
+        userAgent: u,
+        trident: u.indexOf('Trident') > -1, //IE内核
+        presto: u.indexOf('Presto') > -1, //opera内核
+        webKit: u.indexOf('AppleWebKit') > -1, //苹果、谷歌内核
+        gecko: u.indexOf('Gecko') > -1 && u.indexOf('KHTML') == -1, //火狐内核
+        mobile: !!u.match(/AppleWebKit.*Mobile.*/), //是否为移动终端
+        ios: !!u.match(/\(i[^;]+;( U;)? CPU.+Mac OS X/), //ios终端
+        android: u.indexOf('Android') > -1 || u.indexOf('Linux') > -1, //android终端或者uc浏览器
+        iPhone: u.indexOf('iPhone') > -1 || u.indexOf('Mac') > -1, //是否为iPhone或者安卓QQ浏览器
+        iPad: u.indexOf('iPad') > -1, //是否为iPad
+        webApp: u.indexOf('Safari') == -1, //是否为web应用程序，没有头部与底部
+        weixin: u.indexOf('MicroMessenger') == -1, //是否为微信浏览器
+        uc: u.indexOf('UCBrowser') > -1 //是否为android下的UC浏览器
+      };
+    }()
+  }
+  console.log("userAgent:" + browser.versions.userAgent);
+
+  // callback
+  function fontLoaded() {
+    console.log('font loaded');
+    if (document.getElementsByClassName('site-intro-meta')) {
+      document.getElementsByClassName('intro-title')[0].classList.add('intro-fade-in');
+      document.getElementsByClassName('intro-subtitle')[0].classList.add('intro-fade-in');
+      var postIntros = document.getElementsByClassName('post-intros')[0]
+      if (postIntros) {
+        postIntros.classList.add('post-fade-in');
+      }
+    }
+  }
+
+  // UC不支持跨域，所以直接显示
+  function asyncCb(){
+    if (browser.versions.uc) {
+      console.log("UCBrowser");
+      fontLoaded();
+    } else {
+      WebFont.load({
+        custom: {
+          families: ['Oswald-Regular']
+        },
+        loading: function () {  //所有字体开始加载
+          // console.log('loading');
+        },
+        active: function () {  //所有字体已渲染
+          fontLoaded();
+        },
+        inactive: function () { //字体预加载失败，无效字体或浏览器不支持加载
+          console.log('inactive: timeout');
+          fontLoaded();
+        },
+        timeout: 5000 // Set the timeout to two seconds
+      });
+    }
+  }
+
+  function asyncErr(){
+    console.warn('script load from CDN failed, will load local script')
+  }
+
+  // load webfont-loader async, and add callback function
+  function async(u, cb, err) {
+    var d = document, t = 'script',
+      o = d.createElement(t),
+      s = d.getElementsByTagName(t)[0];
+    o.src = u;
+    if (cb) { o.addEventListener('load', function (e) { cb(null, e); }, false); }
+    if (err) { o.addEventListener('error', function (e) { err(null, e); }, false); }
+    s.parentNode.insertBefore(o, s);
+  }
+
+  var asyncLoadWithFallBack = function(arr, success, reject) {
+      var currReject = function(){
+        reject()
+        arr.shift()
+        if(arr.length)
+          async(arr[0], success, currReject)
+        }
+
+      async(arr[0], success, currReject)
+  }
+
+  asyncLoadWithFallBack([
+    "https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.min.js", 
+    "https://cdn.bootcss.com/webfont/1.6.28/webfontloader.js",
+    "/lib/webfontloader.min.js"
+  ], asyncCb, asyncErr)
+</script>        
+        <img class="loading" src="/assets/loading.svg" style="display: block; margin: 6rem auto 0 auto; width: 6rem; height: 6rem;" />
+        <div class="container container-unloaded">
+            <main class="main post-page">
+    <article class="article-entry">
+        <p><strong>命令行界面</strong>已经使用了很久，平时也有很多常用的<strong>命令行工具</strong>，但是对一些相关的概念(终端、Shell、命令、脚本等)却一直有些似懂非懂，今天记录一下，一是梳理自己的思路，二也是希望能对读到这篇博客的人有所帮助。</p>
+<ul>
+<li>命令行界面(CLI)和命令(行) —— 是一种页面交互风格，对比于GUI</li>
+<li>终端(Terminal) —— 人与机器交互的接口，负责数据的输入与输出<ul>
+<li>现在的一些叫法名词(<strong>本小节可只看这一段</strong>)</li>
+<li>历史：起源、字符终端（哑终端、智能终端）、图形终端</li>
+<li>现代：终端模拟器(Terminal Emulator)</li>
+<li>补充：控制台、TTY、终端服务器</li>
+</ul>
+</li>
+<li>Shell —— Shell是一种程序，对OS内核提供的服务进行包装，给用户使用</li>
+<li>Shell与终端的分工 —— 终端负责数据输入输出，Shell负责数据的处理。</li>
+<li>脚本Script —— 实现一些<strong>操作自动化</strong>，目前脚本语言也有多种</li>
+</ul>
+<h2 id="一、命令行界面-CLI-和命令-行"><a href="#一、命令行界面-CLI-和命令-行" class="headerlink" title="一、命令行界面(CLI)和命令(行)"></a>一、命令行界面(CLI)和命令(行)</h2><h3 id="1-1-CLI、GUI是什么？"><a href="#1-1-CLI、GUI是什么？" class="headerlink" title="1.1 CLI、GUI是什么？"></a>1.1 CLI、GUI是什么？</h3><p>是与用户交互的界面的两种风格</p>
+<ul>
+<li><strong>命令行界面CLI(Command-Line Interface)</strong> 是在GUI得到普及之前使用最为广泛的用户界面，通常不支持鼠标，用户通过键盘输入文本指令，计算机接收到指令后，予以执行。也有人称之为<code>字符用户界面</code></li>
+<li><strong>图形用户界面GUI(Graphical User Interface)</strong> 采用图形方式显示（用户可以通过鼠标点击、键盘作为输入）。与早期计算机使用的命令行界面相比，图形界面对于用户来说在视觉上更易于接受，学习成本大幅下降，也让计算机的大众化得以实现。</li>
+</ul>
+<p>Bash命令行界面图例：</p>
+<img src="/images/OS/CLI/2181780-b141590ef0c0c8aa.png" style="zoom:100%">
+
+<p>因为，命令行界面的软件通常需要用户记忆操作的命令，所以<strong>操作起来不那么方便</strong>，但是，由于其本身的特点，命令行界面要较图形用户界面<strong>节约计算机系统的资源(GUI要保证界面渲染得易于接收)<strong>。在熟记命令的前提下，使用命令行界面往往要较使用图形用户界面的</strong>操作速度要快</strong>。</p>
+<p>所以，现在的操作系统中，虽然很注重图形用户界面，提供了好看好用的GUI Shell，但却都没有因而停止提供文字模式的命令行操作方式(CLI Shell)，相反的，许多系统反而更加强这部分的功能</p>
+<h3 id="1-2-命令"><a href="#1-2-命令" class="headerlink" title="1.2 命令"></a>1.2 命令</h3><p><strong>CLI程序区别于GUI程序的是：后者提供给用户的使用(输入)方式是点击、输入即可，输出的结果也是形象生成的图形，而CLI程序提供给用户的是一条条命令，用户通过键盘输入命令、参数来使用功能，结果是以一系列的字符形式输出</strong></p>
+<ul>
+<li>命令提示符<ul>
+<li>命令提示符是操作系统在CLI界面上向用户提供的一种提示标志。命令提示符有两重含义：一是标志着上一条命令的结束; 二是标志着可以启动运行下一条命令。</li>
+<li>比如DOS中的<code>C&gt;</code>、UNIX中的<code>¥</code>或<code>%</code>、Mac OS中的<code>$</code></li>
+</ul>
+</li>
+<li>命令(行)<ul>
+<li>通常把在命令提示符后打入的程序名和其参数称为命令行(到回车为止)或命令。</li>
+<li>任一命令行(即任一条命令)的本质都是 申请某一程序执行</li>
+<li><strong>交互式命令</strong>：与用户进行交互。比如shell等待你的输入，并且执行你提交的命令</li>
+<li><strong>非交互式命令</strong>：不存在进行交互，而是读取存放在文件中的命令，并且执行它们。当它读到文件的结尾，命令也就终止了。</li>
+</ul>
+</li>
+</ul>
+<p>OS提供了一组不同操作命令组成的集合，每个命令实现用户所要求的不同功能，为用户提供相应的服务。另外自己也可以基于内核提供的一些系统调用开发一些命令行工具。</p>
+<p>命令行的执行过程：</p>
+<img src="/images/OS/CLI/2181780-878e469efcfcc763.png" style="zoom:80%">
+
+<h3 id="1-3-常见的CLI程序"><a href="#1-3-常见的CLI程序" class="headerlink" title="1.3 常见的CLI程序"></a>1.3 常见的CLI程序</h3><ul>
+<li>CLI Shell<ul>
+<li>bash/sh/ksh/csh/zsh（Unix-like系统）</li>
+<li>COMMAND.COM（MS-DOS系统）</li>
+<li>cmd.exe/命令提示符（Windows NT和Windows CE系统）</li>
+<li>Windows PowerShell（支持.NET Framework技术的Windows NT系统）</li>
+</ul>
+</li>
+<li>此外，还有一些个人开发的、很好用的CLI工具</li>
+</ul>
+<h2 id="二、Shell"><a href="#二、Shell" class="headerlink" title="二、Shell"></a>二、Shell</h2><p>指<strong>操作系统中为用户提供访问内核所提供之服务的程序</strong>，因此与之相对的是内核(Kernel)，内核管理着整台计算机的硬件（硬盘、显卡、网卡、CPU等），是现代操作系统中最基本的部分。但是，内核处于系统的底层，是不能让普通用户随意操作，所以内核不提供和用户的交互功能。</p>
+<img src="/images/OS/CLI/2181780-3f00874b5ac917a8.png" style="zoom:80%">
+
+<h3 id="2-1-Shell-分类"><a href="#2-1-Shell-分类" class="headerlink" title="2.1 Shell 分类"></a>2.1 Shell 分类</h3><ul>
+<li>CLI Shell(命令行式的用户交互界面)，CLI Shell出现的很早，是传统意义上的shell，<strong>如果不特别注明，shell一般都是指 CLI Shell</strong>。</li>
+<li>GUI Shell(图形化的用户交互界面)，GUI通常会建构在视窗系统上。（视窗系统是以使用视窗作为主要特征之一的图形用户接口的构成组件。更为明确地说，它是桌面环境的构成组件）</li>
+</ul>
+<p><strong>不管是GUI shell 还是命令行 Shell，其实都是在解释命令，只不过GUI shell隐藏解释命令细节，用户通过点击鼠标的操作操作内核命令。所以Shell本质上就是个命令解释器。</strong></p>
+<h3 id="2-2-CLI-Shell的发展"><a href="#2-2-CLI-Shell的发展" class="headerlink" title="2.2 CLI Shell的发展"></a>2.2 CLI Shell的发展</h3><p>不同的GUI Shell提供给用户不同的界面风格、操作方式，不同的 CLI Shell也会提供给用户不同风格的命令语法：除非我们需要编写shell脚本，普通用户一般很难发现不同shell脚本语言差异。对文件操作ls、pwd等等这些常用命令所有shell都一样支持。</p>
+<p><a target="_blank" rel="noopener" href="https://links.jianshu.com/go?to=http://www.howtoip.com/htg-explains-what-are-the-differences-between-linux-shells/">Bash，Zsh和其他Linux Shell之间有什么区别？</a></p>
+<ul>
+<li><code>Thompson Shell</code>：是第一个shell环境，在贝尔实验室开发并于1971年发布。Shell环境一直在基于这个概念，添加了各种新功能，功能和速度的改进</li>
+<li><code>C shell(csh)</code>：发布于1978年，它添加了许多交互式元素，用户可以控制他们的系统，如别名（长命令的快捷方式），作业管理能力，命令历史等。</li>
+<li><code>Bourne Shell(sh)</code>：被称作现代Shell最突出的祖先，发布于1979年，它成为Unix中的默认命令解释器，因为它支持命令替换，管道，变量，条件测试和循环，以及其他功能。 它没有为用户提供太多的定制，并且不支持像别名，命令完成和shell函数这样的现代化的细节。</li>
+<li><code>tcsh</code>、<code>ksh</code>：随着时间的推移，很多人修复了bug，并向C shell添加了功能，最终导致了csh的改进版本，称为“<code>tcsh</code>”。 但是csh在基于Unix的计算机上仍然是默认的，并且添加了一些非标准的功能。 贝尔实验室的David Korn致力于<code>KornShell</code>或“<code>ksh</code>”，它试图通过向后兼容Bourne shell的语言来改进这种情况，但增加了csh shell的许多功能。 它在1983年发布，但是根据专有许可。 它不是自由软件，直到2000年代，当它发布了各种开源许可证。</li>
+<li><code>Bash</code>：是Bourne shell的后继兼容版本与开放源代码版本，于1989年发布第一个正式版本，原先是计划用在GNU操作系统上，但能运行于大多数[类Unix系统的操作系统之上，包括Linux与Mac OS X v10.4都将它作为默认shell。</li>
+<li><code>ash</code></li>
+<li><code>dash</code>：设计是符合POSIX的和轻量级的，所以它比Bash快，但不会有所有的功能</li>
+<li><code>Z shell(zsh)</code>：目前非常流行，1990年创建的，它是一个Bourne风格的shell。这个较新的shell与bash兼容，但包括更多的功能。 zsh shell提供内置的拼写校正，改进的命令行完成，充当shell插件的可加载模块，允许您在命令行上别名文件名或其他任何东西的全局别名，而不仅仅是命令，以及更多主题支持。 它像bash，但有很多附加功能，附加功能和可配置选项，你可能会喜欢，如果你在命令行上花费大量的时间。<pre><code>如果你熟悉bash，你可以切换到zsh，而不学习不同的语法，你只会获得额外的功能。
+</code></pre>
+</li>
+<li><code>fish</code>：更新的一个shell，2005年发布，它有一个独特的命令行语法，旨在更容易学习，但不是从Bourne shell或C shell派生。</li>
+</ul>
+<h3 id="2-3-不同操作系统的Shell举例"><a href="#2-3-不同操作系统的Shell举例" class="headerlink" title="2.3 不同操作系统的Shell举例"></a>2.3 不同操作系统的Shell举例</h3><p>Unix：第一个Unix壳层(Unix shell)是以Multics上的shell为范本所写出的Thompson shell</p>
+<p>Windows：同时提供了图形壳层、命令行壳层的功能</p>
+<ul>
+<li>Windows 95/98下的command.com</li>
+<li>Windows NT内核下的cmd.exe以及PowerShell</li>
+<li>图形界面壳层即为explorer.exe</li>
+</ul>
+<p>Mac OS：</p>
+<ul>
+<li>macOS开源了内核，而GUI没有开源（否则，可能我们会看到各种“自主知识产权”的，长得像 OS X 的 Linux，以及其他各种不知所谓的 Mod）</li>
+<li>mac的GUI 层又称 Aqua 层，基于 Cocoa，在系统的架构的最顶端，也是直接面向用户和大部分应用程序开发者的层面。</li>
+<li>mac内置的shell壳层有很多(对命令行的支持力度很大)</li>
+</ul>
+<p>Unix/类Unix(Linux、Mac OS等)：</p>
+<ul>
+<li>GUI Shell：X window manager (BlackBox和FluxBox），以及功能更强大的CDE、GNOME、KDE、 XFCE</li>
+<li>CLI Shell：bash / sh / ksh / csh / zsh</li>
+</ul>
+<h3 id="2-4-Shell与Shell脚本"><a href="#2-4-Shell与Shell脚本" class="headerlink" title="2.4 Shell与Shell脚本"></a>2.4 Shell与Shell脚本</h3><ul>
+<li>CLI Shell — Shell脚本</li>
+<li>GUI Shell — GUI软件</li>
+</ul>
+<p>这两对概念之间的关系是有区别：</p>
+<ul>
+<li>前者中Shell脚本是利用CLI Shell提供的命令编写的脚本程序（只能调用Shell提供的命令），CLI Shell充当的是解释器的角色。</li>
+<li>而GUI软件与GUI Shell、CUI Shell更类似于同级的关系，都是基于系统内核提供的一些API进行开发的。</li>
+</ul>
+<h2 id="三、终端-Terminal"><a href="#三、终端-Terminal" class="headerlink" title="三、终端(Terminal)"></a>三、终端(Terminal)</h2><p>终端(Terminal) — 人与机器交互的接口</p>
+<blockquote>
+<p>终端 (Terminal)，其词汇本身的意义为「终点站；末端；（电路）的端子，线接头」。而在计算机领域，终端则是一种用来让用户输入数据至计算机，以及显示其计算结果的机器。</p>
+</blockquote>
+<p>也就是说，<strong>终端只是一种用于与计算机进行交互的输入输出设备，其本身并不提供运算处理功能。</strong></p>
+<h3 id="3-1-现在的一些叫法名词"><a href="#3-1-现在的一些叫法名词" class="headerlink" title="3.1 现在的一些叫法名词"></a>3.1 现在的一些叫法名词</h3><ul>
+<li>在存在真实的物理终端时，一台主机有一个<strong>控制台</strong>，多个<strong>终端</strong>（控制台是一个权限更高的特殊终端）</li>
+<li>最早的终端设备是电传打字机(tty)，后来将<strong>tty作为终端的统称</strong>，有时也指Linux的tty子系统</li>
+<li><strong>终端和控制台都不是目前个人电脑普遍时代的概念，而是多人共用的小型中型大型计算机上的概念。</strong></li>
+<li>我们经常所使用的终端软件，都是<strong>终端模拟器</strong>（真实的终端是硬件）</li>
+<li>终端模拟器有两种：<ul>
+<li>运行在用户态(GUI下的一个软件)——又称<strong>终端窗口</strong>、<strong>伪终端</strong></li>
+<li>运行在内核态——又叫<strong>虚拟控制台</strong></li>
+</ul>
+</li>
+<li>终端模拟器一般都是模拟的字符终端，在里面可以使用CLI程序</li>
+<li>CLI程序有很多：CLI Shell、Shell脚本。区别于GUI软件提供给用户的使用方式是点击、输入。CLI程序提供给用户的是一条条命令，用户通过输入命令、参数来使用功能</li>
+</ul>
+<h3 id="3-2-历史"><a href="#3-2-历史" class="headerlink" title="3.2 历史"></a>3.2 历史</h3><p>起源、字符终端（哑终端、智能终端）、图形终端</p>
+<h4 id="3-2-1-早期的终端"><a href="#3-2-1-早期的终端" class="headerlink" title="3.2.1 早期的终端"></a>3.2.1 早期的终端</h4><p><strong>早期，一台计算机配置多个终端，人们通过终端共享计算资源。</strong></p>
+<p>个人计算机是上世纪70年代末开始出现的。在那之前，是大型机 (Mainframe) 和小型机 (Minicomputer) 的时代，计算机非常昂贵且巨大(<em>Unix创始人肯•汤普逊和丹尼斯•里奇使用的PDP-7小型机当年的价格为72000美元，GE-45大型机价格高达1000万美元</em>)，不像现在这样人手一台。这些笨重的计算机通常被安置在单独的房间内，而操作计算机的人们坐在另外的房间里，通过某些设备与计算机进行交互。这种设备就叫做<strong>终端 (Terminal)，也叫终端机</strong>。</p>
+<p>肯•汤普逊和丹尼斯•里奇想让Unix成为一个<strong>多用户系统</strong>。多用户系统意味着要给每个用户配置一个终端，每个用户都要有一个显示器、一个键盘。但当时所有的计算机设备(包括显示器)价格都非常昂贵，而且键盘和主机是集成在一起的，根本没有独立的键盘。</p>
+<p>最后他们找到了一样东西，那就是ASR33<strong>电传打字机</strong>(<strong>Teletype</strong>)。ASR是英文Automatic Send-Receive的首字母缩写。虽然电传打字机的用途是在电报线路上收发电报，但是它也可以作为人与计算机的接口，而且价格低廉。ASR33打字机的键盘用来输入信息，打印纸用来输出信息。如图：</p>
+<img src="/images/OS/CLI/2181780-b851c9a27de69622.jpg" style="zoom:60%">
+
+<p>以他们把ASR33电传打字机作为终端，很多个ASR33连接到同一个主机，每个用户都可以在终端输入用户名和密码登录主机。这样他们创造了计算机历史上的第一个真正的多用户系统Unix，而ASR33成为第一个Unix终端。</p>
+<h4 id="3-2-2-字符终端（哑终端、智能终端"><a href="#3-2-2-字符终端（哑终端、智能终端" class="headerlink" title="3.2.2 字符终端（哑终端、智能终端)"></a>3.2.2 字符终端（哑终端、智能终端)</h4><p>随着终端的发展，也可以分为不同的种类。</p>
+<p><strong>字符终端</strong>(Character Terminal) 也叫<strong>文本终端</strong>(Text Terminal)，是只能接收和显示文本信息的终端。早期的终端全部是字符终端。</p>
+<p>字符终端也分为<strong>哑终端</strong>(Dumb Terminal) 和所谓的<strong>智能终端</strong>(Intelligent Terminal)，因为后者可以理解转义序列、定位光标和显示位置，比较聪明，而哑终端不行。</p>
+<img src="/images/OS/CLI/2181780-ab038b7a3beed6b0.jpg" style="zoom:60%">
+
+<p>DEC 公司在 1978 年制造的 VT100（DEC VT100 终端，上图），由于其设计良好并且是第一批支持 ANSI 转义序列与光标控制的智能终端，获得了空前的成功。<strong>VT100 不仅是史上最流行的字符终端，更是成为了字符终端事实上的标准</strong>。</p>
+<h4 id="3-2-3-图形终端"><a href="#3-2-3-图形终端" class="headerlink" title="3.2.3 图形终端"></a>3.2.3 图形终端</h4><p>随着技术的进步，图形终端 (Graphical Terminal) 也开始出现在公众的视野中。图形终端不但可以接收和显示文本信息，也可以显示图形与图像。著名的图形终端有 Tektronix 4010 系列。</p>
+<p><strong>不过现在专门的图形终端已经极为少见，他们基本上已经被全功能显示器所取代。</strong></p>
+<h3 id="3-3-现代-终端模拟器"><a href="#3-3-现代-终端模拟器" class="headerlink" title="3.3 现代: 终端模拟器"></a>3.3 现代: 终端模拟器</h3><p>随着图形化界面GUI的兴起，时至今日，图形终端已经完全被全功能视频显示器代替。</p>
+<p>随着个人计算机的进化：</p>
+<ul>
+<li>终端也发生了巨大的变化：从电传打字机(tty)、哑终端、智能终端、图形化终端到现代。现代的终端：<ul>
+<li>输入设备包括键盘、鼠标、麦克风等</li>
+<li>输出设备包括显示器、扬声器等</li>
+</ul>
+</li>
+<li>计算机系统的使用方式也变了：<ul>
+<li>GUI之前，操作系统提供命令，用户通过调用命令完成功能</li>
+<li>GUI后，操作系统的中心转到了图形化界面，用户可以通过鼠标点击来完成很多功能</li>
+</ul>
+</li>
+</ul>
+<p>前面提到过，<strong>GUI软件</strong>好用简单，但<strong>CLI工具</strong>也有其独特的优点，所以很有保留的必要。在现在大部分操作系统默认展示GUI Shell的情况下，CLI工具并不能使用，因为CLI工具通常不支持鼠标，而且不能将输出直接展示在图形化界面上。</p>
+<p><strong>为了能使用那些命令行工具，这时候我们就需要一个程序来模拟传统终端的行为，即终端模拟器 (Terminal Emulator)。(模拟智能终端即可)</strong></p>
+<p>一个终端模拟器的标准工作流程是这样的：</p>
+<ol>
+<li>捕获你的键盘输入；</li>
+<li>将输入发送给命令行程序（程序会认为这是从一个真正的终端设备输入的）；</li>
+<li>拿到命令行程序的输出结果（STDOUT 以及 STDERR）；</li>
+<li>调用图形接口（比如 X11），将输出结果渲染至显示器。</li>
+</ol>
+<p>终端模拟器有很多，这里就举几个经典的例子：</p>
+<ul>
+<li>GNU/Linux：gnome-terminal、Konsole；</li>
+<li>macOS：Terminal.app、iTerm2；</li>
+<li>Windows：Win32 控制台、ConEmu 等。</li>
+</ul>
+<p>终端模拟程序可以模拟任何终端，包括真实终端和虚拟(模拟)终端。但实际上只有四种终端被作为模拟的对象：</p>
+<ul>
+<li>最常见的两个模拟对象：<ul>
+<li>DEC公司1978年制造的VT100终端</li>
+<li>xterm终端模拟程序(xterm模拟的是DEC公司制造的VT102终端)</li>
+</ul>
+</li>
+<li>另外两个不太常见的模拟对象是：<ul>
+<li>DEC公司生产的VT220终端</li>
+<li>用于IBM大型机的3270终端</li>
+</ul>
+</li>
+</ul>
+<p><strong>终端模拟器的两种形式：终端窗口、虚拟控制台</strong></p>
+<ul>
+<li>运行在GUI下(用户态)的终端——又叫<strong>伪终端</strong>、<strong>终端窗口(Terminal Window)</strong><ul>
+<li>比如Mac中的Terminal.app、iTerm2等</li>
+</ul>
+</li>
+<li>运行在内核态的终端——又叫<strong>虚拟控制台(Virtual Console)</strong><ul>
+<li>比如在 GNU/Linux 操作系统中，按下 <code>Ctrl+Alt+F1,F2...F6</code> 等组合键可以切换出好六个黑色背景的全屏字符终端界面，而按下 <code>Ctrl+Alt+F7</code> 才是切换回图形界面</li>
+</ul>
+</li>
+</ul>
+<p>下图就是一个正在显示系统启动信息的虚拟控制台：</p>
+<img src="/images/OS/CLI/2181780-845bfa4fdf6a9bc7.png" style="zoom:80%">
+
+<p>因为终端窗口是跑在图形界面上的，所有如果图形界面宕掉了那它们也就跟着卡死了。当图形终端崩溃时，我们可以按快捷键切换到这六个 Virtual Console的其中一个，然后输入命令修复问题或重启系统，因为它们由内核直接提供，只要系统本身不出问题一般都可用。</p>
+<h3 id="3-4-补充-控制台、TTY、终端服务器"><a href="#3-4-补充-控制台、TTY、终端服务器" class="headerlink" title="3.4 补充: 控制台、TTY、终端服务器"></a>3.4 补充: 控制台、TTY、终端服务器</h3><h4 id="3-4-1-控制台-Console"><a href="#3-4-1-控制台-Console" class="headerlink" title="3.4.1 控制台(Console)"></a>3.4.1 控制台(Console)</h4><blockquote>
+<p>控制台 —— 一个特殊的能直接显示系统消息的终端</p>
+</blockquote>
+<p>控制台与普通终端的区别：</p>
+<ul>
+<li><strong>结构上</strong>：通常终端都是通过线路连接到主机，而控制台与主机是一体的，不需要连线。两者在外表上没什么区别</li>
+<li><strong>功能上</strong>：一台计算机上可以连接很多个终端，但是一般只有一个控制台。控制台是用于管理主机的，只能给系统管理员使用，有着比普通终端更大的权限。比如计算机输出的信息只会显示在控制台上，例如BIOS的输出，内核的输出。</li>
+</ul>
+<p>下图左侧立式的是Console，桌子上的是Terminal：</p>
+<img src="/images/OS/CLI/2181780-9b4168b70942c326.jpg" style="zoom:65%">
+
+<p>随着个人计算机的普及，控制台 (Console) 与终端 (Terminal) 的概念已经逐渐模糊。</p>
+<p>在现代，我们的键盘与显示器既可以认为是控制台，也可以认为是普通的终端。</p>
+<ul>
+<li>当你在管理系统时，它们是Console；</li>
+<li>当你在做一般的工作时(浏览网页、编辑office文档等)，它们是终端。</li>
+<li>自己既是一般用户，也是系统管理员。</li>
+</ul>
+<p><strong>因此，现在 Console 与 Terminal 基本被看作是同义词。</strong></p>
+<h4 id="3-4-2-TTY"><a href="#3-4-2-TTY" class="headerlink" title="3.4.2 TTY"></a>3.4.2 TTY</h4><p>TTY 是 Teletype 或 Teletypewriter 的缩写，原来是指电传打字机，后来这种设备逐渐键盘和显示器取代。不管是电传打字机还是键盘显示器，都是作为计算机的终端设备存在的，所以 TTY 也泛指计算机的终端(terminal)设备。为了支持这些 TTY 设备，Linux 实现了一个叫做 TTY 的子系统。所以 <strong>TTY 既指终端，也指 Linux 的 TTY 子系统</strong>。</p>
+<p>最早的终端(terminal) 是一台独立于计算机的设备(teletype 即, TTY)，通过线缆与计算机连接，并完成计算机的输入输出功能。</p>
+<p><strong>TTY设备</strong></p>
+<p>从历史上看，终端刚开始就是终端机，配有打印机，键盘，带有一个串口，通过串口传送数据到主机端，然后主机处理完交给终端打印出来。电传打字机(teletype)可以被看作是这类设备的统称，因此终端也被简称为 TTY(teletype 的缩写)。</p>
+<img src="/images/OS/CLI/2181780-32c55593fee90d0c.png" style="zoom:90%">
+
+<ul>
+<li><p>UART 驱动</p>
+<p>如上图所示，物理终端通过电缆连接到计算机上的 UART(通用异步接收器和发射器)。操作系统中有一个 UART 驱动程序用于管理字节的物理传输。</p>
+</li>
+<li><p>行规范</p>
+<p>上图中内核中的 Line discipline(行规范)用来提供一个编辑缓冲区和一些基本的编辑命令(退格，清除单个单词，清除行，重新打印)，主要用来支持用户在输入时的行为(比如输错了，需要退格)。</p>
+</li>
+<li><p>TTY 驱动</p>
+<p>TTY 驱动用来进行会话管理，并且处理各种终端设备。</p>
+</li>
+</ul>
+<p><strong>UART 驱动、行规范和 TTY 驱动都位于内核中，它们的一端是终端设备，另一端是用户进程。因为在 Linux 下所有的设备都是文件，所以它们三个加在一起被称为 “TTY 设备”，即我们常说的 TTY。</strong></p>
+<h4 id="3-4-3-终端服务器"><a href="#3-4-3-终端服务器" class="headerlink" title="3.4.3 终端服务器"></a>3.4.3 终端服务器</h4><p>当公司或大学的资金只能买一台大型机或小型机时，所有的终端都直接连到这台主机。随着时间的推移，主机价格逐渐下降，这时一个机构内部有多个主机。如何才能让每个终端都能连接到任何一个主机呢？在各个终端和主机之间牵一根线代价太大，而且线路容易搞混。这时候终端服务器就派上用场了。</p>
+<p>各个终端与终端服务器相连，各个主机也与终端服务器相连。当终端启动时，终端服务器询问用户要登录哪个主机，用户指定主机后，再输入用户名和密码登录相应的主机。这种拓扑结构很像今天的家庭网络，终端服务器相当于路由器。</p>
+<h2 id="四、Shell与终端的分工"><a href="#四、Shell与终端的分工" class="headerlink" title="四、Shell与终端的分工"></a>四、Shell与终端的分工</h2><p>现在我们知道，终端干的活儿是从用户这里接收输入（键盘、鼠标等输入设备），扔给 Shell，然后把 Shell 返回的结果展示给用户（比如通过显示器）。而 Shell 干的活儿是从终端那里拿到用户输入的命令，解析后交给操作系统内核去执行，并把执行结果返回给终端。</p>
+<p>以Mac为例，可以在终端中：</p>
+<ul>
+<li><code>cat /etc/shells</code> ：查看所有的shell，打印如下：<ul>
+<li>/bin/bash、/bin/csh、/bin/ksh、/bin/sh、/bin/tcsh、/bin/zsh</li>
+</ul>
+</li>
+<li><code>echo $SHELL</code> ：查看当前窗口使用的shell版本</li>
+<li><code>cat /etc/passwd | grep sh</code>：查看系统用户默认shell</li>
+<li><code>chsh -s /bin/zsh(bash)</code>：切换终端中使用的Shell</li>
+</ul>
+<p><strong>Shell有多种，终端也有多种，两者是搭配工作的关系，并无固定的对应、依赖配置。</strong></p>
+<p><strong>系统默认会为终端设置一种Shell来解释输入的命令，当编写脚本时，应该指定脚本语言对应的解释器(Shell)，脚本第一行决定了需要启动哪个shell来解释，写法比如<code>#!/bin/bash</code>(#!后紧跟解释后面命令的shell的路径）</strong></p>
+<p>不过 Shell 与终端的分工有一些容易混淆的地方，这里以例子进行说明：</p>
+<ul>
+<li>终端将用户的键盘输入转换为控制序列（除了字符以外的按键，比如 <code>左方向键 → ^[[D</code>），Shell 则解析并执行收到的控制序列（比如 <code>^[[D → 将光标向左移动</code>）；<ul>
+<li>不过也有例外，比如终端在接收到 <code>Ctrl + C</code> 组合键时，不会把这个按键转发给当前的程序，而是会发送一个 <code>SIGINT</code> 信号（默认情况下，这会导致进程终止）。</li>
+<li>其他类似的特殊组合键有 <code>Ctrl-Z</code> 与 <code>Ctrl-\</code> 等，可以通过 <code>stty -a</code> 命令查看当前终端的设置。</li>
+</ul>
+</li>
+<li>Shell 发出类似「把前景色改为红色（控制序列为 <code>\033[31m</code>）」「显示 foo」等指令；终端接收这些指令，并且照着 Shell 说的做，于是你就看到了终端上输出了一行红色的 foo。</li>
+<li>除非被重定向，否则 Shell 永远不会知道它所执行命令的输出结果。我们可以在终端窗口中上下翻页查看过去的输出内容，这完全是终端提供的 feature，与 Shell 没有半毛钱关系；</li>
+<li>命令提示符 (Prompt) 是一个完全的 Shell 概念，与终端无关；</li>
+<li>行编辑、输入历史与自动补全等功能是由 Shell 提供的（比如 fish 这个 Shell 就有着很好用的历史命令与命令自动补全功能）。不过终端也能自己实现这些功能，比如说 XShell 这个终端模拟器就可以在本地写完一行命令，然后整条发送给远程服务器中的 Shell（在连接状况不佳时很有用，不然打个字都要卡半天）；</li>
+<li>终端中的复制粘贴功能（<code>Shift + Insert</code> 或者鼠标右键等）基本上都是由终端提供的。举个例子，Windows 默认的终端对于复制粘贴的支持很屎，而换一个终端（例如 ConEmu）后就可以很好地支持复制粘贴。不过 Shell 以及其他命令行程序也可以提供自己的复制粘贴机制（例如 vim）。</li>
+</ul>
+<h2 id="五、脚本Script"><a href="#五、脚本Script" class="headerlink" title="五、脚本Script"></a>五、脚本Script</h2><h3 id="5-1-概述"><a href="#5-1-概述" class="headerlink" title="5.1 概述"></a>5.1 概述</h3><p>早期，脚本语言经常被称为<a target="_blank" rel="noopener" href="https://links.jianshu.com/go?to=https://zh.wikipedia.org/wiki/%E6%89%B9%E5%A4%84%E7%90%86">批处理</a>语言或<strong>工作控制语言</strong>。百度百科中，也称为<strong>扩建的语言</strong>或<strong>动态语言</strong>。编写出的脚本也只是为了实现一些简单任务的自动化，比如使得本来要用键盘进行的相互式操作自动化。</p>
+<p>比如：一个Shell脚本主要由原本需要在<strong>命令行</strong>输入的命令组成。在一个<strong>文本编辑器</strong>中，用户可以使用脚本来把一些常用的操作组合成一组序列。</p>
+<p>用来书写这种脚本的语言叫做脚本语言。</p>
+<h3 id="5-2-脚本、程序、软件"><a href="#5-2-脚本、程序、软件" class="headerlink" title="5.2 脚本、程序、软件"></a>5.2 脚本、程序、软件</h3><p>脚本(Script)语义较抽象，可以借助script的另一个翻译—剧本来理解：</p>
+<ul>
+<li>脚本：是批处理文件的延伸，是一种纯文本保存的<code>程序</code>，是确定的一系列控制计算机进行运算操作动作的组合(命令集合)<ul>
+<li>这些命令通常会写入一个文件，这个文件就叫脚本文件，类似剧本，说明都做什么</li>
+<li>脚本文件明显小于如同类C程序文件</li>
+<li>语法结构、学习使用通常比较简单</li>
+<li>通常是<strong>解释执行</strong>而非编译</li>
+<li>通常是以<strong>文本(TEXT)格式</strong>保存</li>
+</ul>
+</li>
+<li>程序：是为了完成特定的功能，解决特定的问题而用计算机语言编写的命令序列集合。</li>
+<li>软件：软件工程领域对于软件的定义是程序以及文档的集合体</li>
+</ul>
+<p>不用纠结脚本、解释型语言程序的区别，如果是个纯文本文件、解释执行、代码量不大，功能较简练，可以叫脚本，也可以叫程序。 <strong>脚本和传统编程语言程序之间的界限越来越模糊</strong>。</p>
+<h3 id="5-3-脚本语言及分类"><a href="#5-3-脚本语言及分类" class="headerlink" title="5.3 脚本语言及分类"></a>5.3 脚本语言及分类</h3><h4 id="5-3-1-发展"><a href="#5-3-1-发展" class="headerlink" title="5.3.1 发展"></a>5.3.1 发展</h4><p>脚本语言是为了缩短传统的“编写、编译、链接、运行”过程而创建的计算机编程语言。早期，脚本语言经常被称为<a target="_blank" rel="noopener" href="https://links.jianshu.com/go?to=https://zh.wikipedia.org/wiki/%E6%89%B9%E5%A4%84%E7%90%86">批处理</a>语言或<strong>工作控制语言</strong>。百度百科中，也称为<strong>扩建的语言</strong>或<strong>动态语言</strong>。</p>
+<p>一个脚本通常是<strong>解释运行</strong>而非编译。脚本语言通常都有简单、易学、易用的特性，目的就是希望能让程序员快速完成程序的编写工作。<a target="_blank" rel="noopener" href="https://links.jianshu.com/go?to=https://zh.wikipedia.org/wiki/%E5%AE%8F%E8%AF%AD%E8%A8%80">宏语言</a>则可视为脚本语言的分支，两者也有实质上的相同之处。在许多方面，高级<a target="_blank" rel="noopener" href="https://links.jianshu.com/go?to=https://zh.wikipedia.org/wiki/%E7%BC%96%E7%A8%8B%E8%AF%AD%E8%A8%80">编程语言</a>和脚本语言之间互相交叉，二者之间没有明确的界限。</p>
+<p>现在，虽然许多脚本语言都超越了计算机简单任务自动化的领域，可以<strong>脱离被扩建的程序</strong>单独存在(有自己的运行库、标准语言库函数等)，成熟到可以自己编写精巧的程序，但仍然还是被称为脚本。</p>
+<h4 id="5-3-2-分类"><a href="#5-3-2-分类" class="headerlink" title="5.3.2 分类"></a>5.3.2 分类</h4><p>脚本的使用有很多，时至今日，脚本语言也各种各样。<strong>有脚本，必然有与之对应的解释器</strong>，进而对应的用途也很广泛，根据解释器/用途，可以将脚本语言分为很多种：</p>
+<ul>
+<li><strong>Shell语言</strong> —— 此类脚本用于<strong>自动化工作控制</strong>，即启动和控制系统程序的行为，解释器为<code>CLI Shell</code>。<ul>
+<li><strong>Shell与Shell Script</strong>：<code>Shell</code> 是指一种应用程序，这个应用程序提供了一个界面，用户通过这个界面访问操作系统内核的服务，同时也是<strong>一门语言</strong>，可以编写<strong>shell脚本(script)<strong>，使用Shell来解释执行。</strong>Shell与Shell Script是两个不同的概念，Shell编程是指开发后者，不是指开发Shell本身</strong>。</li>
+<li>常见的比如：C Shell</li>
+</ul>
+</li>
+<li><strong>GUI脚本语言</strong> —— GUI出现带来一种专业的控制计算机的脚本语言。它在用户和图形界面，菜单，按钮等之间互动。它经常用来自动化重复性动作，或设置一个标准状态。理论上它可以用来控制运行于基于GUI的计算机上的所有应用程序，但实际上这些语言是否被支持还要看应用程序和操作系统本身。当通过键盘进行互动时，这些语言也被称为宏语言。</li>
+<li><strong>应用程序定制的脚本语言</strong> —— 许多大型的应用程序都包括根据用户需求而定制的惯用脚本语言。同样地，许多电脑游戏系统使用一种自定义脚本语言来表现NPC和游戏环境的预编程动作。<ul>
+<li>此类语言通常是为一个单独的应用程序所设计，虽然它们貌似一些通用语言（如QuakeC, modeled after C），但它们有自定义的功能。</li>
+</ul>
+</li>
+<li><strong>通用动态语言</strong> —— 一些语言，比如<strong>Perl、PHP、Python、Ruby、Lua、Smalltalk</strong>等，从一门脚本语言发展成了更通用的编程语言。由于“解释执行，内存管理，动态”等特性，它们仍被称为脚本语言。但它们已经用于应用程序编写，用户也不把它们看作脚本语言。</li>
+<li><strong>扩展/可嵌入语言</strong> —— 少数的语言被设计通过嵌入应用程序来取代应用程序定制的脚本语言。开发者（如使用C等其它系统语言）包入使脚本语言可以控制应用程序的hook。<ul>
+<li>这些语言和应用程序定制的脚本语言是同种用途，但优点在于可以在应用程序之间传递一些技能。比如：<strong>JavaScript、Lua、Ch(C/C++ interpreter)、Dao、Tcl</strong></li>
+<li>JavaScript直到现在仍然是网页浏览器内的主要编程语言，它的ECMAScript标准化保证了它成为流行的通用嵌入性语言。</li>
+<li>Tcl作为一种扩展性语言而创建，但更多地被用作通用性语言，就如同Python, Perl, Ruby一样。</li>
+</ul>
+</li>
+</ul>
+<p><strong>脚本语言工作必须依赖对应的解释器，创造一门语言的同时，需要创建(使用已有的)对应的编译器、解释器</strong>。</p>
+<h4 id="参考链接"><a href="#参考链接" class="headerlink" title="参考链接"></a>参考链接</h4><ul>
+<li><a target="_blank" rel="noopener" href="https://links.jianshu.com/go?to=https://www.linuxdashen.com/%E4%BD%A0%E7%9C%9F%E7%9A%84%E7%9F%A5%E9%81%93%E4%BB%80%E4%B9%88%E6%98%AF%E7%BB%88%E7%AB%AF%E5%90%97%EF%BC%9F">你真的知道什么是终端吗？</a></li>
+<li><a target="_blank" rel="noopener" href="https://links.jianshu.com/go?to=https://www.cnblogs.com/sparkdev/p/11460821.html">Linux 终端(TTY)</a></li>
+<li><a target="_blank" rel="noopener" href="https://links.jianshu.com/go?to=https://printempw.github.io/the-difference-between-cli-terminal-shell-tty/">命令行界面 (CLI)、终端 (Terminal)、Shell、TTY，傻傻分不清楚？</a></li>
+<li><a target="_blank" rel="noopener" href="https://links.jianshu.com/go?to=https://zh.wikipedia.org/wiki/%E8%84%9A%E6%9C%AC%E8%AF%AD%E8%A8%80">脚本语言</a></li>
+<li><a target="_blank" rel="noopener" href="https://links.jianshu.com/go?to=http://www.howtoip.com/htg-explains-what-are-the-differences-between-linux-shells/">Bash，Zsh和其他Linux Shell之间有什么区别？</a></li>
+</ul>
+
+    </article>
+    <!-- license  -->
+    
+        <div class="license-wrapper">
+            <p>Author：<a href="https://tenloy.github.io">Tenloy</a>
+            <p>原文链接：<a href="https://tenloy.github.io/2021/04/13/03-1_Command-Line/">https://tenloy.github.io/2021/04/13/03-1_Command-Line/</a>
+            <p>发表日期：2021.04.13 , 3:00 PM</p>
+            <p>更新日期：2021.07.03 , 3:03 PM</p>
+            <p>版权声明：本文采用<a rel="license noopener" target="_blank" href="http://creativecommons.org/licenses/by-nc/4.0/">Crative Commons 4.0 许可协议</a>进行许可</p>
+        </div>
+    
+    <!-- paginator  -->
+    <ul class="post-paginator">
+        <li class="next">
+            
+                <div class="nextSlogan">Next Post</div>
+                <a href= "/2021/04/14/03-2_ISA-Microarch-Soc/" title= "指令集、微架构、手机芯片(Soc)及ARM的介绍">
+                    <div class="nextTitle">指令集、微架构、手机芯片(Soc)及ARM的介绍</div>
+                </a>
+            
+        </li>
+        <li class="previous">
+            
+                <div class="prevSlogan">Previous Post</div>
+                <a href= "/2021/04/12/02_CI-CD/" title= "CI-CD">
+                    <div class="prevTitle">CI-CD</div>
+                </a>
+            
+        </li>
+    </ul>
+    <!-- 评论插件 -->
+    <!-- 来必力City版安装代码 -->
+
+<!-- City版安装代码已完成 -->
+    
+    
+    <!-- gitalk评论 -->
+
+    <!-- utteranc评论 -->
+
+    <!-- partial('_partial/comment/changyan') -->
+    <!--PC版-->
+
+
+    
+    
+
+    <!-- 评论 -->
+</main>
+            <!-- profile -->
+            
+        </div>
+        <footer class="footer footer-unloaded">
+    <!-- social  -->
+    
+    <div class="social">
+        
+    
+        
+            
+                <a href="mailto:luotengoto@163.com" class="iconfont-archer email" title=email ></a>
+            
+        
+    
+        
+            
+                <a href="//github.com/Tenloy" class="iconfont-archer github" target="_blank" title=github></a>
+            
+        
+    
+        
+            
+                <a href="https://www.jianshu.com/u/8db1bc12db9f" class="iconfont-jian jianshu" target="_blank" title=jianshu></a>
+            
+        
+    
+        
+            
+                <a href="/atom.xml" class="iconfont-archer rss" target="_blank" title=rss></a>
+            
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+
+    </div>
+    
+    <!-- powered by Hexo  -->
+    <div class="copyright">
+        <span id="hexo-power">Powered by <a href="https://hexo.io/" target="_blank">Hexo</a></span><span class="iconfont-archer power">&#xe635;</span><span id="theme-info">theme <a href="https://github.com/fi3ework/hexo-theme-archer" target="_blank">Archer</a></span>
+    </div>
+    <!-- 不蒜子  -->
+    
+    <div class="busuanzi-container">
+    
+     
+    <span id="busuanzi_container_site_pv">PV: <span id="busuanzi_value_site_pv"></span> :)</span>
+    
+    </div>
+    
+</footer>
+    </div>
+    <!-- toc -->
+    
+    <div class="toc-wrapper" style=
+    
+
+
+
+
+
+
+
+top:40vh;
+
+    >
+        <div class="toc-catalog">
+            <span class="iconfont-archer catalog-icon">&#xe613;</span><span>CATALOG</span>
+        </div>
+        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E3%80%81%E5%91%BD%E4%BB%A4%E8%A1%8C%E7%95%8C%E9%9D%A2-CLI-%E5%92%8C%E5%91%BD%E4%BB%A4-%E8%A1%8C"><span class="toc-text">一、命令行界面(CLI)和命令(行)</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-1-CLI%E3%80%81GUI%E6%98%AF%E4%BB%80%E4%B9%88%EF%BC%9F"><span class="toc-text">1.1 CLI、GUI是什么？</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-2-%E5%91%BD%E4%BB%A4"><span class="toc-text">1.2 命令</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-3-%E5%B8%B8%E8%A7%81%E7%9A%84CLI%E7%A8%8B%E5%BA%8F"><span class="toc-text">1.3 常见的CLI程序</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8C%E3%80%81Shell"><span class="toc-text">二、Shell</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#2-1-Shell-%E5%88%86%E7%B1%BB"><span class="toc-text">2.1 Shell 分类</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-2-CLI-Shell%E7%9A%84%E5%8F%91%E5%B1%95"><span class="toc-text">2.2 CLI Shell的发展</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-3-%E4%B8%8D%E5%90%8C%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E7%9A%84Shell%E4%B8%BE%E4%BE%8B"><span class="toc-text">2.3 不同操作系统的Shell举例</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-4-Shell%E4%B8%8EShell%E8%84%9A%E6%9C%AC"><span class="toc-text">2.4 Shell与Shell脚本</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%89%E3%80%81%E7%BB%88%E7%AB%AF-Terminal"><span class="toc-text">三、终端(Terminal)</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#3-1-%E7%8E%B0%E5%9C%A8%E7%9A%84%E4%B8%80%E4%BA%9B%E5%8F%AB%E6%B3%95%E5%90%8D%E8%AF%8D"><span class="toc-text">3.1 现在的一些叫法名词</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-2-%E5%8E%86%E5%8F%B2"><span class="toc-text">3.2 历史</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#3-2-1-%E6%97%A9%E6%9C%9F%E7%9A%84%E7%BB%88%E7%AB%AF"><span class="toc-text">3.2.1 早期的终端</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3-2-2-%E5%AD%97%E7%AC%A6%E7%BB%88%E7%AB%AF%EF%BC%88%E5%93%91%E7%BB%88%E7%AB%AF%E3%80%81%E6%99%BA%E8%83%BD%E7%BB%88%E7%AB%AF"><span class="toc-text">3.2.2 字符终端（哑终端、智能终端)</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3-2-3-%E5%9B%BE%E5%BD%A2%E7%BB%88%E7%AB%AF"><span class="toc-text">3.2.3 图形终端</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-3-%E7%8E%B0%E4%BB%A3-%E7%BB%88%E7%AB%AF%E6%A8%A1%E6%8B%9F%E5%99%A8"><span class="toc-text">3.3 现代: 终端模拟器</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-4-%E8%A1%A5%E5%85%85-%E6%8E%A7%E5%88%B6%E5%8F%B0%E3%80%81TTY%E3%80%81%E7%BB%88%E7%AB%AF%E6%9C%8D%E5%8A%A1%E5%99%A8"><span class="toc-text">3.4 补充: 控制台、TTY、终端服务器</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#3-4-1-%E6%8E%A7%E5%88%B6%E5%8F%B0-Console"><span class="toc-text">3.4.1 控制台(Console)</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3-4-2-TTY"><span class="toc-text">3.4.2 TTY</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3-4-3-%E7%BB%88%E7%AB%AF%E6%9C%8D%E5%8A%A1%E5%99%A8"><span class="toc-text">3.4.3 终端服务器</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9B%9B%E3%80%81Shell%E4%B8%8E%E7%BB%88%E7%AB%AF%E7%9A%84%E5%88%86%E5%B7%A5"><span class="toc-text">四、Shell与终端的分工</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%94%E3%80%81%E8%84%9A%E6%9C%ACScript"><span class="toc-text">五、脚本Script</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#5-1-%E6%A6%82%E8%BF%B0"><span class="toc-text">5.1 概述</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-2-%E8%84%9A%E6%9C%AC%E3%80%81%E7%A8%8B%E5%BA%8F%E3%80%81%E8%BD%AF%E4%BB%B6"><span class="toc-text">5.2 脚本、程序、软件</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-3-%E8%84%9A%E6%9C%AC%E8%AF%AD%E8%A8%80%E5%8F%8A%E5%88%86%E7%B1%BB"><span class="toc-text">5.3 脚本语言及分类</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#5-3-1-%E5%8F%91%E5%B1%95"><span class="toc-text">5.3.1 发展</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#5-3-2-%E5%88%86%E7%B1%BB"><span class="toc-text">5.3.2 分类</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%8F%82%E8%80%83%E9%93%BE%E6%8E%A5"><span class="toc-text">参考链接</span></a></li></ol></li></ol></li></ol>
+    </div>
+    
+    <div class="back-top iconfont-archer">&#xe639;</div>
+    <div class="sidebar sidebar-hide">
+    <ul class="sidebar-tabs sidebar-tabs-active-0">
+        <li class="sidebar-tab-archives"><span class="iconfont-archer">&#xe67d;</span><span class="tab-name">Archive</span></li>
+        <li class="sidebar-tab-tags"><span class="iconfont-archer">&#xe61b;</span><span class="tab-name">Tag</span></li>
+        <li class="sidebar-tab-categories"><span class="iconfont-archer">&#xe666;</span><span class="tab-name">Cate</span></li>
+    </ul>
+    <div class="sidebar-content sidebar-content-show-archive">
+          <div class="sidebar-panel-archives">
+    <!-- 在ejs中将archive按照时间排序 -->
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    <div class="total-and-search">
+        <div class="total-archive">
+        Total : 21
+        </div>
+        <!-- search  -->
+        
+            <div class="site-search popup-trigger tl-side-search"> 
+                <span class="iconfont-jian search-icon">&#xe7fc;搜索</span>
+            </div>
+        
+    </div>
+    
+    <div class="post-archive">
+    
+    
+    
+    
+    <div class="archive-year"> 2021 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/29</span><a class="archive-post-title" href= "/2021/06/29/14_GCD/" >深入浅出GCD常用API</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/29</span><a class="archive-post-title" href= "/2021/06/29/14_AutoreleasePool/" >AutoreleasePool</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/28</span><a class="archive-post-title" href= "/2021/06/28/13_RunLoop-Reposted-From-ibireme/" >[转]深入理解RunLoop—ibireme</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/24</span><a class="archive-post-title" href= "/2021/06/24/12_Protocol-Buffer/" >Protocol Buffer的基本介绍</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/22</span><a class="archive-post-title" href= "/2021/06/22/11_dynamic-programming/" >(二) 动态规划算法</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/18</span><a class="archive-post-title" href= "/2021/06/18/10_Web-Module/" >前端各种模块化方案总结</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/27</span><a class="archive-post-title" href= "/2021/05/27/09_Fiber/" >[转]最通俗的 React Fiber(时间分片)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/27</span><a class="archive-post-title" href= "/2021/05/27/08_Coroutine/" >[转]什么是协程</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/29</span><a class="archive-post-title" href= "/2021/04/29/07_Engineering/" >工程化、动态化、容器化、组件化</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/29</span><a class="archive-post-title" href= "/2021/04/29/06_DSL/" >[转]谈谈DSL以及DSL的应用（以CocoaPods 为例）</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/29</span><a class="archive-post-title" href= "/2021/04/29/05_Containers/" >常见的容器概念：Linux容器、Docker容器、服务器容器</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/28</span><a class="archive-post-title" href= "/2021/04/28/04_Dock-Reprinted-from-RuanYIFeng/" >[转]Docker入门教程</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/20</span><a class="archive-post-title" href= "/2021/04/20/03-7_Sync-Async/" >同步和异步解读及编程中的使用场景</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/17</span><a class="archive-post-title" href= "/2021/04/17/03-5_Arm64-Handbook/" >ARM64指令简易手册</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/16</span><a class="archive-post-title" href= "/2021/04/16/03-4_Arm64-Introduce/" >iOS需要了解的ARM64汇编</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/15</span><a class="archive-post-title" href= "/2021/04/15/03-3_Ins-SysCall-Kernel-Shell/" >指令、系统调用、库、Shell、APP的层次关系</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/14</span><a class="archive-post-title" href= "/2021/04/14/03-2_ISA-Microarch-Soc/" >指令集、微架构、手机芯片(Soc)及ARM的介绍</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/13</span><a class="archive-post-title" href= "/2021/04/13/03-1_Command-Line/" >CLI-Shell-Terminal-脚本概念梳理</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/12</span><a class="archive-post-title" href= "/2021/04/12/02_CI-CD/" >CI-CD</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/10</span><a class="archive-post-title" href= "/2021/04/10/01_GithubPages-Hexo/" >使用Hexo+Github Pages搭建个人博客</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/06</span><a class="archive-post-title" href= "/2021/04/06/iOS_Knowledge_Tree/" >iOS-interview</a>
+        </li>
+    
+    </div>
+  </div>
+        <div class="sidebar-panel-tags">
+    <div class="sidebar-tags-name">
+    
+        <span class="sidebar-tag-name" data-tags="hexo"><span class="iconfont-archer">&#xe606;</span>hexo</span>
+    
+        <span class="sidebar-tag-name" data-tags="CI/CD"><span class="iconfont-archer">&#xe606;</span>CI/CD</span>
+    
+        <span class="sidebar-tag-name" data-tags="多线程"><span class="iconfont-archer">&#xe606;</span>多线程</span>
+    
+        <span class="sidebar-tag-name" data-tags="协程"><span class="iconfont-archer">&#xe606;</span>协程</span>
+    
+        <span class="sidebar-tag-name" data-tags="CLI"><span class="iconfont-archer">&#xe606;</span>CLI</span>
+    
+        <span class="sidebar-tag-name" data-tags="Shell"><span class="iconfont-archer">&#xe606;</span>Shell</span>
+    
+        <span class="sidebar-tag-name" data-tags="ISA"><span class="iconfont-archer">&#xe606;</span>ISA</span>
+    
+        <span class="sidebar-tag-name" data-tags="Microarch"><span class="iconfont-archer">&#xe606;</span>Microarch</span>
+    
+        <span class="sidebar-tag-name" data-tags="Soc"><span class="iconfont-archer">&#xe606;</span>Soc</span>
+    
+        <span class="sidebar-tag-name" data-tags="Docker"><span class="iconfont-archer">&#xe606;</span>Docker</span>
+    
+        <span class="sidebar-tag-name" data-tags="DSL"><span class="iconfont-archer">&#xe606;</span>DSL</span>
+    
+        <span class="sidebar-tag-name" data-tags="dp"><span class="iconfont-archer">&#xe606;</span>dp</span>
+    
+        <span class="sidebar-tag-name" data-tags="AutoreleasePool"><span class="iconfont-archer">&#xe606;</span>AutoreleasePool</span>
+    
+        <span class="sidebar-tag-name" data-tags="ARM64"><span class="iconfont-archer">&#xe606;</span>ARM64</span>
+    
+        <span class="sidebar-tag-name" data-tags="RunLoop"><span class="iconfont-archer">&#xe606;</span>RunLoop</span>
+    
+        <span class="sidebar-tag-name" data-tags="ARM手册"><span class="iconfont-archer">&#xe606;</span>ARM手册</span>
+    
+        <span class="sidebar-tag-name" data-tags="Fiber"><span class="iconfont-archer">&#xe606;</span>Fiber</span>
+    
+        <span class="sidebar-tag-name" data-tags="interview"><span class="iconfont-archer">&#xe606;</span>interview</span>
+    
+        <span class="sidebar-tag-name" data-tags="GCD"><span class="iconfont-archer">&#xe606;</span>GCD</span>
+    
+    </div>
+    <div class="iconfont-archer sidebar-tags-empty">&#xe678;</div>
+    <div class="tag-load-fail" style="display: none; color: #ccc; font-size: 0.6rem;">
+    缺失模块。<br/>
+    1、请确保node版本大于6.2<br/>
+    2、在博客根目录（注意不是archer根目录）执行以下命令：<br/>
+    <span style="color: #f75357; font-size: 1rem; line-height: 2rem;">npm i hexo-generator-json-content --save</span><br/>
+    3、在根目录_config.yml里添加配置：
+    <pre style="color: #787878; font-size: 0.6rem;">
+jsonContent:
+  meta: false
+  pages: false
+  posts:
+    title: true
+    date: true
+    path: true
+    text: false
+    raw: false
+    content: false
+    slug: false
+    updated: false
+    comments: false
+    link: false
+    permalink: false
+    excerpt: false
+    categories: true
+    tags: true</pre>
+    </div> 
+    <div class="sidebar-tags-list"></div>
+</div>
+        <div class="sidebar-panel-categories">
+    <div class="sidebar-categories-name">
+    
+        <span class="sidebar-category-name" data-categories="软件工程-化"><span class="iconfont-archer">&#xe60a;</span>软件工程-化</span>
+    
+        <span class="sidebar-category-name" data-categories="OS"><span class="iconfont-archer">&#xe60a;</span>OS</span>
+    
+        <span class="sidebar-category-name" data-categories="工程化"><span class="iconfont-archer">&#xe60a;</span>工程化</span>
+    
+        <span class="sidebar-category-name" data-categories="Data"><span class="iconfont-archer">&#xe60a;</span>Data</span>
+    
+        <span class="sidebar-category-name" data-categories="容器化"><span class="iconfont-archer">&#xe60a;</span>容器化</span>
+    
+        <span class="sidebar-category-name" data-categories="DSL"><span class="iconfont-archer">&#xe60a;</span>DSL</span>
+    
+        <span class="sidebar-category-name" data-categories="Algorithm"><span class="iconfont-archer">&#xe60a;</span>Algorithm</span>
+    
+        <span class="sidebar-category-name" data-categories="iOS"><span class="iconfont-archer">&#xe60a;</span>iOS</span>
+    
+        <span class="sidebar-category-name" data-categories="React"><span class="iconfont-archer">&#xe60a;</span>React</span>
+    
+        <span class="sidebar-category-name" data-categories="Web"><span class="iconfont-archer">&#xe60a;</span>Web</span>
+    
+    </div>
+    <div class="iconfont-archer sidebar-categories-empty">&#xe678;</div>
+    <div class="sidebar-categories-list"></div>
+</div>
+    </div>
+</div> 
+    <script>
+    var siteMeta = {
+        root: "/",
+        author: "Tenloy"
+    }
+</script>
+    <!-- CDN failover -->
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js"></script>
+    <script type="text/javascript">
+        if (typeof window.$ === 'undefined')
+        {
+            console.warn('jquery load from jsdelivr failed, will load local script')
+            document.write('<script src="/lib/jquery.min.js">\x3C/script>')
+        }
+    </script>
+    <script src="/scripts/main.js"></script>
+    <!-- algolia -->
+    
+        <div class="site-search">
+  <div class="algolia-popup popup">
+    <div class="algolia-search">
+      <div class="algolia-search-input-icon">
+        <i class="fa fa-search"></i>
+      </div>
+      <div class="algolia-search-input" id="algolia-search-input"></div>
+    </div>
+
+    <div class="algolia-results">
+      <div id="algolia-stats"></div>
+      <div id="algolia-hits"></div>
+      <div id="algolia-pagination" class="algolia-pagination"></div>
+    </div>
+
+    <span class="popup-btn-close">
+      <i class="iconfont-archer">&#xe609;</i>
+    </span>
+  </div>
+</div>
+        <script src="https://cdn.jsdelivr.net/npm/instantsearch.js@2.8.0/dist/instantsearch.min.js" defer></script>
+        <script src="/scripts/search.js" defer></script>
+    
+    <!-- busuanzi  -->
+    
+    <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    
+    <!-- CNZZ  -->
+    
+    </div>
+    <!-- async load share.js -->
+    
+        <script src="/scripts/share.js" async></script>    
+     
+    </body>
+</html>
+
+
