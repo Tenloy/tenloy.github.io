@@ -1,6 +1,7 @@
 ---
 title: ARM64指令简易手册
 date: 2021-04-17 15:00:20
+algolia: false
 tags:
   - ARM手册
 categories:

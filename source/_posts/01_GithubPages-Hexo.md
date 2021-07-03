@@ -141,21 +141,39 @@ algolia网站本质上就是提供了数据库，提供了接口给使用者，�
 
 hexo-algolia工具就是完成了文档中内容的摘取，然后上传，上传的各项内容，其key就相当于数据库的表字段。
 
-- hexo-algolia 要1.2.2版本之前，之后去掉了content字段，即表中不存储文章内容，所以不能搜索文章内容
+### 4.1 要上传content
 
-- 上传content字段之后，可能会因为某条内容的索引数据太大而报错。那只能对该条内容的`content`字段进行屏蔽
+hexo-algolia 要1.2.2版本之前，之后去掉了content字段，即表中不存储文章内容，所以不能搜索文章内容
 
-  ```shell
-  AlgoliaSearchError: Record at the position 0 objectID=d8676bd7611266ed2404ee6cee119d4a4a911cb0 is too big size=12920 bytes. Contact us if you need an extended quota
-      at success (D:\metang326.github.io\node_modules\hexo-algolia\node_modules\algoliasearch\src\AlgoliaSearchCore.js:375:32)
-      at process._tickCallback (node.js:369:9)
-  ```
+### 4.2 数据过大报错
 
-  ```js
-  // node_modules/hexo-algolia/lib/command.js 添加代码
-  
-  return publishedPagesAndPosts.map(function(data) {
-          var storedPost = _.pick(data, [
+上传content字段之后，可能会因为某条内容的索引数据太大而报错。那只能对该条内容的`content`字段进行屏蔽
+
+```shell
+AlgoliaSearchError: Record at the position 0 objectID=d8676bd7611266ed2404ee6cee119d4a4a911cb0 is too big size=12920 bytes. Contact us if you need an extended quota
+    at success (D:\metang326.github.io\node_modules\hexo-algolia\node_modules\algoliasearch\src\AlgoliaSearchCore.js:375:32)
+    at process._tickCallback (node.js:369:9)
+```
+
+#### 第一步
+
+```js
+// node_modules/hexo-algolia/lib/command.js 修改代码
+return publishedPagesAndPosts.map(function(data) {
+        
+        var storedPost = _.pick(data, ['algolia']);
+        if (typeof storedPost.algolia === 'boolean' && !storedPost.algolia) {
+          storedPost = _.pick(data, [
+            'title',
+            'date',
+            'slug',
+            'excerpt',
+            'permalink',
+            'layout'
+          ]);
+          console.log('⚠️  content不上传algolia：《'+storedPost.title+'》');
+        }else {
+          storedPost = _.pick(data, [
             'title',
             'date',
             'slug',
@@ -164,22 +182,20 @@ hexo-algolia工具就是完成了文档中内容的摘取，然后上传，上�
             'permalink',
             'layout'
           ]);
-  // 添加判断，对指定的文章删除content字段
-          if (typeof storedPost.permalink === "string" &&
-              storedPost.permalink.indexOf("10_Web-Module") != -1) {
-            storedPost = _.pick(data, [
-              'title',
-              'date',
-              'slug',
-              'excerpt',
-              'permalink',
-              'layout'
-            ]);
-          }
-  }
-  ```
+        }
+        storedPost.objectID = computeSha1(data.path);
+        // console.log('objectID: '+storedPost.objectID+'-----'+storedPost.title);
+  			...
+        ...
+}
+```
 
+#### 第二步
 
+```js
+// 文章顶部，增加此字段并设置为false，表示不上传algolia
+algolia: false
+```
 
 algolia网站配置步骤[参考链接](https://blog.csdn.net/qq_35479468/article/details/107335663)
 

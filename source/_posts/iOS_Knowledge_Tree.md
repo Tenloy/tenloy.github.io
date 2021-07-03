@@ -2,6 +2,7 @@
 title: iOS-interview
 date: 2021-04-06 13:16:47
 comments: true
+algolia: false
 tags:
     - interview
 categories:

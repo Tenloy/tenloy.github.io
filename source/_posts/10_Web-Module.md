@@ -1,6 +1,7 @@
 ---
 title: 前端各种模块化方案总结
 date: 2021-06-18 11:09:27
+algolia: false
 tags:
 categories:
   - Web
