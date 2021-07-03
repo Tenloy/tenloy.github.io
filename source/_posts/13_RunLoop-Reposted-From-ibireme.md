@@ -9,6 +9,9 @@ categories:
 
 RunLoop 是 iOS 和 OSX 开发中非常基础的一个概念，这篇文章将从 CFRunLoop 的源码入手，介绍 RunLoop 的概念以及底层实现原理。之后会介绍一下在 iOS 中，苹果是如何利用 RunLoop 实现自动释放池、延迟回调、触摸事件、屏幕刷新等功能的。
 
+> 本文是结合着底层CFRunLoop的源码，对RunLoop机制进行了深入分析，如果感觉枯燥，难以消化。可以先看一下孙源的一个线下分享《RunLoop》，对RunLoop的整体有个了解。
+>
+
 ## RunLoop 的概念
 
 一般来讲，一个线程一次只能执行一个任务，执行完成后线程就会退出。如果我们需要一个机制，让线程能随时处理事件但并不退出，通常的代码逻辑是这样的：
@@ -321,7 +324,10 @@ int CFRunLoopRunSpecific(runloop, modeName, seconds, stopAfterHandle) {
 - 应用层包括用户能接触到的图形应用，例如 Spotlight、Aqua、SpringBoard 等。
 - 应用框架层即开发人员接触到的 Cocoa 等框架。
 - 核心框架层包括各种核心框架、OpenGL 等内容。
-- Darwin 即操作系统的核心，包括系统内核、驱动、Shell 等内容，这一层是开源的，其所有源码都可以在 [opensource.apple.com](http://opensource.apple.com/) 里找到。
+- Darwin是macOS和iOS操作环境的操作系统部分。苹果公司于2000年把Darwin发布给开放源代码社区。
+  - 既然是OS，那肯定要包括系统内核XNU、驱动、Shell 等内容，这一层是开源的，其所有源码都可以在 [opensource.apple.com](http://opensource.apple.com/) 里找到。
+  - XNU是一个混合内核，它采用了来自OSF的OSFMK 7.3(Open Software Foundation Mach Kernel)和FreeBSD的各种要素(包括过程模型，网络堆栈和虚拟文件系统)，还有一个称为I/O Kit的面向对象的设备驱动程序API。
+  - XNU将宏内核与微内核两者的特性兼收并蓄，以期同时拥有两种内核的优点。**微内核的灵活性**：比如在微内核中提高操作系统模块化程度以及让操作系统更多的部分接受内存保护的消息传递机制。**宏内核的性能**：宏内核在高负荷下表现的高性能。
 
 我们在深入看一下 Darwin 这个核心的架构：
 <img src="/images/RunLoop/RunLoop_4.png" alt="RunLoop_0" style="zoom:70%;" />
@@ -330,7 +336,7 @@ int CFRunLoopRunSpecific(runloop, modeName, seconds, stopAfterHandle) {
 
 - XNU 内核的内环被称作 Mach，其作为一个微内核，仅提供了诸如处理器调度、IPC (进程间通信)等非常少量的基础服务。
 
-- BSD 层可以看作围绕 Mach 层的一个外环，其提供了诸如进程管理、文件系统和网络等功能。
+- BSD 层可以看作围绕 Mach 层的一个外环，其提供了诸如进程管理、文件系统和网络等功能。(BSD是宏内核)
 - IOKit 层是为设备驱动提供了一个面向对象(C++)的一个框架。
 
 Mach 本身提供的 API 非常有限，而且苹果也不鼓励使用 Mach 的 API，但是这些API非常基础，如果没有这些API的话，其他任何工作都无法实施。在 Mach 中，所有的东西都是通过自己的对象实现的，进程、线程和虚拟内存都被称为”对象”。和其他架构不同， Mach 的对象间不能直接调用，只能通过消息传递的方式实现对象间的通信。”消息”是 Mach 中最基础的概念，消息在两个端口 (port) 之间传递，这就是 Mach 的 IPC (进程间通信) 的核心。
