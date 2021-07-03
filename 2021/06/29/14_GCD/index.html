@@ -23,7 +23,7 @@
     <meta name="description" content="一、什么是多线程编程？先来复习一下操作系统中线程相关的知识点： 1.1 代码的运行首先，代码是怎么运行的？  源代码通过编译器转换为CPU命令列(二进制编码)，应用程序就是CPU命令列和数据的汇集，在应用程序启动后，首先便将包含在应用程序中的CPU命令列配置在内存中。 CPU从应用程序指定的地址开始，一个一个的执行CUP命令列。在OC的if语句和for语句等控制语句或函数调用的情况下，执行命令列的">
 <meta property="og:type" content="article">
 <meta property="og:title" content="深入浅出GCD常用API">
-<meta property="og:url" content="https://tenloy.github.io/2021/06/28/14_GCD/index.html">
+<meta property="og:url" content="https://tenloy.github.io/2021/06/29/14_GCD/index.html">
 <meta property="og:site_name" content="Tenloy&#39;s Blog">
 <meta property="og:description" content="一、什么是多线程编程？先来复习一下操作系统中线程相关的知识点： 1.1 代码的运行首先，代码是怎么运行的？  源代码通过编译器转换为CPU命令列(二进制编码)，应用程序就是CPU命令列和数据的汇集，在应用程序启动后，首先便将包含在应用程序中的CPU命令列配置在内存中。 CPU从应用程序指定的地址开始，一个一个的执行CUP命令列。在OC的if语句和for语句等控制语句或函数调用的情况下，执行命令列的">
 <meta property="og:locale" content="en_US">
@@ -39,8 +39,8 @@
 <meta property="og:image" content="https://tenloy.github.io/images/GCD/dispatch_queue-8.png">
 <meta property="og:image" content="https://tenloy.github.io/images/GCD/dispatch_once.png">
 <meta property="og:image" content="https://tenloy.github.io/images/GCD/gcd-imp-1.jpg">
-<meta property="article:published_time" content="2021-06-28T19:12:21.000Z">
-<meta property="article:modified_time" content="2021-06-29T07:02:07.777Z">
+<meta property="article:published_time" content="2021-06-29T19:12:21.000Z">
+<meta property="article:modified_time" content="2021-07-03T15:01:00.992Z">
 <meta property="article:author" content="Tenloy">
 <meta property="article:tag" content="GCD">
 <meta name="twitter:card" content="summary">
@@ -328,7 +328,7 @@ height:40vh;
                 
                 <div class="post-intro-meta">
                     <span class="post-intro-calander iconfont-archer">&#xe676;</span>
-                    <span class="post-intro-time">2021/06/28</span>
+                    <span class="post-intro-time">2021/06/29</span>
                     
                     <span id="busuanzi_container_page_pv" class="busuanzi-pv">
                         <span class="iconfont-archer">&#xe602;</span>
@@ -698,7 +698,7 @@ height:40vh;
 <h3 id="3-2-Dispatch-Semaphore"><a href="#3-2-Dispatch-Semaphore" class="headerlink" title="3.2 Dispatch Semaphore"></a>3.2 Dispatch Semaphore</h3><h4 id="3-2-1-API介绍"><a href="#3-2-1-API介绍" class="headerlink" title="3.2.1 API介绍"></a>3.2.1 API介绍</h4><p>Dispatch Semaphore是持有计数的信号，该信号是多线程编程中的计数类型信号。所谓信号，类似过马路时常用的手旗，可以通过时举起手旗，不可以通过时放下手旗。</p>
 <p>在Dispatch Semaphore中，使用计数来实现该功能：<strong>计数为0时等待，计数为1或大于1时，减去1而不等待</strong>。</p>
 <p>信号量的使用比较简单，主要就三个API：<code>create</code>、<code>wait</code>和<code>signal</code>。</p>
-<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/* </span></span><br><span class="line"><span class="comment"> * 使用dispatch_semaphore_create函数生成Dispatch Semaphore</span></span><br><span class="line"><span class="comment"> * 参数value是信号量计数的初始值</span></span><br><span class="line"><span class="comment"> * 函数名称中包含create，必须自己通过dispatch_release函数释放，和dispatch_retain函数持有</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="function"><span class="keyword">dispatch_semaphore_t</span> <span class="title">dispatch_semaphore_create</span><span class="params">(<span class="keyword">intptr_t</span> value)</span></span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/*</span></span><br><span class="line"><span class="comment"> * 当Dispatch Semaphore的计数值大于等于1，或者待机中计数值大于等于1时，对该计数进行减法并从dispatch_semaphore_wait函数返回。</span></span><br><span class="line"><span class="comment"> * 当Dispatch Semaphore的计数值为0时会等待(直到超时)</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * @param timeout：等待时间 dispatch_time_t类型。DISPATCH_TIME_FOREVER</span></span><br><span class="line"><span class="comment"> * @return 返回值与dispatch_group_wait函数相同，0表示执行完；1表示正在执行，计数为0，继续等待。</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="function"><span class="keyword">intptr_t</span> <span class="title">dispatch_semaphore_wait</span><span class="params">(<span class="keyword">dispatch_semaphore_t</span> dsema, <span class="keyword">dispatch_time_t</span> timeout)</span></span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 让信号量值加一，如果有通过dispatch_semaphore_wait函数等待Dispatch Semaphore的计数值增加的线程，会由系统唤醒最先等待的线程执行。</span></span><br><span class="line"><span class="function"><span class="keyword">intptr_t</span> <span class="title">dispatch_semaphore_signal</span><span class="params">(<span class="keyword">dispatch_semaphore_t</span> dsema)</span></span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 释放 </span></span><br><span class="line"><span class="built_in">dispatch_release</span>(semaphore);</span><br></pre></td></tr></table></figure>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/* </span></span><br><span class="line"><span class="comment"> * 使用dispatch_semaphore_create函数生成Dispatch Semaphore</span></span><br><span class="line"><span class="comment"> * 参数value是信号量计数的初始值</span></span><br><span class="line"><span class="comment"> * 函数名称中包含create，必须自己通过dispatch_release函数释放，和dispatch_retain函数持有</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="function"><span class="keyword">dispatch_semaphore_t</span> <span class="title">dispatch_semaphore_create</span><span class="params">(<span class="keyword">intptr_t</span> value)</span></span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/*</span></span><br><span class="line"><span class="comment"> * 当Dispatch Semaphore的计数值大于等于1，或者待机中计数值大于等于1时，对该计数进行减法并从dispatch_semaphore_wait函数返回。</span></span><br><span class="line"><span class="comment"> * 当Dispatch Semaphore的计数值为0时会等待(直到超时)</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * @param timeout：等待时间 dispatch_time_t类型。DISPATCH_TIME_FOREVER</span></span><br><span class="line"><span class="comment"> * @return 返回值与dispatch_group_wait函数相同，0表示执行完；超时时返回非0。</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="function"><span class="keyword">intptr_t</span> <span class="title">dispatch_semaphore_wait</span><span class="params">(<span class="keyword">dispatch_semaphore_t</span> dsema, <span class="keyword">dispatch_time_t</span> timeout)</span></span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 让信号量值加一，如果有通过dispatch_semaphore_wait函数等待Dispatch Semaphore的计数值增加的线程，会由系统唤醒最先等待的线程执行。</span></span><br><span class="line"><span class="function"><span class="keyword">intptr_t</span> <span class="title">dispatch_semaphore_signal</span><span class="params">(<span class="keyword">dispatch_semaphore_t</span> dsema)</span></span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 释放 </span></span><br><span class="line"><span class="built_in">dispatch_release</span>(semaphore);</span><br></pre></td></tr></table></figure>
 
 <h4 id="3-2-2-原理"><a href="#3-2-2-原理" class="headerlink" title="3.2.2 原理"></a>3.2.2 原理</h4><h5 id="1-dispatch-semaphore-t"><a href="#1-dispatch-semaphore-t" class="headerlink" title="1.dispatch_semaphore_t"></a>1.dispatch_semaphore_t</h5><p>首先看一下<code>dispatch_semaphore_s</code>的结构体定义：</p>
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">dispatch_semaphore_s</span> &#123;</span></span><br><span class="line">    DISPATCH_STRUCT_HEADER(semaphore);</span><br><span class="line">    <span class="keyword">semaphore_t</span> dsema_port;    <span class="comment">//等同于mach_port_t信号</span></span><br><span class="line">    <span class="keyword">long</span> dsema_orig;           <span class="comment">//初始化的信号量值</span></span><br><span class="line">    <span class="keyword">long</span> <span class="keyword">volatile</span> dsema_value; <span class="comment">//当前信号量值</span></span><br><span class="line">    <span class="class"><span class="keyword">union</span> &#123;</span></span><br><span class="line">        <span class="keyword">long</span> <span class="keyword">volatile</span> dsema_sent_ksignals;</span><br><span class="line">        <span class="keyword">long</span> <span class="keyword">volatile</span> dsema_group_waiters;</span><br><span class="line">    &#125;;</span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">dispatch_continuation_s</span> *<span class="title">volatile</span> <span class="title">dsema_notify_head</span>;</span> <span class="comment">//notify的链表头部</span></span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">dispatch_continuation_s</span> *<span class="title">volatile</span> <span class="title">dsema_notify_tail</span>;</span> <span class="comment">//notify的链表尾部</span></span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
@@ -838,7 +838,7 @@ height:40vh;
 <p><code>dispatch_barrier_async</code>的流程见下图：</p>
 <img src="/images/GCD/dispatch_queue-8.png" alt="img" style="zoom:80%;" />
 
-<h3 id="3-5-dispatch-apply"><a href="#3-5-dispatch-apply" class="headerlink" title="3.5 dispatch_apply"></a>3.5 dispatch_apply</h3><p>dispatch_apply 函数 <strong>按指定的次数</strong> 将指定的Block追加到指定的队列中，并等待全部处理执行结束。</p>
+<h3 id="3-5-dispatch-apply"><a href="#3-5-dispatch-apply" class="headerlink" title="3.5 dispatch_apply"></a>3.5 dispatch_apply</h3><p>dispatch_apply 函数是 dispatch_sync 函数和 Dispatch Group 的关联 API。该函数 <strong>按指定的次数</strong> 将指定的Block追加到指定的队列中，并等待全部处理执行结束。</p>
 <figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/*</span></span><br><span class="line"><span class="comment"> * 参数1：重复次数</span></span><br><span class="line"><span class="comment"> * 参数2：执行队列</span></span><br><span class="line"><span class="comment"> * 参数3：任务</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">dispatch_queue_t</span> queue = <span class="built_in">dispatch_get_global_queue</span>(DISPATCH_QUEUE_PRORITY_DEFAULT,<span class="number">0</span>);</span><br><span class="line"><span class="built_in">dispatch_apply</span>(<span class="number">10</span>, queue, ^(<span class="keyword">size_t</span> index)&#123;</span><br><span class="line">   <span class="built_in">NSLog</span>(@<span class="string">&quot;%zu&quot;</span>,index);</span><br><span class="line">&#125;);</span><br><span class="line">NSLog（@<span class="string">&quot;done&quot;</span>）;</span><br></pre></td></tr></table></figure>
 
 <ul>
@@ -995,9 +995,9 @@ height:40vh;
     
         <div class="license-wrapper">
             <p>Author：<a href="https://tenloy.github.io">Tenloy</a>
-            <p>原文链接：<a href="https://tenloy.github.io/2021/06/28/14_GCD/">https://tenloy.github.io/2021/06/28/14_GCD/</a>
-            <p>发表日期：2021.06.28 , 7:12 PM</p>
-            <p>更新日期：2021.06.29 , 7:02 AM</p>
+            <p>原文链接：<a href="https://tenloy.github.io/2021/06/29/14_GCD/">https://tenloy.github.io/2021/06/29/14_GCD/</a>
+            <p>发表日期：2021.06.29 , 7:12 PM</p>
+            <p>更新日期：2021.07.03 , 3:01 PM</p>
             <p>版权声明：本文采用<a rel="license noopener" target="_blank" href="http://creativecommons.org/licenses/by-nc/4.0/">Crative Commons 4.0 许可协议</a>进行许可</p>
         </div>
     
@@ -1009,8 +1009,8 @@ height:40vh;
         <li class="previous">
             
                 <div class="prevSlogan">Previous Post</div>
-                <a href= "/2021/06/28/13_RunLoop-Reposted-From-ibireme/" title= "[转]深入理解RunLoop—ibireme">
-                    <div class="prevTitle">[转]深入理解RunLoop—ibireme</div>
+                <a href= "/2021/06/29/14_AutoreleasePool/" title= "AutoreleasePool">
+                    <div class="prevTitle">AutoreleasePool</div>
                 </a>
             
         </li>
@@ -1306,27 +1306,9 @@ top:40vh;
     
     
     
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
     <div class="total-and-search">
         <div class="total-archive">
-        Total : 17
+        Total : 15
         </div>
         <!-- search  -->
         
@@ -1346,7 +1328,12 @@ top:40vh;
     
     
         <li class="archive-post-item">
-            <span class="archive-post-date">06/28</span><a class="archive-post-title" href= "/2021/06/28/14_GCD/" >深入浅出GCD常用API</a>
+            <span class="archive-post-date">06/29</span><a class="archive-post-title" href= "/2021/06/29/14_GCD/" >深入浅出GCD常用API</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/29</span><a class="archive-post-title" href= "/2021/06/29/14_AutoreleasePool/" >AutoreleasePool</a>
         </li>
     
     
@@ -1381,11 +1368,6 @@ top:40vh;
     
     
         <li class="archive-post-item">
-            <span class="archive-post-date">04/30</span><a class="archive-post-title" href= "/2021/04/30/08_Common-Programming-Paradigm/" >常见的编程范式知识点汇总</a>
-        </li>
-    
-    
-        <li class="archive-post-item">
             <span class="archive-post-date">04/29</span><a class="archive-post-title" href= "/2021/04/29/07_Engineering/" >工程化、动态化、容器化、组件化</a>
         </li>
     
@@ -1406,7 +1388,7 @@ top:40vh;
     
     
         <li class="archive-post-item">
-            <span class="archive-post-date">04/20</span><a class="archive-post-title" href= "/2021/04/20/03_Sync-Async/" >同步和异步解读及编程中的使用场景</a>
+            <span class="archive-post-date">04/20</span><a class="archive-post-title" href= "/2021/04/20/03-7_Sync-Async/" >同步和异步解读及编程中的使用场景</a>
         </li>
     
     
@@ -1417,16 +1399,6 @@ top:40vh;
     
         <li class="archive-post-item">
             <span class="archive-post-date">04/10</span><a class="archive-post-title" href= "/2021/04/10/01_GithubPages-Hexo/" >使用Hexo+Github Pages搭建个人博客</a>
-        </li>
-    
-    
-        <li class="archive-post-item">
-            <span class="archive-post-date">04/06</span><a class="archive-post-title" href= "/2021/04/06/iOS/AutoreleasePool/" >AutoreleasePool</a>
-        </li>
-    
-    
-        <li class="archive-post-item">
-            <span class="archive-post-date">04/06</span><a class="archive-post-title" href= "/2021/04/06/iOS/Interview/" >iOS-interview</a>
         </li>
     
     </div>
@@ -1446,13 +1418,13 @@ top:40vh;
     
         <span class="sidebar-tag-name" data-tags="DSL"><span class="iconfont-archer">&#xe606;</span>DSL</span>
     
+        <span class="sidebar-tag-name" data-tags="dp"><span class="iconfont-archer">&#xe606;</span>dp</span>
+    
         <span class="sidebar-tag-name" data-tags="AutoreleasePool"><span class="iconfont-archer">&#xe606;</span>AutoreleasePool</span>
     
         <span class="sidebar-tag-name" data-tags="RunLoop"><span class="iconfont-archer">&#xe606;</span>RunLoop</span>
     
         <span class="sidebar-tag-name" data-tags="Fiber"><span class="iconfont-archer">&#xe606;</span>Fiber</span>
-    
-        <span class="sidebar-tag-name" data-tags="interview"><span class="iconfont-archer">&#xe606;</span>interview</span>
     
         <span class="sidebar-tag-name" data-tags="GCD"><span class="iconfont-archer">&#xe606;</span>GCD</span>
     
@@ -1494,8 +1466,6 @@ jsonContent:
         <span class="sidebar-category-name" data-categories="OS"><span class="iconfont-archer">&#xe60a;</span>OS</span>
     
         <span class="sidebar-category-name" data-categories="工程化"><span class="iconfont-archer">&#xe60a;</span>工程化</span>
-    
-        <span class="sidebar-category-name" data-categories="编程范式"><span class="iconfont-archer">&#xe60a;</span>编程范式</span>
     
         <span class="sidebar-category-name" data-categories="Data"><span class="iconfont-archer">&#xe60a;</span>Data</span>
     
