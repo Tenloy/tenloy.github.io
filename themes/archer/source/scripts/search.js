@@ -69,6 +69,7 @@
 /***/ (function(module, exports) {
 
 // special thanks to https://blog.naaln.com/2016/07/hexo-with-algolia/
+var timer;
 var initAlgolia = function initAlgolia() {
   $(document).ready(function () {
     var algoliaSettings = algolia;
@@ -85,9 +86,12 @@ var initAlgolia = function initAlgolia() {
       indexName: algoliaSettings.indexName,
       searchFunction: function searchFunction(helper) {
         var searchInput = $('#algolia-search-input').find('input');
-
         if (searchInput.val()) {
-          helper.search();
+          clearTimeout(timer);
+          timer = setTimeout(() => {
+            helper.search();
+            console.log('---begin search----');
+          }, 1000);
         }
       }
     }) // Registering Widgets

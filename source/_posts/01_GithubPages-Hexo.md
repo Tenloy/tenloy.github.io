@@ -137,15 +137,21 @@ hexo version  # 显示 Hexo 版本
 
 ## 四、algolia站内搜索配置
 
+### 4.1 algolia的集成
+
 algolia网站本质上就是提供了数据库，提供了接口给使用者，供其将要被检索的内容上传。
+
+algolia网站配置步骤[参考链接](https://blog.csdn.net/qq_35479468/article/details/107335663)
+
+### 4.2 hexo-algolia工具的使用
 
 hexo-algolia工具就是完成了文档中内容的摘取，然后上传，上传的各项内容，其key就相当于数据库的表字段。
 
-### 4.1 要上传content
+#### 4.2.1 要上传content
 
-hexo-algolia 要1.2.2版本之前，之后去掉了content字段，即表中不存储文章内容，所以不能搜索文章内容
+hexo-algolia 要1.2.2版本之前，之后去掉了content字段，即表中不存储文章内容，所以不能搜索文章内容。目前使用的是v1.2.0。
 
-### 4.2 数据过大报错
+#### 4.2.2 数据过大报错
 
 上传content字段之后，可能会因为某条内容的索引数据太大而报错。那只能对该条内容的`content`字段进行屏蔽
 
@@ -155,7 +161,7 @@ AlgoliaSearchError: Record at the position 0 objectID=d8676bd7611266ed2404ee6cee
     at process._tickCallback (node.js:369:9)
 ```
 
-#### 第一步
+##### 1. 第一步
 
 ```js
 // node_modules/hexo-algolia/lib/command.js 修改代码
@@ -190,16 +196,18 @@ return publishedPagesAndPosts.map(function(data) {
 }
 ```
 
-#### 第二步
+##### 2. 第二步
 
 ```js
 // 文章顶部，增加此字段并设置为false，表示不上传algolia
 algolia: false
 ```
 
-algolia网站配置步骤[参考链接](https://blog.csdn.net/qq_35479468/article/details/107335663)
+##### 3. 待优化
 
+因为对hexo algolia的修改都是本地的，在`Travis CI`自动部署时，自动部署服务器，是去install的hexo algolia新包，改动不生效，所以只能在本地手动调用，不能由自动部署完成algolia的上传。
 
+**TODO: 或者fork该工具，修改之后，重新上传，然后依赖这个新包。**
 
 ## 五、评论系统配置
 
