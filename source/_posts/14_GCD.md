@@ -1,6 +1,6 @@
 ---
 title: 深入浅出GCD常用API
-date: 2021-06-28 19:12:21
+date: 2021-06-29 19:12:21
 tags:
   - GCD
 categories:
@@ -1088,7 +1088,7 @@ dispatch_semaphore_t dispatch_semaphore_create(intptr_t value);
  * 当Dispatch Semaphore的计数值为0时会等待(直到超时)
  *
  * @param timeout：等待时间 dispatch_time_t类型。DISPATCH_TIME_FOREVER
- * @return 返回值与dispatch_group_wait函数相同，0表示执行完；1表示正在执行，计数为0，继续等待。
+ * @return 返回值与dispatch_group_wait函数相同，0表示执行完；超时时返回非0。
  */
 intptr_t dispatch_semaphore_wait(dispatch_semaphore_t dsema, dispatch_time_t timeout);
 
@@ -1827,7 +1827,7 @@ out:
 
 ### 3.5 dispatch_apply
 
-dispatch_apply 函数 **按指定的次数** 将指定的Block追加到指定的队列中，并等待全部处理执行结束。
+dispatch_apply 函数是 dispatch_sync 函数和 Dispatch Group 的关联 API。该函数 **按指定的次数** 将指定的Block追加到指定的队列中，并等待全部处理执行结束。
 
 ```cpp
 /*

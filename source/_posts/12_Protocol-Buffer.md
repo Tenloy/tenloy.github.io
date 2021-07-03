@@ -10,7 +10,7 @@ categories:
 
 Protocol buffers (PB) 是一种语言、平台无关，可扩展的序列化数据的格式。和xml、json等数据交换格式一样，也可用于通信协议，数据存储等。
 
-- Protocol buffers 在序列化数据方面，它是**灵活的**，**高效的(快)**。
+- Protocol buffers 在序列化数据方面，它是**灵活的**，**高效的**(快)。
   - Portobuf序列化和反序列化速度比XML、JSON快很多，是直接把对象和字节数组做转换，而XML和JSON还需要构建成XML或者JSON对象结构。
   - 一旦定义了要处理的数据的数据结构之后，就可以利用 Protocol buffers 的代码生成工具生成相关的代码。甚至可以在无需重新部署程序的情况下更新数据结构。只需使用 Protobuf 对数据结构进行一次描述，即可利用各种不同语言或从各种不同数据流中对你的结构化数据轻松读写。
 - 相比于 XML、JSON 来说，Protocol buffers 更加**小巧**，更加**简单**。
