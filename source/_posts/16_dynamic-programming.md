@@ -242,25 +242,16 @@ if i,j>0 and A[i]!=B[j], C[i,j]=max(C[i-1,j],C[i,j-1]).
 4. **明确 dp 函数/数组的定义**。我们这里讲的是自顶向下的解法，所以会有一个递归的 dp 函数，一般来说函数的参数就是状态转移中会变化的量，也就是上面说到的「状态」；函数的返回值就是题目要求我们计算的量。
 
 就本题来说，状态只有一个，即「目标金额」，题目要求我们计算凑出目标金额所需的最少硬币数量。所以我们可以这样定义 dp 函数：输入一个目标金额 n，返回凑出目标金额 n 的最少硬币数量。
-$$
-dp(n) = min{ dp(n-coin) + 1 | coin ∈ coins }
-$$
+
+<img src="/images/algorithm/dp-4.png" style="zoom:100%">
+
 更简单一些的：最长公共子序列问题，dp中没有自变量。
-$$
-dp[i][j] =
-\begin{cases}
-dp[i-1][j-1]+1, &text1[i-1]=text2[j-1]\\
-max(dp[i-1][j],dp[i][j-1]), &text1[i-1]≠text2[j-1]
-\end{cases}
-$$
+
+<img src="/images/algorithm/dp-5.png" style="zoom:100%">
+
 更复杂一些的：如投资问题
-$$
-F_k(x) = 
-\begin{cases}
-\max_{0≤x_k≤x}\{f_k(x_k)+F_{k-1}(x-x_k)\}, \ \ \ k>1\\
-f_1(x), \ \ \ k=1
-\end{cases}
-$$
+
+<img src="/images/algorithm/dp-6.png" style="zoom:100%">
 
 - 已知：$f_k(x)$为投资项目k x元钱，所得到的收益
 - $F_k(x)$：x元钱投给前k个项目最大效益
