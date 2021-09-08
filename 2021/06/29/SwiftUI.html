@@ -1,0 +1,1339 @@
+<!DOCTYPE html>
+<html lang="en">
+    <!-- title -->
+
+
+
+
+<!-- keywords -->
+
+
+
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" >
+    <meta name="author" content="Tenloy">
+    <meta name="renderer" content="webkit">
+    <meta name="copyright" content="Tenloy">
+    
+    <meta name="keywords" content="Tenloy,iOS,Swift">
+    
+    <meta name="description" content="学习 生活 记录 回忆">
+    <meta name="description" content="SwiftUI 于 2019 年度 WWDC 全球开发者大会上发布，它是基于 Swift 建立的声明式框架。该框架可以用于 watchOS、tvOS、macOS、iOS 等平台的应用开发。 一、UIKit的不足从 iOS SDK 2.0 开始，UIKit 已经伴随广大 iOS 开发者经历了接近十年的风风雨雨。UIKit 的思想继承了成熟的 AppKit 和 MVC，在初出时，为 iOS 开发者提供">
+<meta property="og:type" content="article">
+<meta property="og:title" content="SwiftUI">
+<meta property="og:url" content="https://tenloy.github.io/2021/06/29/SwiftUI.html">
+<meta property="og:site_name" content="Tenloy&#39;s Blog">
+<meta property="og:description" content="SwiftUI 于 2019 年度 WWDC 全球开发者大会上发布，它是基于 Swift 建立的声明式框架。该框架可以用于 watchOS、tvOS、macOS、iOS 等平台的应用开发。 一、UIKit的不足从 iOS SDK 2.0 开始，UIKit 已经伴随广大 iOS 开发者经历了接近十年的风风雨雨。UIKit 的思想继承了成熟的 AppKit 和 MVC，在初出时，为 iOS 开发者提供">
+<meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2021-06-29T22:30:43.000Z">
+<meta property="article:modified_time" content="2021-09-08T13:33:06.409Z">
+<meta property="article:author" content="Tenloy">
+<meta property="article:tag" content="SwiftUI">
+<meta name="twitter:card" content="summary">
+    <meta http-equiv="Cache-control" content="no-cache">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"/>
+    
+    <title>SwiftUI · Tenloy&#39;s Blog</title>
+    <style type="text/css">
+    @font-face {
+        font-family: 'Oswald-Regular';
+        src: url("/font/Oswald-Regular.ttf");
+    }
+
+    body {
+        margin: 0;
+    }
+
+    header,
+    footer,
+    .back-top,
+    .sidebar,
+    .container,
+    .site-intro-meta,
+    .toc-wrapper {
+        display: none;
+    }
+
+    .site-intro {
+        position: relative;
+        z-index: 3;
+        width: 100%;
+        /* height: 50vh; */
+        overflow: hidden;
+    }
+
+    .site-intro-placeholder {
+        position: absolute;
+        z-index: -2;
+        top: 0;
+        left: 0;
+        width: calc(100% + 300px);
+        height: 100%;
+        background: repeating-linear-gradient(-45deg, #444 0, #444 80px, #333 80px, #333 160px);
+        background-position: center center;
+        transform: translate3d(-226px, 0, 0);
+        animation: gradient-move 2.5s ease-out 0s infinite;
+    }
+
+    @keyframes gradient-move {
+        0% {
+            transform: translate3d(-226px, 0, 0);
+        }
+        100% {
+            transform: translate3d(0, 0, 0);
+        }
+    }
+
+</style>
+
+    <link rel="preload" href= "/css/style.css?v=20180824" as="style" onload="this.onload=null;this.rel='stylesheet'" />
+    <link rel="stylesheet" href= "/css/mobile.css?v=20180824" media="(max-width: 980px)">
+    
+    <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.2.5/jquery.fancybox.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'" />
+    
+    <!-- /*! loadCSS. [c]2017 Filament Group, Inc. MIT License */
+/* This file is meant as a standalone workflow for
+- testing support for link[rel=preload]
+- enabling async CSS loading in browsers that do not support rel=preload
+- applying rel preload css once loaded, whether supported or not.
+*/ -->
+<script>
+(function( w ){
+	"use strict";
+	// rel=preload support test
+	if( !w.loadCSS ){
+		w.loadCSS = function(){};
+	}
+	// define on the loadCSS obj
+	var rp = loadCSS.relpreload = {};
+	// rel=preload feature support test
+	// runs once and returns a function for compat purposes
+	rp.support = (function(){
+		var ret;
+		try {
+			ret = w.document.createElement( "link" ).relList.supports( "preload" );
+		} catch (e) {
+			ret = false;
+		}
+		return function(){
+			return ret;
+		};
+	})();
+
+	// if preload isn't supported, get an asynchronous load by using a non-matching media attribute
+	// then change that media back to its intended value on load
+	rp.bindMediaToggle = function( link ){
+		// remember existing media attr for ultimate state, or default to 'all'
+		var finalMedia = link.media || "all";
+
+		function enableStylesheet(){
+			link.media = finalMedia;
+		}
+
+		// bind load handlers to enable media
+		if( link.addEventListener ){
+			link.addEventListener( "load", enableStylesheet );
+		} else if( link.attachEvent ){
+			link.attachEvent( "onload", enableStylesheet );
+		}
+
+		// Set rel and non-applicable media type to start an async request
+		// note: timeout allows this to happen async to let rendering continue in IE
+		setTimeout(function(){
+			link.rel = "stylesheet";
+			link.media = "only x";
+		});
+		// also enable media after 3 seconds,
+		// which will catch very old browsers (android 2.x, old firefox) that don't support onload on link
+		setTimeout( enableStylesheet, 3000 );
+	};
+
+	// loop through link elements in DOM
+	rp.poly = function(){
+		// double check this to prevent external calls from running
+		if( rp.support() ){
+			return;
+		}
+		var links = w.document.getElementsByTagName( "link" );
+		for( var i = 0; i < links.length; i++ ){
+			var link = links[ i ];
+			// qualify links to those with rel=preload and as=style attrs
+			if( link.rel === "preload" && link.getAttribute( "as" ) === "style" && !link.getAttribute( "data-loadcss" ) ){
+				// prevent rerunning on link
+				link.setAttribute( "data-loadcss", true );
+				// bind listeners to toggle media back
+				rp.bindMediaToggle( link );
+			}
+		}
+	};
+
+	// if unsupported, run the polyfill
+	if( !rp.support() ){
+		// run once at least
+		rp.poly();
+
+		// rerun poly on an interval until onload
+		var run = w.setInterval( rp.poly, 500 );
+		if( w.addEventListener ){
+			w.addEventListener( "load", function(){
+				rp.poly();
+				w.clearInterval( run );
+			} );
+		} else if( w.attachEvent ){
+			w.attachEvent( "onload", function(){
+				rp.poly();
+				w.clearInterval( run );
+			} );
+		}
+	}
+
+
+	// commonjs
+	if( typeof exports !== "undefined" ){
+		exports.loadCSS = loadCSS;
+	}
+	else {
+		w.loadCSS = loadCSS;
+	}
+}( typeof global !== "undefined" ? global : this ) );
+</script>
+
+    <link rel="icon" href= "/assets/favicon.ico" />
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.min.js" as="script" />
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js" as="script" />
+    <link rel="preload" href="/scripts/main.js" as="script" />
+    <link rel="preload" as="font" href="/font/Oswald-Regular.ttf" crossorigin>
+    <link rel="preload" as="font" href="https://at.alicdn.com/t/font_327081_1dta1rlogw17zaor.woff" crossorigin>
+    
+        <!-- algolia -->
+        <script>
+            
+            var hits = JSON.parse('{"per_page":10}')
+            var labels = JSON.parse('{"input_placeholder":"Search for Posts","hits_empty":"没有找到任何搜索结果: ${query}","hits_stats":"找到约${hits}条结果（用时${time}ms）"}')
+
+            var algolia = {
+                applicationID: 'V0HYXBS9FB',
+                apiKey: '6550d5de786935564142097c3e78c380',
+                indexName: 'law_blog_index',
+                hits: hits,
+                labels: labels
+            }
+        </script>
+    
+    <!-- fancybox -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.2.5/jquery.fancybox.min.js" defer></script>
+    <!-- 百度统计  -->
+    
+    <!-- 谷歌统计  -->
+    
+<meta name="generator" content="Hexo 5.4.0"><link rel="alternate" href="/atom.xml" title="Tenloy's Blog" type="application/atom+xml">
+</head>
+
+    
+        <body class="post-body">
+    
+    
+<header class="header">
+
+    <div class="read-progress"></div>
+    <div class="header-sidebar-menu">&#xe775;</div>
+    <!-- post页的toggle banner  -->
+    
+    <div class="banner">
+            <div class="blog-title">
+                <a href="/" >Tenloy&#39;s Blog</a>
+            </div>
+            <div class="post-title">
+                <a href="#" class="post-name">SwiftUI</a>
+            </div>
+    </div>
+    
+    <!-- 将home-link的操作改为应用到header-top-right上 -->
+    <div class="header-top-right">
+        <!-- search  -->
+        
+            <div class="site-search popup-trigger tl-search">
+                <span class="iconfont-jian tl-search-icon">&#xe7fc;搜索</span>
+            </div>
+            
+        <a class="home-link" href=/>Tenloy's Blog</a>
+    </div>
+</header>
+    <div class="wrapper">
+        <div class="site-intro" style="
+
+
+
+
+
+
+
+height:40vh;
+">
+    
+    <!-- 主页  -->
+    
+    
+    <!-- 404页  -->
+            
+    <div class="site-intro-placeholder"></div>
+    <div class="site-intro-img" style="background-image: url(/intro/post-bg.jpg)"></div>
+    <div class="site-intro-meta">
+        <!-- 标题  -->
+        <h1 class="intro-title">
+            <!-- 主页  -->
+            
+            SwiftUI
+            <!-- 404 -->
+            
+        </h1>
+        <!-- 副标题 -->
+        <p class="intro-subtitle">
+            <!-- 主页副标题  -->
+            
+            
+            <!-- 404 -->
+            
+        </p>
+        <!-- 文章页meta -->
+        
+            <div class="post-intros">
+                <!-- 文章页标签  -->
+                
+                    <div class= post-intro-tags >
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags = "SwiftUI">SwiftUI</a>
+    
+</div>
+                
+                
+                    <div class="post-intro-read">
+                        <span>Word count: <span class="post-count word-count">1.1k</span>Reading time: <span class="post-count reading-time">4 min</span></span>
+                    </div>
+                
+                <div class="post-intro-meta">
+                    <span class="post-intro-calander iconfont-archer">&#xe676;</span>
+                    <span class="post-intro-time">2021/06/29</span>
+                    
+                    <span id="busuanzi_container_page_pv" class="busuanzi-pv">
+                        <span class="iconfont-archer">&#xe602;</span>
+                        <span id="busuanzi_value_page_pv"></span>
+                    </span>
+                    
+                    <span class="shareWrapper">
+                        <span class="iconfont-archer shareIcon">&#xe71d;</span>
+                        <span class="shareText">Share</span>
+                        <ul class="shareList">
+                            <li class="iconfont-archer share-qr" data-type="qr">&#xe75b;
+                                <div class="share-qrcode"></div>
+                            </li>
+                            <li class="iconfont-archer" data-type="weibo">&#xe619;</li>
+                            <li class="iconfont-archer" data-type="qzone">&#xe62e;</li>
+                            <li class="iconfont-archer" data-type="twitter">&#xe634;</li>
+                            <li class="iconfont-archer" data-type="facebook">&#xe67a;</li>
+                        </ul>
+                    </span>
+                </div>
+            </div>
+        
+    </div>
+</div>
+        <script>
+ 
+  // get user agent
+  var browser = {
+    versions: function () {
+      var u = window.navigator.userAgent;
+      return {
+        userAgent: u,
+        trident: u.indexOf('Trident') > -1, //IE内核
+        presto: u.indexOf('Presto') > -1, //opera内核
+        webKit: u.indexOf('AppleWebKit') > -1, //苹果、谷歌内核
+        gecko: u.indexOf('Gecko') > -1 && u.indexOf('KHTML') == -1, //火狐内核
+        mobile: !!u.match(/AppleWebKit.*Mobile.*/), //是否为移动终端
+        ios: !!u.match(/\(i[^;]+;( U;)? CPU.+Mac OS X/), //ios终端
+        android: u.indexOf('Android') > -1 || u.indexOf('Linux') > -1, //android终端或者uc浏览器
+        iPhone: u.indexOf('iPhone') > -1 || u.indexOf('Mac') > -1, //是否为iPhone或者安卓QQ浏览器
+        iPad: u.indexOf('iPad') > -1, //是否为iPad
+        webApp: u.indexOf('Safari') == -1, //是否为web应用程序，没有头部与底部
+        weixin: u.indexOf('MicroMessenger') == -1, //是否为微信浏览器
+        uc: u.indexOf('UCBrowser') > -1 //是否为android下的UC浏览器
+      };
+    }()
+  }
+  console.log("userAgent:" + browser.versions.userAgent);
+
+  // callback
+  function fontLoaded() {
+    console.log('font loaded');
+    if (document.getElementsByClassName('site-intro-meta')) {
+      document.getElementsByClassName('intro-title')[0].classList.add('intro-fade-in');
+      document.getElementsByClassName('intro-subtitle')[0].classList.add('intro-fade-in');
+      var postIntros = document.getElementsByClassName('post-intros')[0]
+      if (postIntros) {
+        postIntros.classList.add('post-fade-in');
+      }
+    }
+  }
+
+  // UC不支持跨域，所以直接显示
+  function asyncCb(){
+    if (browser.versions.uc) {
+      console.log("UCBrowser");
+      fontLoaded();
+    } else {
+      WebFont.load({
+        custom: {
+          families: ['Oswald-Regular']
+        },
+        loading: function () {  //所有字体开始加载
+          // console.log('loading');
+        },
+        active: function () {  //所有字体已渲染
+          fontLoaded();
+        },
+        inactive: function () { //字体预加载失败，无效字体或浏览器不支持加载
+          console.log('inactive: timeout');
+          fontLoaded();
+        },
+        timeout: 5000 // Set the timeout to two seconds
+      });
+    }
+  }
+
+  function asyncErr(){
+    console.warn('script load from CDN failed, will load local script')
+  }
+
+  // load webfont-loader async, and add callback function
+  function async(u, cb, err) {
+    var d = document, t = 'script',
+      o = d.createElement(t),
+      s = d.getElementsByTagName(t)[0];
+    o.src = u;
+    if (cb) { o.addEventListener('load', function (e) { cb(null, e); }, false); }
+    if (err) { o.addEventListener('error', function (e) { err(null, e); }, false); }
+    s.parentNode.insertBefore(o, s);
+  }
+
+  var asyncLoadWithFallBack = function(arr, success, reject) {
+      var currReject = function(){
+        reject()
+        arr.shift()
+        if(arr.length)
+          async(arr[0], success, currReject)
+        }
+
+      async(arr[0], success, currReject)
+  }
+
+  asyncLoadWithFallBack([
+    "https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.min.js", 
+    "https://cdn.bootcss.com/webfont/1.6.28/webfontloader.js",
+    "/lib/webfontloader.min.js"
+  ], asyncCb, asyncErr)
+</script>        
+        <img class="loading" src="/assets/loading.svg" style="display: block; margin: 6rem auto 0 auto; width: 6rem; height: 6rem;" />
+        <div class="container container-unloaded">
+            <main class="main post-page">
+    <article class="article-entry">
+        <p>SwiftUI 于 2019 年度 WWDC 全球开发者大会上发布，它是基于 Swift 建立的<strong>声明式框架</strong>。该框架可以用于 watchOS、tvOS、macOS、iOS 等平台的应用开发。</p>
+<h3 id="一、UIKit的不足"><a href="#一、UIKit的不足" class="headerlink" title="一、UIKit的不足"></a>一、UIKit的不足</h3><p>从 iOS SDK 2.0 开始，UIKit 已经伴随广大 iOS 开发者经历了接近十年的风风雨雨。UIKit 的思想继承了成熟的 AppKit 和 MVC，在初出时，为 iOS 开发者提供了良好的学习曲线。</p>
+<p>UIKit 提供的是一套符合直觉的，基于控制流的命令式的编程方式。最主要的思想是在确保 View 或者 View Controller 生命周期以及用户交互时，相应的方法 (比如 <code>viewDidLoad</code> 或者某个 target-action 等) 能够被正确调用，从而构建用户界面和逻辑。不过，不管是从使用的便利性还是稳定性来说，UIKit 都面临着巨大的挑战。</p>
+<p>UIKit 的基本思想要求 View Controller 承担绝大部分职责，它需要协调 model，view 以及用户交互。这带来了巨大的 side effect 以及大量的状态，如果没有妥善安置，它们将在 View Controller 中混杂在一起，同时作用于 view 或者逻辑，从而使状态管理愈发复杂，最后甚至不可维护而导致项目失败。不仅是作为开发者我们自己写的代码，UIKit 本身内部其实也经常受困于可变状态，各种奇怪的 bug 也频频出现。</p>
+<h3 id="二、声明式编程的崛起"><a href="#二、声明式编程的崛起" class="headerlink" title="二、声明式编程的崛起"></a>二、声明式编程的崛起</h3><p>近年来，随着编程技术和思想的进步，使用声明式或者函数式的方式来进行界面开发，已经越来越被接受并逐渐成为主流。最早的思想大概是来源于 <a target="_blank" rel="noopener" href="https://elm-lang.org/">Elm</a>，之后这套方式被 <a target="_blank" rel="noopener" href="https://reactjs.org/">React</a> 和 <a target="_blank" rel="noopener" href="https://flutter.dev/">Flutter</a> 采用，这一点上 SwiftUI 也几乎与它们一致。</p>
+<ol>
+<li><p>使用各自的 DSL 来描述「UI 应该是什么样子」，而不是用一句句的代码来指导「要怎样构建 UI」。</p>
+<p>比如传统的 UIKit，我们会使用这样的代码来添加一个 “Hello World” 的标签，它负责“创建 label”，“设置文字”，“将其添加到 view 上”：</p>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">viewDidLoad</span>()</span> &#123;</span><br><span class="line">     <span class="keyword">super</span>.viewDidLoad()</span><br><span class="line">     <span class="keyword">let</span> label <span class="operator">=</span> <span class="type">UILabel</span>()</span><br><span class="line">     label.text <span class="operator">=</span> <span class="string">&quot;Hello World&quot;</span></span><br><span class="line">     view.addSubview(label)</span><br><span class="line">     <span class="comment">// 省略了布局的代码</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>而相对起来，使用 SwiftUI 我们只需要告诉 SDK 我们需要一个文字标签：</p>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> body: <span class="keyword">some</span> <span class="type">View</span> &#123;</span><br><span class="line">    <span class="type">Text</span>(<span class="string">&quot;Hello World&quot;</span>)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+<li><p>接下来，框架内部读取这些 view 的声明，负责将它们以合适的方式绘制渲染。</p>
+<p>注意，这些 view 的声明只是纯数据结构的描述，而不是实际显示出来的视图，因此这些结构的创建和差分对比并不会带来太多性能损耗。相对来说，将描述性的语言进行渲染绘制的部分是最慢的，这部分工作将交由框架以黑盒的方式为我们完成。</p>
+</li>
+<li><p>如果 <code>View</code> 需要根据某个状态 (state) 进行改变，那我们将这个状态存储在变量中，并在声明 view 时使用它：</p>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@State</span> <span class="keyword">var</span> name: <span class="type">String</span> <span class="operator">=</span> <span class="string">&quot;Tom&quot;</span></span><br><span class="line"><span class="keyword">var</span> body: <span class="keyword">some</span> <span class="type">View</span> &#123;</span><br><span class="line">   <span class="type">Text</span>(<span class="string">&quot;Hello <span class="subst">\(name)</span>&quot;</span>)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+<li><p>状态发生改变时，框架重新调用声明部分的代码，计算出新的 view 声明，并和原来的 view 进行差分，之后框架负责对变更的部分进行高效的重新绘制。</p>
+</li>
+</ol>
+<p>SwiftUI 的思想也完全一样，而且实际处理也不外乎这几个步骤。使用描述方式开发，大幅减少了在 app 开发者层面上出现问题的机率。</p>
+<p>由于 Swift ABI 已经稳定，SwiftUI 是一个搭载在用户 iOS 系统上的 Swift 框架。因此它的<strong>最低支持的版本是 iOS 13，可能想要在实际项目中使用，还需要等待一两年时间</strong>。</p>
+<h3 id="三、SwiftUI语法"><a href="#三、SwiftUI语法" class="headerlink" title="三、SwiftUI语法"></a>三、SwiftUI语法</h3><p>常用功能点：</p>
+<ul>
+<li><p><a target="_blank" rel="noopener" href="https://developer.apple.com/tutorials/swiftui/creating-and-combining-views">教程 1 - Creating and Combining Views</a></p>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://developer.apple.com/tutorials/swiftui/creating-and-combining-views#create-a-new-project-and-explore-the-canvas">SwiftUI app 的启动</a></li>
+<li><a target="_blank" rel="noopener" href="https://developer.apple.com/tutorials/swiftui/creating-and-combining-views#create-a-new-project-and-explore-the-canvas">关于 some View</a></li>
+<li><a target="_blank" rel="noopener" href="https://developer.apple.com/tutorials/swiftui/creating-and-combining-views#customize-the-text-view">预览 SwiftUI</a></li>
+<li><a target="_blank" rel="noopener" href="https://developer.apple.com/tutorials/swiftui/creating-and-combining-views#combine-views-using-stacks">关于 ViewBuilder</a></li>
+<li><a target="_blank" rel="noopener" href="https://developer.apple.com/tutorials/swiftui/creating-and-combining-views#create-a-custom-image-view">链式调用修改 View 的属性</a></li>
+</ul>
+</li>
+<li><p><a target="_blank" rel="noopener" href="https://developer.apple.com/tutorials/swiftui/building-lists-and-navigation">教程 2 - Building Lists and Navigation</a></p>
+<ul>
+<li><p><a target="_blank" rel="noopener" href="https://developer.apple.com/tutorials/swiftui/building-lists-and-navigation#create-the-list-of-landmarks">静态 <code>List</code></a></p>
+</li>
+<li><p><a target="_blank" rel="noopener" href="https://developer.apple.com/tutorials/swiftui/building-lists-and-navigation#make-the-list-dynamic">动态 <code>List</code> 和 <code>Identifiable</code></a></p>
+</li>
+</ul>
+</li>
+<li><p><a target="_blank" rel="noopener" href="https://developer.apple.com/tutorials/swiftui/handling-user-input">教程 3 - Handling User Input</a></p>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://developer.apple.com/tutorials/swiftui/handling-user-input#add-a-control-to-toggle-the-state"><code>@State</code> 和 <code>Binding</code></a></li>
+</ul>
+</li>
+<li><p><a target="_blank" rel="noopener" href="https://developer.apple.com/tutorials/swiftui/animating-views-and-transitions">教程 5 - Animating Views and Transitions</a></p>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://developer.apple.com/tutorials/swiftui/animating-views-and-transitions#customize-view-transitions">两种动画的方式</a></li>
+</ul>
+</li>
+<li><p><a target="_blank" rel="noopener" href="https://developer.apple.com/tutorials/swiftui/working-with-ui-controls">教程 7 - Working with UI Controls</a></p>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://developer.apple.com/tutorials/swiftui/working-with-ui-controls#delay-edit-propagation">关于 <code>View</code> 的生命周期</a></li>
+</ul>
+</li>
+</ul>
+<h3 id="四、学习资料"><a href="#四、学习资料" class="headerlink" title="四、学习资料"></a>四、学习资料</h3><ul>
+<li><p><a target="_blank" rel="noopener" href="https://developer.apple.com/tutorials/swiftui/creating-and-combining-views">官网教程</a></p>
+</li>
+<li><p><a target="_blank" rel="noopener" href="https://onevcat.com/categories/swiftui/">SwiftUI — OneV</a></p>
+</li>
+</ul>
+
+    </article>
+    <!-- license  -->
+    
+        <div class="license-wrapper">
+            <p>Author：<a href="https://tenloy.github.io">Tenloy</a>
+            <p>原文链接：<a href="https://tenloy.github.io/2021/06/29/SwiftUI.html">https://tenloy.github.io/2021/06/29/SwiftUI.html</a>
+            <p>发表日期：2021.06.29 , 10:30 PM</p>
+            <p>更新日期：2021.09.08 , 1:33 PM</p>
+            <p>版权声明：本文采用<a rel="license noopener" target="_blank" href="http://creativecommons.org/licenses/by-nc/4.0/">Crative Commons 4.0 许可协议</a>进行许可</p>
+        </div>
+    
+    <!-- paginator  -->
+    <ul class="post-paginator">
+        <li class="next">
+            
+                <div class="nextSlogan">Next Post</div>
+                <a href= "/2021/06/30/Lag-Monitor.html" title= "iOS卡顿监控">
+                    <div class="nextTitle">iOS卡顿监控</div>
+                </a>
+            
+        </li>
+        <li class="previous">
+            
+                <div class="prevSlogan">Previous Post</div>
+                <a href= "/2021/06/29/Swift-Version-History.html" title= "Swift版本更新API介绍">
+                    <div class="prevTitle">Swift版本更新API介绍</div>
+                </a>
+            
+        </li>
+    </ul>
+    <!-- 评论插件 -->
+    <!-- 来必力City版安装代码 -->
+
+<!-- City版安装代码已完成 -->
+    
+    
+    <!-- gitalk评论 -->
+
+    <!-- utteranc评论 -->
+
+    <!-- partial('_partial/comment/changyan') -->
+    <!--PC版-->
+
+
+    
+    
+
+    <!-- 评论 -->
+</main>
+            <!-- profile -->
+            
+        </div>
+        <footer class="footer footer-unloaded">
+    <!-- social  -->
+    
+    <div class="social">
+        
+    
+        
+            
+                <a href="mailto:luotengoto@163.com" class="iconfont-archer email" title=email ></a>
+            
+        
+    
+        
+            
+                <a href="//github.com/Tenloy" class="iconfont-archer github" target="_blank" title=github></a>
+            
+        
+    
+        
+            
+                <a href="https://www.jianshu.com/u/8db1bc12db9f" class="iconfont-jian jianshu" target="_blank" title=jianshu></a>
+            
+        
+    
+        
+            
+                <a href="/atom.xml" class="iconfont-archer rss" target="_blank" title=rss></a>
+            
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+
+    </div>
+    
+    <!-- powered by Hexo  -->
+    <div class="copyright">
+        <span id="hexo-power">Powered by <a href="https://hexo.io/" target="_blank">Hexo</a></span><span class="iconfont-archer power">&#xe635;</span><span id="theme-info">theme <a href="https://github.com/fi3ework/hexo-theme-archer" target="_blank">Archer</a></span>
+    </div>
+    <!-- 不蒜子  -->
+    
+    <div class="busuanzi-container">
+    
+     
+    <span id="busuanzi_container_site_pv">PV: <span id="busuanzi_value_site_pv"></span> :)</span>
+    
+    </div>
+    
+</footer>
+    </div>
+    <!-- toc -->
+    
+    <div class="toc-wrapper" style=
+    
+
+
+
+
+
+
+
+top:40vh;
+
+    >
+        <div class="toc-catalog">
+            <span class="iconfont-archer catalog-icon">&#xe613;</span><span>CATALOG</span>
+        </div>
+        <ol class="toc"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%80%E3%80%81UIKit%E7%9A%84%E4%B8%8D%E8%B6%B3"><span class="toc-text">一、UIKit的不足</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BA%8C%E3%80%81%E5%A3%B0%E6%98%8E%E5%BC%8F%E7%BC%96%E7%A8%8B%E7%9A%84%E5%B4%9B%E8%B5%B7"><span class="toc-text">二、声明式编程的崛起</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%89%E3%80%81SwiftUI%E8%AF%AD%E6%B3%95"><span class="toc-text">三、SwiftUI语法</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%9B%9B%E3%80%81%E5%AD%A6%E4%B9%A0%E8%B5%84%E6%96%99"><span class="toc-text">四、学习资料</span></a></li></ol>
+    </div>
+    
+    <div class="back-top iconfont-archer">&#xe639;</div>
+    <div class="sidebar sidebar-hide">
+    <ul class="sidebar-tabs sidebar-tabs-active-0">
+        <li class="sidebar-tab-categories"><span class="iconfont-archer">&#xe666;</span><span class="tab-name">Cate</span></li>
+        <li class="sidebar-tab-archives"><span class="iconfont-archer">&#xe67d;</span><span class="tab-name">Archive</span></li>
+        <li class="sidebar-tab-tags"><span class="iconfont-archer">&#xe61b;</span><span class="tab-name">Tag</span></li>
+    </ul>
+    <div class="sidebar-content sidebar-content-show-archive">
+        <div class="sidebar-panel-categories">
+    <div class="sidebar-categories-name">
+    
+        <span class="sidebar-category-name" data-categories="软件工程-化"><span class="iconfont-archer">&#xe60a;</span>软件工程-化</span>
+    
+        <span class="sidebar-category-name" data-categories="操作系统"><span class="iconfont-archer">&#xe60a;</span>操作系统</span>
+    
+        <span class="sidebar-category-name" data-categories="工程化"><span class="iconfont-archer">&#xe60a;</span>工程化</span>
+    
+        <span class="sidebar-category-name" data-categories="Data"><span class="iconfont-archer">&#xe60a;</span>Data</span>
+    
+        <span class="sidebar-category-name" data-categories="Swift"><span class="iconfont-archer">&#xe60a;</span>Swift</span>
+    
+        <span class="sidebar-category-name" data-categories="性能优化"><span class="iconfont-archer">&#xe60a;</span>性能优化</span>
+    
+        <span class="sidebar-category-name" data-categories="容器化"><span class="iconfont-archer">&#xe60a;</span>容器化</span>
+    
+        <span class="sidebar-category-name" data-categories="DSL"><span class="iconfont-archer">&#xe60a;</span>DSL</span>
+    
+        <span class="sidebar-category-name" data-categories="Algorithm"><span class="iconfont-archer">&#xe60a;</span>Algorithm</span>
+    
+        <span class="sidebar-category-name" data-categories="iOS"><span class="iconfont-archer">&#xe60a;</span>iOS</span>
+    
+        <span class="sidebar-category-name" data-categories="React"><span class="iconfont-archer">&#xe60a;</span>React</span>
+    
+        <span class="sidebar-category-name" data-categories="Web"><span class="iconfont-archer">&#xe60a;</span>Web</span>
+    
+        <span class="sidebar-category-name" data-categories="计算机网络"><span class="iconfont-archer">&#xe60a;</span>计算机网络</span>
+    
+    </div>
+    <div class="iconfont-archer sidebar-categories-empty">&#xe678;</div>
+    <div class="sidebar-categories-list"></div>
+</div>
+          <div class="sidebar-panel-archives">
+    <!-- 在ejs中将archive按照时间排序 -->
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    <div class="total-and-search">
+        <div class="total-archive">
+        Total : 28
+        </div>
+        <!-- search  -->
+        
+            <div class="site-search popup-trigger tl-side-search"> 
+                <span class="iconfont-jian search-icon">&#xe7fc;搜索</span>
+            </div>
+        
+    </div>
+    
+    <div class="post-archive">
+    
+    
+    
+    
+    <div class="archive-year"> 2021 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/10</span><a class="archive-post-title" href= "/2021/09/10/AFN-Analyse.html" >[转] AFN框架实现解析</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/09</span><a class="archive-post-title" href= "/2021/09/09/computer-network-knowledge.html" >计算机网络相关知识汇总</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/08</span><a class="archive-post-title" href= "/2021/09/08/Log.html" >移动端日志库</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/01</span><a class="archive-post-title" href= "/2021/07/01/Crash-Monitor.html" >iOS崩溃监控与分析</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/30</span><a class="archive-post-title" href= "/2021/06/30/Lag-Monitor.html" >iOS卡顿监控</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/29</span><a class="archive-post-title" href= "/2021/06/29/SwiftUI.html" >SwiftUI</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/29</span><a class="archive-post-title" href= "/2021/06/29/Swift-Version-History.html" >Swift版本更新API介绍</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/28</span><a class="archive-post-title" href= "/2021/06/28/GCD.html" >深入浅出GCD常用API</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/28</span><a class="archive-post-title" href= "/2021/06/28/AutoreleasePool.html" >AutoreleasePool</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/26</span><a class="archive-post-title" href= "/2021/06/26/RunLoop-Reposted-From-ibireme.html" >[转] 深入理解RunLoop—ibireme</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/24</span><a class="archive-post-title" href= "/2021/06/24/Protocol-Buffer.html" >Protocol Buffer的基本介绍</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/22</span><a class="archive-post-title" href= "/2021/06/22/dynamic-programming.html" >(二) 动态规划算法</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/18</span><a class="archive-post-title" href= "/2021/06/18/Web-Module.html" >前端各种模块化方案总结</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/27</span><a class="archive-post-title" href= "/2021/05/27/Fiber.html" >[转] 最通俗的 React Fiber(时间分片)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/27</span><a class="archive-post-title" href= "/2021/05/27/Coroutine.html" >[转] 什么是协程</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/29</span><a class="archive-post-title" href= "/2021/04/29/Engineering.html" >工程化、动态化、容器化、组件化</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/29</span><a class="archive-post-title" href= "/2021/04/29/DSL.html" >[转] 谈谈DSL以及DSL的应用（以CocoaPods 为例）</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/26</span><a class="archive-post-title" href= "/2021/04/26/Containers.html" >常见的容器概念：Linux容器、Docker容器、服务器容器</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/24</span><a class="archive-post-title" href= "/2021/04/24/Dock-Reprinted-from-RuanYIFeng.html" >[转] Docker入门教程</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/20</span><a class="archive-post-title" href= "/2021/04/20/Sync-Async.html" >同步和异步解读及编程中的使用场景</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/17</span><a class="archive-post-title" href= "/2021/04/17/Arm64-Handbook.html" >ARM64指令简易手册</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/16</span><a class="archive-post-title" href= "/2021/04/16/Arm64-Introduce.html" >iOS需要了解的ARM64汇编</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/15</span><a class="archive-post-title" href= "/2021/04/15/Ins-SysCall-Kernel-Shell.html" >指令、系统调用、库、Shell、APP的层次关系</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/14</span><a class="archive-post-title" href= "/2021/04/14/ISA-Microarch-Soc.html" >指令集、微架构、手机芯片(Soc)及ARM的介绍</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/13</span><a class="archive-post-title" href= "/2021/04/13/Command-Line.html" >CLI-Shell-Terminal-脚本概念梳理</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/12</span><a class="archive-post-title" href= "/2021/04/12/CI-CD.html" >CI-CD</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/10</span><a class="archive-post-title" href= "/2021/04/10/GithubPages-Hexo.html" >使用Hexo+Github Pages搭建个人博客</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/06</span><a class="archive-post-title" href= "/2021/04/06/iOS-Knowledge-Tree/" >iOS-interview</a>
+        </li>
+    
+    </div>
+  </div>
+        <div class="sidebar-panel-tags">
+    <div class="sidebar-tags-name">
+    
+        <span class="sidebar-tag-name" data-tags="hexo"><span class="iconfont-archer">&#xe606;</span>hexo</span>
+    
+        <span class="sidebar-tag-name" data-tags="CI/CD"><span class="iconfont-archer">&#xe606;</span>CI/CD</span>
+    
+        <span class="sidebar-tag-name" data-tags="多线程"><span class="iconfont-archer">&#xe606;</span>多线程</span>
+    
+        <span class="sidebar-tag-name" data-tags="协程"><span class="iconfont-archer">&#xe606;</span>协程</span>
+    
+        <span class="sidebar-tag-name" data-tags="SwiftUI"><span class="iconfont-archer">&#xe606;</span>SwiftUI</span>
+    
+        <span class="sidebar-tag-name" data-tags="Swift-Syntax"><span class="iconfont-archer">&#xe606;</span>Swift-Syntax</span>
+    
+        <span class="sidebar-tag-name" data-tags="Log"><span class="iconfont-archer">&#xe606;</span>Log</span>
+    
+        <span class="sidebar-tag-name" data-tags="CLI"><span class="iconfont-archer">&#xe606;</span>CLI</span>
+    
+        <span class="sidebar-tag-name" data-tags="Shell"><span class="iconfont-archer">&#xe606;</span>Shell</span>
+    
+        <span class="sidebar-tag-name" data-tags="ISA"><span class="iconfont-archer">&#xe606;</span>ISA</span>
+    
+        <span class="sidebar-tag-name" data-tags="Microarch"><span class="iconfont-archer">&#xe606;</span>Microarch</span>
+    
+        <span class="sidebar-tag-name" data-tags="Soc"><span class="iconfont-archer">&#xe606;</span>Soc</span>
+    
+        <span class="sidebar-tag-name" data-tags="Docker"><span class="iconfont-archer">&#xe606;</span>Docker</span>
+    
+        <span class="sidebar-tag-name" data-tags="DSL"><span class="iconfont-archer">&#xe606;</span>DSL</span>
+    
+        <span class="sidebar-tag-name" data-tags="dp"><span class="iconfont-archer">&#xe606;</span>dp</span>
+    
+        <span class="sidebar-tag-name" data-tags="AutoreleasePool"><span class="iconfont-archer">&#xe606;</span>AutoreleasePool</span>
+    
+        <span class="sidebar-tag-name" data-tags="LagMonitor"><span class="iconfont-archer">&#xe606;</span>LagMonitor</span>
+    
+        <span class="sidebar-tag-name" data-tags="ARM64"><span class="iconfont-archer">&#xe606;</span>ARM64</span>
+    
+        <span class="sidebar-tag-name" data-tags="RunLoop"><span class="iconfont-archer">&#xe606;</span>RunLoop</span>
+    
+        <span class="sidebar-tag-name" data-tags="CrashMonitor"><span class="iconfont-archer">&#xe606;</span>CrashMonitor</span>
+    
+        <span class="sidebar-tag-name" data-tags="ARM手册"><span class="iconfont-archer">&#xe606;</span>ARM手册</span>
+    
+        <span class="sidebar-tag-name" data-tags="Fiber"><span class="iconfont-archer">&#xe606;</span>Fiber</span>
+    
+        <span class="sidebar-tag-name" data-tags="interview"><span class="iconfont-archer">&#xe606;</span>interview</span>
+    
+        <span class="sidebar-tag-name" data-tags="GCD"><span class="iconfont-archer">&#xe606;</span>GCD</span>
+    
+        <span class="sidebar-tag-name" data-tags="AFN"><span class="iconfont-archer">&#xe606;</span>AFN</span>
+    
+    </div>
+    <div class="iconfont-archer sidebar-tags-empty">&#xe678;</div>
+    <div class="tag-load-fail" style="display: none; color: #ccc; font-size: 0.6rem;">
+    缺失模块。<br/>
+    1、请确保node版本大于6.2<br/>
+    2、在博客根目录（注意不是archer根目录）执行以下命令：<br/>
+    <span style="color: #f75357; font-size: 1rem; line-height: 2rem;">npm i hexo-generator-json-content --save</span><br/>
+    3、在根目录_config.yml里添加配置：
+    <pre style="color: #787878; font-size: 0.6rem;">
+jsonContent:
+  meta: false
+  pages: false
+  posts:
+    title: true
+    date: true
+    path: true
+    text: false
+    raw: false
+    content: false
+    slug: false
+    updated: false
+    comments: false
+    link: false
+    permalink: false
+    excerpt: false
+    categories: true
+    tags: true</pre>
+    </div> 
+    <div class="sidebar-tags-list"></div>
+</div>
+    </div>
+</div> 
+    <script>
+    var siteMeta = {
+        root: "/",
+        author: "Tenloy"
+    }
+</script>
+    <!-- CDN failover -->
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js"></script>
+    <script type="text/javascript">
+        if (typeof window.$ === 'undefined')
+        {
+            console.warn('jquery load from jsdelivr failed, will load local script')
+            document.write('<script src="/lib/jquery.min.js">\x3C/script>')
+        }
+    </script>
+    <script src="/scripts/main.js"></script>
+    <!-- algolia -->
+    
+        <div class="site-search">
+  <div class="algolia-popup popup">
+    <div class="algolia-search">
+      <div class="algolia-search-input-icon">
+        <i class="fa fa-search"></i>
+      </div>
+      <div class="algolia-search-input" id="algolia-search-input"></div>
+    </div>
+
+    <div class="algolia-results">
+      <div id="algolia-stats"></div>
+      <div id="algolia-hits"></div>
+      <div id="algolia-pagination" class="algolia-pagination"></div>
+    </div>
+
+    <span class="popup-btn-close">
+      <i class="iconfont-archer">&#xe609;</i>
+    </span>
+  </div>
+</div>
+        <script src="https://cdn.jsdelivr.net/npm/instantsearch.js@2.8.0/dist/instantsearch.min.js" defer></script>
+        <script src="/scripts/search.js" defer></script>
+    
+    <!-- busuanzi  -->
+    
+    <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    
+    <!-- CNZZ  -->
+    
+    </div>
+    <!-- async load share.js -->
+    
+        <script src="/scripts/share.js" async></script>    
+     
+    </body>
+</html>
+
+

@@ -1,0 +1,2425 @@
+<!DOCTYPE html>
+<html lang="en">
+    <!-- title -->
+
+
+
+
+<!-- keywords -->
+
+
+
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" >
+    <meta name="author" content="Tenloy">
+    <meta name="renderer" content="webkit">
+    <meta name="copyright" content="Tenloy">
+    
+    <meta name="keywords" content="Tenloy,iOS,Swift">
+    
+    <meta name="description" content="学习 生活 记录 回忆">
+    <meta name="description" content="网络编程：是指编写程序使两台联网的计算机可以完成网络数据交互，完成网络通信。 注意：这里的计算机泛指可以上网的设备，比如PC、手机、服务器、智能电视等等。 我们处于互联网时代，我们可以随时随地通过 Internet 上网、浏览新闻、玩LOL、上淘宝购物等等。 这些过程都发生了网络数据的交互：  bs：browser server 浏览器和服务器的网络编程模型 cs：client server 客户">
+<meta property="og:type" content="article">
+<meta property="og:title" content="计算机网络相关知识汇总">
+<meta property="og:url" content="https://tenloy.github.io/2021/09/09/computer-network-knowledge.html">
+<meta property="og:site_name" content="Tenloy&#39;s Blog">
+<meta property="og:description" content="网络编程：是指编写程序使两台联网的计算机可以完成网络数据交互，完成网络通信。 注意：这里的计算机泛指可以上网的设备，比如PC、手机、服务器、智能电视等等。 我们处于互联网时代，我们可以随时随地通过 Internet 上网、浏览新闻、玩LOL、上淘宝购物等等。 这些过程都发生了网络数据的交互：  bs：browser server 浏览器和服务器的网络编程模型 cs：client server 客户">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://tenloy.github.io/images/ComNet/web-server.jpg">
+<meta property="og:image" content="https://tenloy.github.io/images/ComNet/网络通讯.png">
+<meta property="og:image" content="https://tenloy.github.io/images/ComNet/OSI七层模型.png">
+<meta property="og:image" content="https://tenloy.github.io/images/ComNet/OSI模型通讯.png">
+<meta property="og:image" content="https://tenloy.github.io/images/ComNet/http-reqres-example.png">
+<meta property="og:image" content="https://tenloy.github.io/images/ComNet/http-structure.png">
+<meta property="og:image" content="https://tenloy.github.io/images/ComNet/http-req-msg.png">
+<meta property="og:image" content="https://tenloy.github.io/images/ComNet/http-req-method.png">
+<meta property="og:image" content="https://tenloy.github.io/images/ComNet/http-req-method2.png">
+<meta property="og:image" content="https://tenloy.github.io/images/ComNet/请求.jpeg">
+<meta property="og:image" content="https://tenloy.github.io/images/ComNet/http-res-msg.png">
+<meta property="og:image" content="https://tenloy.github.io/images/ComNet/res-status-code.jpg">
+<meta property="og:image" content="https://tenloy.github.io/images/ComNet/res1.jpg">
+<meta property="og:image" content="https://tenloy.github.io/images/ComNet/res2.jpg">
+<meta property="og:image" content="https://tenloy.github.io/images/ComNet/响应.jpeg">
+<meta property="og:image" content="https://tenloy.github.io/images/ComNet/http-short-connect.png">
+<meta property="og:image" content="https://tenloy.github.io/images/ComNet/http-long-connect.png">
+<meta property="og:image" content="https://tenloy.github.io/images/ComNet/http-cookie-no.png">
+<meta property="og:image" content="https://tenloy.github.io/images/ComNet/http-cookie-yes.png">
+<meta property="og:image" content="https://tenloy.github.io/images/ComNet/socket%E5%8E%9F%E7%90%86.jpg">
+<meta property="og:image" content="https://tenloy.github.io/images/ComNet/socket移动端代码.png">
+<meta property="article:published_time" content="2021-09-09T18:53:12.000Z">
+<meta property="article:modified_time" content="2021-09-08T13:33:06.413Z">
+<meta property="article:author" content="Tenloy">
+<meta property="article:tag" content="Tenloy, iOS, Tenloy Blog, 博客，Swift, 编译, 计算机">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://tenloy.github.io/images/ComNet/web-server.jpg">
+    <meta http-equiv="Cache-control" content="no-cache">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"/>
+    
+    <title>计算机网络相关知识汇总 · Tenloy&#39;s Blog</title>
+    <style type="text/css">
+    @font-face {
+        font-family: 'Oswald-Regular';
+        src: url("/font/Oswald-Regular.ttf");
+    }
+
+    body {
+        margin: 0;
+    }
+
+    header,
+    footer,
+    .back-top,
+    .sidebar,
+    .container,
+    .site-intro-meta,
+    .toc-wrapper {
+        display: none;
+    }
+
+    .site-intro {
+        position: relative;
+        z-index: 3;
+        width: 100%;
+        /* height: 50vh; */
+        overflow: hidden;
+    }
+
+    .site-intro-placeholder {
+        position: absolute;
+        z-index: -2;
+        top: 0;
+        left: 0;
+        width: calc(100% + 300px);
+        height: 100%;
+        background: repeating-linear-gradient(-45deg, #444 0, #444 80px, #333 80px, #333 160px);
+        background-position: center center;
+        transform: translate3d(-226px, 0, 0);
+        animation: gradient-move 2.5s ease-out 0s infinite;
+    }
+
+    @keyframes gradient-move {
+        0% {
+            transform: translate3d(-226px, 0, 0);
+        }
+        100% {
+            transform: translate3d(0, 0, 0);
+        }
+    }
+
+</style>
+
+    <link rel="preload" href= "/css/style.css?v=20180824" as="style" onload="this.onload=null;this.rel='stylesheet'" />
+    <link rel="stylesheet" href= "/css/mobile.css?v=20180824" media="(max-width: 980px)">
+    
+    <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.2.5/jquery.fancybox.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'" />
+    
+    <!-- /*! loadCSS. [c]2017 Filament Group, Inc. MIT License */
+/* This file is meant as a standalone workflow for
+- testing support for link[rel=preload]
+- enabling async CSS loading in browsers that do not support rel=preload
+- applying rel preload css once loaded, whether supported or not.
+*/ -->
+<script>
+(function( w ){
+	"use strict";
+	// rel=preload support test
+	if( !w.loadCSS ){
+		w.loadCSS = function(){};
+	}
+	// define on the loadCSS obj
+	var rp = loadCSS.relpreload = {};
+	// rel=preload feature support test
+	// runs once and returns a function for compat purposes
+	rp.support = (function(){
+		var ret;
+		try {
+			ret = w.document.createElement( "link" ).relList.supports( "preload" );
+		} catch (e) {
+			ret = false;
+		}
+		return function(){
+			return ret;
+		};
+	})();
+
+	// if preload isn't supported, get an asynchronous load by using a non-matching media attribute
+	// then change that media back to its intended value on load
+	rp.bindMediaToggle = function( link ){
+		// remember existing media attr for ultimate state, or default to 'all'
+		var finalMedia = link.media || "all";
+
+		function enableStylesheet(){
+			link.media = finalMedia;
+		}
+
+		// bind load handlers to enable media
+		if( link.addEventListener ){
+			link.addEventListener( "load", enableStylesheet );
+		} else if( link.attachEvent ){
+			link.attachEvent( "onload", enableStylesheet );
+		}
+
+		// Set rel and non-applicable media type to start an async request
+		// note: timeout allows this to happen async to let rendering continue in IE
+		setTimeout(function(){
+			link.rel = "stylesheet";
+			link.media = "only x";
+		});
+		// also enable media after 3 seconds,
+		// which will catch very old browsers (android 2.x, old firefox) that don't support onload on link
+		setTimeout( enableStylesheet, 3000 );
+	};
+
+	// loop through link elements in DOM
+	rp.poly = function(){
+		// double check this to prevent external calls from running
+		if( rp.support() ){
+			return;
+		}
+		var links = w.document.getElementsByTagName( "link" );
+		for( var i = 0; i < links.length; i++ ){
+			var link = links[ i ];
+			// qualify links to those with rel=preload and as=style attrs
+			if( link.rel === "preload" && link.getAttribute( "as" ) === "style" && !link.getAttribute( "data-loadcss" ) ){
+				// prevent rerunning on link
+				link.setAttribute( "data-loadcss", true );
+				// bind listeners to toggle media back
+				rp.bindMediaToggle( link );
+			}
+		}
+	};
+
+	// if unsupported, run the polyfill
+	if( !rp.support() ){
+		// run once at least
+		rp.poly();
+
+		// rerun poly on an interval until onload
+		var run = w.setInterval( rp.poly, 500 );
+		if( w.addEventListener ){
+			w.addEventListener( "load", function(){
+				rp.poly();
+				w.clearInterval( run );
+			} );
+		} else if( w.attachEvent ){
+			w.attachEvent( "onload", function(){
+				rp.poly();
+				w.clearInterval( run );
+			} );
+		}
+	}
+
+
+	// commonjs
+	if( typeof exports !== "undefined" ){
+		exports.loadCSS = loadCSS;
+	}
+	else {
+		w.loadCSS = loadCSS;
+	}
+}( typeof global !== "undefined" ? global : this ) );
+</script>
+
+    <link rel="icon" href= "/assets/favicon.ico" />
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.min.js" as="script" />
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js" as="script" />
+    <link rel="preload" href="/scripts/main.js" as="script" />
+    <link rel="preload" as="font" href="/font/Oswald-Regular.ttf" crossorigin>
+    <link rel="preload" as="font" href="https://at.alicdn.com/t/font_327081_1dta1rlogw17zaor.woff" crossorigin>
+    
+        <!-- algolia -->
+        <script>
+            
+            var hits = JSON.parse('{"per_page":10}')
+            var labels = JSON.parse('{"input_placeholder":"Search for Posts","hits_empty":"没有找到任何搜索结果: ${query}","hits_stats":"找到约${hits}条结果（用时${time}ms）"}')
+
+            var algolia = {
+                applicationID: 'V0HYXBS9FB',
+                apiKey: '6550d5de786935564142097c3e78c380',
+                indexName: 'law_blog_index',
+                hits: hits,
+                labels: labels
+            }
+        </script>
+    
+    <!-- fancybox -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.2.5/jquery.fancybox.min.js" defer></script>
+    <!-- 百度统计  -->
+    
+    <!-- 谷歌统计  -->
+    
+<meta name="generator" content="Hexo 5.4.0"><link rel="alternate" href="/atom.xml" title="Tenloy's Blog" type="application/atom+xml">
+</head>
+
+    
+        <body class="post-body">
+    
+    
+<header class="header">
+
+    <div class="read-progress"></div>
+    <div class="header-sidebar-menu">&#xe775;</div>
+    <!-- post页的toggle banner  -->
+    
+    <div class="banner">
+            <div class="blog-title">
+                <a href="/" >Tenloy&#39;s Blog</a>
+            </div>
+            <div class="post-title">
+                <a href="#" class="post-name">计算机网络相关知识汇总</a>
+            </div>
+    </div>
+    
+    <!-- 将home-link的操作改为应用到header-top-right上 -->
+    <div class="header-top-right">
+        <!-- search  -->
+        
+            <div class="site-search popup-trigger tl-search">
+                <span class="iconfont-jian tl-search-icon">&#xe7fc;搜索</span>
+            </div>
+            
+        <a class="home-link" href=/>Tenloy's Blog</a>
+    </div>
+</header>
+    <div class="wrapper">
+        <div class="site-intro" style="
+
+
+
+
+
+
+
+height:40vh;
+">
+    
+    <!-- 主页  -->
+    
+    
+    <!-- 404页  -->
+            
+    <div class="site-intro-placeholder"></div>
+    <div class="site-intro-img" style="background-image: url(/intro/post-bg.jpg)"></div>
+    <div class="site-intro-meta">
+        <!-- 标题  -->
+        <h1 class="intro-title">
+            <!-- 主页  -->
+            
+            计算机网络相关知识汇总
+            <!-- 404 -->
+            
+        </h1>
+        <!-- 副标题 -->
+        <p class="intro-subtitle">
+            <!-- 主页副标题  -->
+            
+            
+            <!-- 404 -->
+            
+        </p>
+        <!-- 文章页meta -->
+        
+            <div class="post-intros">
+                <!-- 文章页标签  -->
+                
+                
+                    <div class="post-intro-read">
+                        <span>Word count: <span class="post-count word-count">18k</span>Reading time: <span class="post-count reading-time">65 min</span></span>
+                    </div>
+                
+                <div class="post-intro-meta">
+                    <span class="post-intro-calander iconfont-archer">&#xe676;</span>
+                    <span class="post-intro-time">2021/09/09</span>
+                    
+                    <span id="busuanzi_container_page_pv" class="busuanzi-pv">
+                        <span class="iconfont-archer">&#xe602;</span>
+                        <span id="busuanzi_value_page_pv"></span>
+                    </span>
+                    
+                    <span class="shareWrapper">
+                        <span class="iconfont-archer shareIcon">&#xe71d;</span>
+                        <span class="shareText">Share</span>
+                        <ul class="shareList">
+                            <li class="iconfont-archer share-qr" data-type="qr">&#xe75b;
+                                <div class="share-qrcode"></div>
+                            </li>
+                            <li class="iconfont-archer" data-type="weibo">&#xe619;</li>
+                            <li class="iconfont-archer" data-type="qzone">&#xe62e;</li>
+                            <li class="iconfont-archer" data-type="twitter">&#xe634;</li>
+                            <li class="iconfont-archer" data-type="facebook">&#xe67a;</li>
+                        </ul>
+                    </span>
+                </div>
+            </div>
+        
+    </div>
+</div>
+        <script>
+ 
+  // get user agent
+  var browser = {
+    versions: function () {
+      var u = window.navigator.userAgent;
+      return {
+        userAgent: u,
+        trident: u.indexOf('Trident') > -1, //IE内核
+        presto: u.indexOf('Presto') > -1, //opera内核
+        webKit: u.indexOf('AppleWebKit') > -1, //苹果、谷歌内核
+        gecko: u.indexOf('Gecko') > -1 && u.indexOf('KHTML') == -1, //火狐内核
+        mobile: !!u.match(/AppleWebKit.*Mobile.*/), //是否为移动终端
+        ios: !!u.match(/\(i[^;]+;( U;)? CPU.+Mac OS X/), //ios终端
+        android: u.indexOf('Android') > -1 || u.indexOf('Linux') > -1, //android终端或者uc浏览器
+        iPhone: u.indexOf('iPhone') > -1 || u.indexOf('Mac') > -1, //是否为iPhone或者安卓QQ浏览器
+        iPad: u.indexOf('iPad') > -1, //是否为iPad
+        webApp: u.indexOf('Safari') == -1, //是否为web应用程序，没有头部与底部
+        weixin: u.indexOf('MicroMessenger') == -1, //是否为微信浏览器
+        uc: u.indexOf('UCBrowser') > -1 //是否为android下的UC浏览器
+      };
+    }()
+  }
+  console.log("userAgent:" + browser.versions.userAgent);
+
+  // callback
+  function fontLoaded() {
+    console.log('font loaded');
+    if (document.getElementsByClassName('site-intro-meta')) {
+      document.getElementsByClassName('intro-title')[0].classList.add('intro-fade-in');
+      document.getElementsByClassName('intro-subtitle')[0].classList.add('intro-fade-in');
+      var postIntros = document.getElementsByClassName('post-intros')[0]
+      if (postIntros) {
+        postIntros.classList.add('post-fade-in');
+      }
+    }
+  }
+
+  // UC不支持跨域，所以直接显示
+  function asyncCb(){
+    if (browser.versions.uc) {
+      console.log("UCBrowser");
+      fontLoaded();
+    } else {
+      WebFont.load({
+        custom: {
+          families: ['Oswald-Regular']
+        },
+        loading: function () {  //所有字体开始加载
+          // console.log('loading');
+        },
+        active: function () {  //所有字体已渲染
+          fontLoaded();
+        },
+        inactive: function () { //字体预加载失败，无效字体或浏览器不支持加载
+          console.log('inactive: timeout');
+          fontLoaded();
+        },
+        timeout: 5000 // Set the timeout to two seconds
+      });
+    }
+  }
+
+  function asyncErr(){
+    console.warn('script load from CDN failed, will load local script')
+  }
+
+  // load webfont-loader async, and add callback function
+  function async(u, cb, err) {
+    var d = document, t = 'script',
+      o = d.createElement(t),
+      s = d.getElementsByTagName(t)[0];
+    o.src = u;
+    if (cb) { o.addEventListener('load', function (e) { cb(null, e); }, false); }
+    if (err) { o.addEventListener('error', function (e) { err(null, e); }, false); }
+    s.parentNode.insertBefore(o, s);
+  }
+
+  var asyncLoadWithFallBack = function(arr, success, reject) {
+      var currReject = function(){
+        reject()
+        arr.shift()
+        if(arr.length)
+          async(arr[0], success, currReject)
+        }
+
+      async(arr[0], success, currReject)
+  }
+
+  asyncLoadWithFallBack([
+    "https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.min.js", 
+    "https://cdn.bootcss.com/webfont/1.6.28/webfontloader.js",
+    "/lib/webfontloader.min.js"
+  ], asyncCb, asyncErr)
+</script>        
+        <img class="loading" src="/assets/loading.svg" style="display: block; margin: 6rem auto 0 auto; width: 6rem; height: 6rem;" />
+        <div class="container container-unloaded">
+            <main class="main post-page">
+    <article class="article-entry">
+        <p>网络编程：是指<strong>编写程序使两台联网的计算机可以完成网络数据交互，完成网络通信。</strong></p>
+<p>注意：这里的计算机泛指可以上网的设备，比如PC、手机、服务器、智能电视等等。</p>
+<p>我们处于互联网时代，我们可以随时随地通过 Internet 上网、浏览新闻、玩LOL、上淘宝购物等等。</p>
+<p>这些过程都发生了网络数据的交互：</p>
+<ul>
+<li>bs：browser server 浏览器和服务器的网络编程模型</li>
+<li>cs：client server 客户端和服务器的网络编程模型</li>
+</ul>
+<p>强调：网络编程重在思想，node只是一个可以帮助我们网络编程的一个工具而已。使用其他编程语言或者操作系统进行网络编程，思想都是一样的。</p>
+<h1 id="一、服务器与服务器容器"><a href="#一、服务器与服务器容器" class="headerlink" title="一、服务器与服务器容器"></a>一、服务器与服务器容器</h1><h2 id="1-1-服务器-server"><a href="#1-1-服务器-server" class="headerlink" title="1.1 服务器(server)"></a>1.1 服务器(server)</h2><p>服务器(server)指：<a target="_blank" rel="noopener" href="https://zh.wikipedia.org/wiki/%E6%9C%8D%E5%8A%A1%E5%99%A8">服务器</a></p>
+<ul>
+<li>一个管理资源并为用户<font color='red'>提供服务</font>的计算机软件，通常分为文件服务器（能使用户在其它计算机访问文件），数据库服务器和应用程序服务器。</li>
+<li>运行以上软件的计算机，或称为网络主机（host）。通常是指那些具有较高计算能力，能够提供给多个用户使用的计算机。</li>
+</ul>
+<p>有时，这两种定义会引起混淆。如网页服务器：</p>
+<ul>
+<li>它可能是指用于网站的计算机。</li>
+<li>也可能是指像Apache这样的软件，运行在这样的计算机上以管理网页组件和回应网页浏览器的请求。</li>
+</ul>
+<p>根据服务器提供的服务类型不同，分为文件服务器，数据库服务器，应用程序服务器，Web服务器等。</p>
+<h3 id="1-1-1-作为硬件"><a href="#1-1-1-作为硬件" class="headerlink" title="1.1.1 作为硬件"></a>1.1.1 作为硬件</h3><p>服务器就是一台特殊的、功能强大、没有外接设备(屏幕、键盘、鼠标)的电脑。一个服务器一个IP，有些大公司，拥有成千上万个服务器，我们通过主机域名来访问资源，服务器是随机分配给我们的。</p>
+<p>服务器与PC机的不同点很多：</p>
+<ul>
+<li>服务器的最大特点就是其强大的运算能力或是具备大量磁盘存储空间，使其能在短时间内完成大量工作及负载大量的文件资料存储，并为大量用户提供服务。</li>
+<li>服务器通常以网络作为介质，既可以通过内部网对内提供服务，也可以通过互联网对外提供服务。所以PC机在一个时刻通常只为一个用户服务。而服务器能够通过网络同时提供给多个用户使用</li>
+<li>和普通的个人电脑相比， 服务器需要连续的工作在7×24小时环境。这就意味着服务器需要更多的稳定性技术RAS，比如支持使用ECC存储器。</li>
+<li>服务器不需要比较复杂的可视化操作界面，因为比较耗资源。服务器一旦部署好服务后，一般动的比较少。</li>
+</ul>
+<h3 id="1-1-2-作为软件"><a href="#1-1-2-作为软件" class="headerlink" title="1.1.2 作为软件"></a>1.1.2 作为软件</h3><h4 id="1-常见分类"><a href="#1-常见分类" class="headerlink" title="1. 常见分类"></a>1. 常见分类</h4><p>服务器软件工作在客户端-服务器或浏览器-服务器的方式，有很多形式的服务器，按提供的服务类型不同可分为：</p>
+<ul>
+<li><strong>应用程序服务器(application server/AP server)</strong></li>
+<li>**网页服务器(Web server) ** —— Apache、Nginx、IIS、Tomcat、NodeJS等；</li>
+<li>文件服务器(file server)或网络存储设备(network attached storage) —— Server-U、FileZilla、VsFTP等；</li>
+<li>数据库服务器(database server) —— 如Oracle数据库服务器，MySQL，MariaDB，PostgreSQL，Microsoft SQL Server，MongoDB，Redis等；</li>
+<li>邮件服务器(mail server) —— Postfix、Sendmail等；</li>
+<li>FTP服务器（FTP server）—— Pureftpd、Proftpd、WU-ftpd、Serv-U、vs-ftpd等；</li>
+<li>域名服务器（DNS server）—— 如BIND等</li>
+<li>代理服务器（proxy server）—— 如Squid cache</li>
+<li>其他，如Active Directory服务器、Minecraft游戏服务器等</li>
+</ul>
+<img src = "/images/ComNet/servers.jpg" width = '50%' align:left style='margin-left:10%'>
+
+<h4 id="2-应用程序服务器"><a href="#2-应用程序服务器" class="headerlink" title="2. 应用程序服务器"></a>2. 应用程序服务器</h4><p><strong>运行应用程序，提供应用程序所实现服务</strong>。通常来说，<strong>服务器端的应用程序实现各种业务逻辑，应用服务器通过各种协议把这些业务逻辑曝露给客户端的程序</strong>。它提供了访问业务逻辑的途径，以供客户端应用程序使用。应用服务器使用此业务逻辑就像调用对象的一个方法一样。</p>
+<p>如Bea公司的WebLogic、JBoss、Sun的GlassFish，及Tomcat、Jetty、Websphere、JBoss等都是Java EE WEB应用服务器/<strong>Java EE服务器</strong></p>
+<ul>
+<li>Java EE服务器是实现Java EE技术规范，并提供标准Java EE服务的应用程序服务器。</li>
+<li>Java EE服务器有时称为应用服务器，因为它们允许您向客户端提供应用数据，就像Web服务器向Web浏览器提供Web页面一样。</li>
+</ul>
+<h4 id="3-网页服务器-Web-server"><a href="#3-网页服务器-Web-server" class="headerlink" title="3. 网页服务器(Web server)"></a>3. 网页服务器(Web server)</h4><p>WEB：现广泛译作网络、互联网等技术领域。表现为三种形式，即<strong>超文本（hypertext）、超媒体（hypermedia）、超文本传输协议（HTTP）</strong>等。</p>
+<p>Web server可以向浏览器等WEB客户端提供文档浏览、数据文件下载等WEB服务。如Apache（静态）、Apache Tomcat（静态、动态）、Node.js、lighttpd、nginx、微软的IIS等；</p>
+<img src="/images/ComNet/web-server.jpg" alt="图片" style="zoom:90%;" />
+
+<h4 id="4-WEB应用服务器"><a href="#4-WEB应用服务器" class="headerlink" title="4. WEB应用服务器"></a>4. WEB应用服务器</h4><p>上面我们把应用服务器和WEB服务器严格区分：应用服务器通过应用程序接口(通常是网络请求API）把业务逻辑暴露给客户端应用程序。而WEB服务器通过HTTP提供静态内容给浏览器等客户端。</p>
+<p>如果不严格区分，应用服务器包含WEB服务器，因为WEB服务器是WEB服务应用程序实现的。</p>
+<p>WEB应用服务器：结合应用服务器和WEB服务器，可以说，它是带应用服务器的Web服务器，接收HTTP请求后，既能返回页面等静态内容，又能处理业务逻辑返回数据。</p>
+<h3 id="1-1-3-服务器的其它分类"><a href="#1-1-3-服务器的其它分类" class="headerlink" title="1.1.3 服务器的其它分类"></a>1.1.3 服务器的其它分类</h3><p><strong>按操作系统分</strong></p>
+<ul>
+<li>Linux服务器、Windows服务器等；</li>
+</ul>
+<p><strong>按照浏览器的访问权限来分</strong></p>
+<ul>
+<li><p>外网服务器<br>别名：远程服务器，<font color=red>任何网段的设备都能访问的服务器</font><br>应用场景：应用上线后使用的服务器<br>使用人群：供全体用户使用<br>速度：取决于服务器的性能、用户的网速</p>
+</li>
+<li><p>内网服务器<br>别名：本地服务器，<font color=red>只有连同样内网的设备才能访问到的服务器</font><br>应用场景：应用处于开发、测试阶段使用的服务器<br>使用人群：仅供公司内部的开发人员、测试人员使用<br>速度：由于是局域网，所以速度飞快，有助于提高开发测试效率</p>
+</li>
+<li><p>一般公司会有三套服务器：本地测试服务器、外网测试服务器、外网正式服务器<br>内网测试可以直接测试服务器的并发连接性能<br>外网的话首先要考验你的互联网导致的延时和掉包的因素</p>
+</li>
+</ul>
+<h3 id="1-1-4-内网和外网的区别"><a href="#1-1-4-内网和外网的区别" class="headerlink" title="1.1.4 内网和外网的区别"></a>1.1.4 内网和外网的区别</h3><p><font color=red>内网可以访问外网服务器，也可以设置不能访问。</font></p>
+<p><font color=red>外网肯定不能访问内网服务器。</font></p>
+<h4 id="1-内网"><a href="#1-内网" class="headerlink" title="1. 内网"></a>1. 内网</h4><p>内网就是我们平常说的局域网。</p>
+<p>局域网就是在固定的一个地理区域内由2台以上的电脑用网线和其他网络设备搭建而成的一个封闭的计算机组。</p>
+<ul>
+<li>它可以是邻居之间的2台电脑，也可以是一幢100层大楼里的1000台电脑。</li>
+<li><font color=red>可以是独立封闭运行的</font>（配置了服务器，建立了内部的web网页，论坛等等，但时不能上QQ、MSN等等，不能与外部发生通信），也可以是和外网相连接的</li>
+</ul>
+<h4 id="2-外网"><a href="#2-外网" class="headerlink" title="2. 外网"></a>2. 外网</h4><p>外网就是与internet连接的网络，可以跟世界上任何地方取得联系，但不能访问人家的内网服务器。外网就不经路由器或交换机就可以上网的网络，可以直接被外界所访问到。无需经如何设备，直接连接电脑。</p>
+<h4 id="3-区分内网与外网"><a href="#3-区分内网与外网" class="headerlink" title="3. 区分内网与外网"></a>3. 区分内网与外网</h4><ul>
+<li>用猫、路由器连接的都是外网。内网只用交换机<br>但是：有些光纤到楼、小区宽带、教育网、有线电视Cable Modem上网虽然地域范围比较大但本质上还是基于以太网技术，所以仍然属于内网。</li>
+<li>判断内网和外网最简单的方法：判断网段 (有专业的方法，不会)</li>
+<li><font color=red>内网IP的网段</font><ul>
+<li>10.0.0.0 / 8:10.0.0.0 ~ 10.255.255.255</li>
+<li>172.16.0.0 / 12.172.16.0.0 ~ 172.31.255.255</li>
+<li>192.168.0.0 / 16.192.168.0.0 ~ 192.168.255.255</li>
+</ul>
+</li>
+</ul>
+<h4 id="4-为什么生活中很多的局域网？"><a href="#4-为什么生活中很多的局域网？" class="headerlink" title="4. 为什么生活中很多的局域网？"></a>4. 为什么生活中很多的局域网？</h4><p>其实<font color=red>外网IP是比较紧张的，现在的电脑的普及使得外网IP根本不够用，根本做不到一台电脑一个外网IP</font>，内网的产生就是为了解决这个难题的！</p>
+<p>路由器只需一个外网IP就可以供下面的N多电脑联网。因为不同的内网IP是可以重复使用（任何一台电脑要上网，都必须在网络上有一个唯一的IP地址。在局域网内，这个IP地址是唯一的。但是在另外一个局域网，这个IP地址仍然能够使用）。拿网吧举例，一个网吧N多台电脑，其实他只要一个外网IP就可以给下面的电脑提供上网</p>
+<h2 id="1-2-服务器容器"><a href="#1-2-服务器容器" class="headerlink" title="1.2 服务器容器"></a>1.2 服务器容器</h2><p>如果说Linux、Docker容器是装满物体的容器：应用/服务程序 + 运行时环境</p>
+<p>那么服务器中说的容器就是纯指未装物体的容器：运行时环境 — <strong>可以部署应用程序，使其在上面运行的环境</strong>。</p>
+<img src = "/images/ComNet/container_server.jpg" width = '40%' align:left style='margin-left:10%'>
+
+<p>容器是服务器中位于应用程序/组件和平台之间的<code>接口集合</code>。它处理屏蔽了服务器平台的复杂性(如线程安全、事务、网络、资源等细节)，使得应用程序在它的基础上可以方便快捷的部署。<a target="_blank" rel="noopener" href="https://zh.wikipedia.org/zh-hans/Web%E5%AE%B9%E5%99%A8">Web容器</a></p>
+<ul>
+<li><p>容器管理组件的生命周期，向应用程序组件分派请求，并提供与上下文数据（如关于当前请求的信息）的接口。</p>
+</li>
+<li><p>容器一般位于服务器之内，由服务器负责加载和维护。一个容器只能存在于一个服务器之内，一个服务器可以创建和维护多个容器。</p>
+</li>
+<li><p>容器一般遵守可配置的原则，即容器的用户可以通过对容器参数的配置，来达到自己的使用需求，而不需要修改容器的代码。</p>
+</li>
+</ul>
+<p>根据接口实现的规范、用途不同，常见的分类有：</p>
+<img src = "/images/ComNet/containers.jpg" width = '50%' align:left style='margin-left:10%'>
+
+<h3 id="1-2-1-Servlet容器"><a href="#1-2-1-Servlet容器" class="headerlink" title="1.2.1 Servlet容器"></a>1.2.1 Servlet容器</h3><p>Servlet：属于Java EE重要技术规范，构建了”接收请求–调用servlet程序处理–返回响应”基本模型。</p>
+<p>Servlet程序：Java提供了开发Servlet程序的API，该API可以说Servlet容器的一部分，它对接应用程序与Servlet容器；</p>
+<p>Servlet容器：就是<strong>实现了Servlet</strong>技术规范的部署环境，它可以部署运行Servlet程序。</p>
+<h3 id="1-2-2-Java-WEB容器"><a href="#1-2-2-Java-WEB容器" class="headerlink" title="1.2.2 Java WEB容器"></a>1.2.2 Java WEB容器</h3><p>WEB容器：可以部署多个WEB应用程序的环境。</p>
+<p>Java WEB容器：<strong>实现了Java EE</strong>规定的WEB应用技术规范的的部署环境。</p>
+<p>Java EE WEB应用技术规范：Servlet、JSP（JavaServer Pages）、Java WebSocket等。</p>
+<p>所以，完整的<strong>Java WEB</strong>容器包含Servlet容器。</p>
+<h3 id="1-2-3-Java-EE容器"><a href="#1-2-3-Java-EE容器" class="headerlink" title="1.2.3 Java EE容器"></a>1.2.3 Java EE容器</h3><p>Java EE容器：实现了Java EE技术规范的部署环境。</p>
+<p>Java EE技术规范：除了上面说的Servlet、JSP等Java EE WEB应用技术规范，还包括EJB（Enterprise JavaBeans）等许多技术规范。</p>
+<p>所以，<strong>完整的Java EE</strong>容器包含Java WEB容器（Servlet容器）、EJB容器等。</p>
+<h2 id="1-3-举例说明容器与服务器的联系"><a href="#1-3-举例说明容器与服务器的联系" class="headerlink" title="1.3 举例说明容器与服务器的联系"></a>1.3 举例说明容器与服务器的联系</h2><blockquote>
+<p>服务器是指管理资源并为用户提供服务的计算机软件，或运行该软件的硬件设备。</p>
+</blockquote>
+<blockquote>
+<p>容器是对服务器平台上接口的一层上层封装，屏蔽一些复杂性，提供简化版的接口。使得程序可以在其上快捷的开发和部署运行。</p>
+</blockquote>
+<h3 id="1-3-1-Apache、Nginx、IIS"><a href="#1-3-1-Apache、Nginx、IIS" class="headerlink" title="1.3.1 Apache、Nginx、IIS"></a>1.3.1 Apache、Nginx、IIS</h3><p>Apache、Nginx、IIS是目前主流的三个Web服务器。</p>
+<p>但是可以用它们来构建WEB应用服务器，通常它们发现一个请求是动态请求，就通过CGI、ISAPI、特殊管道等协议接口调用后面的应用服务器来协同处理请求。如Nginx通过fastCGI模块来调用ZendEngine执行PHP应用来处理PHP请求。</p>
+<p>Nginx：</p>
+<ul>
+<li>代理，委托一个人帮我去做事情，上网代理，就是我上网的时候如果上网被墙了，我可以用代理帮我们去上网。</li>
+<li>nginx除了是个web服务器还能够做反向代理服务器，反向代理服务器的作用，可以用来做负载均衡代理，委托一个人帮我去做事情，上网代理，就是我上网的时候如果上网被墙了，我可以用代理帮我们去上网。</li>
+<li>也可以用nginx来做负载均衡</li>
+</ul>
+<h3 id="1-3-2-Node没有Web容器"><a href="#1-3-2-Node没有Web容器" class="headerlink" title="1.3.2 Node没有Web容器"></a>1.3.2 Node没有Web容器</h3><ul>
+<li>.net平台的 ASP或者ASP.net 需要 <code>IIS</code> 作为服务器容器</li>
+<li>PHP需要搭载 Apache 或者 <code>Nginx</code> 作为服务器容器</li>
+<li>Java 的 JSP 需要 <code>Tomcat</code> 作为服务器容器</li>
+<li>ruby 的 ruby on rails 需要 搭配 <code>Apache</code> 等作为自己的服务器容器。。。</li>
+</ul>
+<p>如果我用 js 写了一个 web 应用程序，那么 node 就是web服务器，Node，不需要服务器容器。</p>
+<h3 id="1-3-3-Tomcat及常见的JavaEE应用服务器"><a href="#1-3-3-Tomcat及常见的JavaEE应用服务器" class="headerlink" title="1.3.3 Tomcat及常见的JavaEE应用服务器"></a>1.3.3 Tomcat及常见的JavaEE应用服务器</h3><p>Tomcat、Jetty、WebLogic、Websphere、JBoss都是Java（EE） WEB应用服务器。</p>
+<p>Tomcat</p>
+<ul>
+<li>按照Sun Microsystems提供的技术规范，实现了对Servlet和JavaServer Page（JSP）、Java Expression Language 和 Java WebSocket（Java EE）技术的支持。并提供了作为Web服务器的一些特有功能，如Tomcat管理和控制平台、安全局管理和Tomcat阀等。</li>
+<li>因为实现了Servlet规范，所以可以称为是一个Servlet容器，可以运行Servlet程序</li>
+<li>由于Tomcat本身也内含了HTTP服务器，可以通过HTTP提供HTML页面等静态内容的请求访问，因此也可以视作是一个Web服务器。</li>
+<li>因为可以通过Servlet容器，调用Servlet处理动态请求，所以也是一个应用服务器；</li>
+</ul>
+<p>所以，可以说Tomcat是Java（EE） WEB应用服务器。</p>
+<p>注意，不能将Tomcat和Apache HTTP服务器混淆，Apache HTTP服务器是用C语言实现的HTTPWeb服务器；这两个HTTP web server不是捆绑在一起的。Apache Tomcat包含了配置管理工具，也可以通过编辑XML格式的配置文件来进行配置。</p>
+<p>Tomcat提供了一个Jasper编译器用以将JSP编译成对应的Servlet。</p>
+<p>Tomcat的Servlet引擎通常与Apache或者其他Web服务器一起工作。除了用于开发过程中的调试以及那些对速度和事务处理只有很小要求的用户，很少会将Tomcat单独作为Web服务器。但随着版本的更新，正有越来越多的用户将其单独作为Web服务器用以那些对速度和可靠性有较高要求的环境中。</p>
+<h3 id="1-3-4-Nginx-Tomcat的WEB应用服务器-集群"><a href="#1-3-4-Nginx-Tomcat的WEB应用服务器-集群" class="headerlink" title="1.3.4 Nginx + Tomcat的WEB应用服务器(集群)"></a>1.3.4 Nginx + Tomcat的WEB应用服务器(集群)</h3><img src = "/images/ComNet/nginx_tomcat.jpg" width = '50%' align:left style='margin-left:10%'>
+
+<p>一般在实际应用中：</p>
+<ul>
+<li>先是通过Nginx反向代理服务器(reverse proxy server)接收请求，匹配分离动态/静态请求（动静分离）</li>
+<li>如果是静态请求，则转发到另外的Nginx WEB服务器上，返回静态内容；</li>
+<li>如果是动态请求，则转发到后面的Tomcat应用服务器，处理动态请求的业务逻辑。</li>
+</ul>
+<p><a target="_blank" rel="noopener" href="https://blog.csdn.net/tjiyu/article/details/53148174">参考链接 — 各种容器与服务器的区别与联系</a></p>
+<h2 id="1-4-服务器开发"><a href="#1-4-服务器开发" class="headerlink" title="1.4 服务器开发"></a>1.4 服务器开发</h2><p>开发服务器的语言很多：Java、PHP、.net、node.js、python、go、ruby、erlang等等</p>
+<p>不同语言开发的服务器，对应的配置电脑为服务器的软件也不一样(这里说的都是Windows系统的)</p>
+<ul>
+<li>java — Tomcat</li>
+<li>php — wamp (w-windows、a-apache、m - mysql、p-php)</li>
+<li>node.js — NodeJS</li>
+</ul>
+<h2 id="1-5-Apache服务器的配置"><a href="#1-5-Apache服务器的配置" class="headerlink" title="1.5 Apache服务器的配置"></a>1.5 Apache服务器的配置</h2><p>在iOS与前端的学习中，Apache使用起来最方便。所以这里主要说Web服务器：- http服务器： - Apache服务器</p>
+<p>Apache服务器的配置</p>
+<ul>
+<li>Windows系统：wamp软件安装，然后修改一些配置信息</li>
+<li>Mac系统：自带有Apache服务器，通过终端配置一些信息，然后打开即可</li>
+</ul>
+<p>在配置信息中，我们会<font color=red>指定一个文件夹，作为别人访问我们的电脑服务器时能获取到的文件 — 网站根目录</font></p>
+<p>被访问的时候</p>
+<ul>
+<li>如果网站根目录中，<font color=red>有index命名的文件(不管是HTML文件，还是PHP文件)，会直接运行.</font></li>
+<li>如果没有index命名的，那么就会将该文件夹内的文件，以列表形式展示出来.</li>
+</ul>
+<h2 id="1-6-PHP开发服务器是怎么工作的"><a href="#1-6-PHP开发服务器是怎么工作的" class="headerlink" title="1.6 PHP开发服务器是怎么工作的"></a>1.6 PHP开发服务器是怎么工作的</h2><p>PHP服务器，是怎么接收的？</p>
+<h3 id="1-6-1-创建PHP文件"><a href="#1-6-1-创建PHP文件" class="headerlink" title="1.6.1 创建PHP文件"></a>1.6.1 创建PHP文件</h3><ul>
+<li><p>.php文件，写PHP代码，也可以写HTML+CSS+JS代码，跟写在.html文件中，显示效果一模一样。</p>
+<p>不过，PHP代码，需要写在 <?php ?> 标签中，而且标签内只能写PHP代码。</p>
+</li>
+<li><p>.html文件里，不能写PHP代码</p>
+</li>
+</ul>
+<p><font color=red>要放在我们服务器里的根目录里，PHP代码只有放在服务器中，被访问的时候，才会执行</font></p>
+<h3 id="1-6-2-取值"><a href="#1-6-2-取值" class="headerlink" title="1.6.2 取值"></a>1.6.2 取值</h3><p>别人根据URL，访问该PHP文件的时候，如果携带参数，那就会将参数，传值到该文件</p>
+<p>取值：php中为我们预定义了几个 超全局对象</p>
+<ul>
+<li><p>GET取值：$_GET 是一个关系型数组 $_GET[‘key’]</p>
+</li>
+<li><p>POST取值：$_POST 也是一个关系型数组 $_POST[‘key’]</p>
+</li>
+<li><p>POST上传文件: $_FILES</p>
+<p>获取 上传的文件信息 关系型数组 <code>$fileArr = $_FILES[&#39;upFile&#39;];</code></p>
+<p>获取 上传的文件的原本名字 <code>$fileName = $fileArr[&#39;name&#39;];</code></p>
+<p>获取保存在服务器的那个位置 <code>$filePath = $fileArr[&#39;tmp_name&#39;];</code></p>
+<p>PHP将上传的文件，保存至指定位置</p>
+<ul>
+<li><p>参数1：是从上传的文件信息中，取的Path值</p>
+</li>
+<li><p>参数2：我们指定的存储位置</p>
+</li>
+</ul>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">move_uploaded_file(<span class="variable">$filePath</span>,’文件夹/‘.<span class="variable">$fileName</span>); <span class="comment">//注意：<span class="doctag">bug:</span> Mac本上，必须要设置一些指定路径文件夹的权限，设置为everyone可读写，否则，访问的时候，是写不进去东西的</span></span><br></pre></td></tr></table></figure></li>
+</ul>
+<p>注意：key的值就是提交的参数名，需要保持一致</p>
+<h3 id="1-6-3-返回访问结果"><a href="#1-6-3-返回访问结果" class="headerlink" title="1.6.3 返回访问结果"></a>1.6.3 返回访问结果</h3><p><font color=red>如果请求的是HTML文件：原封不动返回，服务器不会动这个HTML文件</font></p>
+<p><font color=red>如果请求的是PHP文件：</font></p>
+<ul>
+<li><p>HTML部分的代码，原封不动的返回</p>
+</li>
+<li><p><code>&lt;?php ?&gt;</code>里的PHP代码，<font color=red>在服务器端执行</font>，只返回输出函数：echo、print_f 打印的结果</p>
+</li>
+</ul>
+<h1 id="二、数据库"><a href="#二、数据库" class="headerlink" title="二、数据库"></a>二、数据库</h1><p>试想一下,如果一个网站的注册用户有1千万个那么应该使用什么格式,什么方式来保存这些数据呢?</p>
+<h2 id="3-1-常规保存方式"><a href="#3-1-常规保存方式" class="headerlink" title="3.1 常规保存方式"></a>3.1 常规保存方式</h2><h3 id="3-1-1-txt文件"><a href="#3-1-1-txt文件" class="headerlink" title="3.1.1 .txt文件"></a>3.1.1 .txt文件</h3><p>因为内容是文本,所以直接使用文本文件保存肯定可以,但是当一个文本文件很大很大时,打开是异常缓慢的</p>
+<h3 id="3-1-2-excel文件"><a href="#3-1-2-excel文件" class="headerlink" title="3.1.2 .excel文件"></a>3.1.2 .excel文件</h3><p>可以用来进行数据的统计,分析等操作,但是当很多个人需要访问同一个.excel文件时,性能也很差</p>
+<h2 id="3-2-数据库"><a href="#3-2-数据库" class="headerlink" title="3.2 数据库"></a>3.2 数据库</h2><p>按照数据结构来组织,存储和管理数据的仓库,软件开发行业一般指的是数据库软件,常见的有:Oracle、MySQL、MSSQL等</p>
+<p>特点:</p>
+<ul>
+<li>数据共享:多用户同时访问数据的稳定性</li>
+<li>故障恢复:数据库软件提供了一套的方法,可以用来发现错误并且修复错误</li>
+<li>减少数据冗余:由于大家都可以使用同一套数据,没有必要重复创建了</li>
+</ul>
+<h2 id="3-3-DBA"><a href="#3-3-DBA" class="headerlink" title="3.3 DBA"></a>3.3 DBA</h2><p>数据库管理员（Database Administrator，简称DBA）</p>
+<p>从事管理和维护数据库管理系统(DBMS)的相关工作人员的统称，属于运维工程师的一个分支</p>
+<p>工作是:</p>
+<ol>
+<li>主要负责业务数据库从设计、测试到部署交付的全生命周期管理。</li>
+<li>保证数据库的稳定性、安全性、完整性和高性能.</li>
+</ol>
+<p>在国外，也有公司把DBA称作数据库工程师(Database Engineer)，两者的工作内容基本相同，都是保证数据库服务7*24小时的稳定高效运转，但是需要区分一下DBA和数据库开发工程师(Database Developer)：</p>
+<ol>
+<li>数据库开发工程师的主要职责是设计和开发数据库管理系统和数据库应用软件系统，侧重于软件研发；</li>
+<li>DBA的主要职责是运维和管理数据库管理系统，侧重于运维管理。</li>
+</ol>
+<h1 id="三、网络编程-—-BS-CS模式"><a href="#三、网络编程-—-BS-CS模式" class="headerlink" title="三、网络编程 — BS/CS模式"></a>三、网络编程 — BS/CS模式</h1><p>网络编程 是指<strong>编写程序使两台联网的计算机可以完成网络数据交互，完成网络通信。</strong></p>
+<p>注意：</p>
+<ul>
+<li>这里的计算机泛指可以上网的设备，比如PC、手机、服务器、智能电视等等。</li>
+<li>无论是C/S，还是B/S都需要联网，所以不需要互联网的单机软件不在讨论范围内。</li>
+</ul>
+<h2 id="3-1-C-S架构-client-server"><a href="#3-1-C-S架构-client-server" class="headerlink" title="3.1 C/S架构(client/server)"></a>3.1 C/S架构(client/server)</h2><blockquote>
+<p>指的是客户端，服务器架构的意思,很多常见的软件都是这种架构</p>
+</blockquote>
+<ul>
+<li><strong>解释：</strong>对于C/S架构，最为常见的例子就是网络游戏，比如LOL、WOW如果不联网无法使用，你在软件内所做的所有操作通过互联网能够传递到其他的的玩家身上。</li>
+<li><strong>优点:</strong><ul>
+<li>性能较高：可以将一部分的计算工作放在客户端上,这样服务器只需要处理数据即可</li>
+<li>界面酷炫：客户端可以使用更多系统提供的效果(比如传感信息，浏览器就很难做到),做出更为炫目的效果</li>
+</ul>
+</li>
+<li><strong>缺点:</strong><ul>
+<li>更新软件：如果推出了新版本,不更新客户端无法登陆使用(一部分)</li>
+<li>不同设备访问：如果使用其他的电脑,没有安装客户端的话就无法登陆软件(比如收发邮件)</li>
+</ul>
+</li>
+</ul>
+<h2 id="3-2-B-S架构-Browser-Server"><a href="#3-2-B-S架构-Browser-Server" class="headerlink" title="3.2 B/S架构(Browser/Server)"></a>3.2 B/S架构(Browser/Server)</h2><blockquote>
+<p>指的是浏览器—服务器，是WEB兴起之后的一种架构</p>
+</blockquote>
+<ul>
+<li><strong>解释：</strong>现在所有的网站都是B/S架构,较为常见的例子有百度,知乎,网易云音乐Web等等,所有只需要通过浏览器即可使用.</li>
+<li><strong>优点:</strong><ul>
+<li>更新简洁：如果需要更新内容了,对开发人员而言需要更改服务器的内容,但是对用户而言只需要刷新浏览器即可</li>
+<li>多设备同步：所有数据都在网上,只要能够使用浏览器即可登录使用</li>
+</ul>
+</li>
+<li><strong>缺点:</strong><ul>
+<li>性能较低：相比于客户端应用性能较低,但是随着硬件性能的提升,这个差距在缩小</li>
+<li>浏览器兼容：处理低版本的浏览器显示问题一直是前端开发人员头痛的问题之一,移动设备兼容性较好,ie6已经越来越少人用了</li>
+</ul>
+</li>
+</ul>
+<h1 id="四、网络通讯模型及协议"><a href="#四、网络通讯模型及协议" class="headerlink" title="四、网络通讯模型及协议"></a>四、网络通讯模型及协议</h1><h2 id="4-1-概述"><a href="#4-1-概述" class="headerlink" title="4.1 概述"></a>4.1 概述</h2><p>在都知道了浏览器、客户端、服务器、数据库是什么之后，接下来就是核心-重点：浏览器/客户端与服务器之间的网络通讯</p>
+<p><strong>学习网络编程：</strong></p>
+<ol>
+<li>可以掌握实时更新数据的手段</li>
+<li>是开发优秀应用的前提和基础</li>
+</ol>
+<p><strong>网络通讯三要素:传输协议、端口号、IP</strong></p>
+<p>通过 IP 找机器，通过 端口 找程序，通过 协议 确定如何传输数据</p>
+<img src="/images/ComNet/网络通讯.png" alt="img" style="zoom:90%;" />
+
+<h2 id="4-2-OSI七层模型"><a href="#4-2-OSI七层模型" class="headerlink" title="4.2 OSI七层模型"></a>4.2 OSI七层模型</h2><p>要了解传输协议，首先需要知道传输过程中分为哪几层传输，每一层的传输协议是不一样的。</p>
+<img src="/images/ComNet/OSI七层模型.png" alt="img" style="zoom:90%;" />
+
+<table>
+<thead>
+<tr>
+<th>分层</th>
+<th>功能及协议</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>应用层</td>
+<td>网络服务与最终用户的一个接口  HTTP/HTTPS超文本传输协议、FTP文件传输协议、SMTP邮件传输协议</td>
+</tr>
+<tr>
+<td>表示层</td>
+<td>数据的表示、安全、压缩。</td>
+</tr>
+<tr>
+<td>会话层</td>
+<td>建立、管理、终止会话</td>
+</tr>
+<tr>
+<td></td>
+<td>以上三层：http协议(所有的万维网文件都必须遵守)、HLS(渐进流式传输协议，苹果改造HTTP协议创建的流媒体协议)、RTMP/MMS(实时流式传输协议-微软出品)、XMPP/IMPP/PRIM/SIP(四种IM(即时消息通讯)协议，XMPP最灵活常用) 等等好多好多协议</td>
+</tr>
+<tr>
+<td>传输层</td>
+<td><font color=red>遵循TCP/UDP协议，定义传输数据的协议端口号</font> HTTP协议的端口号默认是80，我们可以根据自己实际情况改的</td>
+</tr>
+<tr>
+<td>网络层</td>
+<td>路由器 <font color=red>遵循IP协议，会给电脑分配IP</font>，进行逻辑地址寻址</td>
+</tr>
+<tr>
+<td>数据链路层</td>
+<td>网卡、网桥、交换机 建立逻辑连接、进行硬件地址寻址、差错校验等功能。（由底层网络定义协议）</td>
+</tr>
+<tr>
+<td>物理层</td>
+<td>光纤、电话线 建立、维护、断开物理连接。（由底层网络定义协议）</td>
+</tr>
+</tbody></table>
+<p>注意：</p>
+<ol>
+<li>传输层和上面的三层就是在客户端里的了</li>
+<li>会话层、表示层、应用层在五层模型中合并为应用层</li>
+</ol>
+<h3 id="OSI模型通讯"><a href="#OSI模型通讯" class="headerlink" title="OSI模型通讯"></a>OSI模型通讯</h3><img src="/images/ComNet/OSI模型通讯.png" alt="img" style="zoom:90%;" />
+
+<p>解析说明：计算机A -&gt; B，之所以叫封包/解包，是因为当我们应用层需要获取数据时</p>
+<ul>
+<li>会在应用层生成一个请求的数据包(是按照<font color=red>HTTP协议生成</font>的)</li>
+<li>然后到了传输层，会按照TCP/UDP协议进行封装包装，<font color=red>加了个端口号</font></li>
+<li>到了网络层进行IP协议的封装，<font color=red>加了个协议号</font></li>
+<li>然后经过下两层传到服务器</li>
+<li>服务器会进行一一相对应的解封，知道服务器的应用层，会按照请求，返回响应(响应返回去的过程与来时一样)</li>
+</ul>
+<h2 id="4-3-HTTP协议-定义数据格式"><a href="#4-3-HTTP协议-定义数据格式" class="headerlink" title="4.3 HTTP协议 - 定义数据格式"></a>4.3 HTTP协议 - 定义数据格式</h2><h3 id="4-3-1-HTTP协议概述"><a href="#4-3-1-HTTP协议概述" class="headerlink" title="4.3.1 HTTP协议概述"></a>4.3.1 HTTP协议概述</h3><blockquote>
+<p>协议：经过双方或多方共同商量或谈判后取得的一致意见：双方达成协议｜根据协议办事 | 遵守这样的约束。</p>
+</blockquote>
+<ul>
+<li>网络之间传输数据就需要协议。</li>
+<li>所谓的协议就是双方约定好的一些数据格式。否则两台计算机之间如何识别对方发送过来的 0 1 数据。</li>
+</ul>
+<h4 id="1-概述"><a href="#1-概述" class="headerlink" title="1. 概述"></a>1. 概述</h4><ul>
+<li>HTTP（Hyper Text Transfer Protocol），超文本(图片，视频，zip等)传输协议，是一种<strong>通信协议</strong>，它允许将超文本标记语言（HTML）文档从Web服务器传送到客户端的浏览器。所以<strong>HTTP协议就是 浏览器 和 服务器 之间通信的一个数据格式规范</strong>。</li>
+<li>HTTP 协议是网络编程使用最为广泛的协议，因为很简单</li>
+<li>它是一个应用层协议，承载于TCP之上</li>
+<li>HTTP协议用于客户端和服务器端之间的通信。由请求和响应构成，是一个标准的客户端服务器模型<ul>
+<li>在两台计算机之间使用HTTP协议通信时，必定一端担任客户端角色，另一端担任服务器端角色</li>
+</ul>
+</li>
+<li>通过请求和响应的交换达成通信。是问答式交互，客户端和服务器一问一答进行通信<ul>
+<li>HTTP协议规定，请求从客户端发出，最后服务器端响应该请求并返回</li>
+<li>也就是说，肯定是先从客户端开始建立通信的，服务器端在没有接收到请求时，<strong>不会主动向浏览器推送数据</strong>。这样是安全考虑，也是提高服务器性能的考虑。如果要服务器向浏览器推送数据，则需要使用Socket.IO等额外的技术来解决。</li>
+</ul>
+</li>
+</ul>
+<p>请求响应实例：请求访问某台HTTP服务器上的/index.htm页面资源：</p>
+<ul>
+<li>起始行开头的GET：表示请求访问服务器的类型，称为方法</li>
+<li>随后的字符串/index.html：指明了请求访问的资源对象，也叫请求URI</li>
+<li>最后的HTTP/1.1，即HTTP版本号用来提示客户端使用的HTTP协议的功能</li>
+</ul>
+<img src="/images/ComNet/http-reqres-example.png" style="zoom:80%">
+
+<h4 id="2-HTTP协议中的内容"><a href="#2-HTTP协议中的内容" class="headerlink" title="2. HTTP协议中的内容"></a>2. HTTP协议中的内容</h4><ul>
+<li>规定URL的格式<ul>
+<li>协议:// 主机地址: 端口号//路径</li>
+<li><a target="_blank" rel="noopener" href="http://www.baidu.com/">http://www.baidu.com</a>: 80//…… (http默认的端口号是80，可以省)</li>
+</ul>
+</li>
+<li>规定客户端和服务器之间的数据传输格式，让客户端和服务器能有效地进行数据沟通<ul>
+<li>规定请求怎么发</li>
+<li>规定响应怎么发</li>
+</ul>
+</li>
+</ul>
+<h4 id="3-HTTP协议特点"><a href="#3-HTTP协议特点" class="headerlink" title="3. HTTP协议特点"></a>3. HTTP协议特点</h4><ol>
+<li>简单快速。HTTP协议简单，所以 HTTP 服务器的程序规模小，通信速度快</li>
+<li>灵活。HTTP 允许传输任意类型的数据</li>
+</ol>
+<h4 id="4-HTTP的版本"><a href="#4-HTTP的版本" class="headerlink" title="4. HTTP的版本"></a>4. HTTP的版本</h4><ul>
+<li>HTTP 0.9 和 1.0 使用非持续连接：限制每次连接只处理一个请求，服务器对客户端的请求做出响应后，立刻断开连接，这种方式可以节省传输时间</li>
+<li>HTTP 1.1 使用持续连接（如今最常用）：不必为每个web对象创建一个新的连接，一个连接可以传送多个对象，不会创建那么多的请求了</li>
+</ul>
+<h4 id="5-协议的请求、响应结构"><a href="#5-协议的请求、响应结构" class="headerlink" title="5. 协议的请求、响应结构"></a>5. 协议的请求、响应结构</h4><img src="/images/ComNet/http-structure.png" style="zoom:70%">
+
+<h3 id="4-3-2-请求报文的格式"><a href="#4-3-2-请求报文的格式" class="headerlink" title="4.3.2 请求报文的格式"></a>4.3.2 请求报文的格式</h3><blockquote>
+<p>客户端向服务器索取数据的一种行为</p>
+</blockquote>
+<h4 id="1-格式"><a href="#1-格式" class="headerlink" title="1. 格式"></a>1. 格式</h4><p><strong>HTTP协议规定：</strong>一个完整的由客户端发给服务器的 HTTP 请求报文 需要包含以下内容：</p>
+<ul>
+<li><p><strong>请求行</strong></p>
+<ul>
+<li>客户端给服务器的一些额外信息，指定 请求方法、请求资源路径 以及 HTTP协议版本</li>
+<li>格式：<code>请求Method /路径(请求URI) 协议版本</code></li>
+</ul>
+</li>
+<li><p><strong>请求头</strong></p>
+<ul>
+<li><font color=red>请求头中至少包含以下信息</font><ul>
+<li>客户端要访问的服务器主机地址 Host: m.baidu.com</li>
+</ul>
+</li>
+<li>请求头中还可以包含以下附加信息（<strong>可选的请求首部字段</strong>）<ul>
+<li>客户端的类型，客户端的软件环境User-Agent: iPhone AppleWebKit</li>
+<li>客户端所能接收的数据类型Accept: text/html, <em>/</em></li>
+<li>客户端的语言环境Accept-Language: zh-cn</li>
+<li>客户端支持的数据压缩格式Accept-Encoding: gzip</li>
+<li>访问结束后，是否断开连接Connection: Close</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p><strong>请求体(可选)</strong></p>
+<ul>
+<li>客户端发给服务器的具体数据，例如要上传的文件数据（<strong>内容实体</strong>）</li>
+<li>请求格式<ul>
+<li>每一项请求信息末尾使用 \r\n</li>
+<li>最后一个请求项末尾使用 \r\n\r\n 表示请求结束</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<img src="/images/ComNet/http-req-msg.png" style="zoom:70%">
+
+<h4 id="2-请求方法Method"><a href="#2-请求方法Method" class="headerlink" title="2. 请求方法Method"></a>2. 请求方法Method</h4><blockquote>
+<p>HTTP 协议的请求行有一个请求方法, 它有 8 种, 但是我们只要了解五种 (GET,POST,HEAD,DELETE,PUT)。</p>
+</blockquote>
+<p>向请求URI指定的资源发送请求报文时，采用称为方法的命令。</p>
+<p>方法的作用在于：可以指定请求的资源按期望产生某种行为。</p>
+<img src="/images/ComNet/http-req-method.png" style="zoom:70%">
+
+<p>HTTP/1.0和HTTP/1.1支持的方法：(LINK和UNLINK已被HTTP/1.1废弃，不再支持)</p>
+<img src="/images/ComNet/http-req-method2.png" style="zoom:70%">
+
+<h5 id="1-GET"><a href="#1-GET" class="headerlink" title="1) GET"></a>1) GET</h5><ol>
+<li>GET 的本质是“得”，从服务器拿数据，效率更高。<font color=red>GET请求能够被缓存，保存在 Cache 目录中 \bundleId 下 Cache.db 中</font><ul>
+<li>cfurl_cache_receiver_data，缓存所有的请求数据</li>
+<li>cfurl_cache_response，缓存所有的响应</li>
+</ul>
+</li>
+<li>在 HTTP 协议定义中，没有对 GET 请求的数据大小限制，不过因为浏览器不同，一般限制在 2~8K 之间</li>
+<li>所有的参数包装在URL中，并且服务器的访问日志会记录，不要传递敏感信息</li>
+</ol>
+<p><font color=red>GET实现网址跳转的原理：</font></p>
+<ul>
+<li>拼接网址，然后跳转。在URL添加参数, 首先在URL 添加一个? , 表示要追加参数, 多个参数用&amp; 连接，然后跳转到这个拼接后的网址</li>
+<li>格式:<a target="_blank" rel="noopener" href="http://127.0.0.1/login.php">http://127.0.0.1/login.php</a> ? username = aaa &amp; password = bbb(username和password是服务器后台给我们的文档中固定的)</li>
+<li>注意：<ul>
+<li>http 默认的请求的方法就是GET，是网络访问使用频率最好的方法。</li>
+<li>GET请求能够被缓存(存储在沙盒Cache中，电脑浏览器也可以缓存在历史记录，服务器也可以缓存)(一般来讲用get请求过的网页，下次可能会快点)</li>
+<li><font color=red>如果URL中有中文或者空格，创建出来的URL是空的</font> ，程序会崩溃需要进行%号转义，对URL 进行编码<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[urlString stringByAddingPercentEscapesUsingEncoding: NSUTF8StringEncoding]</span><br></pre></td></tr></table></figure></li>
+</ul>
+</li>
+</ul>
+<h5 id="2-POST"><a href="#2-POST" class="headerlink" title="2) POST"></a>2) POST</h5><ol>
+<li>POST 的本质是<font color=red>“给”</font>，向服务器发送数据，也可以获得服务器处理之后的结果，效率不如 GET</li>
+<li>POST请求不能被缓存</li>
+<li>POST提交数据比较大，大小靠服务器的设定值限制，PHP通常限定 <font color=red>2M</font></li>
+<li>URL中，只有资源路径，但不包含参数，<font color=red>服务器日志不会记录参数</font>，相对更安全</li>
+<li>参数被包装成二进制的数据体，<font color=red>放在请求体中</font>，格式与 GET 基本一致，只是不包含 ?</li>
+</ol>
+<p>所有设计用户隐私的数据（密码，银行卡号）一定记住使用 POST 方式传递</p>
+<p><font color=red>POST代码中，要用NSMutableURLRequest，要设置HTTPMethod和HTTPBody</font></p>
+<h5 id="3-GET-和-POST-的区别"><a href="#3-GET-和-POST-的区别" class="headerlink" title="3) GET 和 POST 的区别"></a>3) GET 和 POST 的区别</h5><p><strong>显示：</strong></p>
+<ul>
+<li>Post传输数据时，不需要在URL中显示出来，是写在请求体中的，格式一样，没有 ？号，而Get方法会在URL中显示参数值、文件名字。</li>
+<li>get提交格式：url后跟着”?”，由于客户端可能向服务器提交多个键值对，键值对之间用”&amp;”进行分割，如果url中有汉字、特殊符号，则需要对url进行编码</li>
+</ul>
+<p><strong>大小：</strong></p>
+<ul>
+<li><font color=red>http 协议中的 get/post 并没有发送数据大小的限制</font>，对发送数据大小产生限制的是浏览器以及操作系统、服务器。<font color=red>http 本身并没有对 url 长度有所限制。</font></li>
+<li>IE 对 URL 长度的限制是 2083字节（&lt;=IE 8）。对于其他浏览器，如 Netscape、FireFox 等，理论上没有长度限制，其限制取决于操作系统以及服务器的支持。而 chrome 遇到长度很长的 URL 时，会直接 崩溃。URL 长了，对服务器处理本来也是一种负担</li>
+</ul>
+<p><strong>缓存：</strong></p>
+<ul>
+<li>GET会被手机端cache、web浏览器历史记录、服务器各种缓存，POST不会</li>
+</ul>
+<p><strong>规定：</strong></p>
+<ul>
+<li>根据HTTP规范：Post就是为了将数据传送到服务器段，Get就是为了从服务器段取得数据。而Get之所以也能传送数据，只是用来设计告诉服务器，你到底需要什么样的数据。Post的信息作为http请求的内容，而Get是在Http头部传输的。 </li>
+</ul>
+<p><strong>选择：</strong></p>
+<ul>
+<li>一般来讲：开发的时候，这个都是后台告诉我们的</li>
+<li>而如果是自己写,前台后台都是由我们决定的，可以自由选取使用的方式，当某种方式无法实现需求时，再去进行更改，但就提交普通的文本数据而言get跟post是一致的，post所谓的安全性跟get相比也只是多一些而已</li>
+</ul>
+<p>在web中：</p>
+<ul>
+<li>如果要传递大数据量不能用get，必然要type=“file”上传文件，type:”password”传递密码或者<code>&lt;textarea&gt;</code>提交大量文本字段。</li>
+<li>表单域只有设定了name属性的表单元素才会被提交给服务器</li>
+<li>如果给submit按钮设定了name，那么按钮的value也会被提交到服务器</li>
+<li>对于post的表单重新敲地址栏再刷新就不会提示重新提交了，因为重新敲地址就没有偷偷提交的数据了。</li>
+</ul>
+<h5 id="4-POST增强"><a href="#4-POST增强" class="headerlink" title="4) POST增强"></a>4) POST增强</h5><p>包括：</p>
+<ul>
+<li>上传单文件</li>
+<li>上传多文件</li>
+<li>POST JSON</li>
+<li>POST 自定义对象(对象转字典)</li>
+</ul>
+<p>小文件上传</p>
+<ul>
+<li><p>大小一般都是有限制的 <font color=red>2-8k</font> ，php默认限制是 <font color=red>2M</font> ，超过2M的部分上传不上去的，新浪微博上传图片，单张最大允许 <font color=red>5M</font></p>
+</li>
+<li><p>单个小文件</p>
+<p>应用场景：上传用户的头像</p>
+</li>
+<li><p>多个小文件</p>
+<p>应用场景：微信朋友圈，微博</p>
+</li>
+</ul>
+<h4 id="3-常见的其他请求头字段"><a href="#3-常见的其他请求头字段" class="headerlink" title="3. 常见的其他请求头字段"></a>3. 常见的其他请求头字段</h4><img src="/images/ComNet/请求.jpeg" style="zoom:75%;" />
+
+<ul>
+<li>User-Agent<ul>
+<li>浏览器的具体类型　　</li>
+<li>如：User-Agent：Mozilla/5.0 (Windows NT 6.1; rv:17.0) Gecko/20100101 Firefox/17.0</li>
+</ul>
+</li>
+<li>Accept<ul>
+<li>浏览器支持哪些数据类型　　</li>
+<li>如：Accept: text/html,application/xhtml+xml,application/xml;q=0.9;</li>
+</ul>
+</li>
+<li>Accept-Charset<ul>
+<li>浏览器采用的是哪种编码　　</li>
+<li>如：Accept-Charset: ISO-8859-1</li>
+</ul>
+</li>
+<li>Accept-Encoding<ul>
+<li>浏览器支持解码的数据压缩格式　　</li>
+<li>如：Accept-Encoding: gzip, deflate</li>
+</ul>
+</li>
+<li>Accept-Language<ul>
+<li>浏览器的语言环境　　</li>
+<li>如：Accept-Language zh-cn,zh;q=0.8,en-us;q=0.5,en;q=0.3</li>
+</ul>
+</li>
+<li>Host<ul>
+<li>请求的主机名，允许多个域名同处一个IP地址，即虚拟主机。Host:<a target="_blank" rel="noopener" href="http://www.baidu.com/">www.baidu.com</a></li>
+</ul>
+</li>
+<li>Connection<ul>
+<li>表示是否需要持久连接。Keep-Alive/close，HTTP1.1默认是持久连接，它可以利用持久连接的优点，当页面包含多个元素时（例如Applet，图片），显著地减少下载所需要的时间。要实现这一点，Servlet需要在应答中发送一个Content-Length头，最简单的实现方法是：先把内容写入ByteArrayOutputStream，然后在正式写出内容之前计算它的大小。如：Connection: Keep-Alive</li>
+</ul>
+</li>
+<li>Content-Length：表示请求消息正文的长度。对于POST请求来说Content-Length必须出现。</li>
+<li>Content-Type：WEB服务器告诉浏览器自己响应的对象的类型和字符集。例如：Content-Type: text/html; charset=’gb2312’</li>
+<li>Content-Encoding：WEB服务器表明自己使用了什么压缩方法（gzip，deflate）压缩响应中的对象。例如：Content-Encoding：gzip</li>
+<li>Content-Language：WEB服务器告诉浏览器自己响应的对象的语言。</li>
+<li>Cookie：最常用的请求头，浏览器每次都会将cookie发送到服务器上，允许服务器在客户端存储少量数据。</li>
+<li>Referer：包含一个URL，用户从该URL代表的页面出发访问当前请求的页面。服务器能知道你是从哪个页面过来的。Referer: <a target="_blank" rel="noopener" href="http://www.baidu.com/">http://www.baidu.com/</a></li>
+</ul>
+<h3 id="4-3-3-响应报文"><a href="#4-3-3-响应报文" class="headerlink" title="4.3.3 响应报文"></a>4.3.3 响应报文</h3><blockquote>
+<p>服务器对客户端的请求做出的反应，一般指返回数据给客户端</p>
+</blockquote>
+<h4 id="1-格式-1"><a href="#1-格式-1" class="headerlink" title="1. 格式"></a>1. 格式</h4><p><strong>HTTP协议规定：</strong>一个完整的 HTTP 响应报文包含以下内容：</p>
+<ul>
+<li><strong>状态行</strong><ul>
+<li>格式：<code>HTTP协议版本 状态码 用以解释状态码的原因短语</code>。</li>
+</ul>
+</li>
+<li><strong>响应头</strong><ul>
+<li>服务器返回给客户端的一些额外信息，包含了对服务器的描述、对返回数据的描述<ul>
+<li>服务器的类型Server: Apache/2.4.10 (Unix) PHP/5.5.20</li>
+<li>返回数据的类型Content-Type: text/html</li>
+<li>返回数据的长度Content-Length: 660</li>
+<li>响应时间Date: Thu, 04 Jun 2015 19:31:50 GMT</li>
+<li>ETag(HASH值，用于检测本地资源和服务器资源是否一致)ETag: “294-4e1862f57e7c0”</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><strong>实体内容</strong><ul>
+<li>服务器返回给客户端的具体二进制数据。如果请求的是HTML页面，那么返回的就是HTML代码。如果是JS就是JS代码。</li>
+</ul>
+</li>
+</ul>
+<img src="/images/ComNet/http-res-msg.png" style="zoom:65%">
+
+<h4 id="2-响应的状态码"><a href="#2-响应的状态码" class="headerlink" title="2. 响应的状态码"></a>2. 响应的状态码</h4><p>作用：当客户端向服务器发送请求时，描述请求的返回结果。借助状态码，用户可以知道服务器端是正常处理了请求，还是出现了错误。</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th><strong>类别</strong></th>
+<th><strong>原因短语</strong></th>
+</tr>
+</thead>
+<tbody><tr>
+<td>1XX</td>
+<td>信息状态码</td>
+<td>接收的请求正在处理</td>
+</tr>
+<tr>
+<td>2XX</td>
+<td>Success（成功状态码）</td>
+<td>请求正常处理完毕</td>
+</tr>
+<tr>
+<td>3XX</td>
+<td>重定向状态码</td>
+<td>需要进行附加操作以完成请求</td>
+</tr>
+<tr>
+<td>4XX</td>
+<td>客户端错误状态码</td>
+<td>服务器无法处理请求，客户端的请求有错误</td>
+</tr>
+<tr>
+<td>5XX</td>
+<td>服务器错误状态码</td>
+<td>服务器处理请求出错</td>
+</tr>
+</tbody></table>
+<img src="/images/ComNet/res-status-code.jpg" alt="图片" style="zoom:90%;" />
+
+<h4 id="3-响应的content-Type"><a href="#3-响应的content-Type" class="headerlink" title="3. 响应的content-Type"></a>3. 响应的content-Type</h4><ul>
+<li>Content-Type：text/html; charset=utf-8表示返回数据的类型</li>
+<li>服务器通过Content-Type告诉客户端<strong>响应的数据的类型</strong>，这样<strong>浏览器就根据返回数据的类型来进行不同的处理</strong>：<ul>
+<li>如果是图片类型就显示：image/jpeg</li>
+<li>如果是文本类型就直接显示内容：text/plain</li>
+<li>如果是文本类型的html格式就用浏览器渲染该格式：text/html</li>
+<li>……</li>
+</ul>
+</li>
+<li>常用Content-Type：text/html、image/gif、image/jpeg、text/plain、text/javascript…</li>
+<li>Content-Length:表示响应报文体的字节长度，报文头只是描述，返回的具体数据在两个回车之后的内容中</li>
+</ul>
+<p>默认客户端接收到的是字符串，客户端会按照自己默认的方式进行处理；</p>
+<p>比如，我们返回的是一段HTML，但是没有指定格式：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">res.end(<span class="string">&#x27;&lt;h2&gt;Hello World&lt;/h2&gt;&#x27;</span>)</span><br></pre></td></tr></table></figure>
+
+<img src="/images/ComNet/res1.jpg" alt="图片" style="zoom:100%;" />
+
+<p>但是，如果我们指定了格式：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">res.setHeader(<span class="string">&quot;Content-Type&quot;</span>, <span class="string">&quot;text/html;charset=utf8&quot;</span>);</span><br><span class="line">res.end(<span class="string">&#x27;&lt;h2&gt;Hello World&lt;/h2&gt;&#x27;</span>)</span><br></pre></td></tr></table></figure>
+
+<img src="/images/ComNet/res2.jpg" alt="图片" style="zoom:90%;" />
+
+<p>如果我们希望返回一段JSON数据</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">res.setHeader(<span class="string">&quot;Content-Type&quot;</span>, <span class="string">&quot;application/json;charset=utf8&quot;</span>);</span><br></pre></td></tr></table></figure>
+
+<h4 id="4-常见的其他响应头字段"><a href="#4-常见的其他响应头字段" class="headerlink" title="4) 常见的其他响应头字段"></a>4) 常见的其他响应头字段</h4><img src="/images/ComNet/响应.jpeg" alt="响应" style="zoom:90%;" />
+
+<ul>
+<li><p>Cache-Control </p>
+<ul>
+<li>响应输出到客户端后，服务端通过该报文头属告诉客户端如何控制响应内容的缓存。 </li>
+<li>下面的设置让客户端对响应内容缓存3600秒，也即在3600秒内，如果客户再次访问该资源，直接从客户端的缓存中返回内容给客户，不要再从服务端获取（当然，这个功能是靠客户端实现的，服务端只是通过这个属性提示客户端“应该这么做”，做不做，还是决定于客户端，如果是自己宣称支持HTTP的客户端，则就应该这样实现）。</li>
+<li><code>Cache-Control: max-age=3600</code></li>
+</ul>
+</li>
+<li><p>ETag</p>
+<ul>
+<li>一个代表响应服务端资源（如页面）版本的报文头属性，如果某个服务端资源发生变化了，这个ETag就会相应发生变化。它是Cache-Control的有益补充，可以让客户端“更智能”地处理什么时候要从服务端取资源，什么时候可以直接从缓存中返回响应。</li>
+<li><code>ETag: &quot;737060cd8c284d8af7ad3082f209582d&quot;</code></li>
+</ul>
+</li>
+<li><p>Location</p>
+<ul>
+<li>我们在Asp.net中让页面Redirect到一个某个A页面中，其实是让客户端再发一个请求到A页面，这个需要Redirect到的A页面的URL，其实就是通过响应报文头的Location属性告知客户端的，如下的报文头属性，将使客户端redirect到iteye的首页中：</li>
+<li><code>Location: http://www.google.com.hk</code></li>
+</ul>
+</li>
+<li><p>Set-Cookie</p>
+<ul>
+<li>服务端可以设置客户端的Cookie，其原理就是通过这个响应报文头属性实现的。</li>
+<li><code>Set-Cookie: UserID=JohnDoe; Max-Age=3600; Version=1</code></li>
+</ul>
+</li>
+</ul>
+<h3 id="4-3-4-HTTP—持久连接"><a href="#4-3-4-HTTP—持久连接" class="headerlink" title="4.3.4 HTTP—持久连接"></a>4.3.4 HTTP—持久连接</h3><p>早期的HTTP连接模型：每次的请求都会造成无谓的TCP连接建立和断开，增加通信量的开销</p>
+<img src="/images/ComNet/http-short-connect.png" style="zoom:70%">
+
+<p><strong>在 HTTP 1.0 中</strong>, 没有官方的 keepalive 的操作。通常是在现有协议上添加一个指数。如果浏览器支持 keep-alive，它会在请求的包头中添加<code>Connection: Keep-Alive</code>，然后当服务器收到请求，作出回应的时候，它也添加一个头在响应中<code>Connection: Keep-Alive</code>。</p>
+<p>这样做，连接就不会中断，而是保持连接。当客户端发送另一个请求时，它会使用同一个连接。这一直继续到客户端或服务器端认为会话已经结束，其中一方中断连接。</p>
+<p><strong>HTTP持久连接</strong>（<strong>HTTP persistent connection</strong>，也称作<strong>HTTP keep-alive</strong>或<strong>HTTP connection reuse</strong>）是使用同一个TCP连接来发送和接收多个HTTP请求/应答，而不是为每一个新的请求/应答打开新的连接的方法。</p>
+<p>在 HTTP 1.1 中 所有的连接默认都是持续连接，除非特殊声明不支持。HTTP 持久连接不使用独立的 keepalive 信息，而是仅仅允许多个请求使用单个连接。然而， Apache 2.0 httpd 的<strong>默认连接过期时间</strong>是仅仅15秒，对于 Apache 2.2 只有5秒。短的过期时间的优点是能够快速的传输多个web页组件，而不会绑定多个服务器进程或线程太长时间。</p>
+<img src="/images/ComNet/http-long-connect.png" style="zoom:70%">
+
+<p>特点：只要任意一端没有明确提出断开连接，则保持连接状态。</p>
+<p>好处：</p>
+<ul>
+<li>减少了连接的重复建立和断开所造成的额外开销，减轻了服务器端的负载</li>
+<li>减少开销的那部分时间，使HTTP请求和响应能够更早的结束，Web页面显示速度也响应提高</li>
+</ul>
+<h3 id="4-3-5-HTTP—无状态"><a href="#4-3-5-HTTP—无状态" class="headerlink" title="4.3.5 HTTP—无状态"></a>4.3.5 HTTP—无状态</h3><ul>
+<li>HTTP协议是无状态的。使用HTTP协议，每当有新的请求发送时，就会有对应的新响应产生。协议本身并不保留之前的一切的请求或响应报文的信息。</li>
+<li>这是为了更快的处理大量事物，确保协议的可伸缩性，而特意把HTTP协议设计成如此简单的。正因为HTTP协议本身非常简单，所以才被应用到各种场景</li>
+<li><strong>如果让服务器管理全部客户端状态则会成为很大的负担。</strong>由于不必保存状态，自然可以减少服务器的CPU及内存资源的消耗</li>
+<li>所以哪怕在同一个页面中的js、css、jpg也都要重复的提交Accept-Language、Accept-Encoding、Cookie等</li>
+</ul>
+<h3 id="4-3-6-Cookie"><a href="#4-3-6-Cookie" class="headerlink" title="4.3.6 Cookie"></a>4.3.6 Cookie</h3><h4 id="1-概述-1"><a href="#1-概述-1" class="headerlink" title="1. 概述"></a>1. 概述</h4><ul>
+<li>http是一个无状态的协议，每次去请求服务器的时候，服务器是不能记住客户端的。</li>
+<li>保留无状态优点的同时又要解决类似的矛盾问题，于是引入了Cookie技术。</li>
+<li>Cookie(曲奇饼)，可以记录服务器与客户端之间的状态</li>
+<li>Cookie是一个由浏览器和服务器共同协作实现的规范。Cookie通过在请求和响应报文中写入Cookie信息来控制客户端的状态。<ul>
+<li>服务器向客户端发送Cookie<ul>
+<li>是在响应头中</li>
+<li>Set-Cookie:name=value; Path=/; Max-Age=; Domain=*.com<ul>
+<li>name=value; 必须包含</li>
+<li>Path=/; 表示Cookie影响的路径，当访问路径不匹配时，浏览器不会发送该Cookie。<code>/</code>表示该请求下所有路径都发送，也可以指定子路径。</li>
+<li>Max-Age：告诉浏览器该Cookie多长时间过期，单位为秒</li>
+<li>HttpOnly：告知浏览器不允许通过脚本document.cookie访问</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>浏览器将Cookie保存</li>
+<li>之后在每一次请求中浏览器都会将Cookie发向服务器。此时服务器就知道是哪个客户端了。<ul>
+<li>Cookie值的格式是 key=value; foo=bar的形式</li>
+<li>客户端发送的Cookie在请求报文的Cookie字段中</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<img src="/images/ComNet/http-cookie-no.png" style="zoom:60%">
+
+<img src="/images/ComNet/http-cookie-yes.png" style="zoom:60%">
+
+<p>Cookie-请求响应报文：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 1.客户端第一次请求报文</span></span><br><span class="line">GET /reader/ HTTP/1.1</span><br><span class="line">Host: hackr.jp</span><br><span class="line">* 首部字段内没有Cookie的相关信息</span><br><span class="line"></span><br><span class="line"><span class="comment"># 2.服务器端响应报文（生成Cookie信息）</span></span><br><span class="line">HTTP/1.1 200 OK</span><br><span class="line">Date: Thu, 12 Jul 2012 07:12:20 GMT</span><br><span class="line">Server: Apache</span><br><span class="line">&lt;Set-Cookie: sid=1342077140226724; path=/; expires=Wed, =&gt;10-Oct-12 07:12:20 GMT&gt;</span><br><span class="line">Content-Type: text/plain; charset=UTF-8</span><br><span class="line"></span><br><span class="line"><span class="comment"># 3.客户端请求报文（自动发送保存着Cookie的信息）</span></span><br><span class="line">GET /reader/ HTTP/1.1</span><br><span class="line">Host: hackr.jp</span><br><span class="line">Cookie: sid=1342077140226724</span><br></pre></td></tr></table></figure>
+
+<h4 id="2-Cookie的问题"><a href="#2-Cookie的问题" class="headerlink" title="2. Cookie的问题"></a>2. Cookie的问题</h4><ul>
+<li>不能存储太多内容。因为Cookie体积过大会造成请求和响应速度变慢，所以尽量不要再Cookie中存储大量数据</li>
+<li>将静态资源存储在单独的机器上避免Cookie的无效传输</li>
+<li>不安全。Cookie可以在前后端修改，数据容易被篡改和伪造。所以Cookie对于敏感数据的保护基本是无效的</li>
+</ul>
+<h3 id="4-3-7-Session"><a href="#4-3-7-Session" class="headerlink" title="4.3.7 Session"></a>4.3.7 Session</h3><ul>
+<li>为了解决Cookie无法存储大量数据，以及不安全的问题，Session被设计出来了。</li>
+<li>Session的数据是只保留在服务器端的，客户端无法修改。</li>
+<li>Session不是什么新技术，是基于Cookie实现的。需要和cookie搭配来使用</li>
+<li>服务器端保存key（口令）/value（数据）对象，客户端保存，key（口令），一旦口令被篡改，就丢失了映射关系。服务器端用cookie里面的key来查找对应的session值。</li>
+<li>session可以存在内存或硬盘上都可以。<ul>
+<li>将Session集中化，使用Redis、Memcached等高效的缓存服务器技术</li>
+</ul>
+</li>
+</ul>
+<p>Session的口令依旧保存在客户端，还是存在口令被盗用和伪造的情况，解决方案是将口令通过私钥加密进行签名，使得伪造成本更高</p>
+<h3 id="4-3-8-HTTP-2-0"><a href="#4-3-8-HTTP-2-0" class="headerlink" title="4.3.8 HTTP 2.0"></a>4.3.8 HTTP 2.0</h3><p>HTTP2.0了解吗，相比之前的优化</p>
+<ul>
+<li>报文压缩</li>
+<li>请求头压缩，是怎么压缩的？</li>
+<li>多路复用、分用</li>
+<li>服务器推送： <a target="_blank" rel="noopener" href="https://www.ruanyifeng.com/blog/2018/03/http2_server_push.html">HTTP/2 服务器推送（Server Push）教程</a> 也得先客户端发起请求，只不过服务器可以额外推送几个附带资源(不用请求)而已，是需要配置的。</li>
+</ul>
+<h2 id="4-4-TCP-UDP协议-端口号"><a href="#4-4-TCP-UDP协议-端口号" class="headerlink" title="4.4 TCP/UDP协议 - 端口号"></a>4.4 TCP/UDP协议 - 端口号</h2><h3 id="4-4-1-TCP-UDP协议"><a href="#4-4-1-TCP-UDP协议" class="headerlink" title="4.4.1 TCP/UDP协议"></a>4.4.1 TCP/UDP协议</h3><p><strong>TCP(传输控制协议) —生成流式Socket</strong></p>
+<ul>
+<li>建立连接，形成传输数据的通道，在连接中进行<font color=red>大数据传输</font>(数据大小不受限制)</li>
+<li>通过三次握手完成连接，是<font color=red>可靠协议</font>，能安全送达，但是由于必须建立连接，所以<font color=red>效率会稍低</font>.</li>
+</ul>
+<p><strong>TCP三次握手</strong></p>
+<ol>
+<li>客户端向服务器发送一个包，然后等服务器确认 （在吗）</li>
+<li>服务器收到包，确认，然后发送给客户端一个包 （在）</li>
+<li>客服端收到确认，再想服务器发送一个包 （那我就发数据了）</li>
+</ol>
+<p>握手过程中传送的包里不包含数据，三次握手完毕后，客户端与服务器才正式开始传送数据</p>
+<p>理想状态下，TCP连接一旦建立，在通信双方中的任何一方主动关闭连接之前，TCP 连接都将被一直保持下去。</p>
+<p><strong>UDP(数据报协议) —生成数据报Socket</strong></p>
+<ul>
+<li>将数据源和目的封装成数据包中，<font color=red>不需要建立连接</font>，只管发送，不确认对方是否接收到因为无需连接，因此是不可靠协议。不需要建立连接，速度快</li>
+<li>每个数据报的<font color=red>大小限制在64K之内</font></li>
+<li>应用场景：多媒体教室／网络流媒体/直播平台/游戏</li>
+</ul>
+<p><strong>对比：</strong></p>
+<ul>
+<li>TCP只是网络七大层协议中的一种，需要封装七层的，</li>
+<li>UDP 使用UDP协议，是不用使用七大层封装的，可以直接发出去，这样的坏处就是会丢包，但也有好处：速度更块，实时性更好<ul>
+<li>应用场景：网络直播(即使丢了几帧也没事)</li>
+</ul>
+</li>
+<li><font color=red>TCP和UDP的表现形式，可以比喻为打电话 比 对讲机</font><ul>
+<li>前者可以听的同时也说(也就是发送的时候，也可以接受)</li>
+<li>后者只能发或者接，不能同时接发</li>
+</ul>
+</li>
+<li>像腾讯微信QQ，语音对讲表现形式虽然是UDP，但是因为丢包，所以实质上是使用的TCP(刚开始使用的是UDP，后来改的)，像好多大公司，一般都会自己写底层协议</li>
+</ul>
+<h3 id="4-4-2-端口号"><a href="#4-4-2-端口号" class="headerlink" title="4.4.2 端口号"></a>4.4.2 端口号</h3><p><strong>端口号</strong></p>
+<ul>
+<li>用于标示进程的逻辑地址，不同进程的标示。</li>
+<li>一条进程一定程度上可以表示是一个应用程序，但是有区别：一个“应用程序”一定可以找到一个“进程”，但一个“进程”不一定会有一个“应用程序”与之对应，这些进程有可能是后台程序，用户看不到，感觉不到。</li>
+</ul>
+<p><strong>作用：</strong></p>
+<ul>
+<li>让应用层的各种应用进程都能将其数据通过端口向下交付给运输层。即<font color=red>连接应用层与网络层</font></li>
+<li><font color=red>端口号存在于UDP和TCP报文的首部，而协议号则是存在这个IP数据报的首部.</font></li>
+</ul>
+<p><strong>有效端口：</strong></p>
+<ul>
+<li>0<code>~</code>65535，其中 0~1024由系统使用或者保留端口，开发中我们不要使用 1024 以下的端口，是可以省略的，不写表明使用协议默认的端口号。</li>
+<li>浏览器网页浏览：<ul>
+<li>http默认80</li>
+<li>https默认443</li>
+</ul>
+</li>
+<li>FTP默认20/21/990</li>
+<li>QQ的端口号：由于QQ用的是UDP协议，默认通讯端口是4000，如果4000被占用的话，那么它就会自动改用4001端口，再被占用，以此类推。</li>
+<li>在mac的活动监视器里可以看到一条条的进程对应的端口号</li>
+</ul>
+<h2 id="4-5-IP协议-协议号"><a href="#4-5-IP协议-协议号" class="headerlink" title="4.5 IP协议 - 协议号"></a>4.5 IP协议 - 协议号</h2><blockquote>
+<p>IP协议是TCP/IP协议族中最为核心的协议。所有的TCP、UDP、ICMP及IGMP数据到了网络层都要经过IP协议的封装，以IP数据报格式传输。它的特点如下:</p>
+</blockquote>
+<p><strong>不可靠（unreliable）</strong></p>
+<ul>
+<li>意思是它不能保证 IP数据报能成功地到达目的地。</li>
+<li>IP仅提供最好的传输服务。如果发生某种错误时，如某个路由器暂时用完了缓冲区， IP有一个简单的错误处理算法：丢弃该数据报，然后发送 ICMP消息报给信源端。任何要求的可靠性必须由上层来提供（如TCP）。</li>
+</ul>
+<p><strong>无连接（connectionless）</strong></p>
+<ul>
+<li>意思是IP并不维护任何关于后续数据报的状态信息。</li>
+<li>每个数据报的处理是相互独立的。这也说明， IP数据报可以不按发送顺序接收。如果一信源向相同的信宿发送两个连续的数据报（先是 A，然后是B） ，每个数据报都是独立地进行路由选择，可能选择不同的路线，因此B可能在A到达之前先到达。</li>
+</ul>
+<p><strong>协议号</strong></p>
+<ul>
+<li>其他，太深入的模块，在这里不做赘述，网络层，经过IP协议封装之后，会生成一个协议号：</li>
+<li>协议号是存在于IP数据报的首部的20字节的固定部分，占有8bit.该字段是指出此数据报所携带的是数据是使用何种协议，以便目的主机的IP层知道将数据部分上交给哪个处理过程。也就是协议字段告诉IP层应当如何交付数据。</li>
+<li><font color=red>简单来讲，协议号连接网络层与数据链路层</font></li>
+</ul>
+<h2 id="4-6-TCP-IP协议与socket"><a href="#4-6-TCP-IP协议与socket" class="headerlink" title="4.6 TCP/IP协议与socket"></a>4.6 TCP/IP协议与socket</h2><h3 id="4-6-1-TCP-IP协议"><a href="#4-6-1-TCP-IP协议" class="headerlink" title="4.6.1 TCP/IP协议"></a>4.6.1 TCP/IP协议</h3><p>是个名词，并不是TCP和IP放在一起说了，中文名叫做<font color=red>传输控制协议/互联网络协议</font>，是一种网络通信协议，它规范了网络上的所有通信设备，数据<font color=red>往来格式以及传送方式(传输)。</font></p>
+<p><font color=red>TCP/IP协议是网络的基础，是Internet的语言。</font></p>
+<p>关于TCP/IP和HTTP协议的关系，网络有一段比较容易理解的介绍：</p>
+<blockquote>
+<p>我们在<font color=red>传输数据时，可以只使用(传输层网络层)TCP/IP协议</font>，但是那样的话，没有应用层，便无法识别数据内容。</p>
+<p>如果想要使传输的数据有意义，则必须使用到应用层HTTP协议。<font color=red>应用层提供了封装或者显示数据的具体形式</font></p>
+</blockquote>
+<h3 id="4-6-2-socket-套接字层、插座"><a href="#4-6-2-socket-套接字层、插座" class="headerlink" title="4.6.2 socket(套接字层、插座)"></a>4.6.2 socket(套接字层、插座)</h3><p>实际上socket就是对TCP/IP协议的封装，Socket本身并不是协议，而是一个调用接口(<font color=red>API，内部按照TCP/IP协议对数据封包解包，并记录生成的端口号与IP地址</font>)。Socket的出现只是使我们程序员能够更方便的使用TCP/IP协议栈而已，是对TCP/IP的抽象。</p>
+<p>通过Socket，我们能更好地使用TCP/IP协议。</p>
+<p>通信的两端，也就是客户端和服务器都有 Socket(IP地址和端口号两部分)，所以可以说网络通信其实就是在 Socket 间的通信。数据在两个 Socket 间通过 IO 传输 (input/output，<font color=red>一个请求可以看做一次IO传输</font>)</p>
+<p>Socket 是纯C语言的，是跨平台的<strong>使用socket替代HTTP做网络请求</strong></p>
+<h4 id="1-socket通讯的原理"><a href="#1-socket通讯的原理" class="headerlink" title="1. socket通讯的原理"></a>1. socket通讯的原理</h4><p><img src="/images/ComNet/socket%E5%8E%9F%E7%90%86.jpg" alt="img"></p>
+<h4 id="2-C版本的socket通讯"><a href="#2-C版本的socket通讯" class="headerlink" title="2. C版本的socket通讯"></a>2. C版本的socket通讯</h4><img src="/images/ComNet/socket移动端代码.png" alt="img" style="zoom:90%;" />
+
+<p>网络通讯链中，将应用层省去，用Socket做网络请求，HTTP的内容：设置服务器的信息等</p>
+<ol>
+<li><p>创建socket</p>
+<p>使用socket函数。返回值是int ,&gt;0就表示成功</p>
+</li>
+<li><p>创建服务器，并将我们创建的socket连接到服务器</p>
+<p>使用connect函数。返回值是int：0代表连接成功，其他失败)</p>
+</li>
+<li><p>向服务器发送消息</p>
+<p>使用send函数。返回值：如果成功返回发送的字节数，如果失败返回SOCKET_ERROR</p>
+</li>
+<li><p>接收服务器返回的数据</p>
+<p>使用recv函数。返回值：如果成功返回数据的字节数，如果失败返回SOCKET_ERROR</p>
+</li>
+<li><p>关闭连接</p>
+<p>clock(创建的socket)</p>
+</li>
+</ol>
+<p>iOS移动端有一个封装的很好的socket套接字库：GCDAsyncSocket</p>
+<h2 id="4-7-长连接与短连接"><a href="#4-7-长连接与短连接" class="headerlink" title="4.7 长连接与短连接"></a>4.7 长连接与短连接</h2><p>当网络通信时采用TCP协议时，在真正的读写操作之前，server与client之间必须建立一个连接，当读写操作完成后，双方不再需要这个连接时它们可以释放这个连接，连接的建立是需要三次握手的，而释放则需要4次握手，所以说每个连接的建立都是需要资源消耗和时间消耗的</p>
+<p><strong>短连接</strong></p>
+<p>数据请求结束后，立即断开连接，能够及时释放服务器资源</p>
+<p>让服务器能够为更多的用户提供服务</p>
+<p><strong>长连接</strong></p>
+<p>一旦连接建立之后，始终保持连接状态，后续只需发送和接收数据即可，数据响应更及时</p>
+<p>长连接对服务器资源占用比较大</p>
+<p>对交互响应要求快的应用，例如即时通讯，需要使用长连接</p>
+<p><strong>心跳包</strong></p>
+<p>是检测长连接的重要技术手段</p>
+<p>可以由服务器发送，定时向客户端发送小数据，根据回执判断客户端是否在线</p>
+<p>也可以由客户端发送，定时向服务器发送小数据，报告客户端当前在线</p>
+<h1 id="五、网络编程相关概念"><a href="#五、网络编程相关概念" class="headerlink" title="五、网络编程相关概念"></a>五、网络编程相关概念</h1><h2 id="5-1-URL"><a href="#5-1-URL" class="headerlink" title="5.1 URL"></a>5.1 URL</h2><ul>
+<li>Uniform Resoure Locator：统一<strong>资源</strong>定位器</li>
+<li>URL地址格式排列为：scheme://host:port/path<ul>
+<li>Internet资源类型（scheme）：指出WWW 客户程序用来操作的工具。</li>
+<li>服务器地址（host）：指出WWW 页所在的服务器域名</li>
+<li>端口（port）：有时（并非总是这样），对某些资源的访问来说，需给出相应的服务器提供端口号</li>
+<li>路径（path）：指明服务器上某资源的位置</li>
+</ul>
+</li>
+</ul>
+<h2 id="5-2-IP地址、域名与DNS服务器"><a href="#5-2-IP地址、域名与DNS服务器" class="headerlink" title="5.2 IP地址、域名与DNS服务器"></a>5.2 IP地址、域名与DNS服务器</h2><h3 id="5-2-1-IP地址"><a href="#5-2-1-IP地址" class="headerlink" title="5.2.1 IP地址"></a>5.2.1 IP地址</h3><p>ip唯一标识 一台设备</p>
+<p>端口号标识一个设备上的应用</p>
+<p>几个特殊的IP地址</p>
+<table>
+<thead>
+<tr>
+<th>IP地址</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>localhost</td>
+<td>代表本机地址。不走网卡</td>
+</tr>
+<tr>
+<td>127.0.0.1</td>
+<td>代表本地回环地址。走网卡</td>
+</tr>
+<tr>
+<td>192.168.xx.xx</td>
+<td>代表局域网的IP地址。不管是否是本机，会通过网卡发请求给路由或交换机，在请求回来到指定的电脑</td>
+</tr>
+<tr>
+<td>0.0.0.0</td>
+<td>代表任意的IP地址</td>
+</tr>
+<tr>
+<td>255.255.255.255</td>
+<td>广播地址</td>
+</tr>
+</tbody></table>
+<p><strong>协议域：（数字最大就是255）</strong></p>
+<ul>
+<li>IPV4：有四段</li>
+<li>IPV6：有六段</li>
+</ul>
+<h3 id="5-2-2-域名"><a href="#5-2-2-域名" class="headerlink" title="5.2.2 域名"></a>5.2.2 域名</h3><ul>
+<li>是一串用点分隔的名字组成的Internet上，一台计算机或者一个计算机组的名称，用来标识位置</li>
+<li>.com国际域名 全世界都可以访问 </li>
+<li>.cn中国域名</li>
+</ul>
+<p><strong>两者之间的关系？</strong></p>
+<p>如果是前者，那么一个域名对应一个IP，如果是后者，例如百度这种大公司，肯定是个计算机组，那么这个域名下面就有好多个服务器，也就是好多个IP，并且我们通过访问主机域名，百度返回得到的IP是随机的</p>
+<h3 id="5-2-3-DNS服务器"><a href="#5-2-3-DNS服务器" class="headerlink" title="5.2.3 DNS服务器"></a>5.2.3 DNS服务器</h3><p>注意：我们不是通过域名找到服务器的，而是通过IP地址找到的，</p>
+<p>我们访问域名— <font color=red>DNS域名解析服务器帮我们把域名转换成IP地址</font>—DNS返回给我们的电脑— 电脑通过IP地址找到服务器</p>
+<p>(我们一连接上网络，在网络信息中就可以看到我们的DNS服务器)</p>
+<p>举例：如果我们的电脑网络能上QQ等软件，但是浏览器不能上，很有可能就是DNS服务器出问题了，这个时候：要么直接输入我们要访问的网站的IP地址，要么换一个DNS服务器，谷歌提供了一个8.8.8.8，我们可以使用。</p>
+<h2 id="5-3-端口号"><a href="#5-3-端口号" class="headerlink" title="5.3 端口号"></a>5.3 端口号</h2><h3 id="5-3-1-端口的分类"><a href="#5-3-1-端口的分类" class="headerlink" title="5.3.1 端口的分类"></a>5.3.1 端口的分类</h3><ul>
+<li>端口范围：0-65535之间。端口的意义：用来区分不同的进程。</li>
+<li>端口分为以下三类：<ul>
+<li>公认端口（Well Known Ports）：从0到1023，它们紧密绑定（binding）于一些服务。通常这些端口的通讯 明确表明了某种服务的协议。例如：80端口实际上总是HTTP通讯,ftp21,smtp25,….。</li>
+<li>注册端口（Registered Ports）：从1024到49151。它们松散地绑定于一些服务。也就是说有许多服务绑定于 这些端口，这些端口同样用于许多其它目的。例如：许多系统处理动态端口从1024左右开始。</li>
+</ul>
+</li>
+<li>动态和/或私有端口（Dynamic and/or Private Ports）：从49152到65535。理论上，不应为服务分配这些端 口。实际上，机器通常从1024起分配动态端口。但也有例外：SUN的RPC端口从32768开始。</li>
+</ul>
+<h3 id="5-3-2-使用"><a href="#5-3-2-使用" class="headerlink" title="5.3.2 使用"></a>5.3.2 使用</h3><p>IP能够定位机器，端口号可以定位一个应用程序</p>
+<ul>
+<li>node 默认是3000 多了往上加</li>
+<li>Apache服务器，访问资源<ul>
+<li>部署：丢到服务器软件配置的根目录下</li>
+<li>访问：ip+刚开始配的服务器根目录下的要访问的文件的路径</li>
+</ul>
+</li>
+<li>node服务器，访问资源<ul>
+<li>部署：不需要配置根目录，只需要一个js文件。<ul>
+<li>这个js文件中必须配置了端口号，集成了http核心模块的功能。 </li>
+<li>如果做了下面这些操作，node+文件名，命令行中会一直卡在这里，进程一直在开启着，别人可以访问<br>如果只是一个普通的js文件，node+文件名，一下子就执行完了。做不到一直开启的状态。</li>
+</ul>
+</li>
+<li>访问：ip+端口号+此项目中文件名<ul>
+<li>浏览器中访问，肯定是上面要齐全</li>
+<li>如果是html中写url的时候，如果是访问的本项目中的文件(不管是后台文件 还是前端文件)，可以直接写相对路径，比如url: ‘./app.js’</li>
+<li>端口号：默认3000，如果你开了好几个node项目，那就需要注意，端口号要一致。</li>
+<li>文件名：如果不写，默认是会主动运行这个项目中的index.html文件，一般服务器都会做这个设置，到了nodejs中，因为所有请求都是这个js文件接收的，所以一般都会写这么个代码。<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> (pathname == <span class="string">&#x27;/&#x27;</span> &amp;&amp; req.method == <span class="string">&#x27;GET&#x27;</span>) &#123;</span><br><span class="line">    fs.readFile(path.join(__dirname, <span class="string">&#x27;index.html&#x27;</span>), <span class="function">(<span class="params">err, data</span>) =&gt;</span> &#123;</span><br><span class="line">      <span class="keyword">if</span> (err) &#123;</span><br><span class="line">        <span class="keyword">throw</span> err;</span><br><span class="line">      &#125;</span><br><span class="line">      res.end(data);</span><br><span class="line">    &#125;);</span><br><span class="line">  &#125;</span><br></pre></td></tr></table></figure></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<p>注意：</p>
+<ul>
+<li>我们所有对这个端口的访问，都是这个js文件，接收，并处理的。与其他的服务器不一样。<ul>
+<li>比如：Apache，就是我配置了根目录，你想访问什么文件，拿到那个文件的路径就可以，到时候，你的访问是这个文件进行处理。具体代码见笔记中两个js文件</li>
+<li>但nodejs不一样，比如：你要通过这个端口号访问 :3000/public/index.html。这个时候，是js文件接收到这个请求，然后将public/index.html文件的内容readFild读出来，然后返给前端。</li>
+</ul>
+</li>
+<li>一个js文件一个端口号，我们可以同时node + 文件名，同时开启好几个node项目，但是注意端口号要区分开</li>
+</ul>
+<h2 id="5-4-浏览器中跨域的场景"><a href="#5-4-浏览器中跨域的场景" class="headerlink" title="5.4 浏览器中跨域的场景"></a>5.4 浏览器中跨域的场景</h2><ul>
+<li><p>域名不同 </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">www.wuyou.com</span><br><span class="line">www.liuxi.com 即为不同的域名</span><br></pre></td></tr></table></figure></li>
+<li><p>二级域名相同，子域名不同</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">www.wuyou.wu.com </span><br><span class="line">www.liuxi.wu.com 为子域不同</span><br></pre></td></tr></table></figure></li>
+<li><p>端口不同，协议不同 </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">http:&#x2F;&#x2F;www.wuyou.com </span><br><span class="line">https:&#x2F;&#x2F;www.wuyou.com</span><br><span class="line">www.wuyou.con:8888</span><br><span class="line">www.wuyou.con:8080</span><br></pre></td></tr></table></figure></li>
+</ul>
+<p>前端需要用到跨域的地方：</p>
+<ul>
+<li>加载图片，文件资源。很少会跨域，你用别人的网站图片是另一码事……</li>
+<li>ajax请求。</li>
+</ul>
+<ol>
+<li><p><code>使用ctn节点，进行动静资源分离</code>时，也就是说，我们的前端文件，与需要的后端文件，就没在一个项目里</p>
+</li>
+<li><p>我们后段需要请求别的端口号，或者说是别的服务器项目中的后台文件，这个时候，按理说不应该是前端的任务，正儿八经的，应该是前端文件所在项目中的后台文件，帮我们把数据请求回来，因为他们是不存在跨域的，</p>
+</li>
+</ol>
+<p><font color='red'>跨域是浏览器限制的</font></p>
+<p>但是，如果后台的人不给我们做这一步(它是个半瓶水，或者是个棒槌) 或者 说这个接口做了，用几天就不用了(比如双十一这种暂时的活动接口)，那就需要我们进行jsonp跨域请求了,</p>
+<p>由上面可知，用到跨域的情形还是挺少的，而且我们前面讲过如何解决跨域：</p>
+<ul>
+<li>jsonp</li>
+<li>自己写个php后台文件，请求数据做中转。</li>
+<li>如果只是调试阶段有跨域，我们有浏览器插件</li>
+</ul>
+<h2 id="5-5-前后端分离"><a href="#5-5-前后端分离" class="headerlink" title="5.5 前后端分离"></a>5.5 前后端分离</h2><p>顾名思义，前后端分离就是把一个应用的前端代码和后端代码分开来写，为什么要这样做呢？先说说不分开会有什么问题，在传统的 Java Web 开发模式中，前端页面使用 JSP，而 JSP 代码的开发往往不是完全由后端程序猿来完成的。</p>
+<p>JSP 页面的开发步骤是首先需要前端程序猿完成 HTML 代码，然后交给后端程序猿转为 JSP 再进行开发，后端如果遇到页面问题，就需要找前端来解决，但是此时前端看到的代码已经不是他之前写的 HTML 了，是混合了一大堆标签的 JSP 代码，而前端又不懂 JSP，场面就非常尴尬。</p>
+<h2 id="5-6-网站的优化"><a href="#5-6-网站的优化" class="headerlink" title="5.6 网站的优化"></a>5.6 网站的优化</h2><ul>
+<li>网页中如果有图片、css、js等外部文件的话，图片、css、js都在单独的请求中，也就是并不是页面的所有内容都在一个请求中完成，而是每个资源都有一个请求</li>
+</ul>
+<p>思想</p>
+<ul>
+<li>能压缩的压缩能合并的合并：少一个script也好，少一次请求  </li>
+<li>少用js去遍历对象或者写for循环</li>
+<li>能提前运算好的提前运算好，使用枚举法 <code>var a=1024*1024;</code>这么写一点都不好</li>
+<li>流式(响应式)图片 — 图片压缩</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>优化方向</th>
+<th>优化手段</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>请求数量</td>
+<td>合并脚本和样式表，CSS Sprites，拆分初始化负载，划分主域</td>
+</tr>
+<tr>
+<td>请求带宽</td>
+<td>开启GZip，精简JavaScript，移除重复脚本，图像优化</td>
+</tr>
+<tr>
+<td>缓存利用</td>
+<td>使用CDN，使用外部JavaScript和CSS，添加Expires头，减少DNS查找，配置ETag，使AjaX可缓存</td>
+</tr>
+<tr>
+<td>页面结构</td>
+<td>将样式表放在顶部，将脚本放在底部，尽早刷新文档的输出</td>
+</tr>
+<tr>
+<td>代码校验</td>
+<td>避免CSS表达式，避免重定向</td>
+</tr>
+</tbody></table>
+<p>雅虎14条优化原则</p>
+<ul>
+<li>减少HTTP请求数<ul>
+<li>合并脚本和样式表：分开时分开。就很多网站因为首页的访问量太大，将首页的css和js直接写在页面文件中而不是外部引用。</li>
+<li>CSS Sprites：页面上的背景图片合并为一张，通过css的background-position属性定义不同的值来取背景。<a target="_blank" rel="noopener" href="https://links.jianshu.com/go?to=http://www.csssprites.com/">http://www.csssprites.com/</a>可帮助将上传的图片合并并给出对应的background-position坐标。</li>
+</ul>
+</li>
+<li>使用CDN（Content Delivery Network）：从最近的CDN节点请求数据</li>
+<li>添加Expire头，或者Cache-control。通过缓存减少请求数</li>
+<li>Gzip组件。<ul>
+<li>通过压缩减少文件传输的大小。</li>
+<li>所有的文件内容都应该被压缩。</li>
+</ul>
+</li>
+<li>将CSS样式放在页面的上方。一次渲染</li>
+<li>将script放在页面最下面<ul>
+<li>防止脚本阻塞页面的下载，减少页面可视元素的加载时间。（防止页面加载中途去下载脚本）</li>
+<li>防止脚本阻塞并行下载数量</li>
+</ul>
+</li>
+<li>避免在CSS中使用Expressions</li>
+<li>把javascript和css都放到外部文件中<ul>
+<li>把css和js写在页面内容可减少两次请求，但也增大了页面的大小。使用外部文件，如果做了缓存，也不会有两次多余的http请求。</li>
+<li>要视情况而定，参见第一点。</li>
+</ul>
+</li>
+<li>减少DNS查询。减少DNS解析过程、加快页面加载速度。建议一个页面所包含的域名数量尽量控制在2-4个。</li>
+<li>压缩JavaScript和CSS。<ul>
+<li>通过压缩，减少页面字节数，从而提高加载速度，同时还可以起到一定的保护作用。</li>
+<li>但是会丧失可读性，阿里巴巴是在发布的时候在服务器端进行压缩。</li>
+</ul>
+</li>
+<li>避免重定向。增加一次冲重定向就会增加一次web请求。</li>
+<li>移除重复的脚本</li>
+<li>配置实体标签（ETags）</li>
+<li>使AJAX缓存</li>
+</ul>
+<h2 id="5-7-在地址栏输入网址后页面是如何呈现的？"><a href="#5-7-在地址栏输入网址后页面是如何呈现的？" class="headerlink" title="5.7 在地址栏输入网址后页面是如何呈现的？"></a>5.7 在地址栏输入网址后页面是如何呈现的？</h2><ul>
+<li>DNS 把域名转化成ip<ul>
+<li>DNS服务器来做这个事情</li>
+<li>运营商提供的dns服务器</li>
+</ul>
+</li>
+<li>CDN 内容分发网络</li>
+</ul>
+<p>输入 URL：<a target="_blank" rel="noopener" href="http://www.baidu.com/">http://www.baidu.com</a></p>
+<ul>
+<li>DNS 域名解析<ul>
+<li>计算机无法识别域名，计算机与计算机之间要想进行通信，必须通过ip地址用来定位该计算机所在的位置</li>
+<li>在浏览器中，输入的ip地址或者域名，默认给你加了一个80端口号（对方的服务器监听的就是80端口）</li>
+<li>158.12.25.652  域名就是为了好记</li>
+<li>为了好记，所以我们的 万维网提供了 一个 域名这样的概念</li>
+<li>当你输入了 ip 地址后，浏览器会自动去 找DNS域名解析服务器</li>
+</ul>
+</li>
+<li>将用户输入的地址封装成 HTTP Request 请求报文 发送到服务器<ul>
+<li>浏览器将用户输入的 URL 地址根据HTTP协议 封装成了  http 请求报文（请求头+请求行+请求体）</li>
+<li>该报文说白了也就是字符串而已，最终也要被转成了二进制数据再发送到服务器</li>
+</ul>
+</li>
+<li>后台服务器接收到用户HTTP Request 请求报文<ul>
+<li>后台服务器接收到 客户端发送给自己的数据（二进制数据）<ul>
+<li>首先把二进制数据按照编码解析成字符（人类可以识别的）</li>
+<li>解析成字符之后，再按照 HTTP 协议规范中定义的格式解析出来</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>后台服务器处理用户请求信息<ul>
+<li>当得到用户请求报文之后，根据请求报文中的 get、post取出URL中的查询字符串 或者 请求体中的数据</li>
+<li>根据用户的特定的请求数据做特定的处理</li>
+</ul>
+</li>
+<li>后台服务器将相应结果封装到 HTTP Response 响应报文中 发送给客户端<ul>
+<li>当我们解析和处理完用户请求报文消息之后</li>
+<li>服务器开始将具体的 要发送给客户端的数据 根据 HTTP 协议规范 封装成 HTTP协议响应报文</li>
+<li>响应头、响应字段、响应体</li>
+<li>该数据说白了也是具有特定格式的字符串而已，最终这个字符串也要转换成二进制数据发送到客户端</li>
+<li>发送到客户端也是通过 Socket（ip地址、端口号） 发送到了该客户单</li>
+</ul>
+</li>
+<li>用户浏览器接收到响应后开始渲染html、css，解析和执行 JavaScript 代码<ul>
+<li>当客户端解析到 服务器发送过来的 二进制数据</li>
+<li>客户端浏览器也会将 二进制数据 根据编码类型解析成 字符串</li>
+<li>然后根据 HTTP 协议，解析服务器发送过来的 响应报文</li>
+<li>然后根据响应报文中的报文内容（报文头、报文体）做具体的解析</li>
+</ul>
+</li>
+<li>当浏览器在解析的过程中遇到 一些静态资源时，会再次重复上面的步骤</li>
+</ul>
+
+    </article>
+    <!-- license  -->
+    
+        <div class="license-wrapper">
+            <p>Author：<a href="https://tenloy.github.io">Tenloy</a>
+            <p>原文链接：<a href="https://tenloy.github.io/2021/09/09/computer-network-knowledge.html">https://tenloy.github.io/2021/09/09/computer-network-knowledge.html</a>
+            <p>发表日期：2021.09.09 , 6:53 PM</p>
+            <p>更新日期：2021.09.08 , 1:33 PM</p>
+            <p>版权声明：本文采用<a rel="license noopener" target="_blank" href="http://creativecommons.org/licenses/by-nc/4.0/">Crative Commons 4.0 许可协议</a>进行许可</p>
+        </div>
+    
+    <!-- paginator  -->
+    <ul class="post-paginator">
+        <li class="next">
+            
+                <div class="nextSlogan">Next Post</div>
+                <a href= "/2021/09/10/AFN-Analyse.html" title= "[转] AFN框架实现解析">
+                    <div class="nextTitle">[转] AFN框架实现解析</div>
+                </a>
+            
+        </li>
+        <li class="previous">
+            
+                <div class="prevSlogan">Previous Post</div>
+                <a href= "/2021/09/08/Log.html" title= "移动端日志库">
+                    <div class="prevTitle">移动端日志库</div>
+                </a>
+            
+        </li>
+    </ul>
+    <!-- 评论插件 -->
+    <!-- 来必力City版安装代码 -->
+
+<!-- City版安装代码已完成 -->
+    
+    
+    <!-- gitalk评论 -->
+
+    <!-- utteranc评论 -->
+
+    <!-- partial('_partial/comment/changyan') -->
+    <!--PC版-->
+
+
+    
+    
+
+    <!-- 评论 -->
+</main>
+            <!-- profile -->
+            
+        </div>
+        <footer class="footer footer-unloaded">
+    <!-- social  -->
+    
+    <div class="social">
+        
+    
+        
+            
+                <a href="mailto:luotengoto@163.com" class="iconfont-archer email" title=email ></a>
+            
+        
+    
+        
+            
+                <a href="//github.com/Tenloy" class="iconfont-archer github" target="_blank" title=github></a>
+            
+        
+    
+        
+            
+                <a href="https://www.jianshu.com/u/8db1bc12db9f" class="iconfont-jian jianshu" target="_blank" title=jianshu></a>
+            
+        
+    
+        
+            
+                <a href="/atom.xml" class="iconfont-archer rss" target="_blank" title=rss></a>
+            
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+
+    </div>
+    
+    <!-- powered by Hexo  -->
+    <div class="copyright">
+        <span id="hexo-power">Powered by <a href="https://hexo.io/" target="_blank">Hexo</a></span><span class="iconfont-archer power">&#xe635;</span><span id="theme-info">theme <a href="https://github.com/fi3ework/hexo-theme-archer" target="_blank">Archer</a></span>
+    </div>
+    <!-- 不蒜子  -->
+    
+    <div class="busuanzi-container">
+    
+     
+    <span id="busuanzi_container_site_pv">PV: <span id="busuanzi_value_site_pv"></span> :)</span>
+    
+    </div>
+    
+</footer>
+    </div>
+    <!-- toc -->
+    
+    <div class="toc-wrapper" style=
+    
+
+
+
+
+
+
+
+top:40vh;
+
+    >
+        <div class="toc-catalog">
+            <span class="iconfont-archer catalog-icon">&#xe613;</span><span>CATALOG</span>
+        </div>
+        <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%B8%80%E3%80%81%E6%9C%8D%E5%8A%A1%E5%99%A8%E4%B8%8E%E6%9C%8D%E5%8A%A1%E5%99%A8%E5%AE%B9%E5%99%A8"><span class="toc-text">一、服务器与服务器容器</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-1-%E6%9C%8D%E5%8A%A1%E5%99%A8-server"><span class="toc-text">1.1 服务器(server)</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-1-1-%E4%BD%9C%E4%B8%BA%E7%A1%AC%E4%BB%B6"><span class="toc-text">1.1.1 作为硬件</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-1-2-%E4%BD%9C%E4%B8%BA%E8%BD%AF%E4%BB%B6"><span class="toc-text">1.1.2 作为软件</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#1-%E5%B8%B8%E8%A7%81%E5%88%86%E7%B1%BB"><span class="toc-text">1. 常见分类</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2-%E5%BA%94%E7%94%A8%E7%A8%8B%E5%BA%8F%E6%9C%8D%E5%8A%A1%E5%99%A8"><span class="toc-text">2. 应用程序服务器</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3-%E7%BD%91%E9%A1%B5%E6%9C%8D%E5%8A%A1%E5%99%A8-Web-server"><span class="toc-text">3. 网页服务器(Web server)</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#4-WEB%E5%BA%94%E7%94%A8%E6%9C%8D%E5%8A%A1%E5%99%A8"><span class="toc-text">4. WEB应用服务器</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-1-3-%E6%9C%8D%E5%8A%A1%E5%99%A8%E7%9A%84%E5%85%B6%E5%AE%83%E5%88%86%E7%B1%BB"><span class="toc-text">1.1.3 服务器的其它分类</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-1-4-%E5%86%85%E7%BD%91%E5%92%8C%E5%A4%96%E7%BD%91%E7%9A%84%E5%8C%BA%E5%88%AB"><span class="toc-text">1.1.4 内网和外网的区别</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#1-%E5%86%85%E7%BD%91"><span class="toc-text">1. 内网</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2-%E5%A4%96%E7%BD%91"><span class="toc-text">2. 外网</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3-%E5%8C%BA%E5%88%86%E5%86%85%E7%BD%91%E4%B8%8E%E5%A4%96%E7%BD%91"><span class="toc-text">3. 区分内网与外网</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#4-%E4%B8%BA%E4%BB%80%E4%B9%88%E7%94%9F%E6%B4%BB%E4%B8%AD%E5%BE%88%E5%A4%9A%E7%9A%84%E5%B1%80%E5%9F%9F%E7%BD%91%EF%BC%9F"><span class="toc-text">4. 为什么生活中很多的局域网？</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#1-2-%E6%9C%8D%E5%8A%A1%E5%99%A8%E5%AE%B9%E5%99%A8"><span class="toc-text">1.2 服务器容器</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-2-1-Servlet%E5%AE%B9%E5%99%A8"><span class="toc-text">1.2.1 Servlet容器</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-2-2-Java-WEB%E5%AE%B9%E5%99%A8"><span class="toc-text">1.2.2 Java WEB容器</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-2-3-Java-EE%E5%AE%B9%E5%99%A8"><span class="toc-text">1.2.3 Java EE容器</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#1-3-%E4%B8%BE%E4%BE%8B%E8%AF%B4%E6%98%8E%E5%AE%B9%E5%99%A8%E4%B8%8E%E6%9C%8D%E5%8A%A1%E5%99%A8%E7%9A%84%E8%81%94%E7%B3%BB"><span class="toc-text">1.3 举例说明容器与服务器的联系</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-3-1-Apache%E3%80%81Nginx%E3%80%81IIS"><span class="toc-text">1.3.1 Apache、Nginx、IIS</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-3-2-Node%E6%B2%A1%E6%9C%89Web%E5%AE%B9%E5%99%A8"><span class="toc-text">1.3.2 Node没有Web容器</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-3-3-Tomcat%E5%8F%8A%E5%B8%B8%E8%A7%81%E7%9A%84JavaEE%E5%BA%94%E7%94%A8%E6%9C%8D%E5%8A%A1%E5%99%A8"><span class="toc-text">1.3.3 Tomcat及常见的JavaEE应用服务器</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-3-4-Nginx-Tomcat%E7%9A%84WEB%E5%BA%94%E7%94%A8%E6%9C%8D%E5%8A%A1%E5%99%A8-%E9%9B%86%E7%BE%A4"><span class="toc-text">1.3.4 Nginx + Tomcat的WEB应用服务器(集群)</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#1-4-%E6%9C%8D%E5%8A%A1%E5%99%A8%E5%BC%80%E5%8F%91"><span class="toc-text">1.4 服务器开发</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#1-5-Apache%E6%9C%8D%E5%8A%A1%E5%99%A8%E7%9A%84%E9%85%8D%E7%BD%AE"><span class="toc-text">1.5 Apache服务器的配置</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#1-6-PHP%E5%BC%80%E5%8F%91%E6%9C%8D%E5%8A%A1%E5%99%A8%E6%98%AF%E6%80%8E%E4%B9%88%E5%B7%A5%E4%BD%9C%E7%9A%84"><span class="toc-text">1.6 PHP开发服务器是怎么工作的</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-6-1-%E5%88%9B%E5%BB%BAPHP%E6%96%87%E4%BB%B6"><span class="toc-text">1.6.1 创建PHP文件</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-6-2-%E5%8F%96%E5%80%BC"><span class="toc-text">1.6.2 取值</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-6-3-%E8%BF%94%E5%9B%9E%E8%AE%BF%E9%97%AE%E7%BB%93%E6%9E%9C"><span class="toc-text">1.6.3 返回访问结果</span></a></li></ol></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%BA%8C%E3%80%81%E6%95%B0%E6%8D%AE%E5%BA%93"><span class="toc-text">二、数据库</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#3-1-%E5%B8%B8%E8%A7%84%E4%BF%9D%E5%AD%98%E6%96%B9%E5%BC%8F"><span class="toc-text">3.1 常规保存方式</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#3-1-1-txt%E6%96%87%E4%BB%B6"><span class="toc-text">3.1.1 .txt文件</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-1-2-excel%E6%96%87%E4%BB%B6"><span class="toc-text">3.1.2 .excel文件</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-2-%E6%95%B0%E6%8D%AE%E5%BA%93"><span class="toc-text">3.2 数据库</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-3-DBA"><span class="toc-text">3.3 DBA</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%B8%89%E3%80%81%E7%BD%91%E7%BB%9C%E7%BC%96%E7%A8%8B-%E2%80%94-BS-CS%E6%A8%A1%E5%BC%8F"><span class="toc-text">三、网络编程 — BS&#x2F;CS模式</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#3-1-C-S%E6%9E%B6%E6%9E%84-client-server"><span class="toc-text">3.1 C&#x2F;S架构(client&#x2F;server)</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-2-B-S%E6%9E%B6%E6%9E%84-Browser-Server"><span class="toc-text">3.2 B&#x2F;S架构(Browser&#x2F;Server)</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%9B%9B%E3%80%81%E7%BD%91%E7%BB%9C%E9%80%9A%E8%AE%AF%E6%A8%A1%E5%9E%8B%E5%8F%8A%E5%8D%8F%E8%AE%AE"><span class="toc-text">四、网络通讯模型及协议</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#4-1-%E6%A6%82%E8%BF%B0"><span class="toc-text">4.1 概述</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-2-OSI%E4%B8%83%E5%B1%82%E6%A8%A1%E5%9E%8B"><span class="toc-text">4.2 OSI七层模型</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#OSI%E6%A8%A1%E5%9E%8B%E9%80%9A%E8%AE%AF"><span class="toc-text">OSI模型通讯</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-3-HTTP%E5%8D%8F%E8%AE%AE-%E5%AE%9A%E4%B9%89%E6%95%B0%E6%8D%AE%E6%A0%BC%E5%BC%8F"><span class="toc-text">4.3 HTTP协议 - 定义数据格式</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#4-3-1-HTTP%E5%8D%8F%E8%AE%AE%E6%A6%82%E8%BF%B0"><span class="toc-text">4.3.1 HTTP协议概述</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#1-%E6%A6%82%E8%BF%B0"><span class="toc-text">1. 概述</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2-HTTP%E5%8D%8F%E8%AE%AE%E4%B8%AD%E7%9A%84%E5%86%85%E5%AE%B9"><span class="toc-text">2. HTTP协议中的内容</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3-HTTP%E5%8D%8F%E8%AE%AE%E7%89%B9%E7%82%B9"><span class="toc-text">3. HTTP协议特点</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#4-HTTP%E7%9A%84%E7%89%88%E6%9C%AC"><span class="toc-text">4. HTTP的版本</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#5-%E5%8D%8F%E8%AE%AE%E7%9A%84%E8%AF%B7%E6%B1%82%E3%80%81%E5%93%8D%E5%BA%94%E7%BB%93%E6%9E%84"><span class="toc-text">5. 协议的请求、响应结构</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-3-2-%E8%AF%B7%E6%B1%82%E6%8A%A5%E6%96%87%E7%9A%84%E6%A0%BC%E5%BC%8F"><span class="toc-text">4.3.2 请求报文的格式</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#1-%E6%A0%BC%E5%BC%8F"><span class="toc-text">1. 格式</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2-%E8%AF%B7%E6%B1%82%E6%96%B9%E6%B3%95Method"><span class="toc-text">2. 请求方法Method</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#1-GET"><span class="toc-text">1) GET</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#2-POST"><span class="toc-text">2) POST</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#3-GET-%E5%92%8C-POST-%E7%9A%84%E5%8C%BA%E5%88%AB"><span class="toc-text">3) GET 和 POST 的区别</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#4-POST%E5%A2%9E%E5%BC%BA"><span class="toc-text">4) POST增强</span></a></li></ol></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3-%E5%B8%B8%E8%A7%81%E7%9A%84%E5%85%B6%E4%BB%96%E8%AF%B7%E6%B1%82%E5%A4%B4%E5%AD%97%E6%AE%B5"><span class="toc-text">3. 常见的其他请求头字段</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-3-3-%E5%93%8D%E5%BA%94%E6%8A%A5%E6%96%87"><span class="toc-text">4.3.3 响应报文</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#1-%E6%A0%BC%E5%BC%8F-1"><span class="toc-text">1. 格式</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2-%E5%93%8D%E5%BA%94%E7%9A%84%E7%8A%B6%E6%80%81%E7%A0%81"><span class="toc-text">2. 响应的状态码</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3-%E5%93%8D%E5%BA%94%E7%9A%84content-Type"><span class="toc-text">3. 响应的content-Type</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#4-%E5%B8%B8%E8%A7%81%E7%9A%84%E5%85%B6%E4%BB%96%E5%93%8D%E5%BA%94%E5%A4%B4%E5%AD%97%E6%AE%B5"><span class="toc-text">4) 常见的其他响应头字段</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-3-4-HTTP%E2%80%94%E6%8C%81%E4%B9%85%E8%BF%9E%E6%8E%A5"><span class="toc-text">4.3.4 HTTP—持久连接</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-3-5-HTTP%E2%80%94%E6%97%A0%E7%8A%B6%E6%80%81"><span class="toc-text">4.3.5 HTTP—无状态</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-3-6-Cookie"><span class="toc-text">4.3.6 Cookie</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#1-%E6%A6%82%E8%BF%B0-1"><span class="toc-text">1. 概述</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2-Cookie%E7%9A%84%E9%97%AE%E9%A2%98"><span class="toc-text">2. Cookie的问题</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-3-7-Session"><span class="toc-text">4.3.7 Session</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-3-8-HTTP-2-0"><span class="toc-text">4.3.8 HTTP 2.0</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-4-TCP-UDP%E5%8D%8F%E8%AE%AE-%E7%AB%AF%E5%8F%A3%E5%8F%B7"><span class="toc-text">4.4 TCP&#x2F;UDP协议 - 端口号</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#4-4-1-TCP-UDP%E5%8D%8F%E8%AE%AE"><span class="toc-text">4.4.1 TCP&#x2F;UDP协议</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-4-2-%E7%AB%AF%E5%8F%A3%E5%8F%B7"><span class="toc-text">4.4.2 端口号</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-5-IP%E5%8D%8F%E8%AE%AE-%E5%8D%8F%E8%AE%AE%E5%8F%B7"><span class="toc-text">4.5 IP协议 - 协议号</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-6-TCP-IP%E5%8D%8F%E8%AE%AE%E4%B8%8Esocket"><span class="toc-text">4.6 TCP&#x2F;IP协议与socket</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#4-6-1-TCP-IP%E5%8D%8F%E8%AE%AE"><span class="toc-text">4.6.1 TCP&#x2F;IP协议</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-6-2-socket-%E5%A5%97%E6%8E%A5%E5%AD%97%E5%B1%82%E3%80%81%E6%8F%92%E5%BA%A7"><span class="toc-text">4.6.2 socket(套接字层、插座)</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#1-socket%E9%80%9A%E8%AE%AF%E7%9A%84%E5%8E%9F%E7%90%86"><span class="toc-text">1. socket通讯的原理</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2-C%E7%89%88%E6%9C%AC%E7%9A%84socket%E9%80%9A%E8%AE%AF"><span class="toc-text">2. C版本的socket通讯</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-7-%E9%95%BF%E8%BF%9E%E6%8E%A5%E4%B8%8E%E7%9F%AD%E8%BF%9E%E6%8E%A5"><span class="toc-text">4.7 长连接与短连接</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%BA%94%E3%80%81%E7%BD%91%E7%BB%9C%E7%BC%96%E7%A8%8B%E7%9B%B8%E5%85%B3%E6%A6%82%E5%BF%B5"><span class="toc-text">五、网络编程相关概念</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#5-1-URL"><span class="toc-text">5.1 URL</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#5-2-IP%E5%9C%B0%E5%9D%80%E3%80%81%E5%9F%9F%E5%90%8D%E4%B8%8EDNS%E6%9C%8D%E5%8A%A1%E5%99%A8"><span class="toc-text">5.2 IP地址、域名与DNS服务器</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#5-2-1-IP%E5%9C%B0%E5%9D%80"><span class="toc-text">5.2.1 IP地址</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-2-2-%E5%9F%9F%E5%90%8D"><span class="toc-text">5.2.2 域名</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-2-3-DNS%E6%9C%8D%E5%8A%A1%E5%99%A8"><span class="toc-text">5.2.3 DNS服务器</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#5-3-%E7%AB%AF%E5%8F%A3%E5%8F%B7"><span class="toc-text">5.3 端口号</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#5-3-1-%E7%AB%AF%E5%8F%A3%E7%9A%84%E5%88%86%E7%B1%BB"><span class="toc-text">5.3.1 端口的分类</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-3-2-%E4%BD%BF%E7%94%A8"><span class="toc-text">5.3.2 使用</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#5-4-%E6%B5%8F%E8%A7%88%E5%99%A8%E4%B8%AD%E8%B7%A8%E5%9F%9F%E7%9A%84%E5%9C%BA%E6%99%AF"><span class="toc-text">5.4 浏览器中跨域的场景</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#5-5-%E5%89%8D%E5%90%8E%E7%AB%AF%E5%88%86%E7%A6%BB"><span class="toc-text">5.5 前后端分离</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#5-6-%E7%BD%91%E7%AB%99%E7%9A%84%E4%BC%98%E5%8C%96"><span class="toc-text">5.6 网站的优化</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#5-7-%E5%9C%A8%E5%9C%B0%E5%9D%80%E6%A0%8F%E8%BE%93%E5%85%A5%E7%BD%91%E5%9D%80%E5%90%8E%E9%A1%B5%E9%9D%A2%E6%98%AF%E5%A6%82%E4%BD%95%E5%91%88%E7%8E%B0%E7%9A%84%EF%BC%9F"><span class="toc-text">5.7 在地址栏输入网址后页面是如何呈现的？</span></a></li></ol></li></ol>
+    </div>
+    
+    <div class="back-top iconfont-archer">&#xe639;</div>
+    <div class="sidebar sidebar-hide">
+    <ul class="sidebar-tabs sidebar-tabs-active-0">
+        <li class="sidebar-tab-categories"><span class="iconfont-archer">&#xe666;</span><span class="tab-name">Cate</span></li>
+        <li class="sidebar-tab-archives"><span class="iconfont-archer">&#xe67d;</span><span class="tab-name">Archive</span></li>
+        <li class="sidebar-tab-tags"><span class="iconfont-archer">&#xe61b;</span><span class="tab-name">Tag</span></li>
+    </ul>
+    <div class="sidebar-content sidebar-content-show-archive">
+        <div class="sidebar-panel-categories">
+    <div class="sidebar-categories-name">
+    
+        <span class="sidebar-category-name" data-categories="软件工程-化"><span class="iconfont-archer">&#xe60a;</span>软件工程-化</span>
+    
+        <span class="sidebar-category-name" data-categories="操作系统"><span class="iconfont-archer">&#xe60a;</span>操作系统</span>
+    
+        <span class="sidebar-category-name" data-categories="工程化"><span class="iconfont-archer">&#xe60a;</span>工程化</span>
+    
+        <span class="sidebar-category-name" data-categories="Data"><span class="iconfont-archer">&#xe60a;</span>Data</span>
+    
+        <span class="sidebar-category-name" data-categories="Swift"><span class="iconfont-archer">&#xe60a;</span>Swift</span>
+    
+        <span class="sidebar-category-name" data-categories="性能优化"><span class="iconfont-archer">&#xe60a;</span>性能优化</span>
+    
+        <span class="sidebar-category-name" data-categories="容器化"><span class="iconfont-archer">&#xe60a;</span>容器化</span>
+    
+        <span class="sidebar-category-name" data-categories="DSL"><span class="iconfont-archer">&#xe60a;</span>DSL</span>
+    
+        <span class="sidebar-category-name" data-categories="Algorithm"><span class="iconfont-archer">&#xe60a;</span>Algorithm</span>
+    
+        <span class="sidebar-category-name" data-categories="iOS"><span class="iconfont-archer">&#xe60a;</span>iOS</span>
+    
+        <span class="sidebar-category-name" data-categories="React"><span class="iconfont-archer">&#xe60a;</span>React</span>
+    
+        <span class="sidebar-category-name" data-categories="Web"><span class="iconfont-archer">&#xe60a;</span>Web</span>
+    
+        <span class="sidebar-category-name" data-categories="计算机网络"><span class="iconfont-archer">&#xe60a;</span>计算机网络</span>
+    
+    </div>
+    <div class="iconfont-archer sidebar-categories-empty">&#xe678;</div>
+    <div class="sidebar-categories-list"></div>
+</div>
+          <div class="sidebar-panel-archives">
+    <!-- 在ejs中将archive按照时间排序 -->
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    <div class="total-and-search">
+        <div class="total-archive">
+        Total : 28
+        </div>
+        <!-- search  -->
+        
+            <div class="site-search popup-trigger tl-side-search"> 
+                <span class="iconfont-jian search-icon">&#xe7fc;搜索</span>
+            </div>
+        
+    </div>
+    
+    <div class="post-archive">
+    
+    
+    
+    
+    <div class="archive-year"> 2021 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/10</span><a class="archive-post-title" href= "/2021/09/10/AFN-Analyse.html" >[转] AFN框架实现解析</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/09</span><a class="archive-post-title" href= "/2021/09/09/computer-network-knowledge.html" >计算机网络相关知识汇总</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/08</span><a class="archive-post-title" href= "/2021/09/08/Log.html" >移动端日志库</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/01</span><a class="archive-post-title" href= "/2021/07/01/Crash-Monitor.html" >iOS崩溃监控与分析</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/30</span><a class="archive-post-title" href= "/2021/06/30/Lag-Monitor.html" >iOS卡顿监控</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/29</span><a class="archive-post-title" href= "/2021/06/29/SwiftUI.html" >SwiftUI</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/29</span><a class="archive-post-title" href= "/2021/06/29/Swift-Version-History.html" >Swift版本更新API介绍</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/28</span><a class="archive-post-title" href= "/2021/06/28/GCD.html" >深入浅出GCD常用API</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/28</span><a class="archive-post-title" href= "/2021/06/28/AutoreleasePool.html" >AutoreleasePool</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/26</span><a class="archive-post-title" href= "/2021/06/26/RunLoop-Reposted-From-ibireme.html" >[转] 深入理解RunLoop—ibireme</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/24</span><a class="archive-post-title" href= "/2021/06/24/Protocol-Buffer.html" >Protocol Buffer的基本介绍</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/22</span><a class="archive-post-title" href= "/2021/06/22/dynamic-programming.html" >(二) 动态规划算法</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/18</span><a class="archive-post-title" href= "/2021/06/18/Web-Module.html" >前端各种模块化方案总结</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/27</span><a class="archive-post-title" href= "/2021/05/27/Fiber.html" >[转] 最通俗的 React Fiber(时间分片)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/27</span><a class="archive-post-title" href= "/2021/05/27/Coroutine.html" >[转] 什么是协程</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/29</span><a class="archive-post-title" href= "/2021/04/29/Engineering.html" >工程化、动态化、容器化、组件化</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/29</span><a class="archive-post-title" href= "/2021/04/29/DSL.html" >[转] 谈谈DSL以及DSL的应用（以CocoaPods 为例）</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/26</span><a class="archive-post-title" href= "/2021/04/26/Containers.html" >常见的容器概念：Linux容器、Docker容器、服务器容器</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/24</span><a class="archive-post-title" href= "/2021/04/24/Dock-Reprinted-from-RuanYIFeng.html" >[转] Docker入门教程</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/20</span><a class="archive-post-title" href= "/2021/04/20/Sync-Async.html" >同步和异步解读及编程中的使用场景</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/17</span><a class="archive-post-title" href= "/2021/04/17/Arm64-Handbook.html" >ARM64指令简易手册</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/16</span><a class="archive-post-title" href= "/2021/04/16/Arm64-Introduce.html" >iOS需要了解的ARM64汇编</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/15</span><a class="archive-post-title" href= "/2021/04/15/Ins-SysCall-Kernel-Shell.html" >指令、系统调用、库、Shell、APP的层次关系</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/14</span><a class="archive-post-title" href= "/2021/04/14/ISA-Microarch-Soc.html" >指令集、微架构、手机芯片(Soc)及ARM的介绍</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/13</span><a class="archive-post-title" href= "/2021/04/13/Command-Line.html" >CLI-Shell-Terminal-脚本概念梳理</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/12</span><a class="archive-post-title" href= "/2021/04/12/CI-CD.html" >CI-CD</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/10</span><a class="archive-post-title" href= "/2021/04/10/GithubPages-Hexo.html" >使用Hexo+Github Pages搭建个人博客</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/06</span><a class="archive-post-title" href= "/2021/04/06/iOS-Knowledge-Tree/" >iOS-interview</a>
+        </li>
+    
+    </div>
+  </div>
+        <div class="sidebar-panel-tags">
+    <div class="sidebar-tags-name">
+    
+        <span class="sidebar-tag-name" data-tags="hexo"><span class="iconfont-archer">&#xe606;</span>hexo</span>
+    
+        <span class="sidebar-tag-name" data-tags="CI/CD"><span class="iconfont-archer">&#xe606;</span>CI/CD</span>
+    
+        <span class="sidebar-tag-name" data-tags="多线程"><span class="iconfont-archer">&#xe606;</span>多线程</span>
+    
+        <span class="sidebar-tag-name" data-tags="协程"><span class="iconfont-archer">&#xe606;</span>协程</span>
+    
+        <span class="sidebar-tag-name" data-tags="SwiftUI"><span class="iconfont-archer">&#xe606;</span>SwiftUI</span>
+    
+        <span class="sidebar-tag-name" data-tags="Swift-Syntax"><span class="iconfont-archer">&#xe606;</span>Swift-Syntax</span>
+    
+        <span class="sidebar-tag-name" data-tags="Log"><span class="iconfont-archer">&#xe606;</span>Log</span>
+    
+        <span class="sidebar-tag-name" data-tags="CLI"><span class="iconfont-archer">&#xe606;</span>CLI</span>
+    
+        <span class="sidebar-tag-name" data-tags="Shell"><span class="iconfont-archer">&#xe606;</span>Shell</span>
+    
+        <span class="sidebar-tag-name" data-tags="ISA"><span class="iconfont-archer">&#xe606;</span>ISA</span>
+    
+        <span class="sidebar-tag-name" data-tags="Microarch"><span class="iconfont-archer">&#xe606;</span>Microarch</span>
+    
+        <span class="sidebar-tag-name" data-tags="Soc"><span class="iconfont-archer">&#xe606;</span>Soc</span>
+    
+        <span class="sidebar-tag-name" data-tags="Docker"><span class="iconfont-archer">&#xe606;</span>Docker</span>
+    
+        <span class="sidebar-tag-name" data-tags="DSL"><span class="iconfont-archer">&#xe606;</span>DSL</span>
+    
+        <span class="sidebar-tag-name" data-tags="dp"><span class="iconfont-archer">&#xe606;</span>dp</span>
+    
+        <span class="sidebar-tag-name" data-tags="AutoreleasePool"><span class="iconfont-archer">&#xe606;</span>AutoreleasePool</span>
+    
+        <span class="sidebar-tag-name" data-tags="LagMonitor"><span class="iconfont-archer">&#xe606;</span>LagMonitor</span>
+    
+        <span class="sidebar-tag-name" data-tags="ARM64"><span class="iconfont-archer">&#xe606;</span>ARM64</span>
+    
+        <span class="sidebar-tag-name" data-tags="RunLoop"><span class="iconfont-archer">&#xe606;</span>RunLoop</span>
+    
+        <span class="sidebar-tag-name" data-tags="CrashMonitor"><span class="iconfont-archer">&#xe606;</span>CrashMonitor</span>
+    
+        <span class="sidebar-tag-name" data-tags="ARM手册"><span class="iconfont-archer">&#xe606;</span>ARM手册</span>
+    
+        <span class="sidebar-tag-name" data-tags="Fiber"><span class="iconfont-archer">&#xe606;</span>Fiber</span>
+    
+        <span class="sidebar-tag-name" data-tags="interview"><span class="iconfont-archer">&#xe606;</span>interview</span>
+    
+        <span class="sidebar-tag-name" data-tags="GCD"><span class="iconfont-archer">&#xe606;</span>GCD</span>
+    
+        <span class="sidebar-tag-name" data-tags="AFN"><span class="iconfont-archer">&#xe606;</span>AFN</span>
+    
+    </div>
+    <div class="iconfont-archer sidebar-tags-empty">&#xe678;</div>
+    <div class="tag-load-fail" style="display: none; color: #ccc; font-size: 0.6rem;">
+    缺失模块。<br/>
+    1、请确保node版本大于6.2<br/>
+    2、在博客根目录（注意不是archer根目录）执行以下命令：<br/>
+    <span style="color: #f75357; font-size: 1rem; line-height: 2rem;">npm i hexo-generator-json-content --save</span><br/>
+    3、在根目录_config.yml里添加配置：
+    <pre style="color: #787878; font-size: 0.6rem;">
+jsonContent:
+  meta: false
+  pages: false
+  posts:
+    title: true
+    date: true
+    path: true
+    text: false
+    raw: false
+    content: false
+    slug: false
+    updated: false
+    comments: false
+    link: false
+    permalink: false
+    excerpt: false
+    categories: true
+    tags: true</pre>
+    </div> 
+    <div class="sidebar-tags-list"></div>
+</div>
+    </div>
+</div> 
+    <script>
+    var siteMeta = {
+        root: "/",
+        author: "Tenloy"
+    }
+</script>
+    <!-- CDN failover -->
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js"></script>
+    <script type="text/javascript">
+        if (typeof window.$ === 'undefined')
+        {
+            console.warn('jquery load from jsdelivr failed, will load local script')
+            document.write('<script src="/lib/jquery.min.js">\x3C/script>')
+        }
+    </script>
+    <script src="/scripts/main.js"></script>
+    <!-- algolia -->
+    
+        <div class="site-search">
+  <div class="algolia-popup popup">
+    <div class="algolia-search">
+      <div class="algolia-search-input-icon">
+        <i class="fa fa-search"></i>
+      </div>
+      <div class="algolia-search-input" id="algolia-search-input"></div>
+    </div>
+
+    <div class="algolia-results">
+      <div id="algolia-stats"></div>
+      <div id="algolia-hits"></div>
+      <div id="algolia-pagination" class="algolia-pagination"></div>
+    </div>
+
+    <span class="popup-btn-close">
+      <i class="iconfont-archer">&#xe609;</i>
+    </span>
+  </div>
+</div>
+        <script src="https://cdn.jsdelivr.net/npm/instantsearch.js@2.8.0/dist/instantsearch.min.js" defer></script>
+        <script src="/scripts/search.js" defer></script>
+    
+    <!-- busuanzi  -->
+    
+    <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    
+    <!-- CNZZ  -->
+    
+    </div>
+    <!-- async load share.js -->
+    
+        <script src="/scripts/share.js" async></script>    
+     
+    </body>
+</html>
+
+

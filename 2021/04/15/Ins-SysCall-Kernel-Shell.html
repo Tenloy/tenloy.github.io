@@ -1,0 +1,1428 @@
+<!DOCTYPE html>
+<html lang="en">
+    <!-- title -->
+
+
+
+
+<!-- keywords -->
+
+
+
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" >
+    <meta name="author" content="Tenloy">
+    <meta name="renderer" content="webkit">
+    <meta name="copyright" content="Tenloy">
+    
+    <meta name="keywords" content="Tenloy,iOS,Swift">
+    
+    <meta name="description" content="学习 生活 记录 回忆">
+    <meta name="description" content="本文主要是梳理机器指令、汇编指令、系统调用(OS Kernel)、语言库、应用程序和OS Shell的层次关系。 一、概述首先看一下软硬件间的关系，如图所示：   二、硬件 — CPU指令集一般指令集专利持有者在设计指令集的时候，往往提供指令集对应的机器语言规范。 而为了方便，一般也会提供汇编语言规范。 (注意：CPU微架构设计厂商可能会对指令集进行微调。关于指令集设计者、微架构设计者两者的关系可">
+<meta property="og:type" content="article">
+<meta property="og:title" content="指令、系统调用、库、Shell、APP的层次关系">
+<meta property="og:url" content="https://tenloy.github.io/2021/04/15/Ins-SysCall-Kernel-Shell.html">
+<meta property="og:site_name" content="Tenloy&#39;s Blog">
+<meta property="og:description" content="本文主要是梳理机器指令、汇编指令、系统调用(OS Kernel)、语言库、应用程序和OS Shell的层次关系。 一、概述首先看一下软硬件间的关系，如图所示：   二、硬件 — CPU指令集一般指令集专利持有者在设计指令集的时候，往往提供指令集对应的机器语言规范。 而为了方便，一般也会提供汇编语言规范。 (注意：CPU微架构设计厂商可能会对指令集进行微调。关于指令集设计者、微架构设计者两者的关系可">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://tenloy.github.io/images/OS/CLI/2181780-3f00874b5ac917a8.png">
+<meta property="article:published_time" content="2021-04-15T15:00:20.000Z">
+<meta property="article:modified_time" content="2021-09-08T13:33:06.409Z">
+<meta property="article:author" content="Tenloy">
+<meta property="article:tag" content="Tenloy, iOS, Tenloy Blog, 博客，Swift, 编译, 计算机">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://tenloy.github.io/images/OS/CLI/2181780-3f00874b5ac917a8.png">
+    <meta http-equiv="Cache-control" content="no-cache">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"/>
+    
+    <title>指令、系统调用、库、Shell、APP的层次关系 · Tenloy&#39;s Blog</title>
+    <style type="text/css">
+    @font-face {
+        font-family: 'Oswald-Regular';
+        src: url("/font/Oswald-Regular.ttf");
+    }
+
+    body {
+        margin: 0;
+    }
+
+    header,
+    footer,
+    .back-top,
+    .sidebar,
+    .container,
+    .site-intro-meta,
+    .toc-wrapper {
+        display: none;
+    }
+
+    .site-intro {
+        position: relative;
+        z-index: 3;
+        width: 100%;
+        /* height: 50vh; */
+        overflow: hidden;
+    }
+
+    .site-intro-placeholder {
+        position: absolute;
+        z-index: -2;
+        top: 0;
+        left: 0;
+        width: calc(100% + 300px);
+        height: 100%;
+        background: repeating-linear-gradient(-45deg, #444 0, #444 80px, #333 80px, #333 160px);
+        background-position: center center;
+        transform: translate3d(-226px, 0, 0);
+        animation: gradient-move 2.5s ease-out 0s infinite;
+    }
+
+    @keyframes gradient-move {
+        0% {
+            transform: translate3d(-226px, 0, 0);
+        }
+        100% {
+            transform: translate3d(0, 0, 0);
+        }
+    }
+
+</style>
+
+    <link rel="preload" href= "/css/style.css?v=20180824" as="style" onload="this.onload=null;this.rel='stylesheet'" />
+    <link rel="stylesheet" href= "/css/mobile.css?v=20180824" media="(max-width: 980px)">
+    
+    <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.2.5/jquery.fancybox.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'" />
+    
+    <!-- /*! loadCSS. [c]2017 Filament Group, Inc. MIT License */
+/* This file is meant as a standalone workflow for
+- testing support for link[rel=preload]
+- enabling async CSS loading in browsers that do not support rel=preload
+- applying rel preload css once loaded, whether supported or not.
+*/ -->
+<script>
+(function( w ){
+	"use strict";
+	// rel=preload support test
+	if( !w.loadCSS ){
+		w.loadCSS = function(){};
+	}
+	// define on the loadCSS obj
+	var rp = loadCSS.relpreload = {};
+	// rel=preload feature support test
+	// runs once and returns a function for compat purposes
+	rp.support = (function(){
+		var ret;
+		try {
+			ret = w.document.createElement( "link" ).relList.supports( "preload" );
+		} catch (e) {
+			ret = false;
+		}
+		return function(){
+			return ret;
+		};
+	})();
+
+	// if preload isn't supported, get an asynchronous load by using a non-matching media attribute
+	// then change that media back to its intended value on load
+	rp.bindMediaToggle = function( link ){
+		// remember existing media attr for ultimate state, or default to 'all'
+		var finalMedia = link.media || "all";
+
+		function enableStylesheet(){
+			link.media = finalMedia;
+		}
+
+		// bind load handlers to enable media
+		if( link.addEventListener ){
+			link.addEventListener( "load", enableStylesheet );
+		} else if( link.attachEvent ){
+			link.attachEvent( "onload", enableStylesheet );
+		}
+
+		// Set rel and non-applicable media type to start an async request
+		// note: timeout allows this to happen async to let rendering continue in IE
+		setTimeout(function(){
+			link.rel = "stylesheet";
+			link.media = "only x";
+		});
+		// also enable media after 3 seconds,
+		// which will catch very old browsers (android 2.x, old firefox) that don't support onload on link
+		setTimeout( enableStylesheet, 3000 );
+	};
+
+	// loop through link elements in DOM
+	rp.poly = function(){
+		// double check this to prevent external calls from running
+		if( rp.support() ){
+			return;
+		}
+		var links = w.document.getElementsByTagName( "link" );
+		for( var i = 0; i < links.length; i++ ){
+			var link = links[ i ];
+			// qualify links to those with rel=preload and as=style attrs
+			if( link.rel === "preload" && link.getAttribute( "as" ) === "style" && !link.getAttribute( "data-loadcss" ) ){
+				// prevent rerunning on link
+				link.setAttribute( "data-loadcss", true );
+				// bind listeners to toggle media back
+				rp.bindMediaToggle( link );
+			}
+		}
+	};
+
+	// if unsupported, run the polyfill
+	if( !rp.support() ){
+		// run once at least
+		rp.poly();
+
+		// rerun poly on an interval until onload
+		var run = w.setInterval( rp.poly, 500 );
+		if( w.addEventListener ){
+			w.addEventListener( "load", function(){
+				rp.poly();
+				w.clearInterval( run );
+			} );
+		} else if( w.attachEvent ){
+			w.attachEvent( "onload", function(){
+				rp.poly();
+				w.clearInterval( run );
+			} );
+		}
+	}
+
+
+	// commonjs
+	if( typeof exports !== "undefined" ){
+		exports.loadCSS = loadCSS;
+	}
+	else {
+		w.loadCSS = loadCSS;
+	}
+}( typeof global !== "undefined" ? global : this ) );
+</script>
+
+    <link rel="icon" href= "/assets/favicon.ico" />
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.min.js" as="script" />
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js" as="script" />
+    <link rel="preload" href="/scripts/main.js" as="script" />
+    <link rel="preload" as="font" href="/font/Oswald-Regular.ttf" crossorigin>
+    <link rel="preload" as="font" href="https://at.alicdn.com/t/font_327081_1dta1rlogw17zaor.woff" crossorigin>
+    
+        <!-- algolia -->
+        <script>
+            
+            var hits = JSON.parse('{"per_page":10}')
+            var labels = JSON.parse('{"input_placeholder":"Search for Posts","hits_empty":"没有找到任何搜索结果: ${query}","hits_stats":"找到约${hits}条结果（用时${time}ms）"}')
+
+            var algolia = {
+                applicationID: 'V0HYXBS9FB',
+                apiKey: '6550d5de786935564142097c3e78c380',
+                indexName: 'law_blog_index',
+                hits: hits,
+                labels: labels
+            }
+        </script>
+    
+    <!-- fancybox -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.2.5/jquery.fancybox.min.js" defer></script>
+    <!-- 百度统计  -->
+    
+    <!-- 谷歌统计  -->
+    
+<meta name="generator" content="Hexo 5.4.0"><link rel="alternate" href="/atom.xml" title="Tenloy's Blog" type="application/atom+xml">
+</head>
+
+    
+        <body class="post-body">
+    
+    
+<header class="header">
+
+    <div class="read-progress"></div>
+    <div class="header-sidebar-menu">&#xe775;</div>
+    <!-- post页的toggle banner  -->
+    
+    <div class="banner">
+            <div class="blog-title">
+                <a href="/" >Tenloy&#39;s Blog</a>
+            </div>
+            <div class="post-title">
+                <a href="#" class="post-name">指令、系统调用、库、Shell、APP的层次关系</a>
+            </div>
+    </div>
+    
+    <!-- 将home-link的操作改为应用到header-top-right上 -->
+    <div class="header-top-right">
+        <!-- search  -->
+        
+            <div class="site-search popup-trigger tl-search">
+                <span class="iconfont-jian tl-search-icon">&#xe7fc;搜索</span>
+            </div>
+            
+        <a class="home-link" href=/>Tenloy's Blog</a>
+    </div>
+</header>
+    <div class="wrapper">
+        <div class="site-intro" style="
+
+
+
+
+
+
+
+height:40vh;
+">
+    
+    <!-- 主页  -->
+    
+    
+    <!-- 404页  -->
+            
+    <div class="site-intro-placeholder"></div>
+    <div class="site-intro-img" style="background-image: url(/intro/post-bg.jpg)"></div>
+    <div class="site-intro-meta">
+        <!-- 标题  -->
+        <h1 class="intro-title">
+            <!-- 主页  -->
+            
+            指令、系统调用、库、Shell、APP的层次关系
+            <!-- 404 -->
+            
+        </h1>
+        <!-- 副标题 -->
+        <p class="intro-subtitle">
+            <!-- 主页副标题  -->
+            
+            
+            <!-- 404 -->
+            
+        </p>
+        <!-- 文章页meta -->
+        
+            <div class="post-intros">
+                <!-- 文章页标签  -->
+                
+                
+                    <div class="post-intro-read">
+                        <span>Word count: <span class="post-count word-count">5k</span>Reading time: <span class="post-count reading-time">17 min</span></span>
+                    </div>
+                
+                <div class="post-intro-meta">
+                    <span class="post-intro-calander iconfont-archer">&#xe676;</span>
+                    <span class="post-intro-time">2021/04/15</span>
+                    
+                    <span id="busuanzi_container_page_pv" class="busuanzi-pv">
+                        <span class="iconfont-archer">&#xe602;</span>
+                        <span id="busuanzi_value_page_pv"></span>
+                    </span>
+                    
+                    <span class="shareWrapper">
+                        <span class="iconfont-archer shareIcon">&#xe71d;</span>
+                        <span class="shareText">Share</span>
+                        <ul class="shareList">
+                            <li class="iconfont-archer share-qr" data-type="qr">&#xe75b;
+                                <div class="share-qrcode"></div>
+                            </li>
+                            <li class="iconfont-archer" data-type="weibo">&#xe619;</li>
+                            <li class="iconfont-archer" data-type="qzone">&#xe62e;</li>
+                            <li class="iconfont-archer" data-type="twitter">&#xe634;</li>
+                            <li class="iconfont-archer" data-type="facebook">&#xe67a;</li>
+                        </ul>
+                    </span>
+                </div>
+            </div>
+        
+    </div>
+</div>
+        <script>
+ 
+  // get user agent
+  var browser = {
+    versions: function () {
+      var u = window.navigator.userAgent;
+      return {
+        userAgent: u,
+        trident: u.indexOf('Trident') > -1, //IE内核
+        presto: u.indexOf('Presto') > -1, //opera内核
+        webKit: u.indexOf('AppleWebKit') > -1, //苹果、谷歌内核
+        gecko: u.indexOf('Gecko') > -1 && u.indexOf('KHTML') == -1, //火狐内核
+        mobile: !!u.match(/AppleWebKit.*Mobile.*/), //是否为移动终端
+        ios: !!u.match(/\(i[^;]+;( U;)? CPU.+Mac OS X/), //ios终端
+        android: u.indexOf('Android') > -1 || u.indexOf('Linux') > -1, //android终端或者uc浏览器
+        iPhone: u.indexOf('iPhone') > -1 || u.indexOf('Mac') > -1, //是否为iPhone或者安卓QQ浏览器
+        iPad: u.indexOf('iPad') > -1, //是否为iPad
+        webApp: u.indexOf('Safari') == -1, //是否为web应用程序，没有头部与底部
+        weixin: u.indexOf('MicroMessenger') == -1, //是否为微信浏览器
+        uc: u.indexOf('UCBrowser') > -1 //是否为android下的UC浏览器
+      };
+    }()
+  }
+  console.log("userAgent:" + browser.versions.userAgent);
+
+  // callback
+  function fontLoaded() {
+    console.log('font loaded');
+    if (document.getElementsByClassName('site-intro-meta')) {
+      document.getElementsByClassName('intro-title')[0].classList.add('intro-fade-in');
+      document.getElementsByClassName('intro-subtitle')[0].classList.add('intro-fade-in');
+      var postIntros = document.getElementsByClassName('post-intros')[0]
+      if (postIntros) {
+        postIntros.classList.add('post-fade-in');
+      }
+    }
+  }
+
+  // UC不支持跨域，所以直接显示
+  function asyncCb(){
+    if (browser.versions.uc) {
+      console.log("UCBrowser");
+      fontLoaded();
+    } else {
+      WebFont.load({
+        custom: {
+          families: ['Oswald-Regular']
+        },
+        loading: function () {  //所有字体开始加载
+          // console.log('loading');
+        },
+        active: function () {  //所有字体已渲染
+          fontLoaded();
+        },
+        inactive: function () { //字体预加载失败，无效字体或浏览器不支持加载
+          console.log('inactive: timeout');
+          fontLoaded();
+        },
+        timeout: 5000 // Set the timeout to two seconds
+      });
+    }
+  }
+
+  function asyncErr(){
+    console.warn('script load from CDN failed, will load local script')
+  }
+
+  // load webfont-loader async, and add callback function
+  function async(u, cb, err) {
+    var d = document, t = 'script',
+      o = d.createElement(t),
+      s = d.getElementsByTagName(t)[0];
+    o.src = u;
+    if (cb) { o.addEventListener('load', function (e) { cb(null, e); }, false); }
+    if (err) { o.addEventListener('error', function (e) { err(null, e); }, false); }
+    s.parentNode.insertBefore(o, s);
+  }
+
+  var asyncLoadWithFallBack = function(arr, success, reject) {
+      var currReject = function(){
+        reject()
+        arr.shift()
+        if(arr.length)
+          async(arr[0], success, currReject)
+        }
+
+      async(arr[0], success, currReject)
+  }
+
+  asyncLoadWithFallBack([
+    "https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.min.js", 
+    "https://cdn.bootcss.com/webfont/1.6.28/webfontloader.js",
+    "/lib/webfontloader.min.js"
+  ], asyncCb, asyncErr)
+</script>        
+        <img class="loading" src="/assets/loading.svg" style="display: block; margin: 6rem auto 0 auto; width: 6rem; height: 6rem;" />
+        <div class="container container-unloaded">
+            <main class="main post-page">
+    <article class="article-entry">
+        <p>本文主要是梳理机器指令、汇编指令、系统调用(OS Kernel)、语言库、应用程序和OS Shell的层次关系。</p>
+<h2 id="一、概述"><a href="#一、概述" class="headerlink" title="一、概述"></a>一、概述</h2><p>首先看一下软硬件间的关系，如图所示：</p>
+<img src="/images/OS/CLI/2181780-3f00874b5ac917a8.png" style="zoom:80%">
+
+<h2 id="二、硬件-—-CPU指令集"><a href="#二、硬件-—-CPU指令集" class="headerlink" title="二、硬件 — CPU指令集"></a>二、硬件 — CPU指令集</h2><p><strong>一般指令集专利持有者在设计指令集的时候，往往提供指令集对应的机器语言规范。</strong> 而为了方便，一般也会提供汇编语言规范。</p>
+<p>(注意：CPU微架构设计厂商可能会对指令集进行微调。关于指令集设计者、微架构设计者两者的关系可以参考<a target="_blank" rel="noopener" href="https://www.jianshu.com/p/c80850ccfb27">指令集、微架构、手机芯片(Soc)及ARM的介绍(偏硬件科普)</a>)</p>
+<blockquote>
+<p>汇编语言（assembly language）是一种用于电子计算机、微处理器、微控制器或其他可编程器件的低级语言，亦称为符号语言。在汇编语言中，用<code>助记符</code>代替机器指令的操作码，用<code>地址符号或标号</code>代替指令或操作数的地址。汇编语言又被称为第二代计算机语言。</p>
+</blockquote>
+<p><strong>汇编语言产生的原因：</strong></p>
+<p>对于绝大多数人来说，二进制程序是不可读的，当然有能人可以读，比如第一代程序员，但这类人快灭绝了，直接看二进制不容易看出来究竟做了什么事情，比如最简单的加法指令二进制表示为 00000011，如果它混在一大串01字符串中就很难把它找出来，所以汇编语言主要就是为了解决二进制编码的可读性及编写效率问题(CPU指令集机器码形式记不住呀…)。</p>
+<p><strong>即指令集有两种表示形式：机器码形式、汇编语言形式</strong>。比如 00000011 加法指令，对应的汇编指令是 ADD，在调用汇编器时就会把 ADD 翻译成 00000011。</p>
+<p><strong>常见的指令集以及汇编语言规范：</strong></p>
+<ul>
+<li>x86(IA-32)、x86-64指令集(常见于PC端)，对应有2家公司发布的不同汇编语言规范：<ul>
+<li>intel公司发布的汇编语言规范，称<code>intel 汇编</code>：Windows派系(Microsoft)，比较著名的汇编器有微软的masm和开源的nasm。</li>
+<li>AT&amp;T公司发布的汇编语言规范，称<code>AT&amp;T 汇编</code>：Unix派系(或者说GNU)，比如g++编译器等。</li>
+</ul>
+</li>
+<li>ARM指令集(常见于嵌入式、移动端设备，粗略统计覆盖95%左右的手段)：ARM公司发布的汇编语言规范，称<strong>ARM 汇编</strong>(<strong>目前常见的是ARM 64汇编</strong>)，见<a target="_blank" rel="noopener" href="https://links.jianshu.com/go?to=https://developer.arm.com/architectures">官网文档</a></li>
+</ul>
+<p><strong>汇编语言规范，是给汇编程序开发者看的，也是给编译器(主要是汇编器)看的，目的只有一个：保证汇编程序能通过汇编器转换成CPU兼容执行、实现逻辑功能的指令(二进制码)序列。如果你能编写自己的汇编器，完全可以定义自己的汇编语言规范</strong></p>
+<p><strong>所以，汇编语言和机器语言是一一对应的吗？</strong></p>
+<p>在同一汇编规范下，它们是一一对应的。如果考虑到不同的汇编语言规范，它们就不是一一对应的了。在多数场合，笼统地说，汇编语言和机器语言是一一对应的（比如 00000011 就是 ADD）。所以汇编语言就和机器语言一样，很受硬件限制，移植性很差。</p>
+<p>高级语言在执行时，需要 <strong>→ 编译器翻译为汇编语言 → 汇编器翻译为机器语言</strong>，此时，才能够被CPU识别并执行。<strong>指令集直接操作硬件。</strong></p>
+<p>**通常是先指定使用的指令集，然后去设计微架构(处理器硬件结构)**。</p>
+<h2 id="三、操作系统"><a href="#三、操作系统" class="headerlink" title="三、操作系统"></a>三、操作系统</h2><p>操作系统分为内核(Kernel)、壳层(Shell)</p>
+<h3 id="3-1-内核-Kernel-与系统调用"><a href="#3-1-内核-Kernel-与系统调用" class="headerlink" title="3.1 内核(Kernel)与系统调用"></a>3.1 内核(Kernel)与系统调用</h3><h4 id="3-1-1-内核概述"><a href="#3-1-1-内核概述" class="headerlink" title="3.1.1 内核概述"></a>3.1.1 内核概述</h4><p>内核(Kernel，又称核心)在计算机科学中是一个用来管理软件发出的数据I/O(输入与输出)要求的电脑程序，是现代操作系统中最基本的部分。</p>
+<p>它是为众多应用程序提供对计算机硬件的安全访问的一部分软件，这种访问是有限的，并由内核决定一个程序在什么时候对某部分硬件操作多长时间。直接对硬件操作是非常复杂的。所以内核通常提供一种硬件抽象的方法，来完成这些操作。</p>
+<p><strong>总结：内核对硬件的操作进行封装，向上层(应用、Shell)提供接口，使上层使用硬件更方便，会对上层的硬件资源申请统一管理，当然也就意味上层的使用会受到一些限制。</strong></p>
+<p>严格地说，内核并不是计算机系统中必要的组成部分。有些程序可以直接地被调入计算机中执行；这样的设计，说明了设计者不希望提供任何硬件抽象和操作系统的支持；它常见于早期计算机系统的设计中。</p>
+<p>但随着电脑技术的发展，最终，一些辅助性程序，例如程序加载器和调试器，被设计到机器内核当中，或者写入在只读记忆体里。这些变化发生时，操作系统内核的概念就渐渐明晰起来了。</p>
+<h4 id="3-1-2-系统调用"><a href="#3-1-2-系统调用" class="headerlink" title="3.1.2 系统调用"></a>3.1.2 系统调用</h4><p><strong>内核提供的接口称为系统调用，指运行在用户空间的程序访问操作系统内核所提供服务的接口(内核服务意味着更高的权限）。系统调用是代码方式使用，也就表示了用户（非编程人员）不能直接与内核进行交互。</strong></p>
+<p><strong>系统调用是基于CPU指令集的，进行封装、扩展（比如扩展中断向量，实现一系列的系统调用）。类似于语言库中的API对系统调用的封装。</strong></p>
+<p>调用系统调用的两种方式：以Linux为例(其他系统也是类似)，在 Linux 平台下有两种方式来使用系统调用：</p>
+<ul>
+<li><strong>利用封装后的 C 库（libc）</strong>。Linux、Windows、iOS等许多系统内核大部分都是C语言编写的，其中也有少部分的C++、C#等语言，所以大部分的系统调用通常是C、C++语言格式的</li>
+<li><strong>通过汇编直接调用</strong>。通过汇编语言来直接调用系统调用，是最高效地使用 Linux 内核服务的方法，因为最终生成的程序不需要与任何库进行链接，而是直接和内核通信。</li>
+<li>第一种方式是对第二种方式的封装。如DOS、Linux 的系统调用都是通过中断汇编指令（int 0x80）来实现的。(见下面—系统调用的实现)</li>
+</ul>
+<h4 id="3-1-3-系统调用的实现"><a href="#3-1-3-系统调用的实现" class="headerlink" title="3.1.3 系统调用的实现"></a>3.1.3 系统调用的实现</h4><p>系统调用接口在实现中往往以<strong>软件中断</strong>(Software interrupt)，简称<strong>INT</strong>(软中断)的方式提供，比如：</p>
+<ul>
+<li>Linux 使用 <code>INT 0x80</code>（INT是汇编指令，0x80为参数，表示80号中断）作为系统调用接口。</li>
+<li>Windows使用 0x2E 号中断作为系统调用接口（从Windows XP Sp2开始，Windows开始采用一种新的系统调用方式）。</li>
+</ul>
+<p>以Linux为例，在进行系统调用的时候:</p>
+<ol>
+<li>发起int 0x80中断，并传入<strong>系统调用号</strong>。系统调用号：有一个 <code>sys_call_table</code> 是一个全局函数数组，存储所有系统调用的地址(可以查看 <code>include/linux/sys.h</code> 文件)，系统调用号是系统调用在该数组中的下标。</li>
+<li>调用 <code>set_system_gate</code> 函数处理中断，首先从当前的用户态切换到内核态，然后找到中断向量表，根据中断编号(0x80)，找到对应的中断处理程序</li>
+<li>找到中断处理程序 <code>system_call</code> (在 <code>linux/kernel/system_call.s</code> 中，是汇编程序)，根据系统调用号在 <code>sys_call_table</code> 表中找到相应系统调用对应的函数入口。</li>
+<li>调用 <code>call汇编指令</code> ，输入函数地址。</li>
+</ol>
+<h4 id="3-1-4-关于中断向量的一些补充"><a href="#3-1-4-关于中断向量的一些补充" class="headerlink" title="3.1.4 关于中断向量的一些补充"></a>3.1.4 关于中断向量的一些补充</h4><p>计算机启动时，引导扇区、系统内核会陆续的将一些中断填入中断向量表，并将中断向量指向自己编写的中断服务程序。</p>
+<p>如操作系统启动过程的最后，由<code>head.s</code>进入<code>main.c</code>中，会进行一系列的初始化：内存、设备、时钟、中断等。其中：</p>
+<ul>
+<li><code>trap_init()</code>函数，会初始化一些中断向量</li>
+<li><code>sched_init()</code>函数中会调用<code>set_system_gate(0x80,&amp;system_call)</code>，设置中断向量号0x80的中断描述符</li>
+</ul>
+<p>系统也会为用户保留一些中断向量，用户可以将自己的中断服务程序写入这些中断向量中。不仅如此，用户还可以自己更改和完善系统已有的中断向量。<strong>相当于给INT指令增加参数(中断向量号)选项，且指定对应的调用程序</strong>。</p>
+<blockquote>
+<p><strong>引导扇区(实模式) → bootloader(实模式 → 保护模式，R0层权限) → 操作系统(保护模式，R0层权限) → 操作系统先加载的是内核，内核处于R0，shell已经是在用户态了</strong></p>
+</blockquote>
+<h3 id="3-2-壳层-Shell"><a href="#3-2-壳层-Shell" class="headerlink" title="3.2 壳层(Shell)"></a>3.2 壳层(Shell)</h3><p>操作系统存在的目的是方便用户的使用，而内核提供的代码形式的系统调用，是面向编程开发者的，所以需要一个<strong>壳层：在计算机科学中指“为用户提供用户界面”的软件，或者说是指操作系统中提供访问内核所提供之服务的程序</strong></p>
+<p>Shell又分为了CLI Shell(命令行)、GUI Shell(图形化)两种形式，用户都可以用来使用操作系统。区别：</p>
+<ul>
+<li><strong>样式区别</strong>：前者的页面是一行行的文字命令，后者是图形状的</li>
+<li><strong>程序(APP、命令行工具)的使用</strong>：前者需要用户记住每个程序的路径，然后输入特定的命令来调用对应的功能。后者会将所有的APP以图标的形式显示在桌面上，通过点击就可使用</li>
+<li><strong>本质</strong>：本质上没区别，都是对系统调用的封装，功能一定程度上都是共通的</li>
+</ul>
+<h3 id="3-3-目前的操作系统为例"><a href="#3-3-目前的操作系统为例" class="headerlink" title="3.3 目前的操作系统为例"></a>3.3 目前的操作系统为例</h3><p>对上面的知识点进行总结，以目前的操作系统为例：</p>
+<p>针对不同的角色，操作系统提供了不同的用户界面(不同的操作系统提供的用户界面也不同)</p>
+<ul>
+<li>对普通用户和管理员用户提供<strong>命令控制界面</strong>(也就是<code>Shell</code>)：是一组不同操作命令组成的集合，每个命令实现用户所要求的不同功能，为用户提供相应的服务。<ul>
+<li>包括GUI图形化界面、CLI命令行界面</li>
+<li>用户利用这些操作命令来组织和控制作业的执行。</li>
+</ul>
+</li>
+<li>对编程人员提供<strong>编程界面</strong>：是一组<strong>系统调用</strong>的集合，这些系统调用允许编程人员请求操作系统内核提供的服务，开发能够满足用户服务需求的新的控制命令。</li>
+<li><strong>命令控制界面是基于编程界面，也就是系统调用之上开发完成的。</strong></li>
+</ul>
+<h3 id="3-4-ABI与API"><a href="#3-4-ABI与API" class="headerlink" title="3.4 ABI与API"></a>3.4 ABI与API</h3><p>操作系统相关的有两类接口(意思并不是说只有OS才有ABI、API)：</p>
+<ul>
+<li>API应用程序接口：源代码层次的接口，即操作系统提供了哪些系统调用(一般是C/C++编写)，正确调用OS提供的API，才能被成功编译</li>
+<li>ABI应用二进制接口：机器码层次的接口，按照系统ABI编写(或转换成)的机器码文件(目标文件、可执行文件)，才能成功与OS提供的库(也是目标文件，机器码)链接，然后成功被OS装载运行。</li>
+</ul>
+<h4 id="3-4-1-API"><a href="#3-4-1-API" class="headerlink" title="3.4.1 API"></a>3.4.1 API</h4><p><code>API(Application Programming Interface)</code>应用程序接口：定义了源代码和库之间的接口(函数名、参数、返回值、数据类型定义等)，即规定源代码可以怎么使用库的功能，使得一套 <code>源代码</code>可以在支持这个API的任何系统中 <code>编译</code>。</p>
+<h4 id="3-4-2-ABI"><a href="#3-4-2-ABI" class="headerlink" title="3.4.2 ABI"></a>3.4.2 ABI</h4><p><code>ABI(Application Binary Interface)</code>应用二进制接口：是指两程序模块间的接口，通常其中一个程序模块会是库或操作系统所提供的服务，而另一边的模块则是用户所运行的程序(前面已经知道程序主模块、动态链接库都叫程序模块)。</p>
+<p>规定了机器代码的书写格式(二进制应用程序应该怎么调用CPU指令集中的指令)，使得一套编译好的<strong>二进制代码</strong>(目标文件、可执行文件)可以在兼容ABI的系统中，无需任何修改直接<strong>运行</strong>。</p>
+<ul>
+<li>决定要不要采取既定的ABI（不论是否由官方提供），通常由编译器，操作系统或库的开发者来决定</li>
+</ul>
+<p>ABI涵盖了各种细节，如：</p>
+<ul>
+<li>数据类型的大小、布局和对齐;</li>
+<li>调用约定（控制着函数的参数如何传送以及如何接受返回值），例如：<ul>
+<li>是所有的参数都通过栈传递，还是部分参数通过寄存器传递；</li>
+<li>哪个寄存器用于哪个函数参数；</li>
+<li>通过栈传递的第一个函数参数是最先push到栈上还是最后；</li>
+</ul>
+</li>
+<li>系统调用的编码和一个应用如何向操作系统进行系统调用；</li>
+<li>以及在一个完整的操作系统ABI中，目标文件的二进制格式、程序库等等。</li>
+</ul>
+<h3 id="3-4-3-两者对比"><a href="#3-4-3-两者对比" class="headerlink" title="3.4.3 两者对比"></a>3.4.3 两者对比</h3><ul>
+<li>定义层级<ul>
+<li>API在源代码定义这些，则较为高端，并不直接相依于硬件，通常会是人类可阅读的代码。</li>
+<li>ABI在二进制代码(目标文件、可执行文件)层次定义了机器代码怎么写，此处所定义的界面相当低端并且相依于硬件。</li>
+</ul>
+</li>
+<li>标准化方面<ul>
+<li>POSIX 标准、C99 标准，都是对 API 的规定。</li>
+<li>有一些努力尝试标准化ABI，以减少销售商将程序移植到其他系统时所需的工作。然而，直到现在还没有很成功的例子，虽然Linux标准化工作组正在为Linux做这方面的努力。</li>
+</ul>
+</li>
+</ul>
+<h2 id="四、语言标准库"><a href="#四、语言标准库" class="headerlink" title="四、语言标准库"></a>四、语言标准库</h2><p>编程语言的标准库是该语言的每种实现中都按例提供的库。在某些情况下，编程语言规格说明中会直接提及该库；另一些情况下，标准库的内容由编程社区中的非正式惯例决定。</p>
+<p>根据宿主语言构成要素的不同，标准库可包含如下要素：</p>
+<ul>
+<li>子程序</li>
+<li>宏定义</li>
+<li>全局变量</li>
+<li>类别定义</li>
+<li>模板</li>
+</ul>
+<p>大多数标准库都至少含有如下常用组件的定义：</p>
+<ul>
+<li>算法（例如排序算法）</li>
+<li>数据结构（例如 表、 树、哈希表）</li>
+<li><strong>与宿主平台的交互，包括输入输出和操作系统调用</strong></li>
+</ul>
+<p>比如我们经典的C语言版“hello world”程序，使用C语言标准库的“printf”函数来输出一个字符串，“printf”函数对字符串进行一些必要的处理以后，最后会调用操作系统提供的系统调用。</p>
+<p>各个操作系统，往终端输出字符串的API都不一样，在Linux下，它是一个 <code>“write”</code>的系统调用，而在Windows下则是 <code>“WriteConsole”</code>系统API。此外，还带有很多一些常用的函数。</p>
+<p><strong>Q1：如Java、Object-C语言库可不可以不调用C、C++语言格式的系统调用(API)？</strong></p>
+<p>当然可以，上文讲过，操作系统一般都提供了两种方式来使用系统调用：C语言库、汇编语言。系统调用对Linux、DOS来说只是int 0x80(中断)而已，所以不管语言库是什么语言编写的，(在Linux上运行的软件代码)只要能通过编译器翻译成对应Linux下的int 0x80的汇编语言就行了。</p>
+<p><strong>但是注意</strong>：封装高级语言格式的系统调用、设置0x80中断及对应的中断处理程序实现系统调用，都是操作系统提供的功能。</p>
+<p>而且操作系统的系统调用<strong>实现</strong>是一定的，两种方式(其实是一种，C库本质上也是封装的汇编中断指令)最后找到的系统调用函数的实现(函数入口地址)都是一样的…</p>
+<p>其实，编程人员开发时，用什么语言来调用系统调用是无所谓的，因为运行的时候，都需要编译、汇编成机器代码。从硬件角度来看(即最后的可执行文件)，区别不大的(高级语言调用、汇编语言调用最后生成的机器码还是有些区别的)。</p>
+<p><strong>Q2：既然可以直接写汇编语言，而汇编语言又是直接对应CPU指令，即可以直接操作硬件资源，那为什么不能越过操作系统直接使用硬件？</strong></p>
+<p>不能。主语不要弄错，并不是汇编语言为什么不能操控硬件，是用户程序不能越过操作系统操控硬件。</p>
+<p><strong>核心问题：用户程序和系统调用的权限问题</strong>。</p>
+<p>系统调用是操作系统内核的代码，拥有最高的权限。以x86架构为例，x86指令运行的权限是从Ring0到Ring3的，操作系统内核运行在R0，用户程序运行在R3。</p>
+<p>有一些指令只能在R0执行，比如修改CR寄存器（mov cr0, eax），这种操作在用户态直接会报错。因为CPU会保存当前运行的代码的CPL（当前特权级别）和IOPL（IO权限），如果CPL/IOPL不符，CPU会抛出异常，丢给内核R0的代码去处理。这种错误，是执行到某条特定指令才会遇到的，不是加载的时候遇到的，<strong>是CPU行为，不是操作系统行为。</strong></p>
+<p><strong>操作系统之所以不会被限制，是因为操作系统内核运行在R0上，对CPU有完整的控制权。</strong></p>
+<p>计算机刚启动时，属于实模式，从实模式切换到保护模式的过程中，默认是进入到R0里的，所以操作系统在启动的过程中，是自动获得了R0的权限的。而<strong>用户代码都是被操作系统启动的(装载、链接)<strong>，此时</strong>操作系统能控制用户代码运行在什么级别上</strong>。</p>
+<p>那么为什么操作系统的代码就可以切换特权级而用户的代码却不可以切换特权级？</p>
+<p>实际上可以的。Windows可以加载用户驱动到内核（但受到一些限制），这就是把用户代码放到R0里执行的过程，Linux也有类似的东西存在。</p>
+<h2 id="五、编程开发的应用程序"><a href="#五、编程开发的应用程序" class="headerlink" title="五、编程开发的应用程序"></a>五、编程开发的应用程序</h2><p>内核 → 系统调用 → Shell</p>
+<p>内核 → 系统调用 → 编程语言标准库 → 编程人员开发的应用程序</p>
+<p>以我们日常使用的手机系统为例，应用程序与GUI Shell的关系其实并没有谁基于谁的关系，Shell本质上也是一个应用程序。都是依赖于内核提供的系统调用开发、运行的。只不过功能不同而已：</p>
+<ul>
+<li>应用程序是编程人员为了实现某些功能(比如看书、听音乐等)开发的</li>
+<li>GUI Shell，它的功能是以图形化的方式管理所有的应用入口(并内置了一些应用程序比如文件管理、设置之类的)，并负责将用户的一些交互行为转换为控制命令。<ul>
+<li>比如用户点击APP图标，打开APP，本质上是GUI Shell帮忙调用了系统调用：<code>fork()</code>创建进程 → <code>execve()</code>执行指定的可执行文件等</li>
+</ul>
+</li>
+</ul>
+
+    </article>
+    <!-- license  -->
+    
+        <div class="license-wrapper">
+            <p>Author：<a href="https://tenloy.github.io">Tenloy</a>
+            <p>原文链接：<a href="https://tenloy.github.io/2021/04/15/Ins-SysCall-Kernel-Shell.html">https://tenloy.github.io/2021/04/15/Ins-SysCall-Kernel-Shell.html</a>
+            <p>发表日期：2021.04.15 , 3:00 PM</p>
+            <p>更新日期：2021.09.08 , 1:33 PM</p>
+            <p>版权声明：本文采用<a rel="license noopener" target="_blank" href="http://creativecommons.org/licenses/by-nc/4.0/">Crative Commons 4.0 许可协议</a>进行许可</p>
+        </div>
+    
+    <!-- paginator  -->
+    <ul class="post-paginator">
+        <li class="next">
+            
+                <div class="nextSlogan">Next Post</div>
+                <a href= "/2021/04/16/Arm64-Introduce.html" title= "iOS需要了解的ARM64汇编">
+                    <div class="nextTitle">iOS需要了解的ARM64汇编</div>
+                </a>
+            
+        </li>
+        <li class="previous">
+            
+                <div class="prevSlogan">Previous Post</div>
+                <a href= "/2021/04/14/ISA-Microarch-Soc.html" title= "指令集、微架构、手机芯片(Soc)及ARM的介绍">
+                    <div class="prevTitle">指令集、微架构、手机芯片(Soc)及ARM的介绍</div>
+                </a>
+            
+        </li>
+    </ul>
+    <!-- 评论插件 -->
+    <!-- 来必力City版安装代码 -->
+
+<!-- City版安装代码已完成 -->
+    
+    
+    <!-- gitalk评论 -->
+
+    <!-- utteranc评论 -->
+
+    <!-- partial('_partial/comment/changyan') -->
+    <!--PC版-->
+
+
+    
+    
+
+    <!-- 评论 -->
+</main>
+            <!-- profile -->
+            
+        </div>
+        <footer class="footer footer-unloaded">
+    <!-- social  -->
+    
+    <div class="social">
+        
+    
+        
+            
+                <a href="mailto:luotengoto@163.com" class="iconfont-archer email" title=email ></a>
+            
+        
+    
+        
+            
+                <a href="//github.com/Tenloy" class="iconfont-archer github" target="_blank" title=github></a>
+            
+        
+    
+        
+            
+                <a href="https://www.jianshu.com/u/8db1bc12db9f" class="iconfont-jian jianshu" target="_blank" title=jianshu></a>
+            
+        
+    
+        
+            
+                <a href="/atom.xml" class="iconfont-archer rss" target="_blank" title=rss></a>
+            
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+
+    </div>
+    
+    <!-- powered by Hexo  -->
+    <div class="copyright">
+        <span id="hexo-power">Powered by <a href="https://hexo.io/" target="_blank">Hexo</a></span><span class="iconfont-archer power">&#xe635;</span><span id="theme-info">theme <a href="https://github.com/fi3ework/hexo-theme-archer" target="_blank">Archer</a></span>
+    </div>
+    <!-- 不蒜子  -->
+    
+    <div class="busuanzi-container">
+    
+     
+    <span id="busuanzi_container_site_pv">PV: <span id="busuanzi_value_site_pv"></span> :)</span>
+    
+    </div>
+    
+</footer>
+    </div>
+    <!-- toc -->
+    
+    <div class="toc-wrapper" style=
+    
+
+
+
+
+
+
+
+top:40vh;
+
+    >
+        <div class="toc-catalog">
+            <span class="iconfont-archer catalog-icon">&#xe613;</span><span>CATALOG</span>
+        </div>
+        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E3%80%81%E6%A6%82%E8%BF%B0"><span class="toc-text">一、概述</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8C%E3%80%81%E7%A1%AC%E4%BB%B6-%E2%80%94-CPU%E6%8C%87%E4%BB%A4%E9%9B%86"><span class="toc-text">二、硬件 — CPU指令集</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%89%E3%80%81%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F"><span class="toc-text">三、操作系统</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#3-1-%E5%86%85%E6%A0%B8-Kernel-%E4%B8%8E%E7%B3%BB%E7%BB%9F%E8%B0%83%E7%94%A8"><span class="toc-text">3.1 内核(Kernel)与系统调用</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#3-1-1-%E5%86%85%E6%A0%B8%E6%A6%82%E8%BF%B0"><span class="toc-text">3.1.1 内核概述</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3-1-2-%E7%B3%BB%E7%BB%9F%E8%B0%83%E7%94%A8"><span class="toc-text">3.1.2 系统调用</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3-1-3-%E7%B3%BB%E7%BB%9F%E8%B0%83%E7%94%A8%E7%9A%84%E5%AE%9E%E7%8E%B0"><span class="toc-text">3.1.3 系统调用的实现</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3-1-4-%E5%85%B3%E4%BA%8E%E4%B8%AD%E6%96%AD%E5%90%91%E9%87%8F%E7%9A%84%E4%B8%80%E4%BA%9B%E8%A1%A5%E5%85%85"><span class="toc-text">3.1.4 关于中断向量的一些补充</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-2-%E5%A3%B3%E5%B1%82-Shell"><span class="toc-text">3.2 壳层(Shell)</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-3-%E7%9B%AE%E5%89%8D%E7%9A%84%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E4%B8%BA%E4%BE%8B"><span class="toc-text">3.3 目前的操作系统为例</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-4-ABI%E4%B8%8EAPI"><span class="toc-text">3.4 ABI与API</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#3-4-1-API"><span class="toc-text">3.4.1 API</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3-4-2-ABI"><span class="toc-text">3.4.2 ABI</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-4-3-%E4%B8%A4%E8%80%85%E5%AF%B9%E6%AF%94"><span class="toc-text">3.4.3 两者对比</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9B%9B%E3%80%81%E8%AF%AD%E8%A8%80%E6%A0%87%E5%87%86%E5%BA%93"><span class="toc-text">四、语言标准库</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%94%E3%80%81%E7%BC%96%E7%A8%8B%E5%BC%80%E5%8F%91%E7%9A%84%E5%BA%94%E7%94%A8%E7%A8%8B%E5%BA%8F"><span class="toc-text">五、编程开发的应用程序</span></a></li></ol>
+    </div>
+    
+    <div class="back-top iconfont-archer">&#xe639;</div>
+    <div class="sidebar sidebar-hide">
+    <ul class="sidebar-tabs sidebar-tabs-active-0">
+        <li class="sidebar-tab-categories"><span class="iconfont-archer">&#xe666;</span><span class="tab-name">Cate</span></li>
+        <li class="sidebar-tab-archives"><span class="iconfont-archer">&#xe67d;</span><span class="tab-name">Archive</span></li>
+        <li class="sidebar-tab-tags"><span class="iconfont-archer">&#xe61b;</span><span class="tab-name">Tag</span></li>
+    </ul>
+    <div class="sidebar-content sidebar-content-show-archive">
+        <div class="sidebar-panel-categories">
+    <div class="sidebar-categories-name">
+    
+        <span class="sidebar-category-name" data-categories="软件工程-化"><span class="iconfont-archer">&#xe60a;</span>软件工程-化</span>
+    
+        <span class="sidebar-category-name" data-categories="操作系统"><span class="iconfont-archer">&#xe60a;</span>操作系统</span>
+    
+        <span class="sidebar-category-name" data-categories="工程化"><span class="iconfont-archer">&#xe60a;</span>工程化</span>
+    
+        <span class="sidebar-category-name" data-categories="Data"><span class="iconfont-archer">&#xe60a;</span>Data</span>
+    
+        <span class="sidebar-category-name" data-categories="Swift"><span class="iconfont-archer">&#xe60a;</span>Swift</span>
+    
+        <span class="sidebar-category-name" data-categories="性能优化"><span class="iconfont-archer">&#xe60a;</span>性能优化</span>
+    
+        <span class="sidebar-category-name" data-categories="容器化"><span class="iconfont-archer">&#xe60a;</span>容器化</span>
+    
+        <span class="sidebar-category-name" data-categories="DSL"><span class="iconfont-archer">&#xe60a;</span>DSL</span>
+    
+        <span class="sidebar-category-name" data-categories="Algorithm"><span class="iconfont-archer">&#xe60a;</span>Algorithm</span>
+    
+        <span class="sidebar-category-name" data-categories="iOS"><span class="iconfont-archer">&#xe60a;</span>iOS</span>
+    
+        <span class="sidebar-category-name" data-categories="React"><span class="iconfont-archer">&#xe60a;</span>React</span>
+    
+        <span class="sidebar-category-name" data-categories="Web"><span class="iconfont-archer">&#xe60a;</span>Web</span>
+    
+        <span class="sidebar-category-name" data-categories="计算机网络"><span class="iconfont-archer">&#xe60a;</span>计算机网络</span>
+    
+    </div>
+    <div class="iconfont-archer sidebar-categories-empty">&#xe678;</div>
+    <div class="sidebar-categories-list"></div>
+</div>
+          <div class="sidebar-panel-archives">
+    <!-- 在ejs中将archive按照时间排序 -->
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    <div class="total-and-search">
+        <div class="total-archive">
+        Total : 28
+        </div>
+        <!-- search  -->
+        
+            <div class="site-search popup-trigger tl-side-search"> 
+                <span class="iconfont-jian search-icon">&#xe7fc;搜索</span>
+            </div>
+        
+    </div>
+    
+    <div class="post-archive">
+    
+    
+    
+    
+    <div class="archive-year"> 2021 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/10</span><a class="archive-post-title" href= "/2021/09/10/AFN-Analyse.html" >[转] AFN框架实现解析</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/09</span><a class="archive-post-title" href= "/2021/09/09/computer-network-knowledge.html" >计算机网络相关知识汇总</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/08</span><a class="archive-post-title" href= "/2021/09/08/Log.html" >移动端日志库</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/01</span><a class="archive-post-title" href= "/2021/07/01/Crash-Monitor.html" >iOS崩溃监控与分析</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/30</span><a class="archive-post-title" href= "/2021/06/30/Lag-Monitor.html" >iOS卡顿监控</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/29</span><a class="archive-post-title" href= "/2021/06/29/SwiftUI.html" >SwiftUI</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/29</span><a class="archive-post-title" href= "/2021/06/29/Swift-Version-History.html" >Swift版本更新API介绍</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/28</span><a class="archive-post-title" href= "/2021/06/28/GCD.html" >深入浅出GCD常用API</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/28</span><a class="archive-post-title" href= "/2021/06/28/AutoreleasePool.html" >AutoreleasePool</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/26</span><a class="archive-post-title" href= "/2021/06/26/RunLoop-Reposted-From-ibireme.html" >[转] 深入理解RunLoop—ibireme</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/24</span><a class="archive-post-title" href= "/2021/06/24/Protocol-Buffer.html" >Protocol Buffer的基本介绍</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/22</span><a class="archive-post-title" href= "/2021/06/22/dynamic-programming.html" >(二) 动态规划算法</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/18</span><a class="archive-post-title" href= "/2021/06/18/Web-Module.html" >前端各种模块化方案总结</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/27</span><a class="archive-post-title" href= "/2021/05/27/Fiber.html" >[转] 最通俗的 React Fiber(时间分片)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/27</span><a class="archive-post-title" href= "/2021/05/27/Coroutine.html" >[转] 什么是协程</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/29</span><a class="archive-post-title" href= "/2021/04/29/Engineering.html" >工程化、动态化、容器化、组件化</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/29</span><a class="archive-post-title" href= "/2021/04/29/DSL.html" >[转] 谈谈DSL以及DSL的应用（以CocoaPods 为例）</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/26</span><a class="archive-post-title" href= "/2021/04/26/Containers.html" >常见的容器概念：Linux容器、Docker容器、服务器容器</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/24</span><a class="archive-post-title" href= "/2021/04/24/Dock-Reprinted-from-RuanYIFeng.html" >[转] Docker入门教程</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/20</span><a class="archive-post-title" href= "/2021/04/20/Sync-Async.html" >同步和异步解读及编程中的使用场景</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/17</span><a class="archive-post-title" href= "/2021/04/17/Arm64-Handbook.html" >ARM64指令简易手册</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/16</span><a class="archive-post-title" href= "/2021/04/16/Arm64-Introduce.html" >iOS需要了解的ARM64汇编</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/15</span><a class="archive-post-title" href= "/2021/04/15/Ins-SysCall-Kernel-Shell.html" >指令、系统调用、库、Shell、APP的层次关系</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/14</span><a class="archive-post-title" href= "/2021/04/14/ISA-Microarch-Soc.html" >指令集、微架构、手机芯片(Soc)及ARM的介绍</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/13</span><a class="archive-post-title" href= "/2021/04/13/Command-Line.html" >CLI-Shell-Terminal-脚本概念梳理</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/12</span><a class="archive-post-title" href= "/2021/04/12/CI-CD.html" >CI-CD</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/10</span><a class="archive-post-title" href= "/2021/04/10/GithubPages-Hexo.html" >使用Hexo+Github Pages搭建个人博客</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/06</span><a class="archive-post-title" href= "/2021/04/06/iOS-Knowledge-Tree/" >iOS-interview</a>
+        </li>
+    
+    </div>
+  </div>
+        <div class="sidebar-panel-tags">
+    <div class="sidebar-tags-name">
+    
+        <span class="sidebar-tag-name" data-tags="hexo"><span class="iconfont-archer">&#xe606;</span>hexo</span>
+    
+        <span class="sidebar-tag-name" data-tags="CI/CD"><span class="iconfont-archer">&#xe606;</span>CI/CD</span>
+    
+        <span class="sidebar-tag-name" data-tags="多线程"><span class="iconfont-archer">&#xe606;</span>多线程</span>
+    
+        <span class="sidebar-tag-name" data-tags="协程"><span class="iconfont-archer">&#xe606;</span>协程</span>
+    
+        <span class="sidebar-tag-name" data-tags="SwiftUI"><span class="iconfont-archer">&#xe606;</span>SwiftUI</span>
+    
+        <span class="sidebar-tag-name" data-tags="Swift-Syntax"><span class="iconfont-archer">&#xe606;</span>Swift-Syntax</span>
+    
+        <span class="sidebar-tag-name" data-tags="Log"><span class="iconfont-archer">&#xe606;</span>Log</span>
+    
+        <span class="sidebar-tag-name" data-tags="CLI"><span class="iconfont-archer">&#xe606;</span>CLI</span>
+    
+        <span class="sidebar-tag-name" data-tags="Shell"><span class="iconfont-archer">&#xe606;</span>Shell</span>
+    
+        <span class="sidebar-tag-name" data-tags="ISA"><span class="iconfont-archer">&#xe606;</span>ISA</span>
+    
+        <span class="sidebar-tag-name" data-tags="Microarch"><span class="iconfont-archer">&#xe606;</span>Microarch</span>
+    
+        <span class="sidebar-tag-name" data-tags="Soc"><span class="iconfont-archer">&#xe606;</span>Soc</span>
+    
+        <span class="sidebar-tag-name" data-tags="Docker"><span class="iconfont-archer">&#xe606;</span>Docker</span>
+    
+        <span class="sidebar-tag-name" data-tags="DSL"><span class="iconfont-archer">&#xe606;</span>DSL</span>
+    
+        <span class="sidebar-tag-name" data-tags="dp"><span class="iconfont-archer">&#xe606;</span>dp</span>
+    
+        <span class="sidebar-tag-name" data-tags="AutoreleasePool"><span class="iconfont-archer">&#xe606;</span>AutoreleasePool</span>
+    
+        <span class="sidebar-tag-name" data-tags="LagMonitor"><span class="iconfont-archer">&#xe606;</span>LagMonitor</span>
+    
+        <span class="sidebar-tag-name" data-tags="ARM64"><span class="iconfont-archer">&#xe606;</span>ARM64</span>
+    
+        <span class="sidebar-tag-name" data-tags="RunLoop"><span class="iconfont-archer">&#xe606;</span>RunLoop</span>
+    
+        <span class="sidebar-tag-name" data-tags="CrashMonitor"><span class="iconfont-archer">&#xe606;</span>CrashMonitor</span>
+    
+        <span class="sidebar-tag-name" data-tags="ARM手册"><span class="iconfont-archer">&#xe606;</span>ARM手册</span>
+    
+        <span class="sidebar-tag-name" data-tags="Fiber"><span class="iconfont-archer">&#xe606;</span>Fiber</span>
+    
+        <span class="sidebar-tag-name" data-tags="interview"><span class="iconfont-archer">&#xe606;</span>interview</span>
+    
+        <span class="sidebar-tag-name" data-tags="GCD"><span class="iconfont-archer">&#xe606;</span>GCD</span>
+    
+        <span class="sidebar-tag-name" data-tags="AFN"><span class="iconfont-archer">&#xe606;</span>AFN</span>
+    
+    </div>
+    <div class="iconfont-archer sidebar-tags-empty">&#xe678;</div>
+    <div class="tag-load-fail" style="display: none; color: #ccc; font-size: 0.6rem;">
+    缺失模块。<br/>
+    1、请确保node版本大于6.2<br/>
+    2、在博客根目录（注意不是archer根目录）执行以下命令：<br/>
+    <span style="color: #f75357; font-size: 1rem; line-height: 2rem;">npm i hexo-generator-json-content --save</span><br/>
+    3、在根目录_config.yml里添加配置：
+    <pre style="color: #787878; font-size: 0.6rem;">
+jsonContent:
+  meta: false
+  pages: false
+  posts:
+    title: true
+    date: true
+    path: true
+    text: false
+    raw: false
+    content: false
+    slug: false
+    updated: false
+    comments: false
+    link: false
+    permalink: false
+    excerpt: false
+    categories: true
+    tags: true</pre>
+    </div> 
+    <div class="sidebar-tags-list"></div>
+</div>
+    </div>
+</div> 
+    <script>
+    var siteMeta = {
+        root: "/",
+        author: "Tenloy"
+    }
+</script>
+    <!-- CDN failover -->
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js"></script>
+    <script type="text/javascript">
+        if (typeof window.$ === 'undefined')
+        {
+            console.warn('jquery load from jsdelivr failed, will load local script')
+            document.write('<script src="/lib/jquery.min.js">\x3C/script>')
+        }
+    </script>
+    <script src="/scripts/main.js"></script>
+    <!-- algolia -->
+    
+        <div class="site-search">
+  <div class="algolia-popup popup">
+    <div class="algolia-search">
+      <div class="algolia-search-input-icon">
+        <i class="fa fa-search"></i>
+      </div>
+      <div class="algolia-search-input" id="algolia-search-input"></div>
+    </div>
+
+    <div class="algolia-results">
+      <div id="algolia-stats"></div>
+      <div id="algolia-hits"></div>
+      <div id="algolia-pagination" class="algolia-pagination"></div>
+    </div>
+
+    <span class="popup-btn-close">
+      <i class="iconfont-archer">&#xe609;</i>
+    </span>
+  </div>
+</div>
+        <script src="https://cdn.jsdelivr.net/npm/instantsearch.js@2.8.0/dist/instantsearch.min.js" defer></script>
+        <script src="/scripts/search.js" defer></script>
+    
+    <!-- busuanzi  -->
+    
+    <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    
+    <!-- CNZZ  -->
+    
+    </div>
+    <!-- async load share.js -->
+    
+        <script src="/scripts/share.js" async></script>    
+     
+    </body>
+</html>
+
+
