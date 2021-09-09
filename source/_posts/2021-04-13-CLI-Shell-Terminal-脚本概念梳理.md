@@ -1,7 +1,7 @@
 ---
 title: CLI-Shell-Terminal-脚本概念梳理
 date: 2021-04-13 15:00:20
-permalink: 2021/04/13/Command-Line.html
+urlname: Command-Line.html
 tags:
   - CLI
   - Shell

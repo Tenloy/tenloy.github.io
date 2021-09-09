@@ -1,7 +1,7 @@
 ---
 title: Protocol Buffer的基本介绍
 date: 2021-06-24 17:48:19
-permalink: 2021/06/24/Protocol-Buffer.html
+urlname: Protocol-Buffer.html
 tags:
 categories:
   - Data

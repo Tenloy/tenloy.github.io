@@ -1,7 +1,7 @@
 ---
 title: '[转] 深入理解RunLoop—ibireme'
 date: 2021-06-26 16:19:21
-permalink: 2021/06/26/RunLoop-Reposted-From-ibireme.html
+urlname: RunLoop-Reposted-From-ibireme.html
 tags:
   - RunLoop
 categories:
@@ -592,7 +592,7 @@ _ZN2CA11Transaction17observer_callbackEP19__CFRunLoopObservermPv()。这个函�
 
 这个函数内部的调用栈大概是这样的：
 
-```objective-c
+```objectivec
 _ZN2CA11Transaction17observer_callbackEP19__CFRunLoopObservermPv()
     QuartzCore:CA::Transaction::observer_callback:
         CA::Transaction::commit();
@@ -670,7 +670,7 @@ NSURLConnectionLoader 中的 RunLoop 通过一些基于 mach port 的 Source 接
 
 [AFURLConnectionOperation](https://github.com/AFNetworking/AFNetworking/blob/master/AFNetworking%2FAFURLConnectionOperation.m) 这个类是基于 NSURLConnection 构建的，其希望能在后台线程接收 Delegate 回调。为此 AFNetworking 单独创建了一个线程，并在这个线程中启动了一个 RunLoop：
 
-```objective-c
+```objectivec
 + (void)networkRequestThreadEntryPoint:(id)__unused object {
     @autoreleasepool {
         [[NSThread currentThread] setName:@"AFNetworking"];
@@ -693,7 +693,7 @@ NSURLConnectionLoader 中的 RunLoop 通过一些基于 mach port 的 Source 接
 
 RunLoop 启动前内部必须要有至少一个 Timer/Observer/Source，所以 AFNetworking 在 [runLoop run] 之前先创建了一个新的 NSMachPort 添加进去了。通常情况下，调用者需要持有这个 NSMachPort (mach_port) 并在外部线程通过这个 port 发送消息到 loop 内；但此处添加 port 只是为了让 RunLoop 不至于退出，并没有用于实际的发送消息。
 
-```objective-c
+```objectivec
 - (void)start {
     [self.lock lock];
     if ([self isCancelled]) {

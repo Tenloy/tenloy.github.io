@@ -1,7 +1,7 @@
 ---
 title: '[转] 最通俗的 React Fiber(时间分片)'
 date: 2021-05-27 16:51:02
-permalink: 2021/05/27/Fiber.html
+urlname: Fiber.html
 tags:
   - Fiber
 categories:

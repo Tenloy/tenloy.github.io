@@ -1,7 +1,7 @@
 ---
 title: AutoreleasePool
 date: 2021-06-28 16:19:21
-permalink: 2021/06/28/AutoreleasePool.html
+urlname: AutoreleasePool.html
 tags:
     - AutoreleasePool
 categories:
@@ -189,7 +189,7 @@ class AutoreleasePoolPage {
 
 在`AutoreleasePoolPage`的源码中，我们很容易找到边界对象(哨兵对象)的定义：
 
-```objective-c
+```objectivec
 #define POOL_BOUNDARY nil
 ```
 
@@ -321,7 +321,7 @@ static inline void pop(void *token)   //POOL_BOUNDARY的地址
 
 上述是对自动释放池整个生命周期的分析，现在我们来理解延时释放对象`autorelease`方法的实现，首先查看该方法的调用栈：
 
-```objective-c
+```objectivec
 - [NSObject autorelease]
 └── id objc_object::rootAutorelease()
     └── id objc_object::rootAutorelease2()

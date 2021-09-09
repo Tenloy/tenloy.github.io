@@ -1,7 +1,7 @@
 ---
 title: 常见的容器概念：Linux容器、Docker容器、服务器容器
 date: 2021-04-26 14:42:44
-permalink: 2021/04/26/Containers.html
+urlname: Containers.html
 categories:
   - 容器化
 ---

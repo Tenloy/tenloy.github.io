@@ -1,6 +1,7 @@
 ---
 title: iOS-interview
 date: 2021-04-06 13:16:47
+urlname: iOS_Knowledge_Tree.html
 comments: true
 algolia: false
 tags:
@@ -33,7 +34,7 @@ categories:
 
 ## 2.1 TaggedPointer
 
-```Objective-c
+```objectivec
 @property (nonatomic, strong) NSString *strongString;
 @property (nonatomic, weak)   NSString *weakString;
 
@@ -82,7 +83,7 @@ NSLog(@"%@", _weakString);
 
    0x10. 参考Block的结构
 
-```objective-c
+```objectivec
  struct __block_impl {
    void *isa;
    int Flags;
@@ -93,7 +94,7 @@ NSLog(@"%@", _weakString);
 
 2. 如下
 
-```objective-c
+```objectivec
 typedef int (^test)(int);
 
 @interface ViewController ()
@@ -183,7 +184,7 @@ objc_msgSend()函数会依据接受者（调用方法的对象）的类型和选
 
 当前接收者还有第二次机会能处理未知的选择子，在这一步中，运行期系统会问它：能不能把这条消息转给其他接收者来处理。与该步骤对应的处理方法如下：
 
-```objective-c
+```objectivec
 - (id)forwardingTargetForSelector:(SEL)selector //方法参数代表未知的选择子
 ```
 
@@ -202,13 +203,13 @@ objc_msgSend()函数会依据接受者（调用方法的对象）的类型和选
 
 此步骤需要先实现一个方法，来返回方法的签名：返回值类型、参数类型
 
-```objective-c
+```objectivec
 - (NSMethodSignature *)methodSignatureForSelector:(SEL)aSelector
 ```
 
 然后会调用下列方法来转发消息：
 
-```objective-c
+```objectivec
 - (void)forwardInvocation:(NSInvocation*)invocation
 ```
 这个方法可以实现得很简单：只需改变调用目标，使消息在新目标上得以调用即可。然而这样实现出来的方法与“备援接收者”方案所实现的方法等效，所以很少有人采用这么简单的实现方式。比较有用的实现方式为：在触发消息前，先以某种方式改变消息内容，比如追加另外一个参数，或是改换选择子，等等。
@@ -223,7 +224,7 @@ objc_msgSend()函数会依据接受者（调用方法的对象）的类型和选
 
 - 本类一个方法，分类中有一个同名的方法，怎么调用本类的方法
 
-  ```objective-c
+  ```objectivec
   - (void)callClassMethod {
       u_int count;
       Method *methods = class_copyMethodList([Student class], &count);
@@ -336,7 +337,7 @@ Tagged Pointer专门用来存储例如NSNumber、NSDate、NSString等小对象�
 
 由普通的地址 → nonpointer (day10-Runtime ISA详解)
 
-```objective-c
+```objectivec
 #pragma mark -- OBJC 1.0
 struct objc_class {
     // 在arm64架构之前，isa就是一个普通的指针，存储着Class、Meta-Class对象的内存地址
@@ -423,7 +424,7 @@ union isa_t
 
 ### 2.7.2 手写一个MRC setter方法
 
-```objective-c
+```objectivec
 - (void)setCar:(MJCar *)car
 {
     if (_car != car) {   // 需要先判断赋值与正在持有的值是否是同一个，避免错误release
@@ -441,7 +442,7 @@ union isa_t
 
 ### 2.7.3 weak的实现原理
 
-```objective-c
+```objectivec
 ▼ dealloc
   ▼ _objc_rootDealloc
     ▼ rootDealloc
@@ -479,7 +480,7 @@ union isa_t
 
 - 僵尸对象的检测：在Xcode中设置Edit Scheme -> Diagnostics -> Zombie Objects
 
-  ```objective-c
+  ```objectivec
   Zombie Objects hook 住了对象的dealloc方法，在回收对象时，不将其真的回收，而是把它转化为僵尸对象。这种对象所在的内存无法重用，因此不可遭到重写，所以将随机变成必然。
   系统会修改对象的 isa 指针，令其指向特殊的僵尸类，从而使该对象变为僵尸对象。僵尸类能够响应所有的选择器，响应方式为：打印一条包含消息内容及其接收者的消息，然后终止应用程序，这非常有利于调试。
   ```
@@ -674,7 +675,7 @@ NSThread、GCD、NSOperationQueue的区别？各自的一些优点，以及应�
 - 异步和一个并行队列结合：发布一次任务，就创建一个子线程，所以发布了多少个任务，会同时存在多少个线程(假设任务执行时间够长、系统不限制最大线程数)
 - 异步和一个串行队列结合：发布一次任务，就创建一个子线程，但是无论发布多少次任务，都是同时只存在一个子线程(因为上一个任务完成，线程就回收了)
 
-```objective-c
+```objectivec
 //微博一面：下面程序的耗时、打印顺序。A方法耗时2s
 dispatch_queue_t aSerialQueue = dispatch_queue_create(“xxx_name”,DISPATCH_QUEUE_SERIAL);
 
@@ -721,7 +722,7 @@ dispatch_sync(aSerialQueue, ^(void) {
 
   比如`NSObject`中的方法：
 
-  ```objective-c
+  ```objectivec
   performSelector:withObject:afterDelay:
   performSelectorInBackground:withObject:
   performSelector:onThread:withObject:waitUntilDone:
@@ -764,7 +765,7 @@ dispatch_sync(aSerialQueue, ^(void) {
 
 - 创建队列的时候， 这个 label 你有没有用到过
 
-  ```objective-c
+  ```objectivec
   dispatch_queue_t concurrentQueue = dispatch_queue_create("test", DISPATCH_QUEUE_CONCURRENT);
   ```
 

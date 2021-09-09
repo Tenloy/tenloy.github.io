@@ -1,7 +1,7 @@
 ---
 title: '[转] 谈谈DSL以及DSL的应用（以CocoaPods 为例）'
 date: 2021-04-29 16:42:44
-permalink: 2021/04/29/DSL.html
+urlname: DSL.html
 tags:
   - DSL
 categories:

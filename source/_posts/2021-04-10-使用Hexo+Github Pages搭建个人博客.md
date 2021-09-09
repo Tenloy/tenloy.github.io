@@ -1,7 +1,7 @@
 ---
 title: 使用Hexo+Github Pages搭建个人博客
 date: 2021-04-10 10:25:24
-permalink: 2021/04/10/GithubPages-Hexo.html
+urlname: GithubPages-Hexo.html
 tags:
   - hexo
 ---
