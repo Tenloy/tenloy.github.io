@@ -1738,8 +1738,9 @@ html::-webkit-scrollbar-track:hover,
 .abstract-content .highlight pre .quote,
 .article-entry .highlight pre .comment,
 .article-entry .highlight pre .quote {
-    color: #5c6370;
-    font-style: italic
+    color: #73A74E;
+    /*原#5c6370, 太暗了，#6C7987都比它好*/
+    /*font-style: italic*/
 }
 
 .abstract-content .highlight pre .doctag,
