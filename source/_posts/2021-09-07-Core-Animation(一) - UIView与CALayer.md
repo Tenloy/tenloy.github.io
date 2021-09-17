@@ -137,7 +137,7 @@ CALayer有一个可选的`delegate`属性，实现了`CALayerDelegate`协议，�
 
 先来看一下**更新-绘制流程图**，然后梳理一下其中的重要方法
 
-<img src="/images/caa/viewredraw.png" alt="viewredraw" style="zoom:80%;" />
+<img src="/images/caa/viewredraw.png" alt="viewredraw" style="zoom:90%;" />
 
 - 当我们调用 `[UIView setNeedsDisplay]` 这个方法时，其实并没有立即进行绘制工作，系统会立刻调用CALayer的同名方法，并且**会在当前layer上打上一个标记，然后会在当前runloop将要结束的时候（下一个绘制周期）**调用 `[CALayer display]` 这个方法，然后进入我们视图的真正绘制过程。
 

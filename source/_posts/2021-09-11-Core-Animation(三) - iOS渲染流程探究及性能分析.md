@@ -15,7 +15,7 @@ categories:
 
 iOS APP 图形图像渲染的基本流程：
 
-<img src="/images/iosrender/15.png" alt="01" style="zoom:35%;" />
+<img src="/images/iosrender/15.png" alt="01" style="zoom:55%;" />
 
 1. CPU(Central Processing Unit，中央处理器)：完成对象的创建和销毁、对象属性的调整、布局计算、文本的计算和排版、图片的格式转换和解码、图像的绘制（Core Graphics）。
 
@@ -39,7 +39,7 @@ iOS APP 图形图像渲染的基本流程：
 
 <img src="/images/iosrender/01.png" alt="01" style="zoom:90%;" />
 
-<img src="/images/iosrender/16.png" alt="01" style="zoom:60%;" />
+<img src="/images/iosrender/16.png" alt="01" style="zoom:70%;" />
 
 [(原文)](https://github.com/Tenloy/iOS-Core-Animation-Advanced-Techniques/blob/master/12-%E6%80%A7%E8%83%BD%E8%B0%83%E4%BC%98/%E6%80%A7%E8%83%BD%E8%B0%83%E4%BC%98.md#%E6%80%A7%E8%83%BD%E8%B0%83%E4%BC%98)关于绘图和动画有两种处理的方式：CPU（中央处理器）和GPU（图形处理器）。在现代iOS设备中，都有可以运行不同软件的可编程芯片，但是由于历史原因，我们可以说CPU所做的工作都在软件层面，而GPU在硬件层面。
 
@@ -51,7 +51,7 @@ iOS APP 图形图像渲染的基本流程：
 
 我们知道 Core Animation 是 iOS 上可用的图形渲染和动画基础结构，它将大部分实际绘图工作交给图形硬件以加速渲染(摘自官方文档[Core Animation Programming Guide](https://developer.apple.com/library/archive/documentation/Cocoa/Conceptual/CoreAnimation_guide/Introduction/Introduction.html#//apple_ref/doc/uid/TP40004514))。 我们先来看看 Core Animation 渲染的管道图：
 
-<img src="/images/iosrender/02.jpg" alt="01" style="zoom:90%;" />
+<img src="/images/iosrender/02.jpg" alt="01" style="zoom:92%;" />
 
 我们看到：
 
@@ -70,7 +70,7 @@ iOS APP 图形图像渲染的基本流程：
 
 在上述情况下，这些不同的步骤总共跨越三帧。在最后一个步骤 display 后，是可以平行操作的，在 Draw call 的时候可以处理下一个 handler event 和 Commit Transaction 。如下图所示
 
-<img src="/images/caa/pipeline2.png" alt="Animation Pipeline2" style="zoom:80%;" />
+<img src="/images/caa/pipeline2.png" alt="Animation Pipeline2" style="zoom:90%;" />
 
 ## 二、渲染步骤详解
 
@@ -213,7 +213,7 @@ OpenGL会保持状态，除非我们调用OpenGL函数来改变它。就像一�
 
 “first tile based rendering is how all GPUs work.”  基于图块的渲染(Tile Based Rendering)是所有 GPU 的工作方式。
 
-<img src="/images/caa/tile-based-rendering.png" alt="Tile Based Rendering" style="zoom:80%;" />
+<img src="/images/caa/tile-based-rendering.png" alt="Tile Based Rendering" style="zoom:85%;" />
 
 - 屏幕被分割成 N*N 个像素块，就像之前讲 [Points vs Pixels](http://joakimliu.github.io/2019/02/24/wwdc-2011-129/) 中的例子一样；
 - 每块都适应 Soc 缓存。(Soc: 苹果 A9 是一款由苹果公司设计的系统芯片(Soc)。可以理解为系统芯片。 维基百科上面写的，这个芯片是 2015.9.9 才首次发布)。
@@ -240,7 +240,7 @@ OpenGL会保持状态，除非我们调用OpenGL函数来改变它。就像一�
 
 举了一个渲染遮罩的例子，步骤如下图：
 
-<img src="/images/caa/masking-rendering-pass.png" alt="" style="zoom:35%;" />
+<img src="/images/caa/masking-rendering-pass.png" alt="" style="zoom:55%;" />
 
 分三步走，两步渲染，一步合成。
 
@@ -399,11 +399,11 @@ Contex为我们提供OpenGL的运行环境，而具体的操作则是在OpenGL�
 
 下图一个图形渲染管线的每个阶段的抽象展示。要注意蓝色部分代表的是我们可以注入自定义的着色器的部分。
 
-<img src="/images/iosrender/pipeline.png" alt="" style="zoom:85%;" />
+<img src="/images/iosrender/pipeline.png" alt="" style="zoom:90%;" />
 
 (几何着色器是可选的，通常使用它默认的着色器就行了)。
 
-<img src="/images/iosrender/17.jpg" alt="" style="zoom:75%;" />
+<img src="/images/iosrender/17.jpg" alt="" style="zoom:80%;" />
 
 如图所见，图形渲染管线包含很多部分，每个部分都将在转换顶点数据到最终像素这一过程中处理各自特定的阶段。概括性地解释一下渲染管线的每个部分：
 
@@ -417,7 +417,7 @@ Contex为我们提供OpenGL的运行环境，而具体的操作则是在OpenGL�
 
 顶点着色器负责坐标和图形的描述。在OpenGL中有三种基本的图形**点、线、三角形**，只能通过这三种基本图形去描述一个图形。其中在OpenGL中我们的显示区域位于x,y均为[-1,1]之内的空间。
 
-<img src="/images/iosrender/18.jpg" alt="" style="zoom:85%;" />
+<img src="/images/iosrender/18.jpg" alt="" style="zoom:90%;" />
 
 
 - **点**：点存在于三维空间，坐标用（x,y,z）表示。
@@ -430,7 +430,7 @@ Contex为我们提供OpenGL的运行环境，而具体的操作则是在OpenGL�
 
 将上阶段输出的 — 所有顶点作为输入，进行组装和裁剪，将所有的点装配成指定图元的形状，更准确的说是将所有3D的图元转化为屏幕上2D的图元。
 
-<img src="/images/iosrender/19.jpg" alt="" style="zoom:85%;" />
+<img src="/images/iosrender/19.jpg" alt="" style="zoom:90%;" />
 
 **输出：图元**。（图元由顶点组成）
 
@@ -448,7 +448,7 @@ Contex为我们提供OpenGL的运行环境，而具体的操作则是在OpenGL�
 
 将上阶段输出的 — 图元映射为最终屏幕上相应的像素，生成供片段着色器使用的片段(Fragment)，即实现通过插值运算将连续的值用一个个像素片段表示出来。
 
-<img src="/images/iosrender/20.png" alt="" style="zoom:55%;" />
+<img src="/images/iosrender/20.png" alt="" style="zoom:70%;" />
 
 在片段着色器运行之前会执行裁切(Clipping)。裁切会丢弃超出你的视图以外的所有像素，用来提升执行效率。
 
@@ -480,7 +480,7 @@ Contex为我们提供OpenGL的运行环境，而具体的操作则是在OpenGL�
 
 有的书中，称这个阶段也称**片段测试阶段**，对每个像素点进行测试保证这些像素点是正确可用的，最后在输入到帧缓冲（Frambuffer）中。
 
-<img src="/images/iosrender/21.jpg" alt="" style="zoom:85%;" />
+<img src="/images/iosrender/21.jpg" alt="" style="zoom:90%;" />
 
 > 混合：当图像叠加时，上方图层和下方图层的像素进行混合，从而得到另外一种图像效果。
 
@@ -498,7 +498,7 @@ Contex为我们提供OpenGL的运行环境，而具体的操作则是在OpenGL�
 
 但是，只有将内容绘制到视窗体提供的**帧缓存（Renderbuffer）**中，才能将内容输出到显示设备。在实现上渲染缓存（Renderbuffer）是直接跟屏幕映射的，可以绕开CPU进行工作。
 
-<img src="/images/iosrender/22.jpg" alt="" style="zoom:85%;" />
+<img src="/images/iosrender/22.jpg" alt="" style="zoom:90%;" />
 
 #### 4.8.2 帧缓存的渲染
 
@@ -506,7 +506,7 @@ Contex为我们提供OpenGL的运行环境，而具体的操作则是在OpenGL�
 
 这个刷新的时间是由系统决定的，比如在iOS中屏幕刷新率是60fps即每16.75ms会发生一次前后缓存的交换。我们只需要准备好后缓存的数据提供给系统就能进行屏幕刷新渲染了。
 
-<img src="/images/iosrender/23.png" alt="" style="zoom:85%;" />
+<img src="/images/iosrender/23.png" alt="" style="zoom:90%;" />
 
 ### 4.8 小结
 
@@ -524,7 +524,7 @@ UIBlurEffect 是 iOS8 新出的用来实现模糊效果的类。
 
 它的渲染过程如下：
 
-<img src="/images/caa/blureffect-rendering-pass.png" alt="" style="zoom:37%;" />
+<img src="/images/caa/blureffect-rendering-pass.png" alt="" style="zoom:55%;" />
 
 1. 渲染 layer 的 content，在这种情况下，它只是一个简单的图像，因此如果我们涉及 UI ，可能需要更长的时间；
 2. 截获 layer 的 content，进行缩放，它实际上相当快。这几乎是不变的成本；
@@ -536,7 +536,7 @@ UIBlurEffect 是 iOS8 新出的用来实现模糊效果的类。
 
 再看下图，聚焦在一帧。我们可以看到每个渲染步骤所需的时间，每个渲染步骤都牵扯到了下面要提到的三个事件(tile/render/VBlank interrupt)。
 
-<img src="/images/caa/blureffect1.png" alt="UIBlurEffect1" style="zoom:85%;" />
+<img src="/images/caa/blureffect1.png" alt="UIBlurEffect1" style="zoom:90%;" />
 
 我们可以看到有三行，每一行代表一个事件
 
@@ -548,7 +548,7 @@ UIBlurEffect 是 iOS8 新出的用来实现模糊效果的类。
 
 我们注意到下图，每个步骤之间的间隙，用橘色标记了
 
-<img src="/images/caa/blureffect2.png" alt="UIBlurEffect2" style="zoom:87%;" />
+<img src="/images/caa/blureffect2.png" alt="UIBlurEffect2" style="zoom:90%;" />
 
 5 个步骤中间有 4 个间隙，之所以存在，是因为这是发生在 GPU 上切换所花的时间。在空闲时间，每个步骤所花费的时间大概在 0.1`~~`0.2ms, 所以总共 0.4`~~`0.8ms, 所以这个是 16.67ms 的一个重要组成部分。
 
@@ -560,7 +560,7 @@ UIBlurEffect 有三种 style: Extra light, Light, Dark ，它们消耗的资源�
 
 UIVibrancyEffect 是在模糊之上使用的效果，它可以**确保内容突出，而不会被模糊**。它的渲染过程如下：
 
-<img src="/images/caa/vibrancyeffect-rendering-pass.png" alt="" style="zoom:45%;" />
+<img src="/images/caa/vibrancyeffect-rendering-pass.png" alt="" style="zoom:64%;" />
 
 比 UIBlurEffect 多了两个步骤，最后一个步骤 filter 是最昂贵的，所以作用区域越小越好，千万别作用到全屏上。
 
@@ -576,7 +576,7 @@ UIVibrancyEffect 是在模糊之上使用的效果，它可以**确保内容突�
 
 性能调查要考虑以下点
 
-<img src="/images/caa/performance-inverstigation-mindset.png" alt="" style="zoom:80%;" />
+<img src="/images/caa/performance-inverstigation-mindset.png" alt="" style="zoom:90%;" />
 
 - What is the frame rate? Goal is always 60 fps. 
   - 检查工具： Instrument — Core Animation template / OpenGL ES driver template

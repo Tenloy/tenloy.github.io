@@ -126,7 +126,7 @@ Core Animation支持两种类型的事务：隐式事务和显式事务。
 @end
 ```
 
-<img src="/images/caa/7.1.jpg" alt="" style="zoom:40%;" />
+<img src="/images/caa/7.1.jpg" alt="" style="zoom:60%;" />
 
 这其实就是所谓的*隐式*动画。之所以叫隐式是因为我们并没有指定任何动画的类型。我们仅仅改变了一个属性，然后Core Animation来决定如何并且何时去做动画。Core Animaiton同样支持*显式*动画，下章详细说明。
 
@@ -193,7 +193,7 @@ Core Animation支持两种类型的事务：隐式事务和显式事务。
 }
 ```
 
-<img src="/images/caa/7.2.jpg" alt="" style="zoom:40%;" />
+<img src="/images/caa/7.2.jpg" alt="" style="zoom:60%;" />
 
 注意旋转动画要比颜色渐变快得多，这是因为完成块是在颜色渐变的事务提交并出栈之后才被执行，于是，用默认的事务做变换，默认的时间也就变成了0.25秒。
 
@@ -450,7 +450,7 @@ $ LayerTest[21215:c07] Inside: <CABasicAnimation: 0x757f090>
 
 使用推进过渡的色值动画：
 
-<img src="/images/caa/7.3.jpg" alt="" style="zoom:40%;" />
+<img src="/images/caa/7.3.jpg" alt="" style="zoom:60%;" />
 
 ## 四、呈现图层与模型图层
 
@@ -470,7 +470,7 @@ $ LayerTest[21215:c07] Inside: <CABasicAnimation: 0x757f090>
 
 如图，一个移动的图层是如何通过数据模型呈现的：
 
-<img src="/images/caa/7.4.jpg" alt="" style="zoom:35%;" />
+<img src="/images/caa/7.4.jpg" alt="" style="zoom:60%;" />
 
 我们在本书的第一章中提到除了图层树，另外还有*呈现树*。**呈现树通过图层树中所有图层的呈现图层所形成**。注意呈现图层仅仅当图层首次被*提交*（就是首次第一次在屏幕上显示）的时候创建，所以在那之前调用`-presentationLayer`将会返回`nil`。
 
@@ -752,7 +752,7 @@ fadeIn.delegate = [DRAnimationBlockDelegate animationDelegateWithBeginning:^{
 
 The custom block animation API, used to animate the position, size, color, and rotation of four different views：
 
-<img src="/images/caa/custom-block-animations.gif" alt="custom-block-animations" style="zoom:60%;" />
+<img src="/images/caa/custom-block-animations.gif" alt="" style="zoom:70%;" />
 
 #### 5.2.2 代码实现
 
