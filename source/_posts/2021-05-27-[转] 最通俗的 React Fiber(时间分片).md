@@ -12,7 +12,7 @@ categories:
 
 ## 一、单处理器进程调度
 
-<img width = "60%" alt="" align=center src="/images/Fiber/16deecc2160c5d19.jpg"/>
+<img width = "40%" alt="" align=center src="/images/Fiber/16deecc2160c5d19.jpg"/>
 
 微软 [`DOS`](https://zh.wikipedia.org/zh-cn/DOS) 是一个`单任务操作系统`， 也称为’单工操作系统‘。这种操作系统同一个时间只允许运行一个程序。 [invalid s](https://www.zhihu.com/people/s.invalid)在[《在没有GUI的时代(只有一个文本界面），人们是怎么运行多个程序的？》](https://www.zhihu.com/question/319595914/answer/683541635) 的回答中将其称为： '**一种压根没有任务调度的“残疾”操作系统**'.
 
