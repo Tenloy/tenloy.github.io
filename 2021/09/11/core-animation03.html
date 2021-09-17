@@ -53,7 +53,7 @@
 <meta property="og:image" content="https://tenloy.github.io/images/caa/vibrancyeffect2.png">
 <meta property="og:image" content="https://tenloy.github.io/images/caa/performance-inverstigation-mindset.png">
 <meta property="article:published_time" content="2021-09-11T20:04:46.000Z">
-<meta property="article:modified_time" content="2021-09-17T10:59:07.437Z">
+<meta property="article:modified_time" content="2021-09-17T11:21:33.849Z">
 <meta property="article:author" content="Tenloy">
 <meta property="article:tag" content="Tenloy, iOS, Tenloy Blog, 博客，Swift, 编译, 计算机">
 <meta name="twitter:card" content="summary">
@@ -463,7 +463,7 @@ height:40vh;
 <p><a target="_blank" rel="noopener" href="https://joakimliu.github.io/2019/03/02/wwdc-2014-419/">原文</a>，摘自 <a target="_blank" rel="noopener" href="https://developer.apple.com/videos/play/wwdc2014/419/">Advanced Graphics and Animations for iOS Apps</a> （WWDC14 419，关于UIKit和Core Animation基础的session在早年的WWDC中比较多），字幕在 <a target="_blank" rel="noopener" href="https://asciiwwdc.com/2014/sessions/419">transcripts</a> ，当然也可以下载 <a target="_blank" rel="noopener" href="https://wwdc.io/">WWDC</a> 在桌面上看带有字幕的视频。这篇挺实用的，讲解了渲染的基本流程，以及怎么发现并解决渲染性能的问题。</p>
 </blockquote>
 <h2 id="一、iOS渲染架构总览"><a href="#一、iOS渲染架构总览" class="headerlink" title="一、iOS渲染架构总览"></a>一、iOS渲染架构总览</h2><h3 id="1-1-简易架构图"><a href="#1-1-简易架构图" class="headerlink" title="1.1 简易架构图"></a>1.1 简易架构图</h3><p>iOS APP 图形图像渲染的基本流程：</p>
-<img src="/images/iosrender/15.png" alt="01" style="zoom:35%;" />
+<img src="/images/iosrender/15.png" alt="01" style="zoom:55%;" />
 
 <ol>
 <li><p>CPU(Central Processing Unit，中央处理器)：完成对象的创建和销毁、对象属性的调整、布局计算、文本的计算和排版、图片的格式转换和解码、图像的绘制（Core Graphics）。</p>
@@ -483,13 +483,13 @@ height:40vh;
 <p>将上图更细化一点：</p>
 <img src="/images/iosrender/01.png" alt="01" style="zoom:90%;" />
 
-<img src="/images/iosrender/16.png" alt="01" style="zoom:60%;" />
+<img src="/images/iosrender/16.png" alt="01" style="zoom:70%;" />
 
 <p><a target="_blank" rel="noopener" href="https://github.com/Tenloy/iOS-Core-Animation-Advanced-Techniques/blob/master/12-%E6%80%A7%E8%83%BD%E8%B0%83%E4%BC%98/%E6%80%A7%E8%83%BD%E8%B0%83%E4%BC%98.md#%E6%80%A7%E8%83%BD%E8%B0%83%E4%BC%98">(原文)</a>关于绘图和动画有两种处理的方式：CPU（中央处理器）和GPU（图形处理器）。在现代iOS设备中，都有可以运行不同软件的可编程芯片，但是由于历史原因，我们可以说CPU所做的工作都在软件层面，而GPU在硬件层面。</p>
 <p>总的来说，我们可以用软件（使用CPU）做任何事情，但是对于图像处理，通常用硬件会更快，因为GPU使用图像对高度并行浮点运算做了优化。由于某些原因，我们想尽可能把屏幕渲染的工作交给硬件去处理。问题在于GPU并没有无限制处理性能，而且一旦资源用完的话，性能就会开始下降了（即使CPU并没有完全占用）</p>
 <p>大多数动画性能优化都是关于智能利用GPU和CPU，使得它们都不会超出负荷。于是我们首先需要知道Core Animation是如何在这两个处理器之间分配工作的。</p>
 <h3 id="1-2-CoreAnimation渲染架构图"><a href="#1-2-CoreAnimation渲染架构图" class="headerlink" title="1.2 CoreAnimation渲染架构图"></a>1.2 CoreAnimation渲染架构图</h3><p>我们知道 Core Animation 是 iOS 上可用的图形渲染和动画基础结构，它将大部分实际绘图工作交给图形硬件以加速渲染(摘自官方文档<a target="_blank" rel="noopener" href="https://developer.apple.com/library/archive/documentation/Cocoa/Conceptual/CoreAnimation_guide/Introduction/Introduction.html#//apple_ref/doc/uid/TP40004514">Core Animation Programming Guide</a>)。 我们先来看看 Core Animation 渲染的管道图：</p>
-<img src="/images/iosrender/02.jpg" alt="01" style="zoom:90%;" />
+<img src="/images/iosrender/02.jpg" alt="01" style="zoom:92%;" />
 
 <p>我们看到：</p>
 <ul>
@@ -507,7 +507,7 @@ height:40vh;
 <li>Display：显示给用户看。</li>
 </ul>
 <p>在上述情况下，这些不同的步骤总共跨越三帧。在最后一个步骤 display 后，是可以平行操作的，在 Draw call 的时候可以处理下一个 handler event 和 Commit Transaction 。如下图所示</p>
-<img src="/images/caa/pipeline2.png" alt="Animation Pipeline2" style="zoom:80%;" />
+<img src="/images/caa/pipeline2.png" alt="Animation Pipeline2" style="zoom:90%;" />
 
 <h2 id="二、渲染步骤详解"><a href="#二、渲染步骤详解" class="headerlink" title="二、渲染步骤详解"></a>二、渲染步骤详解</h2><h3 id="2-1-APP-—-Commit-Transaction"><a href="#2-1-APP-—-Commit-Transaction" class="headerlink" title="2.1 APP — Commit Transaction"></a>2.1 APP — Commit Transaction</h3><h4 id="2-1-1-事务提交的4个阶段"><a href="#2-1-1-事务提交的4个阶段" class="headerlink" title="2.1.1 事务提交的4个阶段"></a>2.1.1 事务提交的4个阶段</h4><p>先聚焦 Commit transaction（事务是什么就不再赘述了）这个阶段，因为这是开发者接触最多的，主要有四个阶段，如下图所示：</p>
 <img src="/images/caa/commit-transaction.png" alt="Commit Transaction" style="zoom:95%;" />
@@ -596,7 +596,7 @@ height:40vh;
 <p>tile 图块，瓦片； tiling 铺瓦于，铺以瓷砖</p>
 </blockquote>
 <p>“first tile based rendering is how all GPUs work.”  基于图块的渲染(Tile Based Rendering)是所有 GPU 的工作方式。</p>
-<img src="/images/caa/tile-based-rendering.png" alt="Tile Based Rendering" style="zoom:80%;" />
+<img src="/images/caa/tile-based-rendering.png" alt="Tile Based Rendering" style="zoom:85%;" />
 
 <ul>
 <li>屏幕被分割成 N*N 个像素块，就像之前讲 <a target="_blank" rel="noopener" href="http://joakimliu.github.io/2019/02/24/wwdc-2011-129/">Points vs Pixels</a> 中的例子一样；</li>
@@ -624,7 +624,7 @@ height:40vh;
 <li>像素着色器(Pixel Shader)处理，这一步被称为 <strong>Renderer stage</strong>，产出被写入 Render Buffer 。(在 Instrument 的 OpenGL ES renderer utilization 能看到这一步。)</li>
 </ul>
 <h4 id="2-4-2-示例：渲染遮罩"><a href="#2-4-2-示例：渲染遮罩" class="headerlink" title="2.4.2 示例：渲染遮罩"></a>2.4.2 示例：渲染遮罩</h4><p>举了一个渲染遮罩的例子，步骤如下图：</p>
-<img src="/images/caa/masking-rendering-pass.png" alt="" style="zoom:35%;" />
+<img src="/images/caa/masking-rendering-pass.png" alt="" style="zoom:55%;" />
 
 <p>分三步走，两步渲染，一步合成。</p>
 <ol>
@@ -738,16 +738,16 @@ height:40vh;
 </blockquote>
 <p>有些着色器允许开发者自己配置，这就允许我们用自己写的着色器来替换默认的。这样我们就可以更细致地控制图形渲染管线中的特定部分了，而且因为它们运行在GPU上，所以它们可以给我们节约宝贵的CPU时间。OpenGL着色器是用OpenGL着色器语言(OpenGL Shading Language, GLSL)写成的。</p>
 <p>下图一个图形渲染管线的每个阶段的抽象展示。要注意蓝色部分代表的是我们可以注入自定义的着色器的部分。</p>
-<img src="/images/iosrender/pipeline.png" alt="" style="zoom:85%;" />
+<img src="/images/iosrender/pipeline.png" alt="" style="zoom:90%;" />
 
 <p>(几何着色器是可选的，通常使用它默认的着色器就行了)。</p>
-<img src="/images/iosrender/17.jpg" alt="" style="zoom:75%;" />
+<img src="/images/iosrender/17.jpg" alt="" style="zoom:80%;" />
 
 <p>如图所见，图形渲染管线包含很多部分，每个部分都将在转换顶点数据到最终像素这一过程中处理各自特定的阶段。概括性地解释一下渲染管线的每个部分：</p>
 <h3 id="4-1-顶点数组"><a href="#4-1-顶点数组" class="headerlink" title="4.1 顶点数组"></a>4.1 顶点数组</h3><p>传递一个顶点数组作为图形渲染管线的输入。这个数组叫做顶点数据(Vertex Data)。一个顶点(Vertex)是一个3D坐标的数据的集合。(简单起见，可以假定每个顶点只由一个3D位置和一些颜色值组成)</p>
 <h3 id="4-2-顶点着色器-Vertex-Shader"><a href="#4-2-顶点着色器-Vertex-Shader" class="headerlink" title="4.2 顶点着色器(Vertex Shader)"></a>4.2 顶点着色器(Vertex Shader)</h3><p>它把一个单独的顶点作为输入。顶点着色器主要的目的是把3D坐标转为OpenGL的内部坐标信息，同时顶点着色器允许我们对顶点属性进行一些基本处理。</p>
 <p>顶点着色器负责坐标和图形的描述。在OpenGL中有三种基本的图形<strong>点、线、三角形</strong>，只能通过这三种基本图形去描述一个图形。其中在OpenGL中我们的显示区域位于x,y均为[-1,1]之内的空间。</p>
-<img src="/images/iosrender/18.jpg" alt="" style="zoom:85%;" />
+<img src="/images/iosrender/18.jpg" alt="" style="zoom:90%;" />
 
 
 <ul>
@@ -757,7 +757,7 @@ height:40vh;
 </ul>
 <p><strong>输出：顶点</strong>。</p>
 <h3 id="4-3-图元装配阶段-Primitive-Assembly"><a href="#4-3-图元装配阶段-Primitive-Assembly" class="headerlink" title="4.3 图元装配阶段(Primitive Assembly)"></a>4.3 图元装配阶段(Primitive Assembly)</h3><p>将上阶段输出的 — 所有顶点作为输入，进行组装和裁剪，将所有的点装配成指定图元的形状，更准确的说是将所有3D的图元转化为屏幕上2D的图元。</p>
-<img src="/images/iosrender/19.jpg" alt="" style="zoom:85%;" />
+<img src="/images/iosrender/19.jpg" alt="" style="zoom:90%;" />
 
 <p><strong>输出：图元</strong>。（图元由顶点组成）</p>
 <h3 id="4-4-几何着色器-Geometry-Shader"><a href="#4-4-几何着色器-Geometry-Shader" class="headerlink" title="4.4 几何着色器(Geometry Shader)"></a>4.4 几何着色器(Geometry Shader)</h3><p>将上阶段输出的 — 图元形式的一系列顶点的集合作为输入，它可以通过产生新顶点构造出新的（或是其它的）图元来生成其他形状。</p>
@@ -765,7 +765,7 @@ height:40vh;
 <p><strong>输出：新的图元</strong>。</p>
 <p>到这一步我们已经为OpenGL描述了一个图形的样子，但是要转换为图像还需要颜色信息。↓</p>
 <h3 id="4-5-光栅化阶段-Rasterization-Stage"><a href="#4-5-光栅化阶段-Rasterization-Stage" class="headerlink" title="4.5 光栅化阶段(Rasterization Stage)"></a>4.5 光栅化阶段(Rasterization Stage)</h3><p>将上阶段输出的 — 图元映射为最终屏幕上相应的像素，生成供片段着色器使用的片段(Fragment)，即实现通过插值运算将连续的值用一个个像素片段表示出来。</p>
-<img src="/images/iosrender/20.png" alt="" style="zoom:55%;" />
+<img src="/images/iosrender/20.png" alt="" style="zoom:70%;" />
 
 <p>在片段着色器运行之前会执行裁切(Clipping)。裁切会丢弃超出你的视图以外的所有像素，用来提升执行效率。</p>
 <p>**输出：片元/片段(Fragment)**。 </p>
@@ -785,7 +785,7 @@ height:40vh;
 <h3 id="4-7-Alpha测试和混合-Blending-阶段"><a href="#4-7-Alpha测试和混合-Blending-阶段" class="headerlink" title="4.7 Alpha测试和混合(Blending)阶段"></a>4.7 Alpha测试和混合(Blending)阶段</h3><p>主要是检测片段的对应的深度（和模板(Stencil)）值，用它们来判断这个像素是其它物体的前面还是后面，决定是否应该丢弃。</p>
 <p>这个阶段也会检查alpha值（alpha值定义了一个物体的透明度）并对物体进行混合(Blend)。所以，即使在片段着色器中计算出来了一个像素输出的颜色，在渲染多个三角形的时候最后的像素颜色也可能完全不同。</p>
 <p>有的书中，称这个阶段也称<strong>片段测试阶段</strong>，对每个像素点进行测试保证这些像素点是正确可用的，最后在输入到帧缓冲（Frambuffer）中。</p>
-<img src="/images/iosrender/21.jpg" alt="" style="zoom:85%;" />
+<img src="/images/iosrender/21.jpg" alt="" style="zoom:90%;" />
 
 <blockquote>
 <p>混合：当图像叠加时，上方图层和下方图层的像素进行混合，从而得到另外一种图像效果。</p>
@@ -797,18 +797,18 @@ height:40vh;
 </blockquote>
 <h3 id="4-8-渲染帧缓存-Renderbuffer"><a href="#4-8-渲染帧缓存-Renderbuffer" class="headerlink" title="4.8 渲染帧缓存(Renderbuffer)"></a>4.8 渲染帧缓存(Renderbuffer)</h3><h4 id="4-8-1-帧缓存-Framebuffer）"><a href="#4-8-1-帧缓存-Framebuffer）" class="headerlink" title="4.8.1 帧缓存 (Framebuffer）"></a>4.8.1 帧缓存 (Framebuffer）</h4><p>经过上述处理流程，我们想要看到的图形图像数据最后都会存储到<strong>帧缓存区（Framebuffer）</strong>中。我们可以同时存在很多帧缓存（Framebuffer），并且可以通过OpenGL让GPU把渲染结果存储到任意数量的帧缓存中（这里引申出一个离屏渲染的工作概念）。</p>
 <p>但是，只有将内容绘制到视窗体提供的<strong>帧缓存（Renderbuffer）</strong>中，才能将内容输出到显示设备。在实现上渲染缓存（Renderbuffer）是直接跟屏幕映射的，可以绕开CPU进行工作。</p>
-<img src="/images/iosrender/22.jpg" alt="" style="zoom:85%;" />
+<img src="/images/iosrender/22.jpg" alt="" style="zoom:90%;" />
 
 <h4 id="4-8-2-帧缓存的渲染"><a href="#4-8-2-帧缓存的渲染" class="headerlink" title="4.8.2 帧缓存的渲染"></a>4.8.2 帧缓存的渲染</h4><p>基本工作原理是存在两个缓存（前缓存和后缓存），当屏幕的刷新同步信号到达时让系统将后缓存交换到前缓存区上。</p>
 <p>这个刷新的时间是由系统决定的，比如在iOS中屏幕刷新率是60fps即每16.75ms会发生一次前后缓存的交换。我们只需要准备好后缓存的数据提供给系统就能进行屏幕刷新渲染了。</p>
-<img src="/images/iosrender/23.png" alt="" style="zoom:85%;" />
+<img src="/images/iosrender/23.png" alt="" style="zoom:90%;" />
 
 <h3 id="4-8-小结"><a href="#4-8-小结" class="headerlink" title="4.8 小结"></a>4.8 小结</h3><p>可以看到，图形渲染管线非常复杂，它包含很多可配置的部分。然而，对于大多数场合，我们只需要配置顶点和片段着色器就行了。几何着色器是可选的，通常使用它默认的着色器就行了。</p>
 <p>在现代OpenGL中，我们<strong>必须</strong>定义至少一个顶点着色器和一个片段着色器（因为GPU中没有默认的顶点/片段着色器）。</p>
 <p>以上就是OpenGL整体工作流程。首先OpenGL是用来操作GPU进行图形图像渲染工作的，它的操作粒度可以到每个像素点，同时它是直接操作GPU硬件工作的。而之后的工作核心（2D图形图像渲染）基本是集中在对顶点着色器和片段着色器的脚本实现上（酷炫的滤镜效果和动画效果）。</p>
 <h2 id="五、案例1-—-UIBlurEffect的渲染过程"><a href="#五、案例1-—-UIBlurEffect的渲染过程" class="headerlink" title="五、案例1 — UIBlurEffect的渲染过程"></a>五、案例1 — UIBlurEffect的渲染过程</h2><p>UIBlurEffect 是 iOS8 新出的用来实现模糊效果的类。</p>
 <h3 id="5-1-渲染步骤"><a href="#5-1-渲染步骤" class="headerlink" title="5.1 渲染步骤"></a>5.1 渲染步骤</h3><p>它的渲染过程如下：</p>
-<img src="/images/caa/blureffect-rendering-pass.png" alt="" style="zoom:37%;" />
+<img src="/images/caa/blureffect-rendering-pass.png" alt="" style="zoom:55%;" />
 
 <ol>
 <li>渲染 layer 的 content，在这种情况下，它只是一个简单的图像，因此如果我们涉及 UI ，可能需要更长的时间；</li>
@@ -818,7 +818,7 @@ height:40vh;
 <li>合成操作，合并所有模糊结果。</li>
 </ol>
 <h3 id="5-2-每一步中的三事件"><a href="#5-2-每一步中的三事件" class="headerlink" title="5.2 每一步中的三事件"></a>5.2 每一步中的三事件</h3><p>再看下图，聚焦在一帧。我们可以看到每个渲染步骤所需的时间，每个渲染步骤都牵扯到了下面要提到的三个事件(tile/render/VBlank interrupt)。</p>
-<img src="/images/caa/blureffect1.png" alt="UIBlurEffect1" style="zoom:85%;" />
+<img src="/images/caa/blureffect1.png" alt="UIBlurEffect1" style="zoom:90%;" />
 
 <p>我们可以看到有三行，每一行代表一个事件</p>
 <ul>
@@ -827,13 +827,13 @@ height:40vh;
 <li>VBlank interrupt, “and the last row I put in the VBlank interrupt and we can actually see what our frame boundaries are.” (我们实际上可以看到我们的帧边界是什么)</li>
 </ul>
 <h3 id="5-3-步骤间隙"><a href="#5-3-步骤间隙" class="headerlink" title="5.3 步骤间隙"></a>5.3 步骤间隙</h3><p>我们注意到下图，每个步骤之间的间隙，用橘色标记了</p>
-<img src="/images/caa/blureffect2.png" alt="UIBlurEffect2" style="zoom:87%;" />
+<img src="/images/caa/blureffect2.png" alt="UIBlurEffect2" style="zoom:90%;" />
 
 <p>5 个步骤中间有 4 个间隙，之所以存在，是因为这是发生在 GPU 上切换所花的时间。在空闲时间，每个步骤所花费的时间大概在 0.1<code>~~</code>0.2ms, 所以总共 0.4<code>~~</code>0.8ms, 所以这个是 16.67ms 的一个重要组成部分。</p>
 <p>还列举了不同设备间的耗时，有一种设备某个 Dark style 下的时间是 18.15ms, 超过 16.67ms, 所以不可能在 60 hert 渲染完成。所以 Apple 在这些设备上不支持 blur 。</p>
 <p>UIBlurEffect 有三种 style: Extra light, Light, Dark ，它们消耗的资源各不相同， Dark 最少， Extra light 最多。</p>
 <h2 id="六、案例2-—-UIVibrancyEffect的渲染过程"><a href="#六、案例2-—-UIVibrancyEffect的渲染过程" class="headerlink" title="六、案例2 — UIVibrancyEffect的渲染过程"></a>六、案例2 — UIVibrancyEffect的渲染过程</h2><p>UIVibrancyEffect 是在模糊之上使用的效果，它可以<strong>确保内容突出，而不会被模糊</strong>。它的渲染过程如下：</p>
-<img src="/images/caa/vibrancyeffect-rendering-pass.png" alt="" style="zoom:45%;" />
+<img src="/images/caa/vibrancyeffect-rendering-pass.png" alt="" style="zoom:64%;" />
 
 <p>比 UIBlurEffect 多了两个步骤，最后一个步骤 filter 是最昂贵的，所以作用区域越小越好，千万别作用到全屏上。</p>
 <img src="/images/caa/vibrancyeffect1.png" alt="" style="zoom:90%;" />
@@ -842,7 +842,7 @@ height:40vh;
 <img src="/images/caa/vibrancyeffect2.png" alt="UIVibrancyEffect2" style="zoom:90%;" />
 
 <h2 id="七、分析工具-Profiling-tools"><a href="#七、分析工具-Profiling-tools" class="headerlink" title="七、分析工具(Profiling tools)"></a>七、分析工具(Profiling tools)</h2><h3 id="7-1-性能关注点"><a href="#7-1-性能关注点" class="headerlink" title="7.1 性能关注点"></a>7.1 性能关注点</h3><p>性能调查要考虑以下点</p>
-<img src="/images/caa/performance-inverstigation-mindset.png" alt="" style="zoom:80%;" />
+<img src="/images/caa/performance-inverstigation-mindset.png" alt="" style="zoom:90%;" />
 
 <ul>
 <li>What is the frame rate? Goal is always 60 fps. <ul>
@@ -915,7 +915,7 @@ height:40vh;
             <p>Author：<a href="https://tenloy.github.io">Tenloy</a>
             <p>原文链接：<a href="https://tenloy.github.io/2021/09/11/core-animation03.html">https://tenloy.github.io/2021/09/11/core-animation03.html</a>
             <p>发表日期：2021.09.11 , 8:04 PM</p>
-            <p>更新日期：2021.09.17 , 10:59 AM</p>
+            <p>更新日期：2021.09.17 , 11:21 AM</p>
             <p>版权声明：本文采用<a rel="license noopener" target="_blank" href="http://creativecommons.org/licenses/by-nc/4.0/">Crative Commons 4.0 许可协议</a>进行许可</p>
         </div>
     
@@ -1572,7 +1572,7 @@ top:40vh;
     
     
         <li class="archive-post-item">
-            <span class="archive-post-date">09/15</span><a class="archive-post-title" href= "/2021/09/15/graphics-processing.html" >图形处理(三) - 图形处理实践案例</a>
+            <span class="archive-post-date">09/15</span><a class="archive-post-title" href= "/2021/09/15/graphics-processing-case.html" >图形处理(三) - 图形处理实践案例</a>
         </li>
     
     
