@@ -1942,7 +1942,7 @@ html::-webkit-scrollbar-track:hover,
     padding: 0.1rem 0 0.1rem 0.5rem;
     box-sizing: border-box;
     display: flex;
-    align-items: center;
+    align-items: flex-start;
 }
 
 .archive-post-item:hover,
@@ -1997,7 +1997,8 @@ html::-webkit-scrollbar-track:hover,
 .archive-post-date,
 .meta-post-date {
     font: 0.9rem/1rem "Oswald-Regular";
-    color: #999
+    color: #999;
+    margin-top: 3px;
 }
 
 .archive-post-title,
@@ -2009,7 +2010,6 @@ html::-webkit-scrollbar-track:hover,
     flex: 1;
 	overflow: hidden;
 	text-overflow: ellipsis;
-	white-space: nowrap;
 }
 
 .sidebar-panel-tags,

@@ -1,7 +1,10 @@
 ---
 title: '常见架构模式: MVC、MVP、MVVM、VIPER'
 date: 2021-09-18 17:22:58
+urlname: architectural-pattern.html
 tags:
+categories:
+  - 架构与设计模式
 ---
 
 > 译自：[iOS Architecture Patterns](https://medium.com/ios-os-x-development/ios-architecture-patterns-ecba4c38de52)(模式图也已汉化)。在[这里](http://slides.com/borlov/arch/fullscreen#/)可以看到一个幻灯片
