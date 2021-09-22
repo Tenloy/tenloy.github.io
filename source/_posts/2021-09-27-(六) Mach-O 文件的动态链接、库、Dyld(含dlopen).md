@@ -35,7 +35,7 @@ categories:
 常见的可执行文件的形式：
 - Linux系统中，ELF动态链接文件被称为**动态共享对象**(`DSO，Dynamic SharedObjects`)，简称共享对象，一般都是以 `.so` 为扩展名的一些文件；
 - Windows系统中，动态链接文件被称为**动态链接库**(`Dynamical Linking Library`)，通常就是我们平时很常见的以 `.dll` 为扩展名的文件；
-- OS X 和其他 UN\*X 不同，它的库不是“共享对象(.so)”，因为 OS X 和 ELF 不兼容，而且这个概念在 Mach-O 中不存在。OS 中的动态链接文件一般称为**动态库**文件，带有 `.dylib`、`.framework`及链接符号`.tbd`。可以在 `/usr/lib` 目录下找到(这一点和其他所有的 UN*X 一样，不过在OS X 和 iOS 中没有/lib目录)
+- OS X 和其他 UN\*X 不同，它的库不是“共享对象(.so)”，因为 OS X 和 ELF 不兼容，而且这个概念在 Mach-O 中不存在。OS 中的动态链接文件一般称为**动态库**文件，带有 `.dylib`、`.framework`及链接符号`.tbd`。可以在 `/usr/lib` 目录下找到(这一点和其他所有的 UN*X 一样，不同的是在OS X 和 iOS 中没有/lib目录)
 - OS X 与其他 UN\*X 另一点不同是：没有`libc`。开发者可能熟悉其他 UN\*X 上的C运行时库(或Windows上的MSVCRT) 。但是在 OS X 上对应的库`/usr/lib/libc.dylib`只不过是指向`libSystem.B.dylib`的符号链接。
 - 以C语言运行库为例，补充一下**运行库**的概念：任何一个C程序，它的背后都有一套庞大的代码来进行支撑，以使得该程序能够正常运行。这套代码至少包括入口函数，及其所依赖的函数所构成的函数集合。当然，它还理应包括各种标准库函数的实现。这样的一个代码集合称之为运行时库（Runtime Library）。而C语言的运行库，即被称为C运行库（CRT）。**运行库顾名思义是让程序能正常运行的一个库。**
 
@@ -61,7 +61,7 @@ libSystem 库是系统上所有二进制代码的绝对先决条件，即所有�
 ### 2.5 .a/.dylib与.framework的区别
 前者是纯二进制文件，文件不能直接使用，需要有.h文件的配合(我们在使用系统的.dylib动态库时，经常发现没有头文件，其实这些库的头文件都位于一个已知位置，如`usr/include`(新系统中这个文件夹由SDK附带了，见 [[/usr/include missing on macOS Catalina (with Xcode 11)]](https://apple.stackexchange.com/questions/372032/usr-include-missing-on-macos-catalina-with-xcode-11) )，库文件位于`usr/lib`，使得这些库全局可用)，后者除了二进制文件、头文件还有资源文件，代码可以直接导入使用(`.a + .h + sourceFile = .framework`)。
 
-Framework 是苹果公司的 Cocoa/Cocoa Touch 程序中使用的一种资源打包方式，可以将代码文件、头文件、资源文件（nib/xib、图片、国际化文本）、说明文档等集中在一起，方便开发者使用。**Framework 其实是资源打包的方式，和静态库动态库的本质是没有什么关系(所以framework文件可以是静态库也可以是动态库，iOS 中用到的所有系统 framework 都是动态链接的)**。
+Framework 是苹果公司的 Cocoa/Cocoa Touch 程序中使用的一种资源打包方式，可以将代码文件、头文件、资源文件（nib/xib、图片、国际化文本）、说明文档等集中在一起，方便开发者使用。**Framework 其实是资源打包的方式，和静态库动态库的本质是没有什么关系**(**所以framework文件可以是静态库也可以是动态库，iOS 中用到的所有系统 framework 都是动态链接的**)。
 
 在其它大部分平台上，动态库都可以用于不同应用间共享， 共享可执行文件，这就大大节省了内存。但是iOS平台在 iOS 8 之前，苹果不允许第三方框架使用动态方式加载，开发者可以使用的动态 Framework 只有苹果系统提供的 UIKit.Framework，Foundation.Framework 等。开发者要进行模块化，只能打包成静态库文件：`.a + 头文件`、`.framework`(这时候的 Framework 只支持打包成静态库的 Framework)，前种方式打包不够方便，使用时也比较麻烦，没有后者的便捷性。
 
@@ -91,10 +91,8 @@ iOS 8/Xcode 6 推出之后，允许开发者有条件地创建和使用动态库
 
 > Linux中，动态链接库的存在形式稍有不同，Linux动态链接器本身是一个共享对象(动态库)，它的路径是/lib/ld-linux.so.2，这实际上是个软链接，它指向/lib/ld-x.y.z.so， 这个才是真正的动态连接器文件。共享对象其实也是ELF文件，它也有跟可执行文件一样的ELF文件头（包括e_entry、段表等）。动态链接器是个非常特殊的共享对象，它不仅是个共享对象，还是个可执行的程序，可以直接在命令行下面运行。因为ld.so是共享对象，又是动态链接器，所以本来应由动态链接器进行的共享对象的重定位，就要靠自己来，又称“自举”。自举完成后ld.so以一个共享对象的角色，来实现动态链接库的功能。
 
+我们需要了解一下`LC_LOAD_DYLIB`这个加载命令，这个命令会告诉链接器在哪里可以找到这些符号，即动态库的相关信息(ID、时间戳、版本号、兼容版本号等)。
 
-我们需要了解一下`LC_LOAD_DYLIB`这个加载命令，这个命令会告诉链接器在哪里可以找到这些符号，即动态库的相关信息(ID、时间戳、版本号、兼容版本号等)。链接器要加载每一个指定的库，并且搜寻匹配的符号。每个被链接的库(Mach-O格式)都有一个符号表，符号表将符号名称和地址关联起来。符号表在Mach-O目标文件中的地址可以通过`LC_SYMTAB`加载命令指定的 symoff 找到。对应的符号名称在 stroff， 总共有 nsyms 条符号信息。
-
-下面是`LC_SYMTAB`的load_command：
 ```c
 struct dylib {
     union lc_str name;              /* library's path name */
@@ -107,6 +105,20 @@ struct dylib_command {
     uint32_t cmd;         /* LC_ID_DYLIB, LC_LOAD_{,WEAK_}DYLIB, LC_REEXPORT_DYLIB */
     uint32_t cmdsize;     /* includes pathname string */
     struct dylib dylib;   /* the library identification */
+};
+```
+
+链接器要加载每一个指定的库，并且搜寻匹配的符号。每个被链接的库(Mach-O格式)都有一个符号表，符号表将符号名称和地址关联起来。符号表在Mach-O目标文件中的地址可以通过`LC_SYMTAB`加载命令指定的 symoff 找到。对应的符号名称在 stroff， 总共有 nsyms 条符号信息。下面是`LC_SYMTAB`的load_command：
+
+```c
+//定义在<mach-o/loader.h>中
+struct symtab_command {
+    uint32_t	cmd;		/* 加载命令的前两个参数都是cmd和cmdsize，cmd为加载命令的类型，符号表对应的值为LC_SYMTAB */
+    uint32_t	cmdsize;	/* symtab_command结构体的大小 */
+    uint32_t	symoff;		/* 符号表在文件中的偏移（位置） */
+    uint32_t	nsyms;		/* 符号表入口的个数 */
+    uint32_t	stroff;		/* 字符串表在文件中的偏移(位置) */
+    uint32_t	strsize;	/* 字符串表的大小(字节数) */
 };
 ```
 
