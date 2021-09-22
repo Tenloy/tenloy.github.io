@@ -1,0 +1,1767 @@
+<!DOCTYPE html>
+<html lang="en">
+    <!-- title -->
+
+
+
+
+<!-- keywords -->
+
+
+
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" >
+    <meta name="author" content="Tenloy">
+    <meta name="renderer" content="webkit">
+    <meta name="copyright" content="Tenloy">
+    
+    <meta name="keywords" content="Tenloy,iOS,Swift">
+    
+    <meta name="description" content="学习 生活 记录 回忆">
+    <meta name="description" content="一、工程化2.1 几个概念工程  泛指某项需要投入巨大人力和物力的工作。   工程是科学和数学的某种应用，通过这一应用，使自然界的物质和能源的特性能够通过各种结构、机器、产品、系统和过程，是以 最短的时间 和 最少的人力、物力 做出 高效、可靠 且对人类有用的东西。  软件工程  将系统化的、规范的、可度量的方法用于软件的开发、运行和维护的过程，即将工程化应用于软件开发中。 它借鉴传统工程的原则、">
+<meta property="og:type" content="article">
+<meta property="og:title" content="工程化、动态化、容器化、组件化">
+<meta property="og:url" content="https://tenloy.github.io/2021/04/11/Engineering.html">
+<meta property="og:site_name" content="Tenloy&#39;s Blog">
+<meta property="og:description" content="一、工程化2.1 几个概念工程  泛指某项需要投入巨大人力和物力的工作。   工程是科学和数学的某种应用，通过这一应用，使自然界的物质和能源的特性能够通过各种结构、机器、产品、系统和过程，是以 最短的时间 和 最少的人力、物力 做出 高效、可靠 且对人类有用的东西。  软件工程  将系统化的、规范的、可度量的方法用于软件的开发、运行和维护的过程，即将工程化应用于软件开发中。 它借鉴传统工程的原则、">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://tenloy.github.io/images/Engineering/web-engineering.jpg">
+<meta property="og:image" content="https://tenloy.github.io/images/Engineering/plans.jpg">
+<meta property="og:image" content="https://tenloy.github.io/images/Engineering/plans2.jpg">
+<meta property="og:image" content="https://tenloy.github.io/images/Engineering/modular_and_component_summary_1.jpg">
+<meta property="og:image" content="https://tenloy.github.io/images/Engineering/modular_and_component_summary_2.jpg">
+<meta property="og:image" content="https://tenloy.github.io/images/Engineering/modular_and_component_summary_3.jpg">
+<meta property="og:image" content="https://tenloy.github.io/images/Engineering/modular_and_component_summary_4.jpg">
+<meta property="og:image" content="https://tenloy.github.io/images/Engineering/mgj-component.jpg">
+<meta property="article:published_time" content="2021-04-11T19:43:56.000Z">
+<meta property="article:modified_time" content="2021-09-22T09:42:31.237Z">
+<meta property="article:author" content="Tenloy">
+<meta property="article:tag" content="Tenloy, iOS, Tenloy Blog, 博客，Swift, 编译, 计算机">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://tenloy.github.io/images/Engineering/web-engineering.jpg">
+    <meta http-equiv="Cache-control" content="no-cache">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"/>
+    
+    <title>工程化、动态化、容器化、组件化 · Tenloy&#39;s Blog</title>
+    <style type="text/css">
+    @font-face {
+        font-family: 'Oswald-Regular';
+        src: url("/font/Oswald-Regular.ttf");
+    }
+
+    body {
+        margin: 0;
+    }
+
+    header,
+    footer,
+    .back-top,
+    .sidebar,
+    .container,
+    .site-intro-meta,
+    .toc-wrapper {
+        display: none;
+    }
+
+    .site-intro {
+        position: relative;
+        z-index: 3;
+        width: 100%;
+        /* height: 50vh; */
+        overflow: hidden;
+    }
+
+    .site-intro-placeholder {
+        position: absolute;
+        z-index: -2;
+        top: 0;
+        left: 0;
+        width: calc(100% + 300px);
+        height: 100%;
+        background: repeating-linear-gradient(-45deg, #444 0, #444 80px, #333 80px, #333 160px);
+        background-position: center center;
+        transform: translate3d(-226px, 0, 0);
+        animation: gradient-move 2.5s ease-out 0s infinite;
+    }
+
+    @keyframes gradient-move {
+        0% {
+            transform: translate3d(-226px, 0, 0);
+        }
+        100% {
+            transform: translate3d(0, 0, 0);
+        }
+    }
+
+</style>
+
+    <link rel="preload" href= "/css/style.css?v=20180824" as="style" onload="this.onload=null;this.rel='stylesheet'" />
+    <link rel="stylesheet" href= "/css/mobile.css?v=20180824" media="(max-width: 980px)">
+    
+    <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.2.5/jquery.fancybox.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'" />
+    
+    <!-- /*! loadCSS. [c]2017 Filament Group, Inc. MIT License */
+/* This file is meant as a standalone workflow for
+- testing support for link[rel=preload]
+- enabling async CSS loading in browsers that do not support rel=preload
+- applying rel preload css once loaded, whether supported or not.
+*/ -->
+<script>
+(function( w ){
+	"use strict";
+	// rel=preload support test
+	if( !w.loadCSS ){
+		w.loadCSS = function(){};
+	}
+	// define on the loadCSS obj
+	var rp = loadCSS.relpreload = {};
+	// rel=preload feature support test
+	// runs once and returns a function for compat purposes
+	rp.support = (function(){
+		var ret;
+		try {
+			ret = w.document.createElement( "link" ).relList.supports( "preload" );
+		} catch (e) {
+			ret = false;
+		}
+		return function(){
+			return ret;
+		};
+	})();
+
+	// if preload isn't supported, get an asynchronous load by using a non-matching media attribute
+	// then change that media back to its intended value on load
+	rp.bindMediaToggle = function( link ){
+		// remember existing media attr for ultimate state, or default to 'all'
+		var finalMedia = link.media || "all";
+
+		function enableStylesheet(){
+			link.media = finalMedia;
+		}
+
+		// bind load handlers to enable media
+		if( link.addEventListener ){
+			link.addEventListener( "load", enableStylesheet );
+		} else if( link.attachEvent ){
+			link.attachEvent( "onload", enableStylesheet );
+		}
+
+		// Set rel and non-applicable media type to start an async request
+		// note: timeout allows this to happen async to let rendering continue in IE
+		setTimeout(function(){
+			link.rel = "stylesheet";
+			link.media = "only x";
+		});
+		// also enable media after 3 seconds,
+		// which will catch very old browsers (android 2.x, old firefox) that don't support onload on link
+		setTimeout( enableStylesheet, 3000 );
+	};
+
+	// loop through link elements in DOM
+	rp.poly = function(){
+		// double check this to prevent external calls from running
+		if( rp.support() ){
+			return;
+		}
+		var links = w.document.getElementsByTagName( "link" );
+		for( var i = 0; i < links.length; i++ ){
+			var link = links[ i ];
+			// qualify links to those with rel=preload and as=style attrs
+			if( link.rel === "preload" && link.getAttribute( "as" ) === "style" && !link.getAttribute( "data-loadcss" ) ){
+				// prevent rerunning on link
+				link.setAttribute( "data-loadcss", true );
+				// bind listeners to toggle media back
+				rp.bindMediaToggle( link );
+			}
+		}
+	};
+
+	// if unsupported, run the polyfill
+	if( !rp.support() ){
+		// run once at least
+		rp.poly();
+
+		// rerun poly on an interval until onload
+		var run = w.setInterval( rp.poly, 500 );
+		if( w.addEventListener ){
+			w.addEventListener( "load", function(){
+				rp.poly();
+				w.clearInterval( run );
+			} );
+		} else if( w.attachEvent ){
+			w.attachEvent( "onload", function(){
+				rp.poly();
+				w.clearInterval( run );
+			} );
+		}
+	}
+
+
+	// commonjs
+	if( typeof exports !== "undefined" ){
+		exports.loadCSS = loadCSS;
+	}
+	else {
+		w.loadCSS = loadCSS;
+	}
+}( typeof global !== "undefined" ? global : this ) );
+</script>
+
+    <link rel="icon" href= "/assets/favicon.ico" />
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.min.js" as="script" />
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js" as="script" />
+    <link rel="preload" href="/scripts/main.js" as="script" />
+    <link rel="preload" as="font" href="/font/Oswald-Regular.ttf" crossorigin>
+    <link rel="preload" as="font" href="https://at.alicdn.com/t/font_327081_1dta1rlogw17zaor.woff" crossorigin>
+    
+        <!-- algolia -->
+        <script>
+            
+            var hits = JSON.parse('{"per_page":10}')
+            var labels = JSON.parse('{"input_placeholder":"Search for Posts","hits_empty":"没有找到任何搜索结果: ${query}","hits_stats":"找到约${hits}条结果（用时${time}ms）"}')
+
+            var algolia = {
+                applicationID: 'V0HYXBS9FB',
+                apiKey: '6550d5de786935564142097c3e78c380',
+                indexName: 'law_blog_index',
+                hits: hits,
+                labels: labels
+            }
+        </script>
+    
+    <!-- fancybox -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.2.5/jquery.fancybox.min.js" defer></script>
+    <!-- 百度统计  -->
+    
+    <!-- 谷歌统计  -->
+    
+<meta name="generator" content="Hexo 5.4.0"><link rel="alternate" href="/atom.xml" title="Tenloy's Blog" type="application/atom+xml">
+</head>
+
+    
+        <body class="post-body">
+    
+    
+<header class="header">
+
+    <div class="read-progress"></div>
+    <div class="header-sidebar-menu">&#xe775;</div>
+    <!-- post页的toggle banner  -->
+    
+    <div class="banner">
+            <div class="blog-title">
+                <a href="/" >Tenloy&#39;s Blog</a>
+            </div>
+            <div class="post-title">
+                <a href="#" class="post-name">工程化、动态化、容器化、组件化</a>
+            </div>
+    </div>
+    
+    <!-- 将home-link的操作改为应用到header-top-right上 -->
+    <div class="header-top-right">
+        <!-- search  -->
+        
+            <div class="site-search popup-trigger tl-search">
+                <span class="iconfont-jian tl-search-icon">&#xe7fc;搜索</span>
+            </div>
+            
+        <a class="home-link" href=/>Tenloy's Blog</a>
+    </div>
+</header>
+    <div class="wrapper">
+        <div class="site-intro" style="
+
+
+
+
+
+
+
+height:40vh;
+">
+    
+    <!-- 主页  -->
+    
+    
+    <!-- 404页  -->
+            
+    <div class="site-intro-placeholder"></div>
+    <div class="site-intro-img" style="background-image: url(/intro/post-bg.jpg)"></div>
+    <div class="site-intro-meta">
+        <!-- 标题  -->
+        <h1 class="intro-title">
+            <!-- 主页  -->
+            
+            工程化、动态化、容器化、组件化
+            <!-- 404 -->
+            
+        </h1>
+        <!-- 副标题 -->
+        <p class="intro-subtitle">
+            <!-- 主页副标题  -->
+            
+            
+            <!-- 404 -->
+            
+        </p>
+        <!-- 文章页meta -->
+        
+            <div class="post-intros">
+                <!-- 文章页标签  -->
+                
+                
+                    <div class="post-intro-read">
+                        <span>Word count: <span class="post-count word-count">3.9k</span>Reading time: <span class="post-count reading-time">13 min</span></span>
+                    </div>
+                
+                <div class="post-intro-meta">
+                    <span class="post-intro-calander iconfont-archer">&#xe676;</span>
+                    <span class="post-intro-time">2021/04/11</span>
+                    
+                    <span id="busuanzi_container_page_pv" class="busuanzi-pv">
+                        <span class="iconfont-archer">&#xe602;</span>
+                        <span id="busuanzi_value_page_pv"></span>
+                    </span>
+                    
+                    <span class="shareWrapper">
+                        <span class="iconfont-archer shareIcon">&#xe71d;</span>
+                        <span class="shareText">Share</span>
+                        <ul class="shareList">
+                            <li class="iconfont-archer share-qr" data-type="qr">&#xe75b;
+                                <div class="share-qrcode"></div>
+                            </li>
+                            <li class="iconfont-archer" data-type="weibo">&#xe619;</li>
+                            <li class="iconfont-archer" data-type="qzone">&#xe62e;</li>
+                            <li class="iconfont-archer" data-type="twitter">&#xe634;</li>
+                            <li class="iconfont-archer" data-type="facebook">&#xe67a;</li>
+                        </ul>
+                    </span>
+                </div>
+            </div>
+        
+    </div>
+</div>
+        <script>
+ 
+  // get user agent
+  var browser = {
+    versions: function () {
+      var u = window.navigator.userAgent;
+      return {
+        userAgent: u,
+        trident: u.indexOf('Trident') > -1, //IE内核
+        presto: u.indexOf('Presto') > -1, //opera内核
+        webKit: u.indexOf('AppleWebKit') > -1, //苹果、谷歌内核
+        gecko: u.indexOf('Gecko') > -1 && u.indexOf('KHTML') == -1, //火狐内核
+        mobile: !!u.match(/AppleWebKit.*Mobile.*/), //是否为移动终端
+        ios: !!u.match(/\(i[^;]+;( U;)? CPU.+Mac OS X/), //ios终端
+        android: u.indexOf('Android') > -1 || u.indexOf('Linux') > -1, //android终端或者uc浏览器
+        iPhone: u.indexOf('iPhone') > -1 || u.indexOf('Mac') > -1, //是否为iPhone或者安卓QQ浏览器
+        iPad: u.indexOf('iPad') > -1, //是否为iPad
+        webApp: u.indexOf('Safari') == -1, //是否为web应用程序，没有头部与底部
+        weixin: u.indexOf('MicroMessenger') == -1, //是否为微信浏览器
+        uc: u.indexOf('UCBrowser') > -1 //是否为android下的UC浏览器
+      };
+    }()
+  }
+  console.log("userAgent:" + browser.versions.userAgent);
+
+  // callback
+  function fontLoaded() {
+    console.log('font loaded');
+    if (document.getElementsByClassName('site-intro-meta')) {
+      document.getElementsByClassName('intro-title')[0].classList.add('intro-fade-in');
+      document.getElementsByClassName('intro-subtitle')[0].classList.add('intro-fade-in');
+      var postIntros = document.getElementsByClassName('post-intros')[0]
+      if (postIntros) {
+        postIntros.classList.add('post-fade-in');
+      }
+    }
+  }
+
+  // UC不支持跨域，所以直接显示
+  function asyncCb(){
+    if (browser.versions.uc) {
+      console.log("UCBrowser");
+      fontLoaded();
+    } else {
+      WebFont.load({
+        custom: {
+          families: ['Oswald-Regular']
+        },
+        loading: function () {  //所有字体开始加载
+          // console.log('loading');
+        },
+        active: function () {  //所有字体已渲染
+          fontLoaded();
+        },
+        inactive: function () { //字体预加载失败，无效字体或浏览器不支持加载
+          console.log('inactive: timeout');
+          fontLoaded();
+        },
+        timeout: 5000 // Set the timeout to two seconds
+      });
+    }
+  }
+
+  function asyncErr(){
+    console.warn('script load from CDN failed, will load local script')
+  }
+
+  // load webfont-loader async, and add callback function
+  function async(u, cb, err) {
+    var d = document, t = 'script',
+      o = d.createElement(t),
+      s = d.getElementsByTagName(t)[0];
+    o.src = u;
+    if (cb) { o.addEventListener('load', function (e) { cb(null, e); }, false); }
+    if (err) { o.addEventListener('error', function (e) { err(null, e); }, false); }
+    s.parentNode.insertBefore(o, s);
+  }
+
+  var asyncLoadWithFallBack = function(arr, success, reject) {
+      var currReject = function(){
+        reject()
+        arr.shift()
+        if(arr.length)
+          async(arr[0], success, currReject)
+        }
+
+      async(arr[0], success, currReject)
+  }
+
+  asyncLoadWithFallBack([
+    "https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.min.js", 
+    "https://cdn.bootcss.com/webfont/1.6.28/webfontloader.js",
+    "/lib/webfontloader.min.js"
+  ], asyncCb, asyncErr)
+</script>        
+        <img class="loading" src="/assets/loading.svg" style="display: block; margin: 6rem auto 0 auto; width: 6rem; height: 6rem;" />
+        <div class="container container-unloaded">
+            <main class="main post-page">
+    <article class="article-entry">
+        <h2 id="一、工程化"><a href="#一、工程化" class="headerlink" title="一、工程化"></a>一、工程化</h2><h3 id="2-1-几个概念"><a href="#2-1-几个概念" class="headerlink" title="2.1 几个概念"></a>2.1 几个概念</h3><p>工程</p>
+<blockquote>
+<p>泛指某项需要投入巨大人力和物力的工作。</p>
+</blockquote>
+<blockquote>
+<p>工程是科学和数学的某种应用，通过这一应用，使自然界的物质和能源的特性能够通过各种结构、机器、产品、系统和过程，是以 <code>最短的时间</code> 和 <code>最少的人力、物力</code> 做出 <code>高效、可靠</code> 且对人类有用的东西。</p>
+</blockquote>
+<p>软件工程</p>
+<blockquote>
+<p>将系统化的、规范的、可度量的方法用于软件的开发、运行和维护的过程，即将工程化应用于软件开发中。</p>
+<p>它借鉴传统工程的原则、方法创建软件，以达到提高质量，降低成本的目的。</p>
+</blockquote>
+<p>软件工程是一门指导计算机软件开发和维护的工程学科。是一门交叉性学科(需要用到多种学科的方法支持和指导)，如：</p>
+<ul>
+<li>计算机科学、数学用于构造模型与算法</li>
+<li>工程科学用于制定规范、设计范型、评估成本及确定权衡</li>
+<li>管理科学用于计划、资源、质量、成本等管理</li>
+</ul>
+<h3 id="2-2-工程化"><a href="#2-2-工程化" class="headerlink" title="2.2 工程化"></a>2.2 工程化</h3><p>工程化就是指将软件工程的技术和方法运用在开发中，目的是实现<strong>高效开发(降低难度、有效协同)，降低成本，质量可控</strong>。</p>
+<p>工程化包括环境搭建、开发、测试、构建、部署(发布)等一系列流程：</p>
+<ul>
+<li><strong>环境搭建</strong>：项目创建(脚手架)、框架选型、基础工具(请求库、路由库、基础视图组件等)选型等</li>
+<li><strong>开发</strong>：版本管理(分支、commit、review等)规范、动态化方案、组件化方案等</li>
+<li><strong>构建、部署</strong>：CI/CD(自动化持续集成发布)</li>
+<li><strong>测试</strong>：测试用例，自动化测试</li>
+</ul>
+<p><strong>工程化不是指某个工具，工具化只是实现工程化的方式</strong></p>
+<img src="/images/Engineering/web-engineering.jpg" style="zoom:60%">
+
+<h2 id="二、跨平台"><a href="#二、跨平台" class="headerlink" title="二、跨平台"></a>二、跨平台</h2><p>跨平台（英语：cross-platform software、multi-platform software、platform-independent software）泛指编程语言、软件或硬件设备可以在多种操作系统或不同硬件架构的电脑上运作。</p>
+<h2 id="三、动态化"><a href="#三、动态化" class="headerlink" title="三、动态化"></a>三、动态化</h2><h3 id="3-1-什么是动态化？"><a href="#3-1-什么是动态化？" class="headerlink" title="3.1 什么是动态化？"></a>3.1 什么是动态化？</h3><p>移动动态化：移动指的是移动端，包括安卓、iOS。动态化则是动态部署和逻辑下发到客户端的能力。移动动态最好的状态就是让移动应用和 Web 一样，想发就发！</p>
+<h3 id="3-2-移动端动态化方案"><a href="#3-2-移动端动态化方案" class="headerlink" title="3.2 移动端动态化方案"></a>3.2 移动端动态化方案</h3><p>从「支持动态化的程度」、「与原生体验的差异」、「方案集成与功能开发成本的高低」三个维度出发，将市面上的移动端动态化方案分成三个方向（为了节约成本，移动端的动态化方案一般也会<strong>兼顾跨平台</strong>）：</p>
+<img src="/images/Engineering/plans.jpg" style="zoom:80%">
+
+<ul>
+<li><p><code>Web增强(Web+)</code>：方向主要基于 WebView 实现，能够进行快速的迭代。不过在性能和稳定性上略差，使用场景有限。</p>
+</li>
+<li><p>GPL  和 DSL 可以看作 <code>Native 增强(Native+)</code> 方向的子方向，Native+ 方向基于 App 内自带的语言解析器，独立于 WebView 实现动态化逻辑的解析、布局和渲染。</p>
+<ul>
+<li><p><code>基于GPL的 Native增强(GPL)</code>：</p>
+<ul>
+<li>这个方向是移动端动态化的热门方向。React Native、Flutter、NativeScript 等等，实现原理各不相同；</li>
+<li>共同的特点是利用了通用编程语言器，可以是系统提供的（如 Javascript），或者是集成到 App 的（如 Dart），再辅以某个布局系统和渲染方案，由于语言是图灵完备的，可以提供完美的动态化解决方案；</li>
+<li>GPL 方案虽然在动态化能力、渲染性能方面效果出色，但 Framework 体积、学习和开发成本等方面却也是相当高。于是产生了基于领域专用语言的解决方案。</li>
+</ul>
+</li>
+<li><p><code>基于DSL的 Native增强(DSL)</code> ：</p>
+<ul>
+<li>此类方案通过采用适合专业场景的的 DSL 解析云端下发的逻辑结构，舍弃一部分动态化灵活性，换取其他方面的优势。</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<img src="/images/Engineering/plans2.jpg" style="zoom:90%">
+
+<h2 id="四、容器化"><a href="#四、容器化" class="headerlink" title="四、容器化"></a>四、容器化</h2><p>伴随着上面的动态化方案诞生，容器化这个词在移动端也频繁的出现。</p>
+<p>容器在不同场景下的含义</p>
+<ul>
+<li><p>字面意思，容器就是指容纳小物品的事物，比如：</p>
+<ul>
+<li>UIStackview</li>
+<li>自定义的Container视图组件</li>
+<li>前端组件化开发中的页面充当的角色(将一个页面分成很多个组件，此处页面就相当于是个纯粹的容器)</li>
+</ul>
+</li>
+<li><p>代码/数据的运行环境，完成代码的解释/数据的解析。比如(从小到大)：</p>
+<ul>
+<li><p>美团，后端返回协商好的结构化的数据，移动端对数据进行解析，还原成界面的layout。进行视图创建、渲染</p>
+<p>动态化是整个外卖业务的发展方向。提单页的动态化建立在容器化的基础之上，在完成容器化之后，就具备了动态化的基础。当前提单页的动态化，所指的主要是模块层级的动态化，提单页的各模块展示顺序、展示与否，都可以完全由根据服务端下发的数据决定，各模块可以自由地进行组合、拼装，实现提单页的动态配置。</p>
+</li>
+<li><p>RN。在一定程度上，React Native和NodeJS有异曲同工之妙。它们都是通过扩展JavaScript Engine, 使它具备强大的本地资源和原生接口调用能力，然后结合JavaScript丰富的库和社区和及其稳定的跨平台能力，把javascript的魔力在浏览器之外的地方充分发挥出来。</p>
+<ul>
+<li><p><code>JavaScriptCore</code>负责JS代码解释执行</p>
+</li>
+<li><p><code>ReactJS</code>负责描述和管理<code>VirtualDom</code>，指挥原生组件进行绘制和更新，同时很多计算逻辑也在js里面进行。ReactJS自身是不直接绘制UI的，UI绘制是非常耗时的操作，原生组件最擅长这事情。</p>
+</li>
+<li><p><code>Bridges</code>用来翻译ReactJS的绘制指令给原生组件进行绘制，同时把原生组件接收到的用户事件反馈给<code>ReactJS</code>。</p>
+<p>要在不同的平台实现不同的效果就可以通过定制<code>Bridges</code>来实现</p>
+</li>
+</ul>
+</li>
+<li><p>上面的Docker容器</p>
+</li>
+<li><p>服务器容器</p>
+</li>
+</ul>
+</li>
+</ul>
+<p>容器化是个很大的概念，在移动端中，常见其应用于：</p>
+<ul>
+<li>跨平台</li>
+<li>动态化</li>
+<li>如WebView容器、Weex容器、RN容器、自定义DSL容器等</li>
+</ul>
+<p><strong>跨平台与动态化是功能实现。容器化是一种软件开发方法，其可以实现，但不仅仅只能实现跨平台与动态化等。</strong></p>
+<h2 id="五、模块化和组件化"><a href="#五、模块化和组件化" class="headerlink" title="五、模块化和组件化"></a>五、模块化和组件化</h2><h3 id="5-1-模块化"><a href="#5-1-模块化" class="headerlink" title="5.1 模块化"></a>5.1 模块化</h3><h4 id="5-1-1-什么是模块"><a href="#5-1-1-什么是模块" class="headerlink" title="5.1.1 什么是模块"></a>5.1.1 什么是模块</h4><blockquote>
+<p>模块化编程是一种软件设计技术，它强调将程序的功能分成独立的、可互换的模块，这样每个模块都包含执行所需功能的一个方面所需的一切。—— <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Modular_programming">Modular programming</a></p>
+</blockquote>
+<p>模块：模块化的目的在于将一个程序按照其功能做拆分，分成相互独立的模块，以便于每个模块只包含与其功能相关的内容，模块之间通过接口调用。</p>
+<ul>
+<li>将一个大的系统模块化之后，每个模块都可以被高度复用。</li>
+<li>但是值得注意的是模块不等于功能，二者的关系大概为：功能 &gt; 模块。一个功能可能包含多个模块。</li>
+</ul>
+<h4 id="5-1-2-横向拆分业务、功能模块"><a href="#5-1-2-横向拆分业务、功能模块" class="headerlink" title="5.1.2 横向拆分业务、功能模块"></a>5.1.2 横向拆分业务、功能模块</h4><img src="/images/Engineering/modular_and_component_summary_1.jpg" style="zoom:80%">
+
+<h4 id="5-1-3-纵向拆分技术、架构模块"><a href="#5-1-3-纵向拆分技术、架构模块" class="headerlink" title="5.1.3 纵向拆分技术、架构模块"></a>5.1.3 纵向拆分技术、架构模块</h4><img src="/images/Engineering/modular_and_component_summary_2.jpg" style="zoom:80%">
+
+<h3 id="5-2-组件化"><a href="#5-2-组件化" class="headerlink" title="5.2 组件化"></a>5.2 组件化</h3><h4 id="5-2-1-什么是组件？"><a href="#5-2-1-什么是组件？" class="headerlink" title="5.2.1 什么是组件？"></a>5.2.1 什么是组件？</h4><blockquote>
+<p>基于组件的软件工程(CBSE)，也称为基于组件的开发(CBD)，是软件工程的一个分支，它强调对整个给定软件系统中可用的广泛功能的关注分离。它是一种 <strong>基于重用(reuse-based)</strong> 的方法，用来定义、实现松散耦合的独立组件，并将它们组合成系统。—— <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Component-based_software_engineering">Component-based software engineering</a></p>
+<p>定义与模块化很相似，都是主要为了对一个系统做拆分。</p>
+</blockquote>
+<p>组件：通俗点就是组件化就是基于可重用的目的，将一个大的软件系统按照<strong>分离关注点</strong>的形式，拆分成多个独立的组件。</p>
+<ul>
+<li>组件的出现是为了解决全局工程中有很多重复代码的问题，是为了复用，而且划分力度是相对较小的模块。      </li>
+<li>组件化的另一个目的是为了解耦，把系统拆分成多个组件，分离组件边界和责任，便于独立升级和维护。</li>
+</ul>
+<p>组件的特性：</p>
+<ul>
+<li><strong>通过接口访问</strong>：组件通过接口相互通信。 当一个组件向系统的其余部分提供服务时，它采用一个提供的接口，指定其他组件可以使用的服务，以及它们如何使用。这个接口可以看作是组件的签名(signature)——客户端不需要知道组件的内部工作（实现）来使用它。 这个原理导致组件被称为封装。</li>
+<li><strong>可替换的</strong>(<em>substitutable</em>)：组件是可替换的，因此如果后续组件满足初始组件的需求(通过接口表示)，则组件可以替换另一个组件(在设计时或运行时)。因此，可以用更新版本或替代版本替换组件，而不会破坏组件运行的系统。</li>
+<li><strong>可重用性</strong>(<em>Reusability</em>)：可重用性是高质量软件组件的一个重要特征。 程序员应该以许多不同的程序可以重用它们的方式来设计和实现软件组件。</li>
+</ul>
+<h4 id="5-2-2-从界面入手，拆分可视化组件"><a href="#5-2-2-从界面入手，拆分可视化组件" class="headerlink" title="5.2.2 从界面入手，拆分可视化组件"></a>5.2.2 从界面入手，拆分可视化组件</h4><img src="/images/Engineering/modular_and_component_summary_3.jpg" style="zoom:80%">
+
+<h4 id="5-2-3-从数据入手，拆分数据加工组件"><a href="#5-2-3-从数据入手，拆分数据加工组件" class="headerlink" title="5.2.3 从数据入手，拆分数据加工组件"></a>5.2.3 从数据入手，拆分数据加工组件</h4><img src="/images/Engineering/modular_and_component_summary_4.jpg" style="zoom:80%">
+
+<p>大部分时候，拆分模块、组件都是以清晰的流程、逻辑为基础的，就如上图的过程，当流程清晰后，可以拆分复用的组件也就出来了。</p>
+<h3 id="5-3-插件化"><a href="#5-3-插件化" class="headerlink" title="5.3 插件化"></a>5.3 插件化</h3><p>插件：可以理解为是封装了一层对外调用的接口的组件。</p>
+<p>插件的概念比较形象，一般存在一个“插拔”过程，所以要求可插拔的插件有一个相同的接口（这里所说的接口只是概念上的接口，即调用方法及参数等）。而组件是不存在这个相同接口的。</p>
+<p>插件和组件的实质区别就在于：通过统一接口隔绝业务代码对于组件的直接依赖。</p>
+<p>Android中对组件化、插件化有不太一样的定义：</p>
+<ul>
+<li>组件化：开发模式下面module本来就是一个独立app，只是发布模式下变成library。</li>
+<li>插件化：就是不存在发布模式开发模式，每个组件业务就是一个独立apk开发，然后通过主工程app动态加载部署业务组件apk。</li>
+</ul>
+<h3 id="5-4-总结-异同"><a href="#5-4-总结-异同" class="headerlink" title="5.4 总结(异同)"></a>5.4 总结(异同)</h3><h4 id="5-4-1-三者小结"><a href="#5-4-1-三者小结" class="headerlink" title="5.4.1 三者小结"></a>5.4.1 三者小结</h4><p>模块：高内聚，松耦合，功能相对复杂，有多个统一接口。模块化开发的基础是框架。</p>
+<p>组件：代码重用，功能相对单一或者独立，无统一接口。组件化开发的成果是基础库和公共组件。</p>
+<p>插件：近乎组件，有统一接口，可以说是封装了一层对外调用的接口的组件。</p>
+<h4 id="5-4-2-组件和模块的异同"><a href="#5-4-2-组件和模块的异同" class="headerlink" title="5.4.2 组件和模块的异同"></a>5.4.2 组件和模块的异同</h4><p>相同点：</p>
+<ul>
+<li>组件化和模块化的中心思想都是分而治之。目的都是将一个庞大的系统拆分成多个组件或者说是模块。</li>
+</ul>
+<p>区别：</p>
+<ul>
+<li><p>模块化开发是横向分块，组件化开发是纵向分层。(说法都不绝对，一般来讲)</p>
+</li>
+<li><p>模块化强调的是<strong>拆分</strong>，无论是从业务角度还是从架构、技术角度，模块化首先意味着将代码、数据等内容按照其职责不同分离，使其变得更加容易维护、迭代，使开发人员可以分而治之。</p>
+</li>
+<li><p>组件化则着重于<strong>可重用性</strong>，不管是界面上反复使用的用户头像按钮，还是处理数据的流程中的某个部件，只要可以被反复使用，并且进行了高度封装，只能通过接口访问，就可以称其为“组件”。</p>
+</li>
+<li><p>进行模块化拆分时你可以完全不考虑代码重用，只是把同一业务的代码做内聚整合成不同的模块。只不过这样得到的成果相对简单，我们一般不会这样而已。(<strong>并不是说模块就不能被复用！</strong>)</p>
+</li>
+<li><p>一般来讲，模块的体量会大于组件。不过，大的组件也可以称为模块，小的模块也可以称为组件，所以，在我看来组件和模块的划分并没有那么的泾渭分明。随意两者的粒度的大小改变，两者是可以转换的。</p>
+</li>
+</ul>
+<p>这三个概念是经常同时出现在一个项目中的，我们往往对复杂大项目进行模块化划分的时候，也会进行组件化，而且插件化的本质是面向接口编程，对于组件化和模块化都是适用的，可实现随意插拔的灵活和高扩展性，属于项目架构的高端设计。</p>
+<h3 id="5-5-前端与iOS中的组件化"><a href="#5-5-前端与iOS中的组件化" class="headerlink" title="5.5 前端与iOS中的组件化"></a>5.5 前端与iOS中的组件化</h3><p>在前端、iOS、Android中，都会有组件化的说法(Android先不讨论)。不过与上面的组件概念都稍微有所出入。</p>
+<blockquote>
+<p><em>以复用为基础，定义、实现许多松耦合的独立组件（Component），再将组件组合成为系统</em>。</p>
+</blockquote>
+<p>前端中的组件化：</p>
+<ul>
+<li><p>横向划分模块、纵向划分组件</p>
+</li>
+<li><p>前端中的组件 <code>Component </code>可以简单理解为<strong>页面组成部件</strong>：页面组成部件(header、footer、nav、search等)。不是以重用为基础定义组件</p>
+</li>
+<li><p>前端中数据加工一般不称为组件，更倾向于<code>utils</code>。</p>
+</li>
+</ul>
+<p>iOS中的组件化：以蘑菇街的组件化文章图为例：</p>
+<img src="/images/Engineering/mgj-component.jpg" style="zoom:50%">
+
+<ul>
+<li><p>大到业务模块，小到视图、数据加工组件，都统称为了组件。可以简单理解为<strong>APP组成部件</strong>。</p>
+</li>
+<li><p>这个叫法在起初接触组件化概念的时候给我造成了很大的困惑。一度怀疑自己的理解狭隘了….，直到看到Bang的文章，找到了同感。</p>
+</li>
+</ul>
+<blockquote>
+<p>首先我觉得”组件”在这里不太合适，因为按我理解组件是指比较小的功能块，这些组件不需要多少组件间通信，没什么依赖，也就不需要做什么其他处理，面向对象就能搞定。而这里提到的是较大粒度的业务功能，我们习惯称为”模块”。为了方便表述，下面模块和组件代表同一个意思，都是指较大粒度的业务模块。 —— <a target="_blank" rel="noopener" href="http://blog.cnbang.net/tech/3080/">iOS 组件化方案探索 — Bang’s blog</a></p>
+</blockquote>
+<h2 id="六、参考链接"><a href="#六、参考链接" class="headerlink" title="六、参考链接"></a>六、参考链接</h2><ul>
+<li>工程化<ul>
+<li><a target="_blank" rel="noopener" href="https://www.mengfansheng.com/2020/01/01/%E5%89%8D%E7%AB%AF%E5%B7%A5%E7%A8%8B%E5%8C%96/">前端工程化</a></li>
+</ul>
+</li>
+<li>动态化<ul>
+<li><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/64968076">「Morph」知乎移动端动态化方案全览</a></li>
+</ul>
+</li>
+<li>模块化、组件化<ul>
+<li><a target="_blank" rel="noopener" href="https://cloud.tencent.com/developer/article/1336167">聊聊工程级别的组件化、插件化 以及 模块化</a></li>
+<li><a target="_blank" rel="noopener" href="http://tutuge.me/2016/03/29/modular-and-component-summary/">对组件化与模块化的思考与总结</a></li>
+</ul>
+</li>
+<li>IOS组件化方案<ul>
+<li><a target="_blank" rel="noopener" href="https://www.oschina.net/action/GoToLink?url=http://casatwy.com/iOS-Modulization.html">《iOS应用架构谈 组件化方案》</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.oschina.net/action/GoToLink?url=http://limboy.me/ios/2016/03/10/mgj-components.html?utm_source=tuicool&utm_medium=referral">《蘑菇街 App 的组件化之路》</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.oschina.net/action/GoToLink?url=http://limboy.me/ios/2016/03/14/mgj-components-continued.html">《蘑菇街 App 的组件化之路·续》</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.oschina.net/action/GoToLink?url=http://blog.cnbang.net/tech/3080/">《iOS 组件化方案探索》</a> from Bang</li>
+</ul>
+</li>
+</ul>
+
+    </article>
+    <!-- license  -->
+    
+        <div class="license-wrapper">
+            <p>Author：<a href="https://tenloy.github.io">Tenloy</a>
+            <p>原文链接：<a href="https://tenloy.github.io/2021/04/11/Engineering.html">https://tenloy.github.io/2021/04/11/Engineering.html</a>
+            <p>发表日期：2021.04.11 , 7:43 PM</p>
+            <p>更新日期：2021.09.22 , 9:42 AM</p>
+            <p>版权声明：本文采用<a rel="license noopener" target="_blank" href="http://creativecommons.org/licenses/by-nc/4.0/">Crative Commons 4.0 许可协议</a>进行许可</p>
+        </div>
+    
+    <!-- paginator  -->
+    <ul class="post-paginator">
+        <li class="next">
+            
+                <div class="nextSlogan">Next Post</div>
+                <a href= "/2021/04/12/CI-CD.html" title= "CI-CD">
+                    <div class="nextTitle">CI-CD</div>
+                </a>
+            
+        </li>
+        <li class="previous">
+            
+                <div class="prevSlogan">Previous Post</div>
+                <a href= "/2021/04/10/GithubPages-Hexo.html" title= "使用Hexo+Github Pages搭建个人博客">
+                    <div class="prevTitle">使用Hexo+Github Pages搭建个人博客</div>
+                </a>
+            
+        </li>
+    </ul>
+    <!-- 评论插件 -->
+    <!-- 来必力City版安装代码 -->
+
+<!-- City版安装代码已完成 -->
+    
+    
+    <!-- gitalk评论 -->
+
+    <!-- utteranc评论 -->
+
+    <!-- partial('_partial/comment/changyan') -->
+    <!--PC版-->
+
+
+    
+    
+
+    <!-- 评论 -->
+</main>
+            <!-- profile -->
+            
+        </div>
+        <footer class="footer footer-unloaded">
+    <!-- social  -->
+    
+    <div class="social">
+        
+    
+        
+            
+                <a href="mailto:luotengoto@163.com" class="iconfont-archer email" title=email ></a>
+            
+        
+    
+        
+            
+                <a href="//github.com/Tenloy" class="iconfont-archer github" target="_blank" title=github></a>
+            
+        
+    
+        
+            
+                <a href="https://www.jianshu.com/u/8db1bc12db9f" class="iconfont-jian jianshu" target="_blank" title=jianshu></a>
+            
+        
+    
+        
+            
+                <a href="/atom.xml" class="iconfont-archer rss" target="_blank" title=rss></a>
+            
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+
+    </div>
+    
+    <!-- powered by Hexo  -->
+    <div class="copyright">
+        <span id="hexo-power">Powered by <a href="https://hexo.io/" target="_blank">Hexo</a></span><span class="iconfont-archer power">&#xe635;</span><span id="theme-info">theme <a href="https://github.com/fi3ework/hexo-theme-archer" target="_blank">Archer</a></span>
+    </div>
+    <!-- 不蒜子  -->
+    
+    <div class="busuanzi-container">
+    
+     
+    <span id="busuanzi_container_site_pv">PV: <span id="busuanzi_value_site_pv"></span> :)</span>
+    
+    </div>
+    
+</footer>
+    </div>
+    <!-- toc -->
+    
+    <div class="toc-wrapper" style=
+    
+
+
+
+
+
+
+
+top:40vh;
+
+    >
+        <div class="toc-catalog">
+            <span class="iconfont-archer catalog-icon">&#xe613;</span><span>CATALOG</span>
+        </div>
+        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E3%80%81%E5%B7%A5%E7%A8%8B%E5%8C%96"><span class="toc-text">一、工程化</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#2-1-%E5%87%A0%E4%B8%AA%E6%A6%82%E5%BF%B5"><span class="toc-text">2.1 几个概念</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-2-%E5%B7%A5%E7%A8%8B%E5%8C%96"><span class="toc-text">2.2 工程化</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8C%E3%80%81%E8%B7%A8%E5%B9%B3%E5%8F%B0"><span class="toc-text">二、跨平台</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%89%E3%80%81%E5%8A%A8%E6%80%81%E5%8C%96"><span class="toc-text">三、动态化</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#3-1-%E4%BB%80%E4%B9%88%E6%98%AF%E5%8A%A8%E6%80%81%E5%8C%96%EF%BC%9F"><span class="toc-text">3.1 什么是动态化？</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-2-%E7%A7%BB%E5%8A%A8%E7%AB%AF%E5%8A%A8%E6%80%81%E5%8C%96%E6%96%B9%E6%A1%88"><span class="toc-text">3.2 移动端动态化方案</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9B%9B%E3%80%81%E5%AE%B9%E5%99%A8%E5%8C%96"><span class="toc-text">四、容器化</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%94%E3%80%81%E6%A8%A1%E5%9D%97%E5%8C%96%E5%92%8C%E7%BB%84%E4%BB%B6%E5%8C%96"><span class="toc-text">五、模块化和组件化</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#5-1-%E6%A8%A1%E5%9D%97%E5%8C%96"><span class="toc-text">5.1 模块化</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#5-1-1-%E4%BB%80%E4%B9%88%E6%98%AF%E6%A8%A1%E5%9D%97"><span class="toc-text">5.1.1 什么是模块</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#5-1-2-%E6%A8%AA%E5%90%91%E6%8B%86%E5%88%86%E4%B8%9A%E5%8A%A1%E3%80%81%E5%8A%9F%E8%83%BD%E6%A8%A1%E5%9D%97"><span class="toc-text">5.1.2 横向拆分业务、功能模块</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#5-1-3-%E7%BA%B5%E5%90%91%E6%8B%86%E5%88%86%E6%8A%80%E6%9C%AF%E3%80%81%E6%9E%B6%E6%9E%84%E6%A8%A1%E5%9D%97"><span class="toc-text">5.1.3 纵向拆分技术、架构模块</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-2-%E7%BB%84%E4%BB%B6%E5%8C%96"><span class="toc-text">5.2 组件化</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#5-2-1-%E4%BB%80%E4%B9%88%E6%98%AF%E7%BB%84%E4%BB%B6%EF%BC%9F"><span class="toc-text">5.2.1 什么是组件？</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#5-2-2-%E4%BB%8E%E7%95%8C%E9%9D%A2%E5%85%A5%E6%89%8B%EF%BC%8C%E6%8B%86%E5%88%86%E5%8F%AF%E8%A7%86%E5%8C%96%E7%BB%84%E4%BB%B6"><span class="toc-text">5.2.2 从界面入手，拆分可视化组件</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#5-2-3-%E4%BB%8E%E6%95%B0%E6%8D%AE%E5%85%A5%E6%89%8B%EF%BC%8C%E6%8B%86%E5%88%86%E6%95%B0%E6%8D%AE%E5%8A%A0%E5%B7%A5%E7%BB%84%E4%BB%B6"><span class="toc-text">5.2.3 从数据入手，拆分数据加工组件</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-3-%E6%8F%92%E4%BB%B6%E5%8C%96"><span class="toc-text">5.3 插件化</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-4-%E6%80%BB%E7%BB%93-%E5%BC%82%E5%90%8C"><span class="toc-text">5.4 总结(异同)</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#5-4-1-%E4%B8%89%E8%80%85%E5%B0%8F%E7%BB%93"><span class="toc-text">5.4.1 三者小结</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#5-4-2-%E7%BB%84%E4%BB%B6%E5%92%8C%E6%A8%A1%E5%9D%97%E7%9A%84%E5%BC%82%E5%90%8C"><span class="toc-text">5.4.2 组件和模块的异同</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-5-%E5%89%8D%E7%AB%AF%E4%B8%8EiOS%E4%B8%AD%E7%9A%84%E7%BB%84%E4%BB%B6%E5%8C%96"><span class="toc-text">5.5 前端与iOS中的组件化</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%AD%E3%80%81%E5%8F%82%E8%80%83%E9%93%BE%E6%8E%A5"><span class="toc-text">六、参考链接</span></a></li></ol>
+    </div>
+    
+    <div class="back-top iconfont-archer">&#xe639;</div>
+    <div class="sidebar sidebar-hide">
+    <ul class="sidebar-tabs sidebar-tabs-active-0">
+        <li class="sidebar-tab-categories"><span class="iconfont-archer">&#xe666;</span><span class="tab-name">Cate</span></li>
+        <li class="sidebar-tab-archives"><span class="iconfont-archer">&#xe67d;</span><span class="tab-name">Archive</span></li>
+        <li class="sidebar-tab-tags"><span class="iconfont-archer">&#xe61b;</span><span class="tab-name">Tag</span></li>
+    </ul>
+    <div class="sidebar-content sidebar-content-show-archive">
+        <div class="sidebar-panel-categories">
+    <div class="sidebar-categories-name">
+    
+        <span class="sidebar-category-name" data-categories="软件工程"><span class="iconfont-archer">&#xe60a;</span>软件工程</span>
+    
+        <span class="sidebar-category-name" data-categories="操作系统"><span class="iconfont-archer">&#xe60a;</span>操作系统</span>
+    
+        <span class="sidebar-category-name" data-categories="Data"><span class="iconfont-archer">&#xe60a;</span>Data</span>
+    
+        <span class="sidebar-category-name" data-categories="Swift"><span class="iconfont-archer">&#xe60a;</span>Swift</span>
+    
+        <span class="sidebar-category-name" data-categories="性能优化"><span class="iconfont-archer">&#xe60a;</span>性能优化</span>
+    
+        <span class="sidebar-category-name" data-categories="编译链接与装载"><span class="iconfont-archer">&#xe60a;</span>编译链接与装载</span>
+    
+        <span class="sidebar-category-name" data-categories="DSL"><span class="iconfont-archer">&#xe60a;</span>DSL</span>
+    
+        <span class="sidebar-category-name" data-categories="数据结构与算法"><span class="iconfont-archer">&#xe60a;</span>数据结构与算法</span>
+    
+        <span class="sidebar-category-name" data-categories="iOS"><span class="iconfont-archer">&#xe60a;</span>iOS</span>
+    
+        <span class="sidebar-category-name" data-categories="图形处理与渲染"><span class="iconfont-archer">&#xe60a;</span>图形处理与渲染</span>
+    
+        <span class="sidebar-category-name" data-categories="架构与设计模式"><span class="iconfont-archer">&#xe60a;</span>架构与设计模式</span>
+    
+        <span class="sidebar-category-name" data-categories="汇编语言"><span class="iconfont-archer">&#xe60a;</span>汇编语言</span>
+    
+        <span class="sidebar-category-name" data-categories="React"><span class="iconfont-archer">&#xe60a;</span>React</span>
+    
+        <span class="sidebar-category-name" data-categories="Web"><span class="iconfont-archer">&#xe60a;</span>Web</span>
+    
+        <span class="sidebar-category-name" data-categories="计算机网络"><span class="iconfont-archer">&#xe60a;</span>计算机网络</span>
+    
+    </div>
+    <div class="iconfont-archer sidebar-categories-empty">&#xe678;</div>
+    <div class="sidebar-categories-list"></div>
+</div>
+          <div class="sidebar-panel-archives">
+    <!-- 在ejs中将archive按照时间排序 -->
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    <div class="total-and-search">
+        <div class="total-archive">
+        Total : 42
+        </div>
+        <!-- search  -->
+        
+            <div class="site-search popup-trigger tl-side-search"> 
+                <span class="iconfont-jian search-icon">&#xe7fc;搜索</span>
+            </div>
+        
+    </div>
+    
+    <div class="post-archive">
+    
+    
+    
+    
+    <div class="archive-year"> 2021 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/27</span><a class="archive-post-title" href= "/2021/09/27/compile-dynamic-link.html" >(六) Mach-O 文件的动态链接、库、Dyld(含dlopen)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/26</span><a class="archive-post-title" href= "/2021/09/26/compile-vm-asrl.html" >(五) Mach-O 文件之进程(虚拟)地址空间、ASLR</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/25</span><a class="archive-post-title" href= "/2021/09/25/compile-load.html" >(四) Mach-O 文件的装载</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/24</span><a class="archive-post-title" href= "/2021/09/24/compile-static-link.html" >(三) Mach-O 文件的静态链接</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/23</span><a class="archive-post-title" href= "/2021/09/23/compile-macho.html" >(二) Mach-O 文件结构</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/22</span><a class="archive-post-title" href= "/2021/09/22/compile-clang-llvm.html" >(一) Clang/LLVM 介绍、OC 程序的编译过程</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/18</span><a class="archive-post-title" href= "/2021/09/18/architectural-pattern.html" >常见架构模式: MVC、MVP、MVVM、VIPER</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/15</span><a class="archive-post-title" href= "/2021/09/15/graphics-processing-case.html" >图形处理(三) - 图形处理实践案例</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/15</span><a class="archive-post-title" href= "/2021/09/15/graphics-processing.html" >图形处理(二) - 图形与视频处理相关的框架</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/13</span><a class="archive-post-title" href= "/2021/09/13/image-encode-decode.html" >图形处理(一) - 图片的加载与编解码</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/12</span><a class="archive-post-title" href= "/2021/09/12/iOS-Render.html" >[转] iOS离屏渲染原理及优化</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/11</span><a class="archive-post-title" href= "/2021/09/11/core-animation03.html" >Core-Animation(三) - 渲染流程探究及性能分析</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/09</span><a class="archive-post-title" href= "/2021/09/09/core-animation02.html" >Core Animation(二) - 隐式动画、CATransaction与CAAction</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/07</span><a class="archive-post-title" href= "/2021/09/07/core-animation01.html" >Core Animation(一) - UIView与CALayer</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/05</span><a class="archive-post-title" href= "/2021/09/05/AFN-Analyse.html" >[转] AFN框架实现解析</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/03</span><a class="archive-post-title" href= "/2021/09/03/computer-network-knowledge.html" >计算机网络相关知识汇总</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/02</span><a class="archive-post-title" href= "/2021/09/02/Log.html" >移动端日志库设计</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/01</span><a class="archive-post-title" href= "/2021/07/01/Crash-Monitor.html" >iOS崩溃监控与分析</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/30</span><a class="archive-post-title" href= "/2021/06/30/Lag-Monitor.html" >iOS卡顿监控</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/29</span><a class="archive-post-title" href= "/2021/06/29/SwiftUI.html" >SwiftUI</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/29</span><a class="archive-post-title" href= "/2021/06/29/Swift-Version-History.html" >Swift版本更新API介绍</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/28</span><a class="archive-post-title" href= "/2021/06/28/GCD.html" >深入浅出GCD常用API</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/28</span><a class="archive-post-title" href= "/2021/06/28/AutoreleasePool.html" >AutoreleasePool</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/26</span><a class="archive-post-title" href= "/2021/06/26/RunLoop-Reposted-From-ibireme.html" >[转] 深入理解RunLoop—ibireme</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/24</span><a class="archive-post-title" href= "/2021/06/24/Protocol-Buffer.html" >Protocol Buffer的基本介绍</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/22</span><a class="archive-post-title" href= "/2021/06/22/dynamic-programming.html" >(二) 动态规划算法</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/18</span><a class="archive-post-title" href= "/2021/06/18/Web-Module.html" >前端各种模块化方案总结</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/27</span><a class="archive-post-title" href= "/2021/05/27/Fiber.html" >[转] 最通俗的 React Fiber(时间分片)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/27</span><a class="archive-post-title" href= "/2021/05/27/Coroutine.html" >[转] 什么是协程</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/29</span><a class="archive-post-title" href= "/2021/04/29/DSL.html" >[转] 谈谈DSL以及DSL的应用（以CocoaPods 为例）</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/26</span><a class="archive-post-title" href= "/2021/04/26/Containers.html" >常见的容器概念：Linux容器、Docker容器、服务器容器</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/24</span><a class="archive-post-title" href= "/2021/04/24/Dock-Reprinted-from-RuanYIFeng.html" >[转] Docker入门教程</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/20</span><a class="archive-post-title" href= "/2021/04/20/Sync-Async.html" >同步和异步解读及编程中的使用场景</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/17</span><a class="archive-post-title" href= "/2021/04/17/Arm64-Handbook.html" >ARM64指令简易手册</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/16</span><a class="archive-post-title" href= "/2021/04/16/Arm64-Introduce.html" >iOS需要了解的ARM64汇编</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/15</span><a class="archive-post-title" href= "/2021/04/15/Ins-SysCall-Kernel-Shell.html" >指令、系统调用、库、Shell、APP的层次关系</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/14</span><a class="archive-post-title" href= "/2021/04/14/ISA-Microarch-Soc.html" >指令集、微架构、手机芯片(Soc)及ARM的介绍</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/13</span><a class="archive-post-title" href= "/2021/04/13/Command-Line.html" >CLI-Shell-Terminal-脚本概念梳理</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/12</span><a class="archive-post-title" href= "/2021/04/12/CI-CD.html" >CI-CD</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/11</span><a class="archive-post-title" href= "/2021/04/11/Engineering.html" >工程化、动态化、容器化、组件化</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/10</span><a class="archive-post-title" href= "/2021/04/10/GithubPages-Hexo.html" >使用Hexo+Github Pages搭建个人博客</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/06</span><a class="archive-post-title" href= "/2021/04/06/iOS_Knowledge_Tree.html" >iOS-interview</a>
+        </li>
+    
+    </div>
+  </div>
+        <div class="sidebar-panel-tags">
+    <div class="sidebar-tags-name">
+    
+        <span class="sidebar-tag-name" data-tags="hexo"><span class="iconfont-archer">&#xe606;</span>hexo</span>
+    
+        <span class="sidebar-tag-name" data-tags="CI/CD"><span class="iconfont-archer">&#xe606;</span>CI/CD</span>
+    
+        <span class="sidebar-tag-name" data-tags="多线程"><span class="iconfont-archer">&#xe606;</span>多线程</span>
+    
+        <span class="sidebar-tag-name" data-tags="协程"><span class="iconfont-archer">&#xe606;</span>协程</span>
+    
+        <span class="sidebar-tag-name" data-tags="SwiftUI"><span class="iconfont-archer">&#xe606;</span>SwiftUI</span>
+    
+        <span class="sidebar-tag-name" data-tags="Swift-Syntax"><span class="iconfont-archer">&#xe606;</span>Swift-Syntax</span>
+    
+        <span class="sidebar-tag-name" data-tags="Log"><span class="iconfont-archer">&#xe606;</span>Log</span>
+    
+        <span class="sidebar-tag-name" data-tags="CLI"><span class="iconfont-archer">&#xe606;</span>CLI</span>
+    
+        <span class="sidebar-tag-name" data-tags="Shell"><span class="iconfont-archer">&#xe606;</span>Shell</span>
+    
+        <span class="sidebar-tag-name" data-tags="ISA"><span class="iconfont-archer">&#xe606;</span>ISA</span>
+    
+        <span class="sidebar-tag-name" data-tags="Microarch"><span class="iconfont-archer">&#xe606;</span>Microarch</span>
+    
+        <span class="sidebar-tag-name" data-tags="Soc"><span class="iconfont-archer">&#xe606;</span>Soc</span>
+    
+        <span class="sidebar-tag-name" data-tags="Docker"><span class="iconfont-archer">&#xe606;</span>Docker</span>
+    
+        <span class="sidebar-tag-name" data-tags="DSL"><span class="iconfont-archer">&#xe606;</span>DSL</span>
+    
+        <span class="sidebar-tag-name" data-tags="dp"><span class="iconfont-archer">&#xe606;</span>dp</span>
+    
+        <span class="sidebar-tag-name" data-tags="AutoreleasePool"><span class="iconfont-archer">&#xe606;</span>AutoreleasePool</span>
+    
+        <span class="sidebar-tag-name" data-tags="LagMonitor"><span class="iconfont-archer">&#xe606;</span>LagMonitor</span>
+    
+        <span class="sidebar-tag-name" data-tags="ARM64"><span class="iconfont-archer">&#xe606;</span>ARM64</span>
+    
+        <span class="sidebar-tag-name" data-tags="RunLoop"><span class="iconfont-archer">&#xe606;</span>RunLoop</span>
+    
+        <span class="sidebar-tag-name" data-tags="CrashMonitor"><span class="iconfont-archer">&#xe606;</span>CrashMonitor</span>
+    
+        <span class="sidebar-tag-name" data-tags="Fiber"><span class="iconfont-archer">&#xe606;</span>Fiber</span>
+    
+        <span class="sidebar-tag-name" data-tags="interview"><span class="iconfont-archer">&#xe606;</span>interview</span>
+    
+        <span class="sidebar-tag-name" data-tags="GCD"><span class="iconfont-archer">&#xe606;</span>GCD</span>
+    
+        <span class="sidebar-tag-name" data-tags="AFN"><span class="iconfont-archer">&#xe606;</span>AFN</span>
+    
+    </div>
+    <div class="iconfont-archer sidebar-tags-empty">&#xe678;</div>
+    <div class="tag-load-fail" style="display: none; color: #ccc; font-size: 0.6rem;">
+    缺失模块。<br/>
+    1、请确保node版本大于6.2<br/>
+    2、在博客根目录（注意不是archer根目录）执行以下命令：<br/>
+    <span style="color: #f75357; font-size: 1rem; line-height: 2rem;">npm i hexo-generator-json-content --save</span><br/>
+    3、在根目录_config.yml里添加配置：
+    <pre style="color: #787878; font-size: 0.6rem;">
+jsonContent:
+  meta: false
+  pages: false
+  posts:
+    title: true
+    date: true
+    path: true
+    text: false
+    raw: false
+    content: false
+    slug: false
+    updated: false
+    comments: false
+    link: false
+    permalink: false
+    excerpt: false
+    categories: true
+    tags: true</pre>
+    </div> 
+    <div class="sidebar-tags-list"></div>
+</div>
+    </div>
+</div> 
+    <script>
+    var siteMeta = {
+        root: "/",
+        author: "Tenloy"
+    }
+</script>
+    <!-- CDN failover -->
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js"></script>
+    <script type="text/javascript">
+        if (typeof window.$ === 'undefined')
+        {
+            console.warn('jquery load from jsdelivr failed, will load local script')
+            document.write('<script src="/lib/jquery.min.js">\x3C/script>')
+        }
+    </script>
+    <script src="/scripts/main.js"></script>
+    <!-- algolia -->
+    
+        <div class="site-search">
+  <div class="algolia-popup popup">
+    <div class="algolia-search">
+      <div class="algolia-search-input-icon">
+        <i class="fa fa-search"></i>
+      </div>
+      <div class="algolia-search-input" id="algolia-search-input"></div>
+    </div>
+
+    <div class="algolia-results">
+      <div id="algolia-stats"></div>
+      <div id="algolia-hits"></div>
+      <div id="algolia-pagination" class="algolia-pagination"></div>
+    </div>
+
+    <span class="popup-btn-close">
+      <i class="iconfont-archer">&#xe609;</i>
+    </span>
+  </div>
+</div>
+        <script src="https://cdn.jsdelivr.net/npm/instantsearch.js@2.8.0/dist/instantsearch.min.js" defer></script>
+        <script src="/scripts/search.js" defer></script>
+    
+    <!-- busuanzi  -->
+    
+    <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    
+    <!-- CNZZ  -->
+    
+    </div>
+    <!-- async load share.js -->
+    
+        <script src="/scripts/share.js" async></script>    
+     
+    </body>
+</html>
+
+

@@ -28,7 +28,7 @@
 <meta property="og:description" content="在项目中因为性能原因，最好不要叠加太多UIView，CALayer层级的显示；但是很多情况又必须使用到图片的合成或是像素、滤镜处理。这里针这些常用的图片处理使用不同图形处理框架进行相关编码实践。原文链接 — iOS图片处理实践、项目代码。 一、图片手动解码写在前面：图片编码解码理论见上上篇 场景：适用于需要快速显示图片的地方，例如tableCell，先把图片进行bitmap解码操作加入缓存。同时如">
 <meta property="og:locale" content="en_US">
 <meta property="article:published_time" content="2021-09-15T15:54:07.000Z">
-<meta property="article:modified_time" content="2021-09-22T04:04:23.165Z">
+<meta property="article:modified_time" content="2021-09-22T09:42:31.245Z">
 <meta property="article:author" content="Tenloy">
 <meta property="article:tag" content="Tenloy, iOS, Tenloy Blog, 博客，Swift, 编译, 计算机">
 <meta name="twitter:card" content="summary">
@@ -510,7 +510,7 @@ height:40vh;
             <p>Author：<a href="https://tenloy.github.io">Tenloy</a>
             <p>原文链接：<a href="https://tenloy.github.io/2021/09/15/graphics-processing-case.html">https://tenloy.github.io/2021/09/15/graphics-processing-case.html</a>
             <p>发表日期：2021.09.15 , 3:54 PM</p>
-            <p>更新日期：2021.09.22 , 4:04 AM</p>
+            <p>更新日期：2021.09.22 , 9:42 AM</p>
             <p>版权声明：本文采用<a rel="license noopener" target="_blank" href="http://creativecommons.org/licenses/by-nc/4.0/">Crative Commons 4.0 许可协议</a>进行许可</p>
         </div>
     
@@ -519,7 +519,7 @@ height:40vh;
         <li class="next">
             
                 <div class="nextSlogan">Next Post</div>
-                <a href= "/2021/09/18/undefined" title= "常见架构模式: MVC、MVP、MVVM、VIPER">
+                <a href= "/2021/09/18/architectural-pattern.html" title= "常见架构模式: MVC、MVP、MVVM、VIPER">
                     <div class="nextTitle">常见架构模式: MVC、MVP、MVVM、VIPER</div>
                 </a>
             
@@ -666,11 +666,9 @@ top:40vh;
         <div class="sidebar-panel-categories">
     <div class="sidebar-categories-name">
     
-        <span class="sidebar-category-name" data-categories="软件工程-化"><span class="iconfont-archer">&#xe60a;</span>软件工程-化</span>
+        <span class="sidebar-category-name" data-categories="软件工程"><span class="iconfont-archer">&#xe60a;</span>软件工程</span>
     
         <span class="sidebar-category-name" data-categories="操作系统"><span class="iconfont-archer">&#xe60a;</span>操作系统</span>
-    
-        <span class="sidebar-category-name" data-categories="工程化"><span class="iconfont-archer">&#xe60a;</span>工程化</span>
     
         <span class="sidebar-category-name" data-categories="Data"><span class="iconfont-archer">&#xe60a;</span>Data</span>
     
@@ -678,15 +676,17 @@ top:40vh;
     
         <span class="sidebar-category-name" data-categories="性能优化"><span class="iconfont-archer">&#xe60a;</span>性能优化</span>
     
-        <span class="sidebar-category-name" data-categories="容器化"><span class="iconfont-archer">&#xe60a;</span>容器化</span>
+        <span class="sidebar-category-name" data-categories="编译链接与装载"><span class="iconfont-archer">&#xe60a;</span>编译链接与装载</span>
     
         <span class="sidebar-category-name" data-categories="DSL"><span class="iconfont-archer">&#xe60a;</span>DSL</span>
     
-        <span class="sidebar-category-name" data-categories="Algorithm"><span class="iconfont-archer">&#xe60a;</span>Algorithm</span>
+        <span class="sidebar-category-name" data-categories="数据结构与算法"><span class="iconfont-archer">&#xe60a;</span>数据结构与算法</span>
     
         <span class="sidebar-category-name" data-categories="iOS"><span class="iconfont-archer">&#xe60a;</span>iOS</span>
     
         <span class="sidebar-category-name" data-categories="图形处理与渲染"><span class="iconfont-archer">&#xe60a;</span>图形处理与渲染</span>
+    
+        <span class="sidebar-category-name" data-categories="架构与设计模式"><span class="iconfont-archer">&#xe60a;</span>架构与设计模式</span>
     
         <span class="sidebar-category-name" data-categories="汇编语言"><span class="iconfont-archer">&#xe60a;</span>汇编语言</span>
     
@@ -1164,9 +1164,95 @@ top:40vh;
     
     
     
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
     <div class="total-and-search">
         <div class="total-archive">
-        Total : 36
+        Total : 42
         </div>
         <!-- search  -->
         
@@ -1186,7 +1272,37 @@ top:40vh;
     
     
         <li class="archive-post-item">
-            <span class="archive-post-date">09/18</span><a class="archive-post-title" href= "/2021/09/18/undefined" >常见架构模式: MVC、MVP、MVVM、VIPER</a>
+            <span class="archive-post-date">09/27</span><a class="archive-post-title" href= "/2021/09/27/compile-dynamic-link.html" >(六) Mach-O 文件的动态链接、库、Dyld(含dlopen)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/26</span><a class="archive-post-title" href= "/2021/09/26/compile-vm-asrl.html" >(五) Mach-O 文件之进程(虚拟)地址空间、ASLR</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/25</span><a class="archive-post-title" href= "/2021/09/25/compile-load.html" >(四) Mach-O 文件的装载</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/24</span><a class="archive-post-title" href= "/2021/09/24/compile-static-link.html" >(三) Mach-O 文件的静态链接</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/23</span><a class="archive-post-title" href= "/2021/09/23/compile-macho.html" >(二) Mach-O 文件结构</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/22</span><a class="archive-post-title" href= "/2021/09/22/compile-clang-llvm.html" >(一) Clang/LLVM 介绍、OC 程序的编译过程</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/18</span><a class="archive-post-title" href= "/2021/09/18/architectural-pattern.html" >常见架构模式: MVC、MVP、MVVM、VIPER</a>
         </li>
     
     
@@ -1301,11 +1417,6 @@ top:40vh;
     
     
         <li class="archive-post-item">
-            <span class="archive-post-date">04/29</span><a class="archive-post-title" href= "/2021/04/29/Engineering.html" >工程化、动态化、容器化、组件化</a>
-        </li>
-    
-    
-        <li class="archive-post-item">
             <span class="archive-post-date">04/29</span><a class="archive-post-title" href= "/2021/04/29/DSL.html" >[转] 谈谈DSL以及DSL的应用（以CocoaPods 为例）</a>
         </li>
     
@@ -1352,6 +1463,11 @@ top:40vh;
     
         <li class="archive-post-item">
             <span class="archive-post-date">04/12</span><a class="archive-post-title" href= "/2021/04/12/CI-CD.html" >CI-CD</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/11</span><a class="archive-post-title" href= "/2021/04/11/Engineering.html" >工程化、动态化、容器化、组件化</a>
         </li>
     
     
