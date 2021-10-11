@@ -28,7 +28,7 @@
 <meta property="og:description" content="ARM处理器的指令集可以分为跳转指令、数据处理指令、程序状态寄存器（PSR）处理指令、加载&#x2F;存储指令、协处理器指令和异常产生指令6大指令。 本文只列举一些常见的基本指令，可以正常阅读汇编代码即可。有几个注意点：  寄存器：为标号，不加前缀（ARM汇编中，标号就是一个符号，代表着汇编程序中指令或数据的内存地址） 操作数顺序：目标操作数在左，源操作数在右 立即数：前加#作为前缀 寻址格式：常见的有三种">
 <meta property="og:locale" content="en_US">
 <meta property="article:published_time" content="2021-04-17T15:00:20.000Z">
-<meta property="article:modified_time" content="2021-09-22T11:07:12.793Z">
+<meta property="article:modified_time" content="2021-10-11T10:00:36.901Z">
 <meta property="article:author" content="Tenloy">
 <meta property="article:tag" content="ARM64">
 <meta name="twitter:card" content="summary">
@@ -310,7 +310,7 @@ height:40vh;
                 
                 
                     <div class="post-intro-read">
-                        <span>Word count: <span class="post-count word-count">15.8k</span>Reading time: <span class="post-count reading-time">58 min</span></span>
+                        <span>Word count: <span class="post-count word-count">15.7k</span>Reading time: <span class="post-count reading-time">58 min</span></span>
                     </div>
                 
                 <div class="post-intro-meta">
@@ -447,9 +447,9 @@ height:40vh;
 <li><strong>立即数</strong>：前加#作为前缀</li>
 <li><strong>寻址格式</strong>：常见的有三种</li>
 </ul>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">;寻址格式：</span><br><span class="line">[x10, #0x10]      ; signed offset。 意思是从 x10 + 0x10的地址取值</span><br><span class="line">[sp, #-16]!       ; pre-index。  意思是从 sp-16地址取值，取值完后在把 sp-16  writeback 回 sp</span><br><span class="line">                  ; ! 表示寄存器写回，如果没有！，那么只会从 sp-16 地址读写值，而不会修改 sp 的值</span><br><span class="line">[sp], #16         ; post-index。 意思是从 sp 地址取值，取值完后在把 sp+16 writeback 回 sp</span><br></pre></td></tr></table></figure>
+<figure class="highlight arm"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">;寻址格式：</span></span><br><span class="line">[x10, <span class="number">#0x10</span>]      <span class="comment">; signed offset。 意思是从 x10 + 0x10的地址取值</span></span><br><span class="line">[<span class="built_in">sp</span>, #-<span class="number">16</span>]!       <span class="comment">; pre-index。  意思是从 sp-16地址取值，取值完后在把 sp-16  writeback 回 sp</span></span><br><span class="line">                  <span class="comment">; ! 表示寄存器写回，如果没有！，那么只会从 sp-16 地址读写值，而不会修改 sp 的值</span></span><br><span class="line">[<span class="built_in">sp</span>], <span class="number">#16</span>         <span class="comment">; post-index。 意思是从 sp 地址取值，取值完后在把 sp+16 writeback 回 sp</span></span><br></pre></td></tr></table></figure>
 
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">; 举例：</span><br><span class="line">ldr x0,  [x1]              ; 从&#96;x1&#96;指向的地址里面取出一个 64 位大小的数存入 &#96;x0&#96;</span><br><span class="line">ldp x1,  x2, [x10, #0x10]  ; 从 x10 + 0x10 指向的地址里面取出 2个 64位的数，分别存入x1, x2</span><br><span class="line">str x5,  [sp, #24]         ; 把x5的值（64位数值）存到 sp+24 指向的内存地址上</span><br><span class="line">stp x29, x30, [sp, #-16]!  ; 把 x29, x30的值存到 sp-16的地址上，并且把 sp-&#x3D;16. </span><br><span class="line">ldp x29, x30, [sp], #16    ; 从sp地址取出 16 byte数据，分别存入x29, x30. 然后 sp+&#x3D;16;</span><br></pre></td></tr></table></figure>
+<figure class="highlight arm"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">; 举例：</span></span><br><span class="line"><span class="keyword">ldr</span> x0,  [x1]              <span class="comment">; 从`x1`指向的地址里面取出一个 64 位大小的数存入 `x0`</span></span><br><span class="line"><span class="symbol">ldp</span> x1,  x2, [x10, <span class="number">#0x10</span>]  <span class="comment">; 从 x10 + 0x10 指向的地址里面取出 2个 64位的数，分别存入x1, x2</span></span><br><span class="line"><span class="keyword">str</span> x5,  [<span class="built_in">sp</span>, <span class="number">#24</span>]         <span class="comment">; 把x5的值（64位数值）存到 sp+24 指向的内存地址上</span></span><br><span class="line"><span class="symbol">stp</span> x29, x30, [<span class="built_in">sp</span>, #-<span class="number">16</span>]!  <span class="comment">; 把 x29, x30的值存到 sp-16的地址上，并且把 sp-=16. </span></span><br><span class="line"><span class="symbol">ldp</span> x29, x30, [<span class="built_in">sp</span>], <span class="number">#16</span>    <span class="comment">; 从sp地址取出 16 byte数据，分别存入x29, x30. 然后 sp+=16;</span></span><br></pre></td></tr></table></figure>
 
 <p>本文中检索不到，全面的可以查看<a target="_blank" rel="noopener" href="https://links.jianshu.com/go?to=https://developer.arm.com/architectures">ARM官网文档</a>。如果想看中文版的资料可以看<a target="_blank" rel="noopener" href="https://links.jianshu.com/go?to=http://infocenter.arm.com/help/index.jsp?topic=/com.arm.doc.dui0204ic/Cegbgefe.html">《汇编器指南》— 第二章、第四章</a>：</p>
 <h2 id="一、跳转指令"><a href="#一、跳转指令" class="headerlink" title="一、跳转指令"></a>一、跳转指令</h2><p>跳转指令用于实现程序流程的跳转，在ARM程序中有以下两种方法可以实现程序流程的跳转：</p>
@@ -461,28 +461,28 @@ height:40vh;
 <h3 id="1-B指令"><a href="#1-B指令" class="headerlink" title="1. B指令"></a>1. B指令</h3><p>B指令是最简单的跳转指令。一旦遇到一个B指令，ARM处理器将立即跳转到给定的目标地址，从那里继续执行。</p>
 <p>注意存储在<strong>跳转指令中的实际值是相对当前PC 值的一个偏移量，而不是一个绝对地址</strong>，它的值由汇编器来计算（参考寻址方式中的相对寻址）。它是24位有符号数，左移两位后有符号扩展为32 位，表示的有效偏移为26 位(前后32MB的地址空间)。</p>
 <p>格式：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">B&#123;条件&#125; 目标地址</span><br></pre></td></tr></table></figure>
+<figure class="highlight arm"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">B&#123;条件&#125; 目标地址</span><br></pre></td></tr></table></figure>
 
 <p>示例：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">B    Label      ; 程序无条件跳转到标号Label处执行</span><br><span class="line">CMP  R1, #0     ; 当CPSR寄存器中的Z条件码置位时，程序跳转到标号Label处执行</span><br><span class="line">BEQ  Label</span><br></pre></td></tr></table></figure>
+<figure class="highlight arm"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">B</span>    Label      <span class="comment">; 程序无条件跳转到标号Label处执行</span></span><br><span class="line"><span class="keyword">CMP</span>  <span class="built_in">R1</span>, <span class="number">#0</span>     <span class="comment">; 当CPSR寄存器中的Z条件码置位时，程序跳转到标号Label处执行</span></span><br><span class="line"><span class="keyword">BEQ</span>  Label</span><br></pre></td></tr></table></figure>
 <p>补充：BNE与BEQ</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">TST  R0, #0X8</span><br><span class="line">BNE  SuspendUp  ; BNE指令是“不相等（或不为0）跳转指令”： </span><br><span class="line">LDR  R1, #0x00000000</span><br><span class="line"></span><br><span class="line">; 先进行and运算，如果R0的第四位不为1，则结果为零，则设置zero&#x3D;1（继续下面的LDR指令）；</span><br><span class="line">; 否则，如果R0的第四位为1，zero&#x3D;0（跳到SuspendUp处执行）。</span><br></pre></td></tr></table></figure>
+<figure class="highlight arm"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">TST</span>  <span class="built_in">R0</span>, <span class="number">#0X8</span></span><br><span class="line"><span class="keyword">BNE</span>  SuspendUp  <span class="comment">; BNE指令是“不相等（或不为0）跳转指令”： </span></span><br><span class="line"><span class="keyword">LDR</span>  <span class="built_in">R1</span>, <span class="number">#0x00000000</span></span><br><span class="line"></span><br><span class="line"><span class="comment">; 先进行and运算，如果R0的第四位不为1，则结果为零，则设置zero=1（继续下面的LDR指令）；</span></span><br><span class="line"><span class="comment">; 否则，如果R0的第四位为1，zero=0（跳到SuspendUp处执行）。</span></span><br></pre></td></tr></table></figure>
 
 <p>tst 和 bne 连用：先是用tst进行位与运算，然后将位与的结果与0比较，如果不为0，则跳到bne紧跟着的标记（如bne sleep，则跳到sleep处）。<br>tst 和 beq 连用：先是用tst进行位与运算，然后将位与的结果与0比较，如果为0，则跳到beq紧跟着的标记（如bne AAAA，则跳到AAAA处）。   </p>
 <h3 id="2-BL指令"><a href="#2-BL指令" class="headerlink" title="2. BL指令"></a>2. BL指令</h3><p>BL是另一个跳转指令，但跳转之前，会在寄存器R14中保存PC的当前内容，因此，可以通过将R14的内容重新加载到PC中，来返回到跳转指令之后的那个 指令处执行。该指令是实现子程序调用的一个基本但常用的手段。</p>
 <p>格式：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">BL&#123;条件&#125; 目标地址</span><br></pre></td></tr></table></figure>
+<figure class="highlight arm"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="symbol">BL</span>&#123;条件&#125; 目标地址</span><br></pre></td></tr></table></figure>
 
 <p>示例：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">BL   Label      ; 当程序无条件跳转到标号Label处执行时，同时将当前的 PC值保存到R14（LR）中</span><br></pre></td></tr></table></figure>
+<figure class="highlight arm"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">BL</span>   Label      <span class="comment">; 当程序无条件跳转到标号Label处执行时，同时将当前的 PC值保存到R14（LR）中</span></span><br></pre></td></tr></table></figure>
 
 <h3 id="3-BLX指令"><a href="#3-BLX指令" class="headerlink" title="3. BLX指令"></a>3. BLX指令</h3><p>BLX指令从ARM指令集跳转到指令中所指定的目标地址，并将处理器的工作状态有ARM状态切换到Thumb状态，该指令同时将PC的当前内容保存到寄存器R14中。因此，当子程序使用Thumb指令集，而调用者使用ARM指令集时，可以通过BLX指令实现子程序的调用和处理器工作状态的切换。同时，子程序的返回可以通过将寄存器R14值复制到PC中来完成。</p>
 <p>格式：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">BLX 目标地址</span><br></pre></td></tr></table></figure>
+<figure class="highlight arm"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">BLX</span> 目标地址</span><br></pre></td></tr></table></figure>
 
 <h3 id="4-BX指令"><a href="#4-BX指令" class="headerlink" title="4. BX指令"></a>4. BX指令</h3><p>BX指令跳转到指令中所指定的目标地址，目标地址处的指令既可以是ARM指令，也可以是Thumb指令。</p>
 <p>格式：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">BX&#123;条件&#125; 目标地址</span><br></pre></td></tr></table></figure>
+<figure class="highlight arm"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="symbol">BX</span>&#123;条件&#125; 目标地址</span><br></pre></td></tr></table></figure>
 
 <h2 id="二、数据处理指令"><a href="#二、数据处理指令" class="headerlink" title="二、数据处理指令"></a>二、数据处理指令</h2><p>此类指令用于对通用寄存器执行运算。</p>
 <ul>
@@ -498,69 +498,69 @@ height:40vh;
 <p>数据处理指令如下：</p>
 <h3 id="2-1-数据传送指令"><a href="#2-1-数据传送指令" class="headerlink" title="2.1 数据传送指令"></a>2.1 数据传送指令</h3><h4 id="1-MOV指令-传送"><a href="#1-MOV指令-传送" class="headerlink" title="1. MOV指令(传送)"></a>1. MOV指令(传送)</h4><p>MOV指令可完成从另一个寄存器、被移位的寄存器或将一个立即数加载到目的寄存器。</p>
 <p>格式：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">MOV&#123;条件&#125;&#123;S&#125; 目的寄存器，源操作数</span><br></pre></td></tr></table></figure>
+<figure class="highlight arm"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="symbol">MOV</span>&#123;条件&#125;&#123;S&#125; 目的寄存器，源操作数</span><br></pre></td></tr></table></figure>
 
 <ul>
 <li>S选项决定指令的操作是否影响CPSR中条件标志位的值，当没有S 时指令不更新CPSR中条件标志位的值。</li>
 </ul>
 <p>示例：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">MOV R1，R0          ; 将寄存器R0的值传送到寄存器R1</span><br><span class="line">MOV PC，R14         ; 将寄存器R14的值传送到 PC，常用于子程序返回</span><br><span class="line">MOV R1，R0，LSL#3   ; 将寄存器R0的值左移3位后传送到R1</span><br></pre></td></tr></table></figure>
+<figure class="highlight arm"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">MOV</span> <span class="built_in">R1</span>，<span class="built_in">R0</span>          <span class="comment">; 将寄存器R0的值传送到寄存器R1</span></span><br><span class="line"><span class="keyword">MOV</span> <span class="built_in">PC</span>，<span class="built_in">R14</span>         <span class="comment">; 将寄存器R14的值传送到 PC，常用于子程序返回</span></span><br><span class="line"><span class="keyword">MOV</span> <span class="built_in">R1</span>，<span class="built_in">R0</span>，LSL<span class="number">#3</span>   <span class="comment">; 将寄存器R0的值左移3位后传送到R1</span></span><br></pre></td></tr></table></figure>
 
 <h4 id="2-MVN指令-取反移动"><a href="#2-MVN指令-取反移动" class="headerlink" title="2. MVN指令(取反移动)"></a>2. MVN指令(取反移动)</h4><p>MVN指令可完成从另一个寄存器、被移位的寄存器、或将一个立即数加载到目的寄存器。与MOV指令不同之处是在传送之前按位被取反了，即把一个被取反的值 传送到目的寄存器中。</p>
 <p>格式：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">MVN&#123;条件&#125;&#123;S&#125; 目的寄存器，源操作数</span><br></pre></td></tr></table></figure>
+<figure class="highlight arm"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="symbol">MVN</span>&#123;条件&#125;&#123;S&#125; 目的寄存器，源操作数</span><br></pre></td></tr></table></figure>
 
 <ul>
 <li>S决定指令的操作是否影响CPSR中条件标志位的值，当没有S时指令不更新CPSR中条件标志位的值。</li>
 </ul>
 <p>示例：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">MVN R0，#0   ; 将 立即数0取反传送到寄存器R0中，完成后R0&#x3D;-1</span><br></pre></td></tr></table></figure>
+<figure class="highlight arm"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">MVN</span> <span class="built_in">R0</span>，<span class="number">#0</span>   <span class="comment">; 将 立即数0取反传送到寄存器R0中，完成后R0=-1</span></span><br></pre></td></tr></table></figure>
 
 <h3 id="2-2-比较指令"><a href="#2-2-比较指令" class="headerlink" title="2.2 比较指令"></a>2.2 比较指令</h3><h4 id="1-CMP指令-比较"><a href="#1-CMP指令-比较" class="headerlink" title="1. CMP指令(比较)"></a>1. CMP指令(比较)</h4><p>CMP指令用于把一个寄存器的内容和另一个寄存器的内容或立即数进行比较，同时更新CPSR中条件标志位的值。</p>
 <p>格式：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">CMP&#123;条件&#125; 操作数1，操作数2</span><br></pre></td></tr></table></figure>
+<figure class="highlight arm"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="symbol">CMP</span>&#123;条件&#125; 操作数<span class="number">1</span>，操作数<span class="number">2</span></span><br></pre></td></tr></table></figure>
 
 <p>该指令进行一次减法运算，但不存储结果，只更改条件标志位。 标志位表示的是操作数1与操作数2的关系(大、小、相等)，例如，当操作数1大于操作操作数2，则此后的有GT后缀的指令将可以执行。</p>
 <p>示例：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">CMP   R1，R0     ; 将寄存器R1的值与寄存器R0的值相减，并根据 结果设置CPSR的标志位</span><br><span class="line">CMP   R1，#100   ; 将寄存器R1的值与立即数100相减，并根 据结果设置CPSR的标志位</span><br></pre></td></tr></table></figure>
+<figure class="highlight arm"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">CMP</span>   <span class="built_in">R1</span>，<span class="built_in">R0</span>     <span class="comment">; 将寄存器R1的值与寄存器R0的值相减，并根据 结果设置CPSR的标志位</span></span><br><span class="line"><span class="keyword">CMP</span>   <span class="built_in">R1</span>，<span class="number">#100</span>   <span class="comment">; 将寄存器R1的值与立即数100相减，并根 据结果设置CPSR的标志位</span></span><br></pre></td></tr></table></figure>
 
 <h4 id="2-CMN指令-负数比较"><a href="#2-CMN指令-负数比较" class="headerlink" title="2. CMN指令(负数比较)"></a>2. CMN指令(负数比较)</h4><p>CMN指令用于把一个寄存器的内容和另一个寄存器的内容或立即数取反后进行比较，同时更新CPSR中条件标志位的值。该指令实际完成操作数1和操作数2相 加，并根据结果更改条件标志位。</p>
 <p>格式：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">CMN&#123;条件&#125; 操作数1，操作数2</span><br></pre></td></tr></table></figure>
+<figure class="highlight arm"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="symbol">CMN</span>&#123;条件&#125; 操作数<span class="number">1</span>，操作数<span class="number">2</span></span><br></pre></td></tr></table></figure>
 
 <p>示例：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">CMN   R1，R0    ; 将寄存器R1的值与寄存器R0的值相加，并根据 结果设置CPSR 的标志位</span><br><span class="line">CMN   R1，#100  ; 将寄存器R1的值与立即数100相加，并根据 结果设置CPSR的标志位</span><br></pre></td></tr></table></figure>
+<figure class="highlight arm"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">CMN</span>   <span class="built_in">R1</span>，<span class="built_in">R0</span>    <span class="comment">; 将寄存器R1的值与寄存器R0的值相加，并根据 结果设置CPSR 的标志位</span></span><br><span class="line"><span class="keyword">CMN</span>   <span class="built_in">R1</span>，<span class="number">#100</span>  <span class="comment">; 将寄存器R1的值与立即数100相加，并根据 结果设置CPSR的标志位</span></span><br></pre></td></tr></table></figure>
 
 <h4 id="3-TST指令-位测试"><a href="#3-TST指令-位测试" class="headerlink" title="3. TST指令(位测试)"></a>3. TST指令(位测试)</h4><p>TST指令用于把一个寄存器的内容和另一个寄存器的内容或立即数进行按位的与运算，并根据运算结果更新CPSR中条件标志位的值。</p>
 <p>格式：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">TST&#123;条件&#125; 操作数1，操作数2</span><br></pre></td></tr></table></figure>
+<figure class="highlight arm"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="symbol">TST</span>&#123;条件&#125; 操作数<span class="number">1</span>，操作数<span class="number">2</span></span><br></pre></td></tr></table></figure>
 
 <ul>
 <li>操作数1是要测试的数据，而操作数2是一个位掩码，该指令一般用来检测是否设置了特定的位。</li>
 </ul>
 <p>示例：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">TST   R1，#%1       ; 用于测试在寄存器R1中是否设置了最低位（％表 示二进制数）</span><br><span class="line">TST   R1，#0xffe    ; 将寄存器R1的值与立即数0xffe按位与，并根据 结果设置CPSR的标志位</span><br></pre></td></tr></table></figure>
+<figure class="highlight arm"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">TST</span>   <span class="built_in">R1</span>，#%<span class="number">1</span>       <span class="comment">; 用于测试在寄存器R1中是否设置了最低位（％表 示二进制数）</span></span><br><span class="line"><span class="keyword">TST</span>   <span class="built_in">R1</span>，<span class="number">#0xffe</span>    <span class="comment">; 将寄存器R1的值与立即数0xffe按位与，并根据 结果设置CPSR的标志位</span></span><br></pre></td></tr></table></figure>
 
 <h4 id="4-TEQ指令-相等测试"><a href="#4-TEQ指令-相等测试" class="headerlink" title="4. TEQ指令(相等测试)"></a>4. TEQ指令(相等测试)</h4><p>TEQ指令用于把一个寄存器的内容和另一个寄存器的内容或立即数进行按位的异或运算，并根据运算结果更新CPSR中条件标志位的值。该指令通常用于比较操作数1和操作数2是否相等。</p>
 <p>格式：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">TEQ&#123;条件&#125; 操作数1，操作数2</span><br></pre></td></tr></table></figure>
+<figure class="highlight arm"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="symbol">TEQ</span>&#123;条件&#125; 操作数<span class="number">1</span>，操作数<span class="number">2</span></span><br></pre></td></tr></table></figure>
 
 <p>示例：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">TEQ  R1，R2   ; 将寄存器R1的值与寄存器R2的值按位异或，并根据结果 设置CPSR的标志位</span><br></pre></td></tr></table></figure>
+<figure class="highlight arm"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">TEQ</span>  <span class="built_in">R1</span>，<span class="built_in">R2</span>   <span class="comment">; 将寄存器R1的值与寄存器R2的值按位异或，并根据结果 设置CPSR的标志位</span></span><br></pre></td></tr></table></figure>
 
 <h3 id="2-3-算术运算指令"><a href="#2-3-算术运算指令" class="headerlink" title="2.3 算术运算指令"></a>2.3 算术运算指令</h3><h4 id="1-ADD指令-相加"><a href="#1-ADD指令-相加" class="headerlink" title="1. ADD指令(相加)"></a>1. ADD指令(相加)</h4><p>ADD指令用于把两个操作数相加，并将结果存放到目的寄存器中。</p>
 <p>格式：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ADD&#123;条件&#125;&#123;S&#125; 目的寄存器，操作数1，操作数2</span><br></pre></td></tr></table></figure>
+<figure class="highlight arm"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="symbol">ADD</span>&#123;条件&#125;&#123;S&#125; 目的寄存器，操作数<span class="number">1</span>，操作数<span class="number">2</span></span><br></pre></td></tr></table></figure>
 
 <ul>
 <li>操作数1应是一个寄存器，操作数2可以是一个寄存器，被移位的寄存器，或一个立即数。</li>
 </ul>
 <p>示例：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">ADD     R0，R1，R2              ; R0 &#x3D; R1 + R2</span><br><span class="line">ADD     R0，R1，#256            ; R0 &#x3D; R1 + 256</span><br><span class="line">ADD     R0，R2，R3，LSL#1       ; R0 &#x3D; R2 + (R3 &lt;&lt; 1)</span><br></pre></td></tr></table></figure>
+<figure class="highlight arm"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">ADD</span>     <span class="built_in">R0</span>，<span class="built_in">R1</span>，<span class="built_in">R2</span>              <span class="comment">; R0 = R1 + R2</span></span><br><span class="line"><span class="keyword">ADD</span>     <span class="built_in">R0</span>，<span class="built_in">R1</span>，<span class="number">#256</span>            <span class="comment">; R0 = R1 + 256</span></span><br><span class="line"><span class="keyword">ADD</span>     <span class="built_in">R0</span>，<span class="built_in">R2</span>，<span class="built_in">R3</span>，LSL<span class="number">#1</span>       <span class="comment">; R0 = R2 + (R3 &lt;&lt; 1)</span></span><br></pre></td></tr></table></figure>
 
 <h4 id="2-ADC指令-带进位相加"><a href="#2-ADC指令-带进位相加" class="headerlink" title="2. ADC指令(带进位相加)"></a>2. ADC指令(带进位相加)</h4><p>ADC指令用于把两个操作数相加，再加上CPSR中的C条件标志位的值，并将结果存放到目的寄存器中。</p>
 <p>格式：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ADC&#123;条件&#125;&#123;S&#125; 目的寄存器，操作数1，操作数2</span><br></pre></td></tr></table></figure>
+<figure class="highlight arm"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="symbol">ADC</span>&#123;条件&#125;&#123;S&#125; 目的寄存器，操作数<span class="number">1</span>，操作数<span class="number">2</span></span><br></pre></td></tr></table></figure>
 
 <ul>
 <li>它使用一个进位标志位，这样就可以做比32位大的数的加法，注意不要忘记设置S后缀来更改进位标志。</li>
@@ -569,11 +569,11 @@ height:40vh;
 </ul>
 <p>示例：</p>
 <p>以下指令序列完成两个128位数的加法，第一个数由高到低存放在寄存器R7～R4，第二个数由高到低存放在寄存器R11～R8，运算结果由高到低存放在寄 存器R3～R0：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">ADDS    R0，R4，R8         ;  加低端的字</span><br><span class="line">ADCS    R1，R5，R9         ;  加第二个字，带进位</span><br><span class="line">ADCS    R2，R6，R10        ;  加第三个字，带进位</span><br><span class="line">ADC     R3，R7，R11        ;  加第四个字，带进位</span><br></pre></td></tr></table></figure>
+<figure class="highlight arm"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">ADDS</span>    <span class="built_in">R0</span>，<span class="built_in">R4</span>，<span class="built_in">R8</span>         <span class="comment">;  加低端的字</span></span><br><span class="line"><span class="keyword">ADCS</span>    <span class="built_in">R1</span>，<span class="built_in">R5</span>，<span class="built_in">R9</span>         <span class="comment">;  加第二个字，带进位</span></span><br><span class="line"><span class="keyword">ADCS</span>    <span class="built_in">R2</span>，<span class="built_in">R6</span>，<span class="built_in">R10</span>        <span class="comment">;  加第三个字，带进位</span></span><br><span class="line"><span class="keyword">ADC</span>     <span class="built_in">R3</span>，<span class="built_in">R7</span>，<span class="built_in">R11</span>        <span class="comment">;  加第四个字，带进位</span></span><br></pre></td></tr></table></figure>
 
 <h4 id="3-SUB指令-相减"><a href="#3-SUB指令-相减" class="headerlink" title="3. SUB指令(相减)"></a>3. SUB指令(相减)</h4><p>SUB指令用于把操作数1减去操作数2，并将结果存放到目的寄存器中。</p>
 <p>格式：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">SUB&#123;条件&#125;&#123;S&#125; 目的寄存器，操作数1，操作数2</span><br></pre></td></tr></table></figure>
+<figure class="highlight arm"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="symbol">SUB</span>&#123;条件&#125;&#123;S&#125; 目的寄存器，操作数<span class="number">1</span>，操作数<span class="number">2</span></span><br></pre></td></tr></table></figure>
 
 <ul>
 <li>操作数1应是一个寄存器</li>
@@ -581,11 +581,11 @@ height:40vh;
 </ul>
 <p>该指令可用于有符号数或无符号数的减法运算。</p>
 <p>示例：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">SUB     R0，R1，R2             ;  R0 &#x3D; R1 - R2</span><br><span class="line">SUB     R0，R1，#256           ;  R0 &#x3D; R1 - 256</span><br><span class="line">SUB     R0，R2，R3，LSL#1      ;  R0 &#x3D; R2 - (R3 &lt;&lt; 1)</span><br></pre></td></tr></table></figure>
+<figure class="highlight arm"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SUB</span>     <span class="built_in">R0</span>，<span class="built_in">R1</span>，<span class="built_in">R2</span>             <span class="comment">;  R0 = R1 - R2</span></span><br><span class="line"><span class="keyword">SUB</span>     <span class="built_in">R0</span>，<span class="built_in">R1</span>，<span class="number">#256</span>           <span class="comment">;  R0 = R1 - 256</span></span><br><span class="line"><span class="keyword">SUB</span>     <span class="built_in">R0</span>，<span class="built_in">R2</span>，<span class="built_in">R3</span>，LSL<span class="number">#1</span>      <span class="comment">;  R0 = R2 - (R3 &lt;&lt; 1)</span></span><br></pre></td></tr></table></figure>
 
 <h4 id="4-SBC指令-带进位减法"><a href="#4-SBC指令-带进位减法" class="headerlink" title="4. SBC指令(带进位减法)"></a>4. SBC指令(带进位减法)</h4><p>SBC指令用于把操作数1减去操作数2，再减去CPSR中的C条件标志位的反码，并将结果存放到目的寄存器中。</p>
 <p>格式：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">SBC&#123;条件&#125;&#123;S&#125; 目的寄存器，操作数1，操作数2</span><br></pre></td></tr></table></figure>
+<figure class="highlight arm"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="symbol">SBC</span>&#123;条件&#125;&#123;S&#125; 目的寄存器，操作数<span class="number">1</span>，操作数<span class="number">2</span></span><br></pre></td></tr></table></figure>
 
 <ul>
 <li>操作数1应是一个寄存器</li>
@@ -593,11 +593,11 @@ height:40vh;
 </ul>
 <p>该指令使用进位标志来表示借位，这样就可以做大于32位的减法，注意不要忘记设置S后缀来更改进位标志。该指令可用于有符号数或无符号数的减法运算。</p>
 <p>示例：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">SUBS    R0，R1，R2    ; R0 &#x3D; R1 - R2 - ！C，并根据结果设置CPSR的进位标志位</span><br></pre></td></tr></table></figure>
+<figure class="highlight arm"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SUBS</span>    <span class="built_in">R0</span>，<span class="built_in">R1</span>，<span class="built_in">R2</span>    <span class="comment">; R0 = R1 - R2 - ！C，并根据结果设置CPSR的进位标志位</span></span><br></pre></td></tr></table></figure>
 
 <h4 id="5-RSB指令-逆向-反向减法"><a href="#5-RSB指令-逆向-反向减法" class="headerlink" title="5. RSB指令(逆向/反向减法)"></a>5. RSB指令(逆向/反向减法)</h4><p>RSB指令称为逆向减法指令，用于把操作数2减去操作数1，并将结果存放到目的寄存器中。</p>
 <p>格式：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">RSB&#123;条件&#125;&#123;S&#125; 目的寄存器，操作数1，操作数2</span><br></pre></td></tr></table></figure>
+<figure class="highlight arm"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="symbol">RSB</span>&#123;条件&#125;&#123;S&#125; 目的寄存器，操作数<span class="number">1</span>，操作数<span class="number">2</span></span><br></pre></td></tr></table></figure>
 
 <ul>
 <li>操作数1应是一个寄存器</li>
@@ -605,11 +605,11 @@ height:40vh;
 </ul>
 <p>该指令可用于有符号数或无符号数的减法运算。</p>
 <p>示例：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">RSB     R0，R1，R2                  ;  R0 &#x3D; R2 – R1</span><br><span class="line">RSB     R0，R1，#256                ;  R0 &#x3D; 256 – R1</span><br><span class="line">RSB     R0，R2，R3，LSL#1           ;  R0 &#x3D; (R3 &lt;&lt; 1) - R2</span><br></pre></td></tr></table></figure>
+<figure class="highlight arm"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">RSB</span>     <span class="built_in">R0</span>，<span class="built_in">R1</span>，<span class="built_in">R2</span>                  <span class="comment">;  R0 = R2 – R1</span></span><br><span class="line"><span class="keyword">RSB</span>     <span class="built_in">R0</span>，<span class="built_in">R1</span>，<span class="number">#256</span>                <span class="comment">;  R0 = 256 – R1</span></span><br><span class="line"><span class="keyword">RSB</span>     <span class="built_in">R0</span>，<span class="built_in">R2</span>，<span class="built_in">R3</span>，LSL<span class="number">#1</span>           <span class="comment">;  R0 = (R3 &lt;&lt; 1) - R2</span></span><br></pre></td></tr></table></figure>
 
 <h4 id="6-RSC指令-反向带进位减"><a href="#6-RSC指令-反向带进位减" class="headerlink" title="6. RSC指令(反向带进位减)"></a>6. RSC指令(反向带进位减)</h4><p>RSC指令用于把 操作数2减去操作数1，再减去CPSR中的C条件标志位的反码，并将结果存放到目的寄存器中。</p>
 <p>格式：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">RSC&#123;条件&#125;&#123;S&#125; 目的寄存器，操作数1，操作数2</span><br></pre></td></tr></table></figure>
+<figure class="highlight arm"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="symbol">RSC</span>&#123;条件&#125;&#123;S&#125; 目的寄存器，操作数<span class="number">1</span>，操作数<span class="number">2</span></span><br></pre></td></tr></table></figure>
 
 <ul>
 <li>操作数1应是一个寄存器操作</li>
@@ -617,7 +617,7 @@ height:40vh;
 </ul>
 <p>该指令使用进位标志来表示借位，这样就可以做大于32位的减法，注意不要忘记设置S后缀来更改进位标志。该指令可用于有符号数或 无符号数的减法运算。</p>
 <p>示例：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">RSC     R0，R1，R2           ; R0 &#x3D; R2 – R1 - ！C</span><br></pre></td></tr></table></figure>
+<figure class="highlight arm"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">RSC</span>     <span class="built_in">R0</span>，<span class="built_in">R1</span>，<span class="built_in">R2</span>           <span class="comment">; R0 = R2 – R1 - ！C</span></span><br></pre></td></tr></table></figure>
 
 <h4 id="—乘法指令与乘加指令—"><a href="#—乘法指令与乘加指令—" class="headerlink" title="—乘法指令与乘加指令—"></a>—乘法指令与乘加指令—</h4><ul>
 <li>ARM 微处理器支持的乘法指令与乘加指令共有6条，可分为运算结果为32位和运算结果为64位两类。</li>
@@ -625,36 +625,36 @@ height:40vh;
 </ul>
 <h4 id="1-MUL指令-相乘"><a href="#1-MUL指令-相乘" class="headerlink" title="1. MUL指令(相乘)"></a>1. MUL指令(相乘)</h4><p>MUL指令完成将操作数1与操作数2的乘法运算，并把结果放置到目的寄存器中，同时可以根据运算结果设置CPSR中相应的条件标志位。</p>
 <p>格式：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">MUL&#123;条件&#125;&#123;S&#125; 目的寄存器，操作数1，操作数2</span><br></pre></td></tr></table></figure>
+<figure class="highlight arm"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="symbol">MUL</span>&#123;条件&#125;&#123;S&#125; 目的寄存器，操作数<span class="number">1</span>，操作数<span class="number">2</span></span><br></pre></td></tr></table></figure>
 
 <ul>
 <li>操作数1和操 作数2均为32位的有符号数或无符号数。</li>
 </ul>
 <p>示例：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">MUL  R0，R1，R2            ; R0 &#x3D; R1 × R2</span><br><span class="line">MULS R0，R1，R2            ; R0 &#x3D; R1 × R2，同时设置CPSR中的相关条件标志位</span><br></pre></td></tr></table></figure>
+<figure class="highlight arm"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">MUL</span>  <span class="built_in">R0</span>，<span class="built_in">R1</span>，<span class="built_in">R2</span>            <span class="comment">; R0 = R1 × R2</span></span><br><span class="line"><span class="keyword">MULS</span> <span class="built_in">R0</span>，<span class="built_in">R1</span>，<span class="built_in">R2</span>            <span class="comment">; R0 = R1 × R2，同时设置CPSR中的相关条件标志位</span></span><br></pre></td></tr></table></figure>
 
 <h4 id="2-MLA指令-带累加的相乘"><a href="#2-MLA指令-带累加的相乘" class="headerlink" title="2. MLA指令(带累加的相乘)"></a>2. MLA指令(带累加的相乘)</h4><p>MLA指令完成将操作数1与操作数2的乘法运算，再将乘积加上操作数3，并把结果放置到目的寄存器中，同时可以根据运算结果设置CPSR中相应的条件标志位。</p>
 <p>格式：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">MLA&#123;条件&#125;&#123;S&#125; 目的寄存器，操作数1，操作数2，操作数3</span><br></pre></td></tr></table></figure>
+<figure class="highlight arm"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="symbol">MLA</span>&#123;条件&#125;&#123;S&#125; 目的寄存器，操作数<span class="number">1</span>，操作数<span class="number">2</span>，操作数<span class="number">3</span></span><br></pre></td></tr></table></figure>
 
 <ul>
 <li>操作数1和操作数2均为32位的有符号数或无符号数。</li>
 </ul>
 <p>示例：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">MLA   R0，R1，R2，R3            ; R0 &#x3D; R1 × R2 + R3</span><br><span class="line">MLAS  R0，R1，R2，R3            ; R0 &#x3D; R1 × R2 + R3，同时设置CPSR中的相关条件标志位</span><br></pre></td></tr></table></figure>
+<figure class="highlight arm"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">MLA</span>   <span class="built_in">R0</span>，<span class="built_in">R1</span>，<span class="built_in">R2</span>，<span class="built_in">R3</span>            <span class="comment">; R0 = R1 × R2 + R3</span></span><br><span class="line"><span class="keyword">MLAS</span>  <span class="built_in">R0</span>，<span class="built_in">R1</span>，<span class="built_in">R2</span>，<span class="built_in">R3</span>            <span class="comment">; R0 = R1 × R2 + R3，同时设置CPSR中的相关条件标志位</span></span><br></pre></td></tr></table></figure>
 
 <h4 id="3-SMULL指令"><a href="#3-SMULL指令" class="headerlink" title="3. SMULL指令"></a>3. SMULL指令</h4><p>SMULL指令完成将操作数1与操作数2的乘法运算，并把结果的低32位放置到目的寄存器Low中，结果的高32位放置到目的寄存器High中，同时可以 根据运算结果设置CPSR中相应的条件标志位。</p>
 <p>格式：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">SMULL&#123;条件&#125;&#123;S&#125;   目的寄存器Low，目的寄存器High，操作数1，操作数2</span><br></pre></td></tr></table></figure>
+<figure class="highlight arm"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="symbol">SMULL</span>&#123;条件&#125;&#123;S&#125;   目的寄存器Low，目的寄存器High，操作数<span class="number">1</span>，操作数<span class="number">2</span></span><br></pre></td></tr></table></figure>
 
 <ul>
 <li>操作数1和操作数2均为32位的有符号数。</li>
 </ul>
 <p>示例：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">SMULL   R0，R1，R2，R3     ; R0 &#x3D; （R2 × R3）的低32位</span><br><span class="line">                          ; R1 &#x3D; （R2 × R3）的高32位</span><br></pre></td></tr></table></figure>
+<figure class="highlight arm"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SMULL</span>   <span class="built_in">R0</span>，<span class="built_in">R1</span>，<span class="built_in">R2</span>，<span class="built_in">R3</span>     <span class="comment">; R0 = （R2 × R3）的低32位</span></span><br><span class="line">                          <span class="comment">; R1 = （R2 × R3）的高32位</span></span><br></pre></td></tr></table></figure>
 
 <h4 id="4-SMLAL指令"><a href="#4-SMLAL指令" class="headerlink" title="4. SMLAL指令"></a>4. SMLAL指令</h4><p>格式：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">SMLAL&#123;条件&#125;&#123;S&#125;   目的寄存器Low，目的寄存器High，操作数1，操作数2</span><br></pre></td></tr></table></figure>
+<figure class="highlight arm"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="symbol">SMLAL</span>&#123;条件&#125;&#123;S&#125;   目的寄存器Low，目的寄存器High，操作数<span class="number">1</span>，操作数<span class="number">2</span></span><br></pre></td></tr></table></figure>
 
 <p>SMLAL指令完成将操作数1与操作数2的乘法运算，并把结果的低32位同目的寄存器Low中的值相加后又放置到目的寄存器Low中，结果的高32位同目的寄存器High中的值相加后又放置到目的寄存器High中，同时可以根据运算结果设置CPSR中相应的条件标志位。</p>
 <ul>
@@ -663,20 +663,20 @@ height:40vh;
 <li>对于目的寄存器High，在指令执行前存放64位加数的高32位，指令执行后存放结果的高32位。</li>
 </ul>
 <p>示例：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">SMLAL   R0，R1，R2，R3       ; R0 &#x3D; （R2 × R3）的低32位 ＋ R0</span><br><span class="line">                            ; R1 &#x3D; （R2 × R3）的高32位 ＋ R1</span><br></pre></td></tr></table></figure>
+<figure class="highlight arm"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="symbol">SMLAL</span>   <span class="built_in">R0</span>，<span class="built_in">R1</span>，<span class="built_in">R2</span>，<span class="built_in">R3</span>       <span class="comment">; R0 = （R2 × R3）的低32位 ＋ R0</span></span><br><span class="line">                            <span class="comment">; R1 = （R2 × R3）的高32位 ＋ R1</span></span><br></pre></td></tr></table></figure>
 
 <h4 id="5-UMULL指令"><a href="#5-UMULL指令" class="headerlink" title="5. UMULL指令"></a>5. UMULL指令</h4><p>UMULL指令完成将操作数1与操作数2的乘法运算，并把结果的低32位放置到目的寄存器Low中，结果的高32位放置到目的寄存器High中，同时可以 根据运算结果设置CPSR中相应的条件标志位。</p>
 <p>格式：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">UMULL&#123;条件&#125;&#123;S&#125;   目的寄存器Low，目的寄存器High，操作数1，操作数2</span><br></pre></td></tr></table></figure>
+<figure class="highlight arm"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="symbol">UMULL</span>&#123;条件&#125;&#123;S&#125;   目的寄存器Low，目的寄存器High，操作数<span class="number">1</span>，操作数<span class="number">2</span></span><br></pre></td></tr></table></figure>
 
 <ul>
 <li>操作数1和操作数2均为32位的无符号数。</li>
 </ul>
 <p>示例：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">UMULL   R0，R1，R2，R3       ; R0 &#x3D; （R2 × R3）的低32位</span><br><span class="line">                            ; R1 &#x3D; （R2 × R3）的高32位</span><br></pre></td></tr></table></figure>
+<figure class="highlight arm"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">UMULL</span>   <span class="built_in">R0</span>，<span class="built_in">R1</span>，<span class="built_in">R2</span>，<span class="built_in">R3</span>       <span class="comment">; R0 = （R2 × R3）的低32位</span></span><br><span class="line">                            <span class="comment">; R1 = （R2 × R3）的高32位</span></span><br></pre></td></tr></table></figure>
 
 <h4 id="6-UMLAL指令"><a href="#6-UMLAL指令" class="headerlink" title="6. UMLAL指令"></a>6. UMLAL指令</h4><p>格式：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">UMLAL&#123;条件&#125;&#123;S&#125;   目的寄存器Low，目的寄存器High，操作数1，操作数2</span><br></pre></td></tr></table></figure>
+<figure class="highlight arm"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="symbol">UMLAL</span>&#123;条件&#125;&#123;S&#125;   目的寄存器Low，目的寄存器High，操作数<span class="number">1</span>，操作数<span class="number">2</span></span><br></pre></td></tr></table></figure>
 
 <p>UMLAL指令完成将操作数1与操作数2的乘法运算，并把结果的低32位同目的寄存器Low中的值相加后又放置到目的寄存器Low中，结果的高32位同目的寄存器High中的值相加后又放置到目的寄存器High 中，同时可以根据运算结果设置CPSR中相应的条件标志位。</p>
 <ul>
@@ -685,11 +685,11 @@ height:40vh;
 <li>对于目的寄存器High，在指令执行前存放64位加数的高32位，指令执行后存放结果的高32位。</li>
 </ul>
 <p>示例：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">UMLAL   R0，R1，R2，R3            ; R0 &#x3D; （R2 × R3）的低32位 ＋ R0</span><br><span class="line">                                 ; R1 &#x3D; （R2 × R3）的高32位 ＋ R1</span><br></pre></td></tr></table></figure>
+<figure class="highlight arm"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="symbol">UMLAL</span>   <span class="built_in">R0</span>，<span class="built_in">R1</span>，<span class="built_in">R2</span>，<span class="built_in">R3</span>            <span class="comment">; R0 = （R2 × R3）的低32位 ＋ R0</span></span><br><span class="line">                                 <span class="comment">; R1 = （R2 × R3）的高32位 ＋ R1</span></span><br></pre></td></tr></table></figure>
 
 <h3 id="2-4-逻辑运算指令"><a href="#2-4-逻辑运算指令" class="headerlink" title="2.4 逻辑运算指令"></a>2.4 逻辑运算指令</h3><h4 id="1-AND指令-逻辑位-与"><a href="#1-AND指令-逻辑位-与" class="headerlink" title="1. AND指令(逻辑位 与)"></a>1. AND指令(逻辑位 与)</h4><p>AND指令用于在两个操作数上进行逻辑与运算，并把结果放置到目的寄存器中。</p>
 <p>格式：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">AND&#123;条件&#125;&#123;S&#125; 目的寄存器，操作数1，操作数2</span><br></pre></td></tr></table></figure>
+<figure class="highlight arm"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="symbol">AND</span>&#123;条件&#125;&#123;S&#125; 目的寄存器，操作数<span class="number">1</span>，操作数<span class="number">2</span></span><br></pre></td></tr></table></figure>
 
 <ul>
 <li>操作数1应是一个寄存器</li>
@@ -697,11 +697,11 @@ height:40vh;
 </ul>
 <p>该指令常用于屏蔽操作数1的某些位。</p>
 <p>示例：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">AND     R0, R0, #3          ; 该指令保持R0的0、1位，其余位清零。</span><br></pre></td></tr></table></figure>
+<figure class="highlight arm"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">AND</span>     <span class="built_in">R0</span>, <span class="built_in">R0</span>, <span class="number">#3</span>          <span class="comment">; 该指令保持R0的0、1位，其余位清零。</span></span><br></pre></td></tr></table></figure>
 
 <h4 id="2-ORR指令-逻辑位-或"><a href="#2-ORR指令-逻辑位-或" class="headerlink" title="2. ORR指令(逻辑位 或)"></a>2. ORR指令(逻辑位 或)</h4><p>ORR指令用于在两个操作数上进行逻辑或运算，并把结果放置到目的寄存器中。</p>
 <p>格式：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ORR&#123;条件&#125;&#123;S&#125; 目的寄存器，操作数1，操作数2</span><br></pre></td></tr></table></figure>
+<figure class="highlight arm"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="symbol">ORR</span>&#123;条件&#125;&#123;S&#125; 目的寄存器，操作数<span class="number">1</span>，操作数<span class="number">2</span></span><br></pre></td></tr></table></figure>
 
 <ul>
 <li>操作数1应是一个寄存器</li>
@@ -709,11 +709,11 @@ height:40vh;
 </ul>
 <p>该指令常用于设置操作数1的某些位。</p>
 <p>示例：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ORR R0，R0，#3        ; 该指令设置R0的0、1位，其余位保持不变。</span><br></pre></td></tr></table></figure>
+<figure class="highlight arm"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">ORR</span> <span class="built_in">R0</span>，<span class="built_in">R0</span>，<span class="number">#3</span>        <span class="comment">; 该指令设置R0的0、1位，其余位保持不变。</span></span><br></pre></td></tr></table></figure>
 
 <h4 id="3-EOR指令-逻辑位-异或"><a href="#3-EOR指令-逻辑位-异或" class="headerlink" title="3. EOR指令(逻辑位 异或)"></a>3. EOR指令(逻辑位 异或)</h4><p>EOR指令用于在两个操作数上进行逻辑异或运算，并把结果放置到目的寄存器中。</p>
 <p>格式：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">EOR&#123;条件&#125;&#123;S&#125; 目的寄存器，操作数1，操作数2</span><br></pre></td></tr></table></figure>
+<figure class="highlight arm"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="symbol">EOR</span>&#123;条件&#125;&#123;S&#125; 目的寄存器，操作数<span class="number">1</span>，操作数<span class="number">2</span></span><br></pre></td></tr></table></figure>
 
 <ul>
 <li>操作数1应是一个寄存器</li>
@@ -721,68 +721,68 @@ height:40vh;
 </ul>
 <p>该指令常用于反转操作数1的某些位。</p>
 <p>示例：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">EOR R0，R0，#3        ; 该指令反转R0的0、1位，其余位保持不变。</span><br></pre></td></tr></table></figure>
+<figure class="highlight arm"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">EOR</span> <span class="built_in">R0</span>，<span class="built_in">R0</span>，<span class="number">#3</span>        <span class="comment">; 该指令反转R0的0、1位，其余位保持不变。</span></span><br></pre></td></tr></table></figure>
 
 <h4 id="4-BIC指令-位清零"><a href="#4-BIC指令-位清零" class="headerlink" title="4. BIC指令(位清零)"></a>4. BIC指令(位清零)</h4><p>BIC指令用于清除操作数1的某些位，并把结果放置到目的寄存器中。</p>
 <p>格式：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">BIC&#123;条件&#125;&#123;S&#125; 目的寄存器，操作数1，操作数2</span><br></pre></td></tr></table></figure>
+<figure class="highlight arm"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="symbol">BIC</span>&#123;条件&#125;&#123;S&#125; 目的寄存器，操作数<span class="number">1</span>，操作数<span class="number">2</span></span><br></pre></td></tr></table></figure>
 
 <ul>
 <li>操作数1应是一个寄存器</li>
 <li>操作数2可以是一个寄存器，被移位的寄存器，或一个立即数。 操作数2为32位的掩码，如果在掩码中设置了某一位，则清除这一位。未设置的掩码位保持不变。</li>
 </ul>
 <p>示例：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">BIC R0, R0, #%1011    ; 该指令清除R0中的位 0、1、和 3，其余的位保持不变。</span><br></pre></td></tr></table></figure>
+<figure class="highlight arm"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">BIC</span> <span class="built_in">R0</span>, <span class="built_in">R0</span>, #%<span class="number">1011</span>    <span class="comment">; 该指令清除R0中的位 0、1、和 3，其余的位保持不变。</span></span><br></pre></td></tr></table></figure>
 
 <h4 id="5-LSL-ASL-LSL逻辑左移、ASL算术左移"><a href="#5-LSL-ASL-LSL逻辑左移、ASL算术左移" class="headerlink" title="5. LSL ASL(LSL逻辑左移、ASL算术左移)"></a>5. LSL ASL(LSL逻辑左移、ASL算术左移)</h4><p>LSL（或ASL）可完成对通用寄存器中的内容进行逻辑（或算术）的左移操作，按操作数所指定的数量向左移位，低位用零来填充。 </p>
 <p>格式：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">通用寄存器，LSL（或ASL） 操作数</span><br></pre></td></tr></table></figure>
+<figure class="highlight arm"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">通用寄存器，LSL（或ASL） 操作数</span><br></pre></td></tr></table></figure>
 
 <ul>
 <li>操作数可以是通用寄存器，也可以是立即数（0～31）。</li>
 </ul>
 <p>示例：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">MOV   R0, R1, LSL #2          ; 将R1中的内容左移两位后传送到R0 中。</span><br></pre></td></tr></table></figure>
+<figure class="highlight arm"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">MOV</span>   <span class="built_in">R0</span>, <span class="built_in">R1</span>, <span class="keyword">LSL</span> <span class="number">#2</span>          <span class="comment">; 将R1中的内容左移两位后传送到R0 中。</span></span><br></pre></td></tr></table></figure>
 
 <h4 id="6-LSR-逻辑右移"><a href="#6-LSR-逻辑右移" class="headerlink" title="6. LSR(逻辑右移)"></a>6. LSR(逻辑右移)</h4><p>LSR可完成对通用寄存器中的内容进行右移的操作，按操作数所指定的数量向右移位，左端用零来填充。</p>
 <p>格式：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">通用寄存器，LSR 操作数</span><br></pre></td></tr></table></figure>
+<figure class="highlight arm"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">通用寄存器，<span class="keyword">LSR</span> 操作数</span><br></pre></td></tr></table></figure>
 
 <ul>
 <li>操作数可以是通用寄存器，也可以是立即数（0～31）。</li>
 </ul>
 <p>示例：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">MOV   R0, R1, LSR #2         ; 将R1中的内容右移两位后传送到R0 中，左端用零来填充。</span><br></pre></td></tr></table></figure>
+<figure class="highlight arm"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">MOV</span>   <span class="built_in">R0</span>, <span class="built_in">R1</span>, <span class="keyword">LSR</span> <span class="number">#2</span>         <span class="comment">; 将R1中的内容右移两位后传送到R0 中，左端用零来填充。</span></span><br></pre></td></tr></table></figure>
 
 <h4 id="7-ASR-算术右移"><a href="#7-ASR-算术右移" class="headerlink" title="7. ASR(算术右移)"></a>7. ASR(算术右移)</h4><p>ASR可完成对通用寄存器中的内容进行右移的操作，按操作数所指定的数量向右移位，左端用第31位的值来填充。</p>
 <p>格式：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">通用寄存器，ASR 操作数</span><br></pre></td></tr></table></figure>
+<figure class="highlight arm"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">通用寄存器，<span class="keyword">ASR</span> 操作数</span><br></pre></td></tr></table></figure>
 
 <ul>
 <li>操作数可以是通用寄存器，也可以是立即数（0～31）。</li>
 </ul>
 <p>示例：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">MOV    R0, R1, ASR #2        ; 将R1中的内容右移两位后传送到R0 中，左端用第31位的值来填充。</span><br></pre></td></tr></table></figure>
+<figure class="highlight arm"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">MOV</span>    <span class="built_in">R0</span>, <span class="built_in">R1</span>, <span class="keyword">ASR</span> <span class="number">#2</span>        <span class="comment">; 将R1中的内容右移两位后传送到R0 中，左端用第31位的值来填充。</span></span><br></pre></td></tr></table></figure>
 
 <h4 id="8-ROR-向右循环移"><a href="#8-ROR-向右循环移" class="headerlink" title="8. ROR(向右循环移)"></a>8. ROR(向右循环移)</h4><p>ROR可完成对通用寄存器中的内容进行循环右移的操作，按操作数所指定的数量向右循环移位，左端用右端移出的位来填充。</p>
 <p>格式：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">通用寄存器，ROR 操作数</span><br></pre></td></tr></table></figure>
+<figure class="highlight arm"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">通用寄存器，<span class="keyword">ROR</span> 操作数</span><br></pre></td></tr></table></figure>
 
 <ul>
 <li>其中，操作数可以是通用寄存器，也可以是立即数（0～31）。显然，当进行32位的循环右移操作时，通用寄存器中的值不改变。</li>
 </ul>
 <p>示例：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">MOV    R0, R1, ROR #2       ; 将R1中的内容循环右移两位后传送到R0 中。</span><br></pre></td></tr></table></figure>
+<figure class="highlight arm"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">MOV</span>    <span class="built_in">R0</span>, <span class="built_in">R1</span>, <span class="keyword">ROR</span> <span class="number">#2</span>       <span class="comment">; 将R1中的内容循环右移两位后传送到R0 中。</span></span><br></pre></td></tr></table></figure>
 
 <h4 id="9-RRX-带扩展向右循环移"><a href="#9-RRX-带扩展向右循环移" class="headerlink" title="9. RRX(带扩展向右循环移)"></a>9. RRX(带扩展向右循环移)</h4><p>RRX可完成对通用寄存器中的内容进行带扩展的循环右移的操作，按操作数所指定的数量向右循环移位，左端用进位标志位C来填充。</p>
 <p>格式：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">通用寄存器，RRX 操作数</span><br></pre></td></tr></table></figure>
+<figure class="highlight arm"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">通用寄存器，<span class="keyword">RRX</span> 操作数</span><br></pre></td></tr></table></figure>
 
 <ul>
 <li>操作数可以是通用寄存器，也可以是立即数（0～31）。</li>
 </ul>
 <p>示例：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">MOV   R0, R1, RRX #2         ; 将R1中的内容进行带扩展的循环右移两位 后传送到R0中。</span><br></pre></td></tr></table></figure>
+<figure class="highlight arm"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">MOV</span>   <span class="built_in">R0</span>, <span class="built_in">R1</span>, <span class="keyword">RRX</span> <span class="number">#2</span>         <span class="comment">; 将R1中的内容进行带扩展的循环右移两位 后传送到R0中。</span></span><br></pre></td></tr></table></figure>
 
 <h2 id="三、程序状态寄存器访问指令"><a href="#三、程序状态寄存器访问指令" class="headerlink" title="三、程序状态寄存器访问指令"></a>三、程序状态寄存器访问指令</h2><p>此类指令向通用寄存器或者从通用寄存器往外移动状态寄存器的内容。</p>
 <h3 id="1-MRS指令-从PSR移动到寄存器"><a href="#1-MRS指令-从PSR移动到寄存器" class="headerlink" title="1. MRS指令(从PSR移动到寄存器)"></a>1. MRS指令(从PSR移动到寄存器)</h3><p>MRS指令用于将程序状态寄存器的内容传送到通用寄存器中。该指令一般用在以下两种情况：</p>
@@ -791,14 +791,14 @@ height:40vh;
 <li>当在异常处理或进程切换时，需要保存程序状态寄存器的值，可先用该指令读出程序状态寄存器的值，然后保存。</li>
 </ul>
 <p>格式：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">MRS&#123;条件&#125;  通用寄存器 程序状态寄存器（CPSR或SPSR）</span><br></pre></td></tr></table></figure>
+<figure class="highlight arm"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="symbol">MRS</span>&#123;条件&#125;  通用寄存器 程序状态寄存器（CPSR或SPSR）</span><br></pre></td></tr></table></figure>
 
 <p>示例：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">MRS R0，CPSR      ; 传送CPSR的内容到R0</span><br><span class="line">MRS R0，SPSR      ; 传送 SPSR的内容到R0</span><br></pre></td></tr></table></figure>
+<figure class="highlight arm"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">MRS</span> <span class="built_in">R0</span>，<span class="keyword">CPSR</span>      <span class="comment">; 传送CPSR的内容到R0</span></span><br><span class="line"><span class="keyword">MRS</span> <span class="built_in">R0</span>，SPSR      <span class="comment">; 传送 SPSR的内容到R0</span></span><br></pre></td></tr></table></figure>
 
 <h3 id="2-MSR指令-从寄存器移动到PSR"><a href="#2-MSR指令-从寄存器移动到PSR" class="headerlink" title="2. MSR指令(从寄存器移动到PSR)"></a>2. MSR指令(从寄存器移动到PSR)</h3><p>MSR指令用于将操作数的内容传送到程序状态寄存器的特定域中。其中，操作数可以为通用寄存器或立即数。</p>
 <p>格式：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">MSR&#123;条件&#125;    程序状态寄存器（CPSR或SPSR）_&lt;域&gt;，操作数</span><br></pre></td></tr></table></figure>
+<figure class="highlight arm"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="symbol">MSR</span>&#123;条件&#125;    程序状态寄存器（CPSR或SPSR）_&lt;域&gt;，操作数</span><br></pre></td></tr></table></figure>
 
 <p>&lt;域&gt;用于设置程序状态寄存器中需要 操作的位，32位的程序状态寄存器可分为4个域：</p>
 <ul>
@@ -809,7 +809,7 @@ height:40vh;
 </ul>
 <p>该指令通常用于恢复或改变程序状态寄存器的内容，在使用时，一般要在MSR指令中指明将要操作的域。</p>
 <p>示例：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">MSR CPSR，R0        ; 传送R0的内容到CPSR</span><br><span class="line">MSR SPSR，R0        ; 传送R0的内容到SPSR</span><br><span class="line">MSR CPSR_c，R0      ; 传送R0的内容到SPSR，但仅仅修改CPSR中的控制位域</span><br></pre></td></tr></table></figure>
+<figure class="highlight arm"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">MSR</span> CPSR，<span class="built_in">R0</span>        <span class="comment">; 传送R0的内容到CPSR</span></span><br><span class="line"><span class="keyword">MSR</span> SPSR，<span class="built_in">R0</span>        <span class="comment">; 传送R0的内容到SPSR</span></span><br><span class="line"><span class="keyword">MSR</span> <span class="built_in">CPSR_c</span>，<span class="built_in">R0</span>      <span class="comment">; 传送R0的内容到SPSR，但仅仅修改CPSR中的控制位域</span></span><br></pre></td></tr></table></figure>
 
 <h2 id="四、加载-存储指令"><a href="#四、加载-存储指令" class="headerlink" title="四、加载/存储指令"></a>四、加载/存储指令</h2><p>ARM微处理器支持加载/存储指令用于在寄存器和存储器之间传送数据：</p>
 <ul>
@@ -821,72 +821,72 @@ height:40vh;
 <p>常用的加载存储指令如下：</p>
 <h3 id="1-LDR指令"><a href="#1-LDR指令" class="headerlink" title="1. LDR指令"></a>1. LDR指令</h3><p>LDR指令用于从存储器中将一个32位的字数据传送到目的寄存器中。该指令通常用于从存储器中读取32位的字数据到通用寄存器，然后对数据进行处理。</p>
 <p>格式：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">LDR&#123;条件&#125; 目的寄存器，&lt;存储器地址&gt;</span><br></pre></td></tr></table></figure>
+<figure class="highlight arm"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="symbol">LDR</span>&#123;条件&#125; 目的寄存器，&lt;存储器地址&gt;</span><br></pre></td></tr></table></figure>
 
 <ul>
 <li>当程序计数器PC作为目的寄存器时，指令从存储器中读取的字数据被当作目的地址，从而可以实现程序流程的跳转。</li>
 </ul>
 <p>该指令在程序设计中比较常用，且寻址方式灵活多样，请读者认真掌握。</p>
 <p>示例：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">LDR R0，[R1]             ; 将存储器地址为R1的字数据读入寄存器R0。</span><br><span class="line">LDR R0，[R1，R2]         ; 将存储器地址为R1+R2的字数据读入寄存器R0。</span><br><span class="line">LDR R0，[R1，#8]         ; 将存储器地址为R1+8的字数据读入寄存器R0。</span><br><span class="line">LDR R0，[R1，R2] ！       ; 将存储器地址为R1+R2的字数据读入寄存器R0，并将新地址R1＋R2写入R1。</span><br><span class="line">LDR R0，[R1，#8] ！      ; 将存储器地址为R1+8的字数据读入寄存器R0，并将新地址 R1＋8写入R1。</span><br><span class="line">LDR R0，[R1]，R2          ; 将存储器地址为R1的字数据读入寄存器R0，并将新地址 R1＋R2写入R1。</span><br><span class="line">LDR R0，[R1，R2，LSL#2]！ ; 将存储器地址为R1＋R2×4的字数据读入寄存器R0，并将新地址R1＋R2×4写入R1。</span><br><span class="line">LDR R0，[R1]，R2，LSL#2   ; 将存储器地址为R1的字数据读入 寄存器R0，并将新地址R1＋R2×4写入R1。</span><br></pre></td></tr></table></figure>
+<figure class="highlight arm"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">LDR</span> <span class="built_in">R0</span>，[<span class="built_in">R1</span>]             <span class="comment">; 将存储器地址为R1的字数据读入寄存器R0。</span></span><br><span class="line"><span class="keyword">LDR</span> <span class="built_in">R0</span>，[<span class="built_in">R1</span>，<span class="built_in">R2</span>]         <span class="comment">; 将存储器地址为R1+R2的字数据读入寄存器R0。</span></span><br><span class="line"><span class="keyword">LDR</span> <span class="built_in">R0</span>，[<span class="built_in">R1</span>，<span class="number">#8</span>]         <span class="comment">; 将存储器地址为R1+8的字数据读入寄存器R0。</span></span><br><span class="line"><span class="keyword">LDR</span> <span class="built_in">R0</span>，[<span class="built_in">R1</span>，<span class="built_in">R2</span>] ！       <span class="comment">; 将存储器地址为R1+R2的字数据读入寄存器R0，并将新地址R1＋R2写入R1。</span></span><br><span class="line"><span class="keyword">LDR</span> <span class="built_in">R0</span>，[<span class="built_in">R1</span>，<span class="number">#8</span>] ！      <span class="comment">; 将存储器地址为R1+8的字数据读入寄存器R0，并将新地址 R1＋8写入R1。</span></span><br><span class="line"><span class="keyword">LDR</span> <span class="built_in">R0</span>，[<span class="built_in">R1</span>]，<span class="built_in">R2</span>          <span class="comment">; 将存储器地址为R1的字数据读入寄存器R0，并将新地址 R1＋R2写入R1。</span></span><br><span class="line"><span class="keyword">LDR</span> <span class="built_in">R0</span>，[<span class="built_in">R1</span>，<span class="built_in">R2</span>，LSL<span class="number">#2</span>]！ <span class="comment">; 将存储器地址为R1＋R2×4的字数据读入寄存器R0，并将新地址R1＋R2×4写入R1。</span></span><br><span class="line"><span class="keyword">LDR</span> <span class="built_in">R0</span>，[<span class="built_in">R1</span>]，<span class="built_in">R2</span>，LSL<span class="number">#2</span>   <span class="comment">; 将存储器地址为R1的字数据读入 寄存器R0，并将新地址R1＋R2×4写入R1。</span></span><br></pre></td></tr></table></figure>
 
 <h3 id="2-LDRB指令"><a href="#2-LDRB指令" class="headerlink" title="2. LDRB指令"></a>2. LDRB指令</h3><p>LDRB指令用于从存储器中将一个8位的字节数据传送到目的寄存器中，同时将寄存器的高24位清零。 该指令通常用于从存储器中读取8位的字节数据到通用寄存器，然后对数据进行处理。</p>
 <p>格式：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">LDR&#123;条件&#125;B 目的寄存器，&lt;存储器地址&gt;</span><br></pre></td></tr></table></figure>
+<figure class="highlight arm"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="symbol">LDR</span>&#123;条件&#125;<span class="keyword">B</span> 目的寄存器，&lt;存储器地址&gt;</span><br></pre></td></tr></table></figure>
 
 <ul>
 <li>当程序计数器PC作为目的寄存器时，指令从存储器中读取的字数据被当作目的地址，从而可以实现程序流程的跳转。</li>
 </ul>
 <p>示例：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">LDRB R0，[R1]           ; 将存储器地址为R1的字节数据读入寄存器R0，并将R0的高24位清零。</span><br><span class="line">LDRB R0，[R1，#8]       ; 将存储器地址为R1＋8的字节数据读入寄存器R0，并将R0的高24位清零。</span><br></pre></td></tr></table></figure>
+<figure class="highlight arm"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">LDRB</span> <span class="built_in">R0</span>，[<span class="built_in">R1</span>]           <span class="comment">; 将存储器地址为R1的字节数据读入寄存器R0，并将R0的高24位清零。</span></span><br><span class="line"><span class="keyword">LDRB</span> <span class="built_in">R0</span>，[<span class="built_in">R1</span>，<span class="number">#8</span>]       <span class="comment">; 将存储器地址为R1＋8的字节数据读入寄存器R0，并将R0的高24位清零。</span></span><br></pre></td></tr></table></figure>
 
 <h3 id="3-LDRH指令"><a href="#3-LDRH指令" class="headerlink" title="3. LDRH指令"></a>3. LDRH指令</h3><p>LDRH指令用于从存储器中将一个16位的半字数据传送到目的寄存器中，同时将寄存器的高16位清零。 该指令通常用于从存储器中读取16位的半字数据到通用寄存器，然后对数据进行处理。</p>
 <p>格式：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">LDR&#123;条件&#125;H 目的寄存器，&lt;存储器地址&gt;</span><br></pre></td></tr></table></figure>
+<figure class="highlight arm"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="symbol">LDR</span>&#123;条件&#125;H 目的寄存器，&lt;存储器地址&gt;</span><br></pre></td></tr></table></figure>
 
 <ul>
 <li>当程序计数器PC作为目的寄存器时，指令从存储器中读取的字数据被当作目的地址，从而可以实现程序流程的跳转。</li>
 </ul>
 <p>示例：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">LDRH   R0，[R1]         ; 将存储器地址为R1的半字数据读入寄存器 R0，并将R0的高16位清零。</span><br><span class="line">LDRH   R0，[R1，#8]     ; 将存储器地址为R1＋8的半字数据读入寄存器R0，并将R0 的高16位清零。</span><br><span class="line">LDRH   R0，[R1，R2]     ; 将存储器地址为R1＋R2的半字数据读入寄存器R0，并将 R0的高16位清零。</span><br></pre></td></tr></table></figure>
+<figure class="highlight arm"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">LDRH</span>   <span class="built_in">R0</span>，[<span class="built_in">R1</span>]         <span class="comment">; 将存储器地址为R1的半字数据读入寄存器 R0，并将R0的高16位清零。</span></span><br><span class="line"><span class="keyword">LDRH</span>   <span class="built_in">R0</span>，[<span class="built_in">R1</span>，<span class="number">#8</span>]     <span class="comment">; 将存储器地址为R1＋8的半字数据读入寄存器R0，并将R0 的高16位清零。</span></span><br><span class="line"><span class="keyword">LDRH</span>   <span class="built_in">R0</span>，[<span class="built_in">R1</span>，<span class="built_in">R2</span>]     <span class="comment">; 将存储器地址为R1＋R2的半字数据读入寄存器R0，并将 R0的高16位清零。</span></span><br></pre></td></tr></table></figure>
 
 <h3 id="4-STR指令"><a href="#4-STR指令" class="headerlink" title="4. STR指令"></a>4. STR指令</h3><p>STR指令用于从源寄存器中将一个32位的字数据传送到存储器中。 该指令在程序设计中比较常用，且寻址方式灵活多样，使用方式可参考指令LDR。</p>
 <p>格式：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">STR&#123;条件&#125; 源寄存器，&lt;存储器地址&gt;</span><br></pre></td></tr></table></figure>
+<figure class="highlight arm"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="symbol">STR</span>&#123;条件&#125; 源寄存器，&lt;存储器地址&gt;</span><br></pre></td></tr></table></figure>
 
 <p>示例：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">STR R0，[R1]，#8           ; 将R0中的字数据写入以R1为地址的存储器中，并将新地址R1＋8写入R1。</span><br><span class="line">STR R0，[R1，#8]           ; 将R0中的字数据写入以R1＋8为地址的存储器中。</span><br></pre></td></tr></table></figure>
+<figure class="highlight arm"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">STR</span> <span class="built_in">R0</span>，[<span class="built_in">R1</span>]，<span class="number">#8</span>           <span class="comment">; 将R0中的字数据写入以R1为地址的存储器中，并将新地址R1＋8写入R1。</span></span><br><span class="line"><span class="keyword">STR</span> <span class="built_in">R0</span>，[<span class="built_in">R1</span>，<span class="number">#8</span>]           <span class="comment">; 将R0中的字数据写入以R1＋8为地址的存储器中。</span></span><br></pre></td></tr></table></figure>
 
 <h3 id="5-STRB指令"><a href="#5-STRB指令" class="headerlink" title="5. STRB指令"></a>5. STRB指令</h3><p>STRB指令用于从源寄存器中将一个8位的字节数据传送到存储器中。该字节数据为源寄存器中的低8位。</p>
 <p>格式：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">STR&#123;条件&#125;B 源寄存器，&lt;存储器地址&gt;</span><br></pre></td></tr></table></figure>
+<figure class="highlight arm"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="symbol">STR</span>&#123;条件&#125;<span class="keyword">B</span> 源寄存器，&lt;存储器地址&gt;</span><br></pre></td></tr></table></figure>
 
 <p>示例：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">STRB    R0，[R1]             ; 将寄存器R0中的字节数据写入以R1为地 址的存储器中。</span><br><span class="line">STRB    R0，[R1，#8]         ; 将寄存器R0中的字节数据写入以R1＋8为地址的存 储器中。</span><br></pre></td></tr></table></figure>
+<figure class="highlight arm"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">STRB</span>    <span class="built_in">R0</span>，[<span class="built_in">R1</span>]             <span class="comment">; 将寄存器R0中的字节数据写入以R1为地 址的存储器中。</span></span><br><span class="line"><span class="keyword">STRB</span>    <span class="built_in">R0</span>，[<span class="built_in">R1</span>，<span class="number">#8</span>]         <span class="comment">; 将寄存器R0中的字节数据写入以R1＋8为地址的存 储器中。</span></span><br></pre></td></tr></table></figure>
 
 <h3 id="6-STRH指令"><a href="#6-STRH指令" class="headerlink" title="6. STRH指令"></a>6. STRH指令</h3><p>STRH指令用于从源寄存器中将一个16位的半字数据传送到存储器中。该半字数据为源寄存器中的低16位。</p>
 <p>格式：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">STR&#123;条件&#125;H 源寄存器，&lt;存储器地址&gt;</span><br></pre></td></tr></table></figure>
+<figure class="highlight arm"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="symbol">STR</span>&#123;条件&#125;H 源寄存器，&lt;存储器地址&gt;</span><br></pre></td></tr></table></figure>
 
 <p>示例：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">STRH   R0，[R1]            ; 将寄存器R0中的半字数据写入以R1为地址的 存储器中。</span><br><span class="line">STRH   R0，[R1，#8]        ; 将寄存器R0中的半字数据写入以R1＋8 为地址的存储器中。</span><br></pre></td></tr></table></figure>
+<figure class="highlight arm"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">STRH</span>   <span class="built_in">R0</span>，[<span class="built_in">R1</span>]            <span class="comment">; 将寄存器R0中的半字数据写入以R1为地址的 存储器中。</span></span><br><span class="line"><span class="keyword">STRH</span>   <span class="built_in">R0</span>，[<span class="built_in">R1</span>，<span class="number">#8</span>]        <span class="comment">; 将寄存器R0中的半字数据写入以R1＋8 为地址的存储器中。</span></span><br></pre></td></tr></table></figure>
 
 <h3 id="7-ADR指令"><a href="#7-ADR指令" class="headerlink" title="7. ADR指令"></a>7. ADR指令</h3><p>将一个立即值与 pc 值相加，并将结果写入目标寄存器</p>
 <p>格式：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ADR&#123;cond&#125;&#123;.W&#125;  Rd,label</span><br></pre></td></tr></table></figure>
+<figure class="highlight arm"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="symbol">ADR</span>&#123;cond&#125;&#123;.W&#125;  Rd,label</span><br></pre></td></tr></table></figure>
 
 <h3 id="8-ADRP指令"><a href="#8-ADRP指令" class="headerlink" title="8. ADRP指令"></a>8. ADRP指令</h3><p>以页为单位的大范围的地址读取指令，这里的P就是page的意思。取得page的基地址存入寄存器</p>
 <p>格式：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ADRP&#123;cond&#125;  Rd  label</span><br></pre></td></tr></table></figure>
+<figure class="highlight arm"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="symbol">ADRP</span>&#123;cond&#125;  Rd  label</span><br></pre></td></tr></table></figure>
 
 <p>示例：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">adrp    x2, .LANCHOR0   ; .LANCHOR0是个&lt;lable&gt;——一个大小为4KB的页的基址，指令的作用就是将该页的基址存到寄存器x2中</span><br><span class="line"></span><br><span class="line">; 示例2：</span><br><span class="line">adrp    x0, l_.str@PAGE         ; 将符号l.str所在的page基址读入x0</span><br><span class="line">add     x0, x0, l_.str@PAGEOFF  ; x0 &#x3D; x0 + l.str所在page中的偏移量</span><br></pre></td></tr></table></figure>
+<figure class="highlight arm"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">adrp</span>    x2, .LANCHOR0   <span class="comment">; .LANCHOR0是个&lt;lable&gt;——一个大小为4KB的页的基址，指令的作用就是将该页的基址存到寄存器x2中</span></span><br><span class="line"></span><br><span class="line"><span class="comment">; 示例2：</span></span><br><span class="line"><span class="keyword">adrp</span>    x0, l_.str<span class="comment">@PAGE         ; 将符号l.str所在的page基址读入x0</span></span><br><span class="line"><span class="keyword">add</span>     x0, x0, l_.str<span class="comment">@PAGEOFF  ; x0 = x0 + l.str所在page中的偏移量</span></span><br></pre></td></tr></table></figure>
 
 <h3 id="—批量数据加载-存储指令—"><a href="#—批量数据加载-存储指令—" class="headerlink" title="—批量数据加载/存储指令—"></a>—批量数据加载/存储指令—</h3><p>ARM微处理器所支持批量数据加载/存储指令可以一次在一片连续的存储器单元和多个寄存器之间传送数据，批量加载指令 用于将一片连续的存储器中的数据传送到多个寄存器，批量数据存储指令则完成相反的操作。</p>
 <p>常用的加载存储指令如下：</p>
 <h3 id="1-LDM-STM-指令（加载、存储多个寄存器）"><a href="#1-LDM-STM-指令（加载、存储多个寄存器）" class="headerlink" title="1. LDM(STM)指令（加载、存储多个寄存器）"></a>1. LDM(STM)指令（加载、存储多个寄存器）</h3><p>LDM（或STM）指令用于从由基址寄存器所指示的一片连续存储器到寄存器列表所指示的多个寄存器之间传送数据，该指令的常见用途是将多个寄存器的内容入栈或出栈。</p>
 <p>格式：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">LDM（或STM）&#123;条件&#125;&#123;类型&#125; 基址寄存器&#123;！&#125;，寄存器列表&#123;∧&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight arm"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="symbol">LDM</span>（或STM）&#123;条件&#125;&#123;类型&#125; 基址寄存器&#123;！&#125;，寄存器列表&#123;∧&#125;</span><br></pre></td></tr></table></figure>
 
 <p>其中：</p>
 <ul>
@@ -908,80 +908,80 @@ height:40vh;
 <li><code>&#123;∧&#125;</code> 为可选后缀，当指令为LDM且寄存器列表中包含R15，选用该后缀时表示：除了正常的数据传送之外，还将SPSR复制到CPSR。同时，该后缀还表 示传入或传出的是用户模式下的寄存器，而不是当前模式下的寄存器。</li>
 </ul>
 <p>示例：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">STMFD R13!，&#123;R0，R4-R12，LR&#125;        ; 将寄存器列表中的寄存器（R0，R4到R12，LR）存入堆栈。</span><br><span class="line">LDMFD R13!， &#123;R0，R4-R12，PC&#125;       ; 将堆栈内容恢复到寄存器（R0，R4到R12，LR）。</span><br></pre></td></tr></table></figure>
+<figure class="highlight arm"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="symbol">STMFD</span> <span class="built_in">R13</span>!，&#123;<span class="built_in">R0</span>，<span class="built_in">R4</span>-<span class="built_in">R12</span>，<span class="built_in">LR</span>&#125;        <span class="comment">; 将寄存器列表中的寄存器（R0，R4到R12，LR）存入堆栈。</span></span><br><span class="line"><span class="keyword">LDMFD</span> <span class="built_in">R13</span>!， &#123;<span class="built_in">R0</span>，<span class="built_in">R4</span>-<span class="built_in">R12</span>，<span class="built_in">PC</span>&#125;       <span class="comment">; 将堆栈内容恢复到寄存器（R0，R4到R12，LR）。</span></span><br></pre></td></tr></table></figure>
 
 <h3 id="—数据交换指令—"><a href="#—数据交换指令—" class="headerlink" title="—数据交换指令—"></a>—数据交换指令—</h3><p>在寄存器和内存之间交换数据</p>
 <h3 id="1-SWP指令"><a href="#1-SWP指令" class="headerlink" title="1. SWP指令"></a>1. SWP指令</h3><p>格式：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">SWP&#123;条件&#125; 目的寄存器，源寄存器1，[源寄存器2]</span><br></pre></td></tr></table></figure>
+<figure class="highlight arm"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="symbol">SWP</span>&#123;条件&#125; 目的寄存器，源寄存器<span class="number">1</span>，[源寄存器<span class="number">2</span>]</span><br></pre></td></tr></table></figure>
 
 <p>SWP指令用于将源寄存器2所指向的存储器中的字数据传送到目的寄存器中，同时将源寄存器1中的字数据传送到源寄存器2所指向的存储器中。显然，当源寄存器1和目的寄存器为同一个寄存器时，指令交换该寄存器和存储器的内容。</p>
 <p>示例：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">SWP   R0，R1，[R2]     ; 将R2所指向的存储器中的字数据传送到R0，同时将R1 中的字数据传送到R2所指向的存储单元。</span><br><span class="line">SWP   R0，R0，[R1]     ; 该指令完成将R1所指向的存储器中的字数 据与R0中的数据交换。</span><br></pre></td></tr></table></figure>
+<figure class="highlight arm"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SWP</span>   <span class="built_in">R0</span>，<span class="built_in">R1</span>，[<span class="built_in">R2</span>]     <span class="comment">; 将R2所指向的存储器中的字数据传送到R0，同时将R1 中的字数据传送到R2所指向的存储单元。</span></span><br><span class="line"><span class="keyword">SWP</span>   <span class="built_in">R0</span>，<span class="built_in">R0</span>，[<span class="built_in">R1</span>]     <span class="comment">; 该指令完成将R1所指向的存储器中的字数 据与R0中的数据交换。</span></span><br></pre></td></tr></table></figure>
 
 <p>SWP{B}：B是一个可选的后缀。如果存在 B，则交换一个字节。否则，交换一个32位字。</p>
 <h3 id="2-SWPB指令"><a href="#2-SWPB指令" class="headerlink" title="2. SWPB指令"></a>2. SWPB指令</h3><p>格式：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">SWP&#123;条件&#125;B 目的寄存器，源寄存器1，[源寄存器2]</span><br></pre></td></tr></table></figure>
+<figure class="highlight arm"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="symbol">SWP</span>&#123;条件&#125;<span class="keyword">B</span> 目的寄存器，源寄存器<span class="number">1</span>，[源寄存器<span class="number">2</span>]</span><br></pre></td></tr></table></figure>
 
 <p>SWPB指令用于将源寄存器2所指向的存储器中的字节数据传送到目的寄存器中，目的寄存器的高24清零，同时将源寄存器1中的字节数据传送到源寄存器2所指向的存储器中。</p>
 <p>显然，当源寄存器1和目的寄存器为同一个寄存器时，指令交换该寄存器和存储器的内容。</p>
 <p>示例：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">SWPB   R0，R1，[R2]       ; 将R2所指向的存储器中的字节数据传送到 R0，R0的高24位清零，同时将R1中的低8位数据传送到R2所指向的存储单元。</span><br><span class="line">SWPB   R0，R0，[R1]       ; 该指令完成将R1所指向的存储器中的 字节数据与R0中的低8位数据交换。</span><br></pre></td></tr></table></figure>
+<figure class="highlight arm"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SWPB</span>   <span class="built_in">R0</span>，<span class="built_in">R1</span>，[<span class="built_in">R2</span>]       <span class="comment">; 将R2所指向的存储器中的字节数据传送到 R0，R0的高24位清零，同时将R1中的低8位数据传送到R2所指向的存储单元。</span></span><br><span class="line"><span class="keyword">SWPB</span>   <span class="built_in">R0</span>，<span class="built_in">R0</span>，[<span class="built_in">R1</span>]       <span class="comment">; 该指令完成将R1所指向的存储器中的 字节数据与R0中的低8位数据交换。</span></span><br></pre></td></tr></table></figure>
 
 <h2 id="五、协处理器指令"><a href="#五、协处理器指令" class="headerlink" title="五、协处理器指令"></a>五、协处理器指令</h2><p>此类指令支持一种用于扩展 ARM 体系结构的通用方式。</p>
 <p>ARM 微处理器可支持多达 16 个协处理器，用于各种协处理操作，在程序执行的过程中，每个协处理器只执行针对自身的协处理指令，忽略 ARM 处理器和其他协处理器的指令。</p>
 <p>ARM 的协处理器指令主要用于 ARM 处理器初始化 ARM 协处理器的数据处理操作，以及在ARM 处理器的寄存器和协处理器的寄存器之间传送数据，和在 ARM 协处理器的寄存器和存储器之间传送数据。</p>
 <h3 id="1-CDP指令"><a href="#1-CDP指令" class="headerlink" title="1. CDP指令"></a>1. CDP指令</h3><p>CDP指令用于ARM处理器通知ARM协处理器执行特定的操作，若协处理器不能成功完成特定的操作，则产生未定义指令异常。</p>
 <p>格式：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">CDP&#123;条件&#125; 协处理器编码，协处理器操作码1，目的寄存器，源寄存器1，源寄存器2，协处理器操作码2。</span><br></pre></td></tr></table></figure>
+<figure class="highlight arm"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="symbol">CDP</span>&#123;条件&#125; 协处理器编码，协处理器操作码<span class="number">1</span>，目的寄存器，源寄存器<span class="number">1</span>，源寄存器<span class="number">2</span>，协处理器操作码<span class="number">2</span>。</span><br></pre></td></tr></table></figure>
 
 <p>其中协处理器操作码1和协处理 器操作码2为协处理器将要执行的操作，目的寄存器和源寄存器均为协处理器的寄存器，指令不涉及ARM处理器的寄存器和存储器。</p>
 <p>示例：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">CDP   P3，2，C12，C10，C3，4  ; 该指令完成协处理器P3的初始化 </span><br></pre></td></tr></table></figure>
+<figure class="highlight arm"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">CDP</span>   <span class="built_in">P3</span>，<span class="number">2</span>，<span class="built_in">C12</span>，<span class="built_in">C10</span>，<span class="built_in">C3</span>，<span class="number">4</span>  <span class="comment">; 该指令完成协处理器P3的初始化 </span></span><br></pre></td></tr></table></figure>
 
 <h3 id="2-LDC指令"><a href="#2-LDC指令" class="headerlink" title="2. LDC指令"></a>2. LDC指令</h3><p>LDC指令用于将源寄存器所指向的存储器中的字数据传送到目的寄存器中，若协处理器不能成功完成传送操作，则产生未定义指令异常。</p>
 <p>格式：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">LDC&#123;条件&#125;&#123;L&#125; 协处理器编码，目的寄存器，[源寄存器]</span><br></pre></td></tr></table></figure>
+<figure class="highlight arm"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="symbol">LDC</span>&#123;条件&#125;&#123;L&#125; 协处理器编码，目的寄存器，[源寄存器]</span><br></pre></td></tr></table></figure>
 
 <p>其中，{L}选项表示指 令为长读取操作，如用于双精度数据的传输。</p>
 <p>示例：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">LDC   P3，C4，[R0]        ; 将ARM处理器的寄存器R0所指向的存储器中的字数 据传送到协处理器P3的寄存器C4中。 </span><br></pre></td></tr></table></figure>
+<figure class="highlight arm"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="symbol">LDC</span>   <span class="built_in">P3</span>，<span class="built_in">C4</span>，[<span class="built_in">R0</span>]        <span class="comment">; 将ARM处理器的寄存器R0所指向的存储器中的字数 据传送到协处理器P3的寄存器C4中。 </span></span><br></pre></td></tr></table></figure>
 
 <h3 id="3-STC指令"><a href="#3-STC指令" class="headerlink" title="3. STC指令"></a>3. STC指令</h3><p>STC指令用于将源寄存器中的字数据传送到目的寄存器所指向的存储器中，若协处理器不能成功完成传送操作，则产生未定义指令异常。</p>
 <p>格式：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">STC&#123;条件&#125;&#123;L&#125; 协处理器编码，源寄存器，[目的寄存器]</span><br></pre></td></tr></table></figure>
+<figure class="highlight arm"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="symbol">STC</span>&#123;条件&#125;&#123;L&#125; 协处理器编码，源寄存器，[目的寄存器]</span><br></pre></td></tr></table></figure>
 
 <p>其中，{L}选项表示指 令为长读取操作，如用于双精度数据的传输。</p>
 <p>示例：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">STC   P3，C4，[R0]     ; 将协处理器P3的寄存器C4中的字数据传送到ARM处理 器的寄存器R0所指向的存储器中。 </span><br></pre></td></tr></table></figure>
+<figure class="highlight arm"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="symbol">STC</span>   <span class="built_in">P3</span>，<span class="built_in">C4</span>，[<span class="built_in">R0</span>]     <span class="comment">; 将协处理器P3的寄存器C4中的字数据传送到ARM处理 器的寄存器R0所指向的存储器中。 </span></span><br></pre></td></tr></table></figure>
 
 <h3 id="4-MCR指令"><a href="#4-MCR指令" class="headerlink" title="4. MCR指令"></a>4. MCR指令</h3><p>MCR指令用于将ARM处理器寄存器中的数据传送到协处理器寄存器中，若协处理器不能成功完成操作，则产生未定义指令异常。</p>
 <p>格式：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">MCR&#123;条件&#125; 协处理器编码，协处理器操作码1，源寄存器，目的寄存器1，目的寄存器2，协处理器操作码2。</span><br></pre></td></tr></table></figure>
+<figure class="highlight arm"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="symbol">MCR</span>&#123;条件&#125; 协处理器编码，协处理器操作码<span class="number">1</span>，源寄存器，目的寄存器<span class="number">1</span>，目的寄存器<span class="number">2</span>，协处理器操作码<span class="number">2</span>。</span><br></pre></td></tr></table></figure>
 
 <p>其中协处理器操作码1和协处理 器操作码2为协处理器将要执行的操作，源寄存器为ARM处理器的寄存器，目的寄存器1和目的寄存器2均为协处理器的寄 存器。</p>
 <p>示例：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">MCR   P3，3，R0，C4，C5，6     ; 将ARM处理器寄存器R0中的数据传送到协处 理器P3的寄存器C4和C5中。 </span><br></pre></td></tr></table></figure>
+<figure class="highlight arm"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="symbol">MCR</span>   <span class="built_in">P3</span>，<span class="number">3</span>，<span class="built_in">R0</span>，<span class="built_in">C4</span>，<span class="built_in">C5</span>，<span class="number">6</span>     <span class="comment">; 将ARM处理器寄存器R0中的数据传送到协处 理器P3的寄存器C4和C5中。 </span></span><br></pre></td></tr></table></figure>
 
 <h3 id="5-MRC指令"><a href="#5-MRC指令" class="headerlink" title="5. MRC指令"></a>5. MRC指令</h3><p>MRC指令用于将协处理器寄存器中的数据传送到ARM处理器寄存器中,若协处理器不能成功完成操作，则产生未定义指令异常。</p>
 <p>格式：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">MRC&#123;条件&#125; 协处理器编码，协处理器操作码1，目的寄存器，源寄存器1，源寄存器2，协处理器操作码2。</span><br></pre></td></tr></table></figure>
+<figure class="highlight arm"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="symbol">MRC</span>&#123;条件&#125; 协处理器编码，协处理器操作码<span class="number">1</span>，目的寄存器，源寄存器<span class="number">1</span>，源寄存器<span class="number">2</span>，协处理器操作码<span class="number">2</span>。</span><br></pre></td></tr></table></figure>
 
 <p>其中协处理器操作码1和协处理器操作码2为协处理器将要执行的操作，目的寄存器为ARM处理器的寄存器，源寄存器1和源寄存器2均为协处理器的寄存器。</p>
 <p>示例：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">MRC   P3，3，R0，C4，C5，6     ; 该指令将协处理器P3的寄存器中的数据传送到 ARM处理器寄存器中。</span><br></pre></td></tr></table></figure>
+<figure class="highlight arm"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">MRC</span>   <span class="built_in">P3</span>，<span class="number">3</span>，<span class="built_in">R0</span>，<span class="built_in">C4</span>，<span class="built_in">C5</span>，<span class="number">6</span>     <span class="comment">; 该指令将协处理器P3的寄存器中的数据传送到 ARM处理器寄存器中。</span></span><br></pre></td></tr></table></figure>
 
 <h2 id="六、异常产生指令"><a href="#六、异常产生指令" class="headerlink" title="六、异常产生指令"></a>六、异常产生指令</h2><p>ARM指令集中提供了两条产生异常的指令，通过这两条指令可以用软件的方法实现异常。</p>
 <h3 id="1-SWI指令"><a href="#1-SWI指令" class="headerlink" title="1. SWI指令"></a>1. SWI指令</h3><p>SWI指令用于产生软件中断，以便用户程序能调用操作系统的系统例程。操作系统在SWI的异常处理程序中提供相应的系统服务。</p>
 <p>格式：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">SWI&#123;条件&#125; 24位的立即数</span><br></pre></td></tr></table></figure>
+<figure class="highlight arm"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="symbol">SWI</span>&#123;条件&#125; <span class="number">24</span>位的立即数</span><br></pre></td></tr></table></figure>
 
 <p>指令中24位的立即数指定用户程序调用系统例程的类型，相关参数通过通用寄存器传递，当指令中24位的立即数被忽略时，用户程序调用系统例程的类型由通用寄存器R0的内容决定，同时，参数通过其他通用寄存器传递。 </p>
 <p>示例：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">SWI   0x02     ; 该指令调用操作系统编号位02的系统例程。</span><br></pre></td></tr></table></figure>
+<figure class="highlight arm"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SWI</span>   <span class="number">0x02</span>     <span class="comment">; 该指令调用操作系统编号位02的系统例程。</span></span><br></pre></td></tr></table></figure>
 
 <h3 id="2-BKPT指令"><a href="#2-BKPT指令" class="headerlink" title="2. BKPT指令"></a>2. BKPT指令</h3><p>BKPT指令产生软件断点中断，可用于程序的调试。</p>
 <p>格式：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">BKPT   16位的立即数</span><br></pre></td></tr></table></figure>
+<figure class="highlight arm"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">BKPT</span>   <span class="number">16</span>位的立即数</span><br></pre></td></tr></table></figure>
 
 <h2 id="ARM汇编伪指令"><a href="#ARM汇编伪指令" class="headerlink" title="ARM汇编伪指令"></a>ARM汇编伪指令</h2><p>在ARM汇编语言程序里，有一些特殊指令助记符，这些助记符与指令系统的助记符不同，没有相对应的操作码，通常称这些特殊指令助记符为伪指令，他们所完成的操作称为伪操作。</p>
 <p><strong>伪指令在源程序中的作用是为完成汇编程序作各种准备工作的，这些伪指令仅在汇编过程中起作用，一旦汇编结束，伪指令的使命就完成。</strong></p>
@@ -1001,10 +1001,10 @@ height:40vh;
 </ul>
 <p>由于以上三条伪指令用于定义全局变量，因此在整个程序范围内变量名必须唯一。</p>
 <p>格式：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">GBLA(GBLL或GBLS）全局变量名</span><br></pre></td></tr></table></figure>
+<figure class="highlight arm"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="symbol">GBLA</span>(<span class="meta">GBLL</span>或<span class="meta">GBLS</span>）全局变量名</span><br></pre></td></tr></table></figure>
 
 <p>示例：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">GBLA Test1            ; 定义一个全局的数字变量，变量名为 Test1。    </span><br><span class="line">Test1 SETA 0xaa       ; 将该变量赋值为0xaa。</span><br><span class="line"></span><br><span class="line">GBLL Test2            ; 定义一个全局的逻辑变量，变量名为 Test2。    </span><br><span class="line">Test2 SETL &#123;TRUE&#125;     ; 将该变量赋值为真。    </span><br><span class="line"></span><br><span class="line">GBLS Test3            ; 定义一个全局的字符串变量，变量名为 Test3。    </span><br><span class="line">Test3 SETS “Testing”  ; 将该变量赋值为&quot;Testing”。  </span><br></pre></td></tr></table></figure>
+<figure class="highlight arm"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="symbol">GBLA</span> Test1            <span class="comment">; 定义一个全局的数字变量，变量名为 Test1。    </span></span><br><span class="line"><span class="symbol">Test1</span> <span class="meta">SETA</span> <span class="number">0xaa</span>       <span class="comment">; 将该变量赋值为0xaa。</span></span><br><span class="line"></span><br><span class="line"><span class="symbol">GBLL</span> Test2            <span class="comment">; 定义一个全局的逻辑变量，变量名为 Test2。    </span></span><br><span class="line"><span class="symbol">Test2</span> <span class="meta">SETL</span> &#123;TRUE&#125;     <span class="comment">; 将该变量赋值为真。    </span></span><br><span class="line"></span><br><span class="line"><span class="symbol">GBLS</span> Test3            <span class="comment">; 定义一个全局的字符串变量，变量名为 Test3。    </span></span><br><span class="line"><span class="symbol">Test3</span> <span class="meta">SETS</span> “Testing”  <span class="comment">; 将该变量赋值为&quot;Testing”。  </span></span><br></pre></td></tr></table></figure>
 
 <h4 id="2-LCLA、LCLL-和LCLS"><a href="#2-LCLA、LCLL-和LCLS" class="headerlink" title="2. LCLA、LCLL 和LCLS"></a>2. LCLA、LCLL 和LCLS</h4><p>LCLA 、LCLL 和LCLS 伪指令用于定义一个ARM 程序中的局部变量，并将其初始化。其中：</p>
 <ul>
@@ -1014,10 +1014,10 @@ height:40vh;
 </ul>
 <p>以上三条伪指令用于声明局部变量，在其作用范围内变量名必须唯一。</p>
 <p>格式：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">LCLA(LCLL或LCLS) 局部变量名</span><br></pre></td></tr></table></figure>
+<figure class="highlight arm"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="symbol">LCLA</span>(<span class="meta">LCLL</span>或<span class="meta">LCLS</span>) 局部变量名</span><br></pre></td></tr></table></figure>
 
 <p>示例：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">LCLA Test4             ; 声明一个局部的数字变 量，变量名为Test4。  </span><br><span class="line">Test3 SETA 0xaa        ; 将该变量赋值为0xaa。 </span><br><span class="line"></span><br><span class="line">LCLL Test5             ; 声明一个局部的逻辑变 量，变量名为Test5。    </span><br><span class="line">Test4 SETL &#123;TRUE&#125;      ; 将该变量赋值为真。    </span><br><span class="line"></span><br><span class="line">LCLS Test6             ; 定义一个局部的字 符串变量，变量名为Test6。    </span><br><span class="line">Test6 SETS “Testing”   ; 将该变量赋值为 &quot;Testing”。   </span><br></pre></td></tr></table></figure>
+<figure class="highlight arm"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="symbol">LCLA</span> Test4             <span class="comment">; 声明一个局部的数字变 量，变量名为Test4。  </span></span><br><span class="line"><span class="symbol">Test3</span> <span class="meta">SETA</span> <span class="number">0xaa</span>        <span class="comment">; 将该变量赋值为0xaa。 </span></span><br><span class="line"></span><br><span class="line"><span class="symbol">LCLL</span> Test5             <span class="comment">; 声明一个局部的逻辑变 量，变量名为Test5。    </span></span><br><span class="line"><span class="symbol">Test4</span> <span class="meta">SETL</span> &#123;TRUE&#125;      <span class="comment">; 将该变量赋值为真。    </span></span><br><span class="line"></span><br><span class="line"><span class="symbol">LCLS</span> Test6             <span class="comment">; 定义一个局部的字 符串变量，变量名为Test6。    </span></span><br><span class="line"><span class="symbol">Test6</span> <span class="meta">SETS</span> “Testing”   <span class="comment">; 将该变量赋值为 &quot;Testing”。   </span></span><br></pre></td></tr></table></figure>
 
 <h4 id="3-SETA、SETL-和SETS"><a href="#3-SETA、SETL-和SETS" class="headerlink" title="3. SETA、SETL 和SETS"></a>3. SETA、SETL 和SETS</h4><p>伪指令 SETA 、SETL 、SETS 用于给一个已经定义的全局变量或局部变量赋值。</p>
 <ul>
@@ -1027,18 +1027,18 @@ height:40vh;
 </ul>
 <p>其中，变量名为已经定义过的全局变量或局部变量，表达式为将要赋给变量的值。</p>
 <p>格式：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">变量名 SETA(SETL或SETS) 表达式</span><br></pre></td></tr></table></figure>
+<figure class="highlight arm"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">变量名 <span class="meta">SETA</span>(<span class="meta">SETL</span>或<span class="meta">SETS</span>) 表达式</span><br></pre></td></tr></table></figure>
 
 <p>示例：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">LCLA Test3              ; 声明一个局部的数字变量，变量名为 Test3。</span><br><span class="line">Test3 SETA 0xaa         ; 将该变量赋值为0xaa。</span><br><span class="line">LCLL Test4              ; 声明一个局部的逻辑变量，变量名为 Test4。</span><br><span class="line">Test4 SETL &#123;TRUE&#125;       ; 将该变量赋值为真。</span><br></pre></td></tr></table></figure>
+<figure class="highlight arm"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="symbol">LCLA</span> Test3              <span class="comment">; 声明一个局部的数字变量，变量名为 Test3。</span></span><br><span class="line"><span class="symbol">Test3</span> <span class="meta">SETA</span> <span class="number">0xaa</span>         <span class="comment">; 将该变量赋值为0xaa。</span></span><br><span class="line"><span class="symbol">LCLL</span> Test4              <span class="comment">; 声明一个局部的逻辑变量，变量名为 Test4。</span></span><br><span class="line"><span class="symbol">Test4</span> <span class="meta">SETL</span> &#123;TRUE&#125;       <span class="comment">; 将该变量赋值为真。</span></span><br></pre></td></tr></table></figure>
 
 <h4 id="4-RLIST"><a href="#4-RLIST" class="headerlink" title="4. RLIST"></a>4. RLIST</h4><p>RLIST伪指令可用于对一个通用寄存器列表定义名称，使用该伪指令定义的名称可在ARM 指令 LDM/STM中使用。</p>
 <p>在LDM/STM指令中，列表中的寄存器访问次序为根据寄存器的编号由低到高，而与列表中的寄存器排列次序无关。</p>
 <p>格式：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">名称 RLIST &#123; 寄存器列表 &#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight arm"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">名称 <span class="meta">RLIST</span> &#123; 寄存器列表 &#125;</span><br></pre></td></tr></table></figure>
 
 <p>示例：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">RegList RLIST &#123;R0-R5 ，R8 ，R10&#125;  ; 将寄存器列表名称定义为 RegList ，可在ARM指令LDM&#x2F;STM中通过该名称访问寄存器列表。</span><br></pre></td></tr></table></figure>
+<figure class="highlight arm"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="symbol">RegList</span> <span class="meta">RLIST</span> &#123;<span class="built_in">R0</span>-<span class="built_in">R5</span> ，<span class="built_in">R8</span> ，<span class="built_in">R10</span>&#125;  <span class="comment">; 将寄存器列表名称定义为 RegList ，可在ARM指令LDM/STM中通过该名称访问寄存器列表。</span></span><br></pre></td></tr></table></figure>
 
 <h3 id="二、数据定义（Data-Definition）伪指令"><a href="#二、数据定义（Data-Definition）伪指令" class="headerlink" title="二、数据定义（Data Definition）伪指令"></a>二、数据定义（Data Definition）伪指令</h3><p>数据定义伪指令一般用于为特定的数据分配存储单元，同时可完成已分配存储单元的初始化。<br>常见的数据定义伪指令有如下几种：</p>
 <ul>
@@ -1054,29 +1054,29 @@ height:40vh;
 </ul>
 <h4 id="1-DCB"><a href="#1-DCB" class="headerlink" title="1. DCB"></a>1. DCB</h4><p>DCB伪指令用于分配一片连续的字节存储单元并用伪指令中指定的表达式初始化。</p>
 <p>格式：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">标号 DCB 表达式</span><br></pre></td></tr></table></figure>
+<figure class="highlight arm"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">标号 <span class="meta">DCB</span> 表达式</span><br></pre></td></tr></table></figure>
 
 <ul>
 <li>表达式可以为0～255的数字或字符串。</li>
 <li>DCB 也可用 “=” 代替。</li>
 </ul>
 <p>示例：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Str DCB “This is a test” ; 分配一片连续的字节存储单元并初始化。 </span><br></pre></td></tr></table></figure>
+<figure class="highlight arm"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">Str</span> <span class="meta">DCB</span> “This is a test” <span class="comment">; 分配一片连续的字节存储单元并初始化。 </span></span><br></pre></td></tr></table></figure>
 
 <h4 id="2-DCW-或DCWU"><a href="#2-DCW-或DCWU" class="headerlink" title="2. DCW(或DCWU)"></a>2. DCW(或DCWU)</h4><p>DCW(或DCWU)伪指令用于分配一片连续的半字存储单元并用伪指令中指定的表达式初始化。</p>
 <p>格式：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">标号 DCW (或DCWU) 表达式</span><br></pre></td></tr></table></figure>
+<figure class="highlight arm"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">标号 <span class="meta">DCW</span> (或<span class="meta">DCWU</span>) 表达式</span><br></pre></td></tr></table></figure>
 
 <ul>
 <li>表达式可以为程序标号或数字表达式。</li>
 </ul>
 <p>用DCW分配的字存储单元是半字对齐的，而用DCWU分配的字存储单元并不严格半字对齐。</p>
 <p>示例：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">DataTest DCW 1 ，2 ，3 ; 分配一片连续的半字存储单元并初始化。</span><br></pre></td></tr></table></figure>
+<figure class="highlight arm"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="symbol">DataTest</span> <span class="meta">DCW</span> <span class="number">1</span> ，<span class="number">2</span> ，<span class="number">3</span> <span class="comment">; 分配一片连续的半字存储单元并初始化。</span></span><br></pre></td></tr></table></figure>
 
 <h4 id="3-DCD-或DCDU"><a href="#3-DCD-或DCDU" class="headerlink" title="3. DCD(或DCDU)"></a>3. DCD(或DCDU)</h4><p>DCD（或DCDU）伪指令用于分配一片连续的字存储单元并用伪指令中指定的表达式初始化。</p>
 <p>格式：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">标号 DCD(或DCDU) 表达式</span><br></pre></td></tr></table></figure>
+<figure class="highlight arm"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">标号 <span class="meta">DCD</span>(或<span class="meta">DCDU</span>) 表达式</span><br></pre></td></tr></table></figure>
 
 <ul>
 <li>表达式可以为程序标号或数字表达式。</li>
@@ -1084,48 +1084,48 @@ height:40vh;
 </ul>
 <p>用DCD分配的字存储单元是字对齐的，而用DCDU分配的字存储单元并不严格字对齐。</p>
 <p>示例：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">DataTest DCD 4 , 5 , 6 ; 分配一片连续的字存储单元并初始化。 </span><br></pre></td></tr></table></figure>
+<figure class="highlight arm"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="symbol">DataTest</span> <span class="meta">DCD</span> <span class="number">4</span> , <span class="number">5</span> , <span class="number">6</span> <span class="comment">; 分配一片连续的字存储单元并初始化。 </span></span><br></pre></td></tr></table></figure>
 
 <h4 id="4-DCFD-或DCFDU"><a href="#4-DCFD-或DCFDU" class="headerlink" title="4. DCFD(或DCFDU)"></a>4. DCFD(或DCFDU)</h4><p>DCFD（或DCFDU）伪指令用于为双精度的浮点数分配一片连续的字存储单元并用伪指令中指定的表达式初始化。</p>
 <p>每个双精度的浮点数占据两个字单元。</p>
 <p>用 DCFD分配的字存储单元是字对齐的，而用DCFDU分配的字存储单元并不严格字对齐。</p>
 <p>格式：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">标号 DCFD（或DCFDU） 表达式</span><br></pre></td></tr></table></figure>
+<figure class="highlight arm"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">标号 <span class="meta">DCFD</span>（或<span class="meta">DCFDU</span>） 表达式</span><br></pre></td></tr></table></figure>
 
 <p>示例：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">FDataTest DCFD 2E115 , -5E7 ; 分配一片连续的字存储单元并初始化 为指定的双精度数。</span><br></pre></td></tr></table></figure>
+<figure class="highlight arm"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="symbol">FDataTest</span> <span class="meta">DCFD</span> <span class="number">2</span>E115 , -<span class="number">5</span>E7 <span class="comment">; 分配一片连续的字存储单元并初始化 为指定的双精度数。</span></span><br></pre></td></tr></table></figure>
 
 <h4 id="5-DCFS-或DCFSU"><a href="#5-DCFS-或DCFSU" class="headerlink" title="5. DCFS(或DCFSU)"></a>5. DCFS(或DCFSU)</h4><p>DCFS（或DCFSU）伪指令用于为单精度的浮点数分配一片连续的字存储单元并用伪指令中指定的表达式初始化。</p>
 <p>每个单精度的浮点数占据一个字单元。</p>
 <p>用 DCFS分配的字存储单元是字对齐的，而用DCFSU分配的字存储单元并不严格字对齐。</p>
 <p>格式：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">标号 DCFS（或DCFSU） 表达式</span><br></pre></td></tr></table></figure>
+<figure class="highlight arm"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">标号 DCFS（或DCFSU） 表达式</span><br></pre></td></tr></table></figure>
 
 <p>示例：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">FDataTest DCFS 2E5 ，-5E －7 ; 分配一片连续的字存储单元并初始化为 指定的单精度数。</span><br></pre></td></tr></table></figure>
+<figure class="highlight arm"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="symbol">FDataTest</span> DCFS <span class="number">2</span>E5 ，-<span class="number">5</span>E －<span class="number">7</span> <span class="comment">; 分配一片连续的字存储单元并初始化为 指定的单精度数。</span></span><br></pre></td></tr></table></figure>
 
 <h4 id="6-DCQ-或DCQU）"><a href="#6-DCQ-或DCQU）" class="headerlink" title="6. DCQ(或DCQU）"></a>6. DCQ(或DCQU）</h4><p>DCQ（或DCQU）伪指令用于分配一片以8个字节(双字)为单位的连续存储区域并用伪指令中指定的表达式初始化。</p>
 <p>用DCQ分配的存储单元是字对齐的，而用DCQU 分配的存储单元并不严格字对齐。</p>
 <p>格式：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">标号 DCQ（或DCQU） 表达式</span><br></pre></td></tr></table></figure>
+<figure class="highlight arm"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">标号 <span class="meta">DCQ</span>（或<span class="meta">DCQU</span>） 表达式</span><br></pre></td></tr></table></figure>
 
 <p>示例：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">DataTest DCQ 100   ; 分配一片连续的存储单元并初始化为指定的值。 </span><br></pre></td></tr></table></figure>
+<figure class="highlight arm"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="symbol">DataTest</span> <span class="meta">DCQ</span> <span class="number">100</span>   <span class="comment">; 分配一片连续的存储单元并初始化为指定的值。 </span></span><br></pre></td></tr></table></figure>
 
 <h4 id="7-SPACE"><a href="#7-SPACE" class="headerlink" title="7. SPACE"></a>7. SPACE</h4><p>SPACE伪指令用于分配一片连续的存储区域并初始化为0。</p>
 <p>格式：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">标号 SPACE 表达式</span><br></pre></td></tr></table></figure>
+<figure class="highlight arm"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">标号 <span class="meta">SPACE</span> 表达式</span><br></pre></td></tr></table></figure>
 
 <ul>
 <li>表达式为要分配的字节数</li>
 <li>SPACE也可用 “％” 代替</li>
 </ul>
 <p>示例：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">DataSpace SPACE 100 ; 分配连续100字节的存储单元并初始化为0 。</span><br></pre></td></tr></table></figure>
+<figure class="highlight arm"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="symbol">DataSpace</span> <span class="meta">SPACE</span> <span class="number">100</span> <span class="comment">; 分配连续100字节的存储单元并初始化为0 。</span></span><br></pre></td></tr></table></figure>
 
 <h4 id="8-MAP"><a href="#8-MAP" class="headerlink" title="8. MAP"></a>8. MAP</h4><p>MAP伪指令用于定义一个结构化的内存表的首地址。</p>
 <p>格式：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">MAP 表达式 &#123; ,基址寄存器 &#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight arm"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="symbol">MAP</span> 表达式 &#123; ,基址寄存器 &#125;</span><br></pre></td></tr></table></figure>
 
 <ul>
 <li>MAP也可用 “＾” 代替。</li>
@@ -1134,11 +1134,11 @@ height:40vh;
 </ul>
 <p>MAP伪指令通常与FIELD伪指令配合使用来定义结构化的内存表。</p>
 <p>示例：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">MAP 0x100 , R0  ; 定义结构化内存表首地址的值为0x100＋R0 。 </span><br></pre></td></tr></table></figure>
+<figure class="highlight arm"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="symbol">MAP</span> <span class="number">0x100</span> , <span class="built_in">R0</span>  <span class="comment">; 定义结构化内存表首地址的值为0x100＋R0 。 </span></span><br></pre></td></tr></table></figure>
 
 <h4 id="9-FILED"><a href="#9-FILED" class="headerlink" title="9. FILED"></a>9. FILED</h4><p>FIELD伪指令用于定义一个结构化内存表中的数据域。</p>
 <p>格式：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">标号 FIELD 表达式</span><br></pre></td></tr></table></figure>
+<figure class="highlight arm"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">标号 <span class="meta">FIELD</span> 表达式</span><br></pre></td></tr></table></figure>
 
 <ul>
 <li>FILED 也可用 “#” 代替。</li>
@@ -1147,12 +1147,12 @@ height:40vh;
 <p>FIELD伪指令常与MAP伪指令配合使用来定义结构化的内存表。MAP伪指令定义内存表的首地址，FIELD伪指令定义内存表中的各个数据域，并可以为 每个数据域指定一个标号供其他的指令引用。</p>
 <p>注意MAP和FIELD伪指令仅用于定义数据结构，并不实际分配存储单元。</p>
 <p>示例：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">MAP 0x100    ; 定义结构化内存表首地址的值为0x100。</span><br><span class="line">A FIELD 16   ; 定义A的长度为16字节，位置为0x100。</span><br><span class="line">B FIELD 32   ; 定义B的长度为32字节，位置为0x110。</span><br><span class="line">S FIELD 256  ; 定义S的长度为256字节，位置为0x130。   </span><br></pre></td></tr></table></figure>
+<figure class="highlight arm"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="symbol">MAP</span> <span class="number">0x100</span>    <span class="comment">; 定义结构化内存表首地址的值为0x100。</span></span><br><span class="line">A <span class="meta">FIELD</span> <span class="number">16</span>   <span class="comment">; 定义A的长度为16字节，位置为0x100。</span></span><br><span class="line"><span class="keyword">B</span> <span class="meta">FIELD</span> <span class="number">32</span>   <span class="comment">; 定义B的长度为32字节，位置为0x110。</span></span><br><span class="line">S <span class="meta">FIELD</span> <span class="number">256</span>  <span class="comment">; 定义S的长度为256字节，位置为0x130。   </span></span><br></pre></td></tr></table></figure>
 
 <h3 id="三、汇编控制（Assembly-Control）伪指令"><a href="#三、汇编控制（Assembly-Control）伪指令" class="headerlink" title="三、汇编控制（Assembly Control）伪指令"></a>三、汇编控制（Assembly Control）伪指令</h3><p>汇编控制伪指令用于控制汇编程序的执行流程，常用的汇编控制伪指令包括以下几条：</p>
 <h4 id="1-IF、ELSE、ENDIF"><a href="#1-IF、ELSE、ENDIF" class="headerlink" title="1. IF、ELSE、ENDIF"></a>1. IF、ELSE、ENDIF</h4><p>IF 、ELSE 、ENDIF伪指令能根据条件的成立与否决定是否执行某个指令序列。</p>
 <p>格式：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">IF 逻辑表达式</span><br><span class="line">指令序列 1</span><br><span class="line">ELSE</span><br><span class="line">指令序列 2</span><br><span class="line">ENDIF</span><br></pre></td></tr></table></figure>
+<figure class="highlight arm"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="symbol">IF</span> 逻辑表达式</span><br><span class="line">指令序列 <span class="number">1</span></span><br><span class="line"><span class="symbol">ELSE</span></span><br><span class="line">指令序列 <span class="number">2</span></span><br><span class="line"><span class="symbol">ENDIF</span></span><br></pre></td></tr></table></figure>
 
 <ul>
 <li>当IF后面的逻辑表达式为真，则执行指令序列1 ，否则执行指令序列2 。</li>
@@ -1160,20 +1160,20 @@ height:40vh;
 </ul>
 <p>IF 、ELSE 、ENDIF伪指令可以嵌套使用。</p>
 <p>示例：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">GBLL Test ; 声明一个全局的逻辑变量，变量名为Test   </span><br><span class="line">IF Test &#x3D; TRUE</span><br><span class="line">指令序列 1</span><br><span class="line">ELSE</span><br><span class="line">指令序列 2</span><br><span class="line">ENDIF</span><br></pre></td></tr></table></figure>
+<figure class="highlight arm"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="symbol">GBLL</span> Test <span class="comment">; 声明一个全局的逻辑变量，变量名为Test   </span></span><br><span class="line"><span class="symbol">IF</span> Test = TRUE</span><br><span class="line">指令序列 <span class="number">1</span></span><br><span class="line"><span class="symbol">ELSE</span></span><br><span class="line">指令序列 <span class="number">2</span></span><br><span class="line"><span class="symbol">ENDIF</span></span><br></pre></td></tr></table></figure>
 
 <h4 id="2-WHILE、WEND"><a href="#2-WHILE、WEND" class="headerlink" title="2. WHILE、WEND"></a>2. WHILE、WEND</h4><p>WHILE 、WEND伪指令能根据条件的成立与否决定是否循环执行某个指令序列。</p>
 <p>格式：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">WHILE 逻辑表达式</span><br><span class="line">指令序列</span><br><span class="line">WEND</span><br></pre></td></tr></table></figure>
+<figure class="highlight arm"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="symbol">WHILE</span> 逻辑表达式</span><br><span class="line">指令序列</span><br><span class="line"><span class="symbol">WEND</span></span><br></pre></td></tr></table></figure>
 
 <p>当WHILE后面的逻辑表达式为真，则执行指令序列，该指令序列执行完毕后，再判断逻辑表达式的值，若为真则继续执行，一直到逻辑表达式的值为假。</p>
 <p>WHILE 、WEND伪指令可以嵌套使用。</p>
 <p>示例：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">GBLA Counter   ; 声明一个全局的数学变量，变量名为Counter</span><br><span class="line">Counter SETA 3 ; 由变量Counter 控制循环次数</span><br><span class="line">……</span><br><span class="line">WHILE Counter &lt; 10</span><br><span class="line">指令序列</span><br><span class="line">WEND</span><br></pre></td></tr></table></figure>
+<figure class="highlight arm"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="symbol">GBLA</span> Counter   <span class="comment">; 声明一个全局的数学变量，变量名为Counter</span></span><br><span class="line"><span class="symbol">Counter</span> <span class="meta">SETA</span> <span class="number">3</span> <span class="comment">; 由变量Counter 控制循环次数</span></span><br><span class="line">……</span><br><span class="line"><span class="symbol">WHILE</span> Counter &lt; <span class="number">10</span></span><br><span class="line">指令序列</span><br><span class="line"><span class="symbol">WEND</span></span><br></pre></td></tr></table></figure>
 
 <h4 id="3-MACRO、MEND"><a href="#3-MACRO、MEND" class="headerlink" title="3. MACRO、MEND"></a>3. MACRO、MEND</h4><p>MACRO 、MEND伪指令可以将一段代码定义为一个整体，称为宏指令，然后就可以在程序中通过宏指令多次调用该段代码。 </p>
 <p>格式：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">$ 标号 宏名 $ 参数 1 ，$ 参数 2 ，……</span><br><span class="line">指令序列</span><br><span class="line">MEND</span><br></pre></td></tr></table></figure>
+<figure class="highlight arm"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">$ 标号 宏名 $ 参数 <span class="number">1</span> ，$ 参数 <span class="number">2</span> ，……</span><br><span class="line">指令序列</span><br><span class="line"><span class="symbol">MEND</span></span><br></pre></td></tr></table></figure>
 
 <p>其中，$标号在宏指令被展开时，标号会被替换为用户定义的符号，宏指令可以使用一个或多个参数，当宏指令被展开时，这些参数被相应的值替换。</p>
 <p>宏指令的使用方式和功能与子程序有些相似，子程序可以提供模块化的程序设计、节省存储空间并提高运行速度。但在使用子程序结构时需要保护现场，从而增加了 系统的开销，因此，在代码较短且需要传递的参数较多时，可以使用宏指令代替子程序。</p>
@@ -1181,12 +1181,12 @@ height:40vh;
 <p>MACRO、MEND伪指令可以嵌套使用。  </p>
 <h4 id="4-MEXIT"><a href="#4-MEXIT" class="headerlink" title="4. MEXIT"></a>4. MEXIT</h4><p>MEXIT用于从宏定义中跳转出去。</p>
 <p>格式：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">MEXIT</span><br></pre></td></tr></table></figure>
+<figure class="highlight arm"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="symbol">MEXIT</span></span><br></pre></td></tr></table></figure>
 
 <h3 id="四、其他常用的伪指令"><a href="#四、其他常用的伪指令" class="headerlink" title="四、其他常用的伪指令"></a>四、其他常用的伪指令</h3><p>还有一些其他的伪指令，在汇编程序中经常会被使用，包括以下几条：</p>
 <h4 id="1-AREA"><a href="#1-AREA" class="headerlink" title="1. AREA"></a>1. AREA</h4><p>AREA伪指令用于定义一个代码段或数据段。</p>
 <p>格式：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">AREA 段名 属性1 ，属性2 ，……</span><br></pre></td></tr></table></figure>
+<figure class="highlight arm"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="symbol">AREA</span> 段名 属性<span class="number">1</span> ，属性<span class="number">2</span> ，……</span><br></pre></td></tr></table></figure>
 
 <ul>
 <li>段名若以数字开头，则该段名需用“|”括起来，如：|1_test| 。</li>
@@ -1202,44 +1202,44 @@ height:40vh;
 </ul>
 <p>一个汇编语言程序至少要包含一个段，当程序太长时，也可以将程序分为多个代码段和数据段。</p>
 <p>示例：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">AREA Init ，CODE ，READONLY   ; 该伪指令定义了一个代码段，段 名为Init ，属性为只读。</span><br></pre></td></tr></table></figure>
+<figure class="highlight arm"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="symbol">AREA</span> Init ，<span class="meta">CODE</span> ，<span class="meta">READONLY</span>   <span class="comment">; 该伪指令定义了一个代码段，段 名为Init ，属性为只读。</span></span><br></pre></td></tr></table></figure>
 
 <h4 id="2-ALIGN"><a href="#2-ALIGN" class="headerlink" title="2. ALIGN"></a>2. ALIGN</h4><p>ALIGN伪指令可通过添加填充字节的方式，使当前位置满足一定的对齐方式。</p>
 <p>格式：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ALIGN &#123; 表达式 &#123; ,偏移量 &#125;&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight arm"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="symbol">ALIGN</span> &#123; 表达式 &#123; ,偏移量 &#125;&#125;</span><br></pre></td></tr></table></figure>
 
 <ul>
 <li>表达式的值用于指定对齐方式，可能的取值为2的幂，如1 、2 、4 、8 、16 等。若未指定表达式，则将当前位置对齐到下一个字的位置。</li>
 <li>偏移量也为一个数字表达式，若使用该字段，则当前位置的对齐方式为：2的表达式次幂＋偏移量。</li>
 </ul>
 <p>示例：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">AREA Init ，CODE ，READONLY ，ALIEN＝3  ; 指定后面的指令为8字节对齐。</span><br><span class="line">指令序列</span><br><span class="line">END</span><br></pre></td></tr></table></figure>
+<figure class="highlight arm"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="symbol">AREA</span> Init ，<span class="meta">CODE</span> ，<span class="meta">READONLY</span> ，ALIEN＝<span class="number">3</span>  <span class="comment">; 指定后面的指令为8字节对齐。</span></span><br><span class="line">指令序列</span><br><span class="line"><span class="symbol">END</span></span><br></pre></td></tr></table></figure>
 
 <h4 id="3-CODE16、CODE32"><a href="#3-CODE16、CODE32" class="headerlink" title="3. CODE16、CODE32"></a>3. CODE16、CODE32</h4><p>若在汇编源程序中同时包含ARM指令和Thumb指令时，可用CODE16伪指令通知编译器其后的指令序列为16位的Thumb指令，CODE32伪指令 通知编译器其后的指令序列为32位的ARM指令。</p>
 <p>因此，在使用ARM指令和Thumb指令混合编程的代码里，可用这两条伪指令进行切换，但注意他们只通知 编译器其后指令的类型，并不能对处理器进行状态的切换。</p>
 <p>格式：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">CODE16（或CODE32）</span><br></pre></td></tr></table></figure>
+<figure class="highlight arm"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="symbol">CODE16</span>（或<span class="meta">CODE32</span>）</span><br></pre></td></tr></table></figure>
 
 <p>示例：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">AREA Init ，CODE ，READONLY   ……</span><br><span class="line">CODE32 ; 通知编译器其后的指令为32位的 ARM指令</span><br><span class="line">LDR R0 ，＝NEXT＋1 ; 将跳转地址放入寄存器R0</span><br><span class="line">BX R0 ;  程序跳转到新的位置执行， 并将处理器切换到Thumb工作状态</span><br><span class="line">……</span><br><span class="line">CODE16 ;  通知编译器其后的指令为16位的 Thumb指令</span><br><span class="line">NEXT LDR R3，＝0x3FF</span><br><span class="line">……   </span><br><span class="line">END ; </span><br></pre></td></tr></table></figure>
+<figure class="highlight arm"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="symbol">AREA</span> Init ，<span class="meta">CODE</span> ，<span class="meta">READONLY</span>   ……</span><br><span class="line"><span class="symbol">CODE32</span> <span class="comment">; 通知编译器其后的指令为32位的 ARM指令</span></span><br><span class="line"><span class="keyword">LDR</span> <span class="built_in">R0</span> ，＝NEXT＋<span class="number">1</span> <span class="comment">; 将跳转地址放入寄存器R0</span></span><br><span class="line"><span class="keyword">BX</span> <span class="built_in">R0</span> <span class="comment">;  程序跳转到新的位置执行， 并将处理器切换到Thumb工作状态</span></span><br><span class="line">……</span><br><span class="line"><span class="symbol">CODE16</span> <span class="comment">;  通知编译器其后的指令为16位的 Thumb指令</span></span><br><span class="line"><span class="symbol">NEXT</span> <span class="keyword">LDR</span> <span class="built_in">R3</span>，＝<span class="number">0x3FF</span></span><br><span class="line">……   </span><br><span class="line"><span class="symbol">END</span> <span class="comment">; </span></span><br></pre></td></tr></table></figure>
 
 <h4 id="4-ENTRY"><a href="#4-ENTRY" class="headerlink" title="4. ENTRY"></a>4. ENTRY</h4><p>ENTRY伪指令用于指定汇编程序的入口点。在一个完整的汇编程序中至少要有一个ENTRY（也可以有多个，当有多个ENTRY时，程序的真正入口点由链 接器指定），但在一个源文件里最多只能有一个ENTRY（可以没有）。</p>
 <p>格式：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ENTRY</span><br></pre></td></tr></table></figure>
+<figure class="highlight arm"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="symbol">ENTRY</span></span><br></pre></td></tr></table></figure>
 
 <p>示例：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">AREA Init ，CODE ，READONLY</span><br><span class="line">ENTRY ;  指定应用程序的入口点</span><br><span class="line">……</span><br></pre></td></tr></table></figure>
+<figure class="highlight arm"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="symbol">AREA</span> Init ，<span class="meta">CODE</span> ，<span class="meta">READONLY</span></span><br><span class="line"><span class="symbol">ENTRY</span> <span class="comment">;  指定应用程序的入口点</span></span><br><span class="line">……</span><br></pre></td></tr></table></figure>
 
 <h4 id="5-END"><a href="#5-END" class="headerlink" title="5. END"></a>5. END</h4><p>END伪指令用于通知编译器已经到了源程序的结尾。</p>
 <p>格式：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">END</span><br></pre></td></tr></table></figure>
+<figure class="highlight arm"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="symbol">END</span></span><br></pre></td></tr></table></figure>
 
 <p>示例：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">AREA Init ，CODE ，READONLY</span><br><span class="line">……  </span><br><span class="line">END ; 指定应用程序的结尾</span><br></pre></td></tr></table></figure>
+<figure class="highlight arm"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="symbol">AREA</span> Init ，<span class="meta">CODE</span> ，<span class="meta">READONLY</span></span><br><span class="line">……  </span><br><span class="line"><span class="symbol">END</span> <span class="comment">; 指定应用程序的结尾</span></span><br></pre></td></tr></table></figure>
 
 <h4 id="6-EQU"><a href="#6-EQU" class="headerlink" title="6. EQU"></a>6. EQU</h4><p>EQU伪指令用于为程序中的常量、标号等定义一个等效的字符名称，类似于C语言中的＃define 。</p>
 <p>格式：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">名称 EQU 表达式 &#123; ，类型 &#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight arm"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">名称 <span class="meta">EQU</span> 表达式 &#123; ，类型 &#125;</span><br></pre></td></tr></table></figure>
 
 <ul>
 <li>EQU可用“*”代替。</li>
@@ -1247,11 +1247,11 @@ height:40vh;
 <li>当表达式为32位的常量时，可以指定表达式的数据类型，可以有以下三种类型：CODE16 、CODE32 和DATA</li>
 </ul>
 <p>示例：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">Test EQU 50            ; 定义标号Test 的值为50。</span><br><span class="line">Addr EQU 0x55 ，CODE32  ; 定义Addr的值为0x55 ，且该处为32位的ARM指令。</span><br></pre></td></tr></table></figure>
+<figure class="highlight arm"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="symbol">Test</span> <span class="meta">EQU</span> <span class="number">50</span>            <span class="comment">; 定义标号Test 的值为50。</span></span><br><span class="line"><span class="keyword">Addr</span> <span class="meta">EQU</span> <span class="number">0x55</span> ，<span class="meta">CODE32</span>  <span class="comment">; 定义Addr的值为0x55 ，且该处为32位的ARM指令。</span></span><br></pre></td></tr></table></figure>
 
 <h4 id="7-EXPORT-或GLOBAL"><a href="#7-EXPORT-或GLOBAL" class="headerlink" title="7. EXPORT(或GLOBAL)"></a>7. EXPORT(或GLOBAL)</h4><p>EXPORT伪指令用于在程序中声明一个全局的标号，该标号可在其他的文件中引用。</p>
 <p>格式：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">EXPORT 标号 &#123;[WEAK]&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight arm"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="symbol">EXPORT</span> 标号 &#123;[WEAK]&#125;</span><br></pre></td></tr></table></figure>
 
 <ul>
 <li>EXPORT 可用GLOBAL代替</li>
@@ -1259,63 +1259,63 @@ height:40vh;
 <li>[WEAK] 选项声明其他的同名标号优先于该标号被引用</li>
 </ul>
 <p>示例：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">AREA Init ，CODE ，READONLY</span><br><span class="line">EXPORT Stest ; 声明一个可全局引用的标号Stest   </span><br><span class="line">END</span><br></pre></td></tr></table></figure>
+<figure class="highlight arm"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="symbol">AREA</span> Init ，<span class="meta">CODE</span> ，<span class="meta">READONLY</span></span><br><span class="line"><span class="symbol">EXPORT</span> Stest <span class="comment">; 声明一个可全局引用的标号Stest   </span></span><br><span class="line"><span class="symbol">END</span></span><br></pre></td></tr></table></figure>
 
 <h4 id="8-IMPORT"><a href="#8-IMPORT" class="headerlink" title="8. IMPORT"></a>8. IMPORT</h4><p>IMPORT伪指令用于通知编译器要使用的标号在其他的源文件中定义，但要在当前源文件中引用，而且无论当前源文件是否引用该标号，该标号均会被加入到当前源文件的符号表中。</p>
 <p>格式：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">IMPORT 标号 &#123;[WEAK]&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight arm"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="symbol">IMPORT</span> 标号 &#123;[WEAK]&#125;</span><br></pre></td></tr></table></figure>
 
 <ul>
 <li>标号在程序中区分大小写</li>
 <li>[WEAK] 选项表示当所有的源文件都没有定义这样一个标号时，编译器也不给出错误信息，在多数情况下将该标号置为0 ，若该标号为B或BL指令引用，则将B或BL指令置为NOP操作。</li>
 </ul>
 <p>示例：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">AREA Init ，CODE ，READONLY</span><br><span class="line">IMPORT Main ; 通知编译器当前文件要引用标号Main，但Main在其他源文件中定 义。 </span><br><span class="line">END</span><br></pre></td></tr></table></figure>
+<figure class="highlight arm"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="symbol">AREA</span> Init ，<span class="meta">CODE</span> ，<span class="meta">READONLY</span></span><br><span class="line"><span class="symbol">IMPORT</span> Main <span class="comment">; 通知编译器当前文件要引用标号Main，但Main在其他源文件中定 义。 </span></span><br><span class="line"><span class="symbol">END</span></span><br></pre></td></tr></table></figure>
 
 <h4 id="9-EXTERN"><a href="#9-EXTERN" class="headerlink" title="9. EXTERN"></a>9. EXTERN</h4><p>EXTERN伪指令用于通知编译器要使用的标号在其他的源文件中定义，但要在当前源文件中引用，如果当前源文件实际并未引用该标号，该标号就不会被加入到当前源文件的符号表中。</p>
 <p>格式：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">EXTERN 标号 &#123;[WEAK]&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight arm"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="symbol">EXTERN</span> 标号 &#123;[WEAK]&#125;</span><br></pre></td></tr></table></figure>
 
 <ul>
 <li>标号在程序中区分大小写</li>
 <li>[WEAK] 选项表示当所有的源文件都没有定义这样一个标号时，编译器也不给出错误信息，在多数情况下将该标号置为0 ，若该标号为B或BL指令引用，则将B或BL指令置为NOP操作。</li>
 </ul>
 <p>示例：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">AREA Init ，CODE ，READONLY</span><br><span class="line">EXTERN Main   ; 通知编译器当前文件要引用标号Main，但Main在其他源文件中定 义。   </span><br><span class="line">END</span><br></pre></td></tr></table></figure>
+<figure class="highlight arm"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="symbol">AREA</span> Init ，<span class="meta">CODE</span> ，<span class="meta">READONLY</span></span><br><span class="line"><span class="symbol">EXTERN</span> Main   <span class="comment">; 通知编译器当前文件要引用标号Main，但Main在其他源文件中定 义。   </span></span><br><span class="line"><span class="symbol">END</span></span><br></pre></td></tr></table></figure>
 
 <h4 id="10-GET-或INCLUDE"><a href="#10-GET-或INCLUDE" class="headerlink" title="10. GET(或INCLUDE)"></a>10. GET(或INCLUDE)</h4><p>GET伪指令用于将一个源文件包含到当前的源文件中，并将被包含的源文件在当前位置进行汇编处理。可以使用INCLUDE代替GET。</p>
 <p>汇编程序中常用的方法是在某源文件中定义一些宏指令，用EQU定义常量的符号名称，用MAP和FIELD定义结构化的数据类型，然后用GET伪指令将这个 源文件包含到其他的源文件中。使用方法与C 语言中的”include” 相似。</p>
 <p>GET伪指令只能用于包含源文件，包含目标文件需要使用INCBIN伪指令。</p>
 <p>格式：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">GET 文件名</span><br></pre></td></tr></table></figure>
+<figure class="highlight arm"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="symbol">GET</span> 文件名</span><br></pre></td></tr></table></figure>
 
 <p>示例：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">AREA Init ，CODE ，READONLY</span><br><span class="line">GET a1.s      ; 通知编译器当前源文件包含源文件a1.s</span><br><span class="line">GET C：\a2.s  ; 通知编译器当前源文件包含源文件C：\a2.s </span><br><span class="line">END</span><br></pre></td></tr></table></figure>
+<figure class="highlight arm"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="symbol">AREA</span> Init ，<span class="meta">CODE</span> ，<span class="meta">READONLY</span></span><br><span class="line"><span class="symbol">GET</span> <span class="built_in">a1</span>.s      <span class="comment">; 通知编译器当前源文件包含源文件a1.s</span></span><br><span class="line"><span class="symbol">GET</span> C：\<span class="built_in">a2</span>.s  <span class="comment">; 通知编译器当前源文件包含源文件C：\a2.s </span></span><br><span class="line"><span class="symbol">END</span></span><br></pre></td></tr></table></figure>
 
 <h4 id="11-INCBIN"><a href="#11-INCBIN" class="headerlink" title="11. INCBIN"></a>11. INCBIN</h4><p>INCBIN伪指令用于将一个目标文件或数据文件包含到当前的源文件中，被包含的文件不作任何变动的存放在当前文件中，编译器从其后开始继续处理。</p>
 <p>格式：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">INCBIN 文件名</span><br></pre></td></tr></table></figure>
+<figure class="highlight arm"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="symbol">INCBIN</span> 文件名</span><br></pre></td></tr></table></figure>
 
 <p>示例：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">AREA Init ，CODE ，READONLY</span><br><span class="line">INCBIN a1.dat     ; 通知编译器当前源文件包含文件a1.dat</span><br><span class="line">INCBIN C：\a2.txt ; 通知编译器当前源文件包含文件C：\a2.txt  </span><br><span class="line">END</span><br></pre></td></tr></table></figure>
+<figure class="highlight arm"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="symbol">AREA</span> Init ，<span class="meta">CODE</span> ，<span class="meta">READONLY</span></span><br><span class="line"><span class="symbol">INCBIN</span> <span class="built_in">a1</span>.dat     <span class="comment">; 通知编译器当前源文件包含文件a1.dat</span></span><br><span class="line"><span class="symbol">INCBIN</span> C：\<span class="built_in">a2</span>.txt <span class="comment">; 通知编译器当前源文件包含文件C：\a2.txt  </span></span><br><span class="line"><span class="symbol">END</span></span><br></pre></td></tr></table></figure>
 
 <h4 id="12-RN"><a href="#12-RN" class="headerlink" title="12. RN"></a>12. RN</h4><p>RN伪指令用于给一个寄存器定义一个别名。采用这种方式可以方便程序员记忆该寄存器的功能。</p>
 <p>格式：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">名称 RN 表达式</span><br></pre></td></tr></table></figure>
+<figure class="highlight arm"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">名称 RN 表达式</span><br></pre></td></tr></table></figure>
 
 <ul>
 <li>名称为给寄存器定义的别名</li>
 <li>表达式为寄存器的编码</li>
 </ul>
 <p>示例：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Temp RN R0   ; 将R0定义一个别名Temp</span><br></pre></td></tr></table></figure>
+<figure class="highlight arm"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="symbol">Temp</span> RN <span class="built_in">R0</span>   <span class="comment">; 将R0定义一个别名Temp</span></span><br></pre></td></tr></table></figure>
 
 <h4 id="13-ROUT"><a href="#13-ROUT" class="headerlink" title="13. ROUT"></a>13. ROUT</h4><p>ROUT伪指令用于给一个局部变量定义作用范围。在程序中未使用该伪指令时，局部变量的作用范围为所在的AREA，而使用ROUT后，局部变量的作为范围为当前ROUT和下一个ROUT之间。</p>
 <p>格式：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&#123;名称&#125; ROUT</span><br></pre></td></tr></table></figure>
+<figure class="highlight arm"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&#123;名称&#125; <span class="meta">ROUT</span></span><br></pre></td></tr></table></figure>
 
 <p>示例：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">xxxx</span><br></pre></td></tr></table></figure>
+<figure class="highlight arm"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="symbol">xxxx</span></span><br></pre></td></tr></table></figure>
 
 
     </article>
@@ -1325,7 +1325,7 @@ height:40vh;
             <p>Author：<a href="https://tenloy.github.io">Tenloy</a>
             <p>原文链接：<a href="https://tenloy.github.io/2021/04/17/Arm64-Handbook.html">https://tenloy.github.io/2021/04/17/Arm64-Handbook.html</a>
             <p>发表日期：2021.04.17 , 3:00 PM</p>
-            <p>更新日期：2021.09.22 , 11:07 AM</p>
+            <p>更新日期：2021.10.11 , 10:00 AM</p>
             <p>版权声明：本文采用<a rel="license noopener" target="_blank" href="http://creativecommons.org/licenses/by-nc/4.0/">Crative Commons 4.0 许可协议</a>进行许可</p>
         </div>
     
@@ -1517,8 +1517,6 @@ top:40vh;
 </div>
           <div class="sidebar-panel-archives">
     <!-- 在ejs中将archive按照时间排序 -->
-    
-    
     
     
     
