@@ -21,7 +21,7 @@ categories:
 - 应该怎样向一个新的页面的 ViewModel 传入一个 Model ?
 - 谁来创建一个 VIPER 模块，是 Router 还是 Presenter ?
 
-<img src="../images/pattern/01.jpg" alt="01" style="zoom:90%;" />
+<img src="/images/pattern/01.jpg" alt="01" style="zoom:90%;" />
 
 ## 一、为什么要关注架构设计？
 
@@ -80,7 +80,7 @@ categories:
 
 在我们探讨Apple的MVC模式之前，我们来看下[传统的MVC模式](https://en.wikipedia.org/wiki/Model–view–controller)。
 
-<img src="../images/pattern/02.png" alt="01" style="zoom:70%;" />
+<img src="/images/pattern/02.png" alt="01" style="zoom:80%;" />
 
 在这种情况下，View是无状态的。一旦Model被改变，Controller就会简单地渲染View。就像网页一样，在点击了跳转到某个其他页面的连接之后就会完全的重新加载页面。
 
@@ -94,7 +94,7 @@ categories:
 
 Cocoa MVC：
 
-<img src="../images/pattern/03.png" alt="" style="zoom:70%;" />
+<img src="/images/pattern/03.png" alt="" style="zoom:80%;" />
 
 由于Controller是一个介于View 和 Model之间的协调器，所以View和Model之间没有任何直接的联系。Controller是一个最小可重用单元，这对我们来说是一个好消息，因为我们总要找一个地方来写逻辑复杂度较高的代码，而这些代码又不适合放在Model中。
 
@@ -104,7 +104,7 @@ Cocoa MVC：
 
 Realistic Cocoa MVC：
 
-<img src="../images/pattern/04.png" alt="" style="zoom:70%;" />
+<img src="/images/pattern/04.png" alt="" style="zoom:80%;" />
 
 Cocoa的MVC模式驱使人们写出臃肿的视图控制器，因为它们与View的生命周期息息相关，因此很难说View和ViewController是分离的。
 
@@ -182,7 +182,7 @@ view.person = model;
 
 Passive View variant of MVP：
 
-<img src="../images/pattern/05.png" alt="" style="zoom:65%;" />
+<img src="/images/pattern/05.png" alt="" style="zoom:75%;" />
 
 这看起来不正是苹果所提出的MVC方案吗？确实是的，这种模式的名字是[MVP](https://en.wikipedia.org/wiki/Model–view–presenter)（Passive View variant，被动视图变体），但是，这就是说苹果的MVC实际上就是[MVP](https://en.wikipedia.org/wiki/Model–view–presenter)了？不，并不是这样的。如果你仔细回忆一下，View是和Controller紧密耦合的，但是MVP的协调器Presenter并没有对ViewController的生命周期做任何改变，因此View可以很容易的被模拟出来。在Presenter中根本没有和布局有关的代码，但是它却负责更新View的数据和状态。
 
@@ -269,7 +269,7 @@ MVP是第一个如何协调整合三个实际上分离的层次的架构模式�
 
 Supervising Controller variant of the MVP：
 
-<img src="../images/pattern/07.png" alt="" style="zoom:65%;" />
+<img src="/images/pattern/07.png" alt="" style="zoom:75%;" />
 
 但是我们之前就了解到，模糊的职责划分是非常糟糕的，更何况将View和Model紧密的联系起来。这和Cocoa的桌面开发的原理有些相似。
 
@@ -285,7 +285,7 @@ Supervising Controller variant of the MVP：
 
 从理论层面来讲MVVM看起来不错，我们已经非常熟悉View和Model，以及Meditor，在MVVM中它是View Model。
 
-<img src="../images/pattern/08.png" alt="" style="zoom:60%;" />
+<img src="/images/pattern/08.png" alt="" style="zoom:75%;" />
 
 它和MVP模式看起来非常像:
 
@@ -309,7 +309,7 @@ Supervising Controller variant of the MVP：
 
 但是关于这个框架有一个不得不说的事实：强大的能力来自于巨大的责任。当你开始使用Reactive的时候有很大的可能就会把事情搞砸。换句话来说就是，如果发现了一些错误，调试出这个bug可能会花费大量的时间，看下 Reactive Debugging 函数调用栈：
 
-<img src="../images/pattern/09.jpg" alt="" style="zoom:80%;" />
+<img src="/images/pattern/09.jpg" alt="" style="zoom:90%;" />
 
 在我们简单的例子中，FRF框架和KVO被过渡禁用，取而代之地我们直接去调用showGreeting方法更新ViewModel，以及通过greetingDidChange 回调函数使用属性。
 
@@ -386,7 +386,7 @@ view.viewModel = viewModel
 
 迄今为止，划分责任的粒度是很好的选择。VIPER在责任划分层面进行了迭代，VIPER分为五个层次:
 
-<img src="../images/pattern/10.png" alt="" style="zoom:80%;" />
+<img src="/images/pattern/10.png" alt="" style="zoom:70%;" />
 
 VIPER
 
