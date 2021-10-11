@@ -1,7 +1,7 @@
 ---
-title: (七) dyld与Objc: map_images、load_images
+title: (七) dyld与Objc—_objc_init、map_images、load_images
 date: 2021-09-28 14:26:09
-urlname: runtime-initialize.html
+urlname: dyld-objc.html
 tags:
 categories:
   - 编译链接与装载

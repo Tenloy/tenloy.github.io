@@ -222,7 +222,7 @@ iOS 8/Xcode 6 推出之后，允许开发者有条件地创建和使用动态库
 
 Dyld2是从程序开始时才开始执行的，而Dyld3则将Dyld2的一些过程进行了分解。
 
-<img src="/images/compilelink/44.png" alt="44" style="zoom:80%;" />
+<img src="/images/compilelink/44.png" alt="44" style="zoom:60%;" />
 
 Dyld3最大的特点是部分进程外的，分为out-of-process，和in-process。即操作系统在当前app进程之外完成了一部分dyld2在进程内的工作。以达到提升app启动性能和增强安全的目的。
 
