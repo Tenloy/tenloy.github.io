@@ -7,7 +7,7 @@ categories:
   - 编译链接与装载
 ---
 
-## 前文回顾
+## 一、前文回顾
 
 上一篇[(六) Mach-O 文件的动态链接、库、Dyld(含dlopen)](https://tenloy.github.io/2021/09/27/compile-dynamic-link.html)，大概梳理了dyld的加载流程，这一次主要展开**“第八步 执行初始化方法”**，其是我们日常紧密接触的OBJC Runtime初始化启动的上文。
 
@@ -30,449 +30,7 @@ load_images的调用堆栈(之一)：
 
 <img src="/images/compilelink/31.png" alt="35" style="zoom:90%;" />
 
-在进入 `libobjc` 之前，我们必须要先了解 OC 中类的底层结构。
-
-## 一、写在前面 — 类的相关结构
-
-### 1.1 关系简图
-
-<img src="/images/compilelink/36.png" alt="36" style="zoom:88%;" />
-
-class_ro_t里面的baseMethodList、baseProtocols、ivars、baseProperties是一维数组，是只读的，包含了类的初始内容。
-
-class_rw_t里面的methods、properties、protocols是二维数组，是可读可写的，包含了类的初始内容、分类的内容。
-
-### 1.2 objc_class
-
-#### 1.2.1 属性
-
-Objective-C 中类的本质是`objc_class`结构体，其定义代码如下，包含以下成员：
-
-- `isa`：`objc_class`继承`objc_object`结构体，因此也包含`isa`指针，主要功能是指向对象的类型，新版本 runtime 中，`isa`指针并不一定是`Class`类型而是包含64 bit 数据的位图（bitmap），在 *4.1* 中详细介绍；
-- `superclass`：指向父类的指针，用于组织类的继承链；
-- `cache`：类使用哈希表数据结构缓存最近调用方法，以提高方法查找效率（TODO：后续独立文章中会介绍）；
-- `bits`：`class_data_bits_t`结构体类型，该结构体主要用于记录，保存类的数据的`class_rw_t`结构体的内存地址。通过`date()`方法访问`bits`的有效位域指向的内存空间，返回`class_rw_t`结构体；`setData(class_rw_t *newData)`用于设置`bits`的值；
-
-> 注意：上述 bitmap 并不是图片的位图，而是指数据被视为简单的二进制数，将其中的一些或所有 bit 赋予特殊的含义，共同表示一种含义的 bit 或 bit 的集合称为位域。
-
-```c++
-struct objc_class : objc_object {
-    // Class ISA;
-    Class superclass;
-    cache_t cache;             // formerly cache pointer and vtable
-    class_data_bits_t bits;    // class_rw_t * plus custom rr/alloc flags
-
-    class_rw_t *data() { 
-        return bits.data();
-    }
-    void setData(class_rw_t *newData) {
-        bits.setData(newData);
-    }
-```
-
-#### 1.2.2 方法：类加载过程中，状态读写
-
-```c++
-    // objc_class结构体中与类的加载过程相关的方法：
-    // 查询是否正在初始化（initializing）
-    bool isInitializing() {
-        return getMeta()->data()->flags & RW_INITIALIZING;
-    }
-    
-    // 标记为正在初始化（initializing）
-    void setInitializing() {
-        assert(!isMetaClass());
-        ISA()->setInfo(RW_INITIALIZING);
-    }
-    
-    // 是否已完成初始化（initializing）
-    bool isInitialized() {
-        return getMeta()->data()->flags & RW_INITIALIZED;
-    }
-    
-    void setInitialized(){
-        Class metacls;
-        Class cls;
-    
-        assert(!isMetaClass());
-    
-        cls = (Class)this;
-        metacls = cls->ISA();
-    
-        // 关于alloc/dealloc/Retain/Release等特殊方法的判断及处理
-        // ...
-    
-        metacls->changeInfo(RW_INITIALIZED, RW_INITIALIZING);
-    }
-    
-    bool isLoadable() {
-        assert(isRealized());
-        return true;  // any class registered for +load is definitely loadable
-    }
-    
-    // 获取load方法的IMP
-    IMP objc_class::getLoadMethod()
-    {
-        runtimeLock.assertLocked();
-    
-        const method_list_t *mlist;
-    
-        assert(isRealized());
-        assert(ISA()->isRealized());
-        assert(!isMetaClass());
-        assert(ISA()->isMetaClass());
-    
-        // 在类的基础方法列表中查询load方法的IMP
-        mlist = ISA()->data()->ro->baseMethods();
-        if (mlist) {
-            for (const auto& meth : *mlist) {
-                const char *name = sel_cname(meth.name);
-                if (0 == strcmp(name, "load")) {
-                    return meth.imp;
-                }
-            }
-        }
-        return nil;
-    }
-    
-    // runtime是否已认识/实现类
-    bool isRealized() {
-        return data()->flags & RW_REALIZED;
-    }
-    
-    // 是否future class
-    bool isFuture() { 
-        return data()->flags & RW_FUTURE;
-    }
-```
-
-#### 1.2.3 方法：类状态相关
-
-`objc_class`结构体中类的基本状态查询的函数代码如下。注意`Class getMeta()`获取元类时：对于元类，`getMeta()`返回的结果与`ISA()`返回的结果不相同，对于非元类，两者则是相同的。
-
-```c++
-    bool isARC() {
-        return data()->ro->flags & RO_IS_ARC;
-    }
-
-    bool isMetaClass() {
-        assert(this);
-        assert(isRealized());
-        return data()->ro->flags & RO_META;
-    }
-
-    bool isMetaClassMaybeUnrealized() {
-        return bits.safe_ro()->flags & RO_META;
-    }
-
-    Class getMeta() {
-        if (isMetaClass()) return (Class)this;
-        else return this->ISA();
-    }
-
-    bool isRootClass() {
-        return superclass == nil;
-    }
-    bool isRootMetaclass() {
-        return ISA() == (Class)this;
-    }
-
-    const char *mangledName() { 
-        assert(this);
-
-        if (isRealized()  ||  isFuture()) {
-            return data()->ro->name;
-        } else {
-            return ((const class_ro_t *)data())->name;
-        }
-    }
-    
-    const char *demangledName();
-    const char *nameForLogging();
-```
-
-#### 1.2.4 方法：内存分配相关
-
-根据类的信息构建对象时，需要根据类的继承链上的所有成员变量的内存布局为成员变量数据分配内存空间，分配内存空间的大小固定的，并按 WORD 对齐，调用`size_t class_getInstanceSize(Class cls)`实际是调用了`objc_class`结构体的`uint32_t alignedInstanceSize()`函数。
-
-成员变量在实例内存空间中偏移量同样也是固定的，同样也是按 WORD 对齐。实例的第一个成员变量内存空间的在实例空间中的偏移量，实际是通过调用`objc_class`结构体的`uint32_t alignedInstanceStart()`函数获取。
-
-`objc_class`结构体中涉及内存分配的函数代码如下：
-
-```c++
-    // 类的实例的成员变量起始地址可能不按WORD对齐
-    uint32_t unalignedInstanceStart() {
-        assert(isRealized());
-        return data()->ro->instanceStart;
-    }
-
-    // 配置类的实例的成员变量起始地址按WORD对齐
-    uint32_t alignedInstanceStart() {
-        return word_align(unalignedInstanceStart());
-    }
-
-    // 类的实例大小可能因为ivar的alignment值而不按WORD对齐
-    uint32_t unalignedInstanceSize() {
-        assert(isRealized());
-        return data()->ro->instanceSize;
-    }
-
-    // 配置类的实例大小按WORD对齐
-    uint32_t alignedInstanceSize() {
-        return word_align(unalignedInstanceSize());
-    }
-
-    // 获取类的实例大小
-    size_t instanceSize(size_t extraBytes) {
-        size_t size = alignedInstanceSize() + extraBytes;
-        // CF requires all objects be at least 16 bytes. （TODO：不懂为啥）
-        if (size < 16) size = 16;
-        return size;
-    }
-
-    // 配置类的实例大小
-    void setInstanceSize(uint32_t newSize) {
-        assert(isRealized());
-        if (newSize != data()->ro->instanceSize) {
-            assert(data()->flags & RW_COPIED_RO);
-            *const_cast<uint32_t *>(&data()->ro->instanceSize) = newSize;
-        }
-        bits.setFastInstanceSize(newSize);
-    }
-};
-```
-
-### 1.3 class_data_bits_t
-
-类的数据主要保存在`class_data_bits_t`结构体中，其成员仅有一个`bits`指针。`objc_class`的`data()`方法用于获取`bits`成员的 4~47 位域（`FAST_DATA_MASK`）中保存的`class_rw_t`结构体地址。类的数据保存在`class_rw_t`结构体中，剩余的部分保存在`ro`指针指向的`class_ro_t`结构体中。
-
-```c++
-#if !__LP64__
-#define FAST_DATA_MASK        0xfffffffcUL
-#elif 1
-#define FAST_DATA_MASK        0x00007ffffffffff8UL
-#endif
-
-struct class_data_bits_t {
-    uintptr_t bits;
-
-private:
-    bool getBit(uintptr_t bit) {
-        return bits & bit;
-    }
-    //...
-public:
-    // 获取类的数据
-    class_rw_t* data() {
-        return (class_rw_t *)(bits & FAST_DATA_MASK);
-    }
-
-    // 设置类的数据
-    void setData(class_rw_t *newData)
-    {
-        // 仅在类注册、构建阶段才允许调用setData
-        assert(!data()  ||  (newData->flags & (RW_REALIZING | RW_FUTURE)));
-        uintptr_t newBits = (bits & ~FAST_DATA_MASK) | (uintptr_t)newData;
-        atomic_thread_fence(memory_order_release);
-        bits = newBits;
-    }
-};
-```
-
-`class_rw_t`、`class_ro_t`结构体名中，`rw`是 read write 的缩写，`ro`是 read only 的缩写，可见`class_ro_t`的保存类的只读信息，这些信息在类完成注册后不可改变。以类的成员变量列表为例（成员变量列表保存在`class_ro_t`结构体中）。若应用类注册到内存后，使用类构建了若干实例，此时若添加成员变量必然需要对内存中的这些类重新分配内存，这个操作的花销是相当大的。若考虑再极端一些，为根类`NSObject`添加成员变量，则内存中基本所有 Objective-C 对象都需要重新分配内存，如此庞大的计算量在运行时是不可接受的。
-
-### 1.4 class_rw_t
-
-类的主要数据保存在`bits`中，`bits`以位图保存`class_rw_t`结构体，用于记录类的关键数据，如成员变量列表、方法列表、属性列表、协议列表等等，`class_rw_t`仅包含三个基本的位操作方法。
-
-```c++
-#if __ARM_ARCH_7K__ >= 2  ||  (__arm64__ && !__LP64__)
-#   define SUPPORT_INDEXED_ISA 1
-#else
-#   define SUPPORT_INDEXED_ISA 0
-#endif
-
-struct class_rw_t {
-    uint32_t flags;       // 标记类的状态;
-    uint32_t version;     // 标记类的类型，0表示类为非元类，7表示类为元类；
-
-    const class_ro_t *ro; // 保存类的只读数据，注册类后ro中的数据标记为只读，成员变量列表保存在ro中；
-    
-    method_array_t methods;      // 方法列表，其类型method_array_t  为二维数组容器；
-    property_array_t properties; // 属性列表，其类型property_array_t为二维数组容器；
-    protocol_array_t protocols;  // 协议列表，其类型protocol_array_t为二维数组容器；
-    
-    Class firstSubclass;    // 类的首个子类，与nextSiblingClass记录所有类的继承链组织成的继承树；
-    Class nextSiblingClass; // 类的下一个兄弟类；
-    
-    char *demangledName;    // 类名，来自Swift的类会包含一些特别前缀，demangledName是处理后的类名；
-
-#if SUPPORT_INDEXED_ISA
-    uint32_t index;      // 标记类的对象的isa是否为index类型；
-#endif
-
-    //设置set指定的位
-    void setFlags(uint32_t set) 
-    {
-        OSAtomicOr32Barrier(set, &flags);
-    }
-    
-    // 清空clear指定的位
-    void clearFlags(uint32_t clear) 
-    {
-        OSAtomicXor32Barrier(clear, &flags);
-    }
-    
-    // 设置set指定的位，清空clear指定的位
-    void changeFlags(uint32_t set, uint32_t clear) 
-    {
-        assert((set & clear) == 0);
-    
-        uint32_t oldf, newf;
-        do {
-            oldf = flags;
-            newf = (oldf | set) & ~clear;
-        } while (!OSAtomicCompareAndSwap32Barrier(oldf, newf, (volatile int32_t *)&flags));
-    }
-};
-```
-
-### 1.5 class_ro_t
-
-```c++
-struct class_ro_t {
-    uint32_t flags;         // 标记类的状态。需要注意class_ro_t的flags的值和前面介绍的class_rw_t的flags的值是完全不同的；
-    uint32_t instanceStart; // 类的成员变量，在实例的内存空间中的起始偏移量；
-    uint32_t instanceSize;  // 类的实例占用的内存空间大小；
-#ifdef __LP64__
-    uint32_t reserved;
-#endif
-
-    const uint8_t * ivarLayout;     // 成员变量内存布局，标记实例占用的内存空间中哪些WORD保存了成员变量数据；
-    
-    const char * name;     // 类名；
-    method_list_t * baseMethodList; // 基础方法列表，在类定义时指定的方法列表；
-    protocol_list_t * baseProtocols;// 协议列表；
-    const ivar_list_t * ivars;      // 成员变量列表；
-    
-    const uint8_t * weakIvarLayout; // weak成员变量布局；
-    property_list_t *baseProperties;// 基础属性列表，在类定义时指定的属性列表；
-    
-    ...
-    
-    method_list_t *baseMethods() const {
-        return baseMethodList;
-    }
-    
-    class_ro_t *duplicate() const {
-        if (flags & RO_HAS_SWIFT_INITIALIZER) {
-            size_t size = sizeof(*this) + sizeof(_swiftMetadataInitializer_NEVER_USE[0]);
-            class_ro_t *ro = (class_ro_t *)memdup(this, size);
-            ro->_swiftMetadataInitializer_NEVER_USE[0] = this->_swiftMetadataInitializer_NEVER_USE[0];
-            return ro;
-        } else {
-            size_t size = sizeof(*this);
-            class_ro_t *ro = (class_ro_t *)memdup(this, size);
-            return ro;
-        }
-    }
-};
-```
-
-### 1.6 class加载过程中的flag标志
-
-当调用 runtime API 动态创建类的过程，包括三个步骤：
-
-- 调用`Class objc_allocateClassPair(...)`构建类；
-- 添加必要的成员变量、方法等元素；
-- 调用`void objc_registerClassPair(Class cls)`注册类；
-
-然而，runtime 从镜像（image）加载类的过程会更加精细，在加载类的不同阶段会被标记为不同的类型（还是`objc_class`结构体，只是`flags`不同），例如：
-
-- **future class**（未来要解析的类，也称懒加载类）
-  - named class（已确定名称类）：将`cls`标记为 named class，以`cls->mangledName()`类名为关键字添加到全局记录的`gdb_objc_realized_classes`哈希表中，表示 runtime 开始可以通过类名查找类（注意元类不需要添加）；
-  - allocated class（已分配内存类）：将`cls`及其元类标记为 allocated class，并将两者均添加到全局记录的`allocatedClasses`哈希表中（无需关键字），表示已为类分配固定内存空间；
-- **remapped class**（已重映射类）
-- **realized class**（已认识/实现类）
-- loaded class（已加载类）：已执行`load`方法的类
-- initialized class（已初始化类）：已执行`initialize()`方法的类
-
-> realized: adj. 已实现的; v. 意识到，认识到，理解；实现；把（概念等）具体表现出来.
->
-> OC 类在被使用之前（譬如调用类方法），需要进行一系列的初始化，譬如：指定 `superclass`、指定 `isa` 指针、`attach categories` 等等；libobjc 在 runtime 阶段就可以做这些事情，但是有些过于浪费，更好的选择是懒处理，这一举措极大优化了程序的执行速度。而 runtime 把对类的惰性初始化过程称为「realize」。
->
-> 利用已经被 `realize` 的类含有 `RW_REALIZED` 和 `RW_REALIZING` 标记的特点，可以为项目找出无用类；因为没有被使用的类，一定没有被 `realized`。
-
-#### 1.6.1 class_rw_t->flags
-
-`class_rw_t`的`flags`为可读写。其中比较重要的一些值定义列举如下，均以RW_为前缀。
-
-```c++
-// 该类是已实现/已认识/已初始化处理过的类
-#define RW_REALIZED           (1<<31)
-// 该类是尚未解析的unresolved future class
-#define RW_FUTURE             (1<<30)
-// 该类已经初始化。完成执行initialize()
-#define RW_INITIALIZED        (1<<29)
-// 该类正在初始化。正在执行initialize()
-#define RW_INITIALIZING       (1<<28)
-// class_rw_t->ro是class_ro_t的堆拷贝。此时类的class_rw_t->ro是可写入的，拷贝之前ro的内存区域锁死不可写入
-#define RW_COPIED_RO          (1<<27)
-// class allocated but not yet registered
-#define RW_CONSTRUCTING       (1<<26)
-// class allocated and registered
-#define RW_CONSTRUCTED        (1<<25)
-// 该类的load方法已经调用过
-#define RW_LOADED             (1<<23)
-
-#if !SUPPORT_NONPOINTER_ISA
-// 该类的实例可能存在关联对象。默认编译选项下，无需定义该位，因为都可能有关联对象
-#define RW_INSTANCES_HAVE_ASSOCIATED_OBJECTS (1<<22)
-#endif
-
-// 该类的实例具有特定的GC layout
-#define RW_HAS_INSTANCE_SPECIFIC_LAYOUT      (1 << 21)
-// 该类禁止在其实例上使用关联对象
-#define RW_FORBIDS_ASSOCIATED_OBJECTS        (1<<20)
-// 该类正在实现，但是未实现完成
-#define RW_REALIZING          (1<<19)
-```
-
-#### 1.6.2 class_ro_t->flags
-
-`class_ro_t`的`flags`成员为只读。其中比较重要的一些值定义列举如下，均以`RO_`为前缀。
-
-```c++
-// 类是元类
-#define RO_META               (1<<0)
-// 类是根类
-#define RO_ROOT               (1<<1)
-// 类有CXX构造/析构函数
-#define RO_HAS_CXX_STRUCTORS  (1<<2)
-// 类有实现load方法
-// #define RO_HAS_LOAD_METHOD    (1<<3)
-// 隐藏类
-#define RO_HIDDEN             (1<<4)
-// class has attribute(objc_exception): OBJC_EHTYPE_$_ThisClass is non-weak
-#define RO_EXCEPTION          (1<<5)
-// class has ro field for Swift metadata initializer callback
-#define RO_HAS_SWIFT_INITIALIZER (1<<6)
-// 类使用ARC选项编译
-#define RO_IS_ARC             (1<<7)
-// 类有CXX析构函数，但没有CXX构造函数
-#define RO_HAS_CXX_DTOR_ONLY  (1<<8)
-// class is not ARC but has ARC-style weak ivar layout 
-#define RO_HAS_WEAK_WITHOUT_ARC (1<<9)
-// 类禁止使用关联对象
-#define RO_FORBIDS_ASSOCIATED_OBJECTS (1<<10)
-
-// class is in an unloadable bundle - must never be set by compiler
-#define RO_FROM_BUNDLE        (1<<29)
-// class is unrealized future class - must never be set by compiler
-#define RO_FUTURE             (1<<30)
-// class is realized - must never be set by compiler
-#define RO_REALIZED           (1<<31)
-```
+在进入 `libobjc` 之前，我们必须要先了解 OC 中类的底层结构，可以先阅读[下篇](https://tenloy.github.io/2021/10/11/runtime-data-structure.html)(如果已经熟悉，那略过)。
 
 ## 二、_objc_init()
 
@@ -859,7 +417,104 @@ void map_images_nolock(unsigned mhCount, const char * const mhPaths[],
 - 并统计 `totalClasses` 和 `unoptimizedTotalClasses` 的数量
 - 然后调用下面的 `_read_images` 函数
 
-### 3.2 _read_images()
+> 在阅读_read_images()函数前，先来了解一下class在加载过程都有哪些状态，在objc中以怎样的数据结构来记录的。
+
+### 3.2 class加载过程中的flag标志
+
+当调用 runtime API 动态创建类的过程，包括三个步骤：
+
+- 调用`Class objc_allocateClassPair(...)`构建类；
+- 添加必要的成员变量、方法等元素；
+- 调用`void objc_registerClassPair(Class cls)`注册类；
+
+然而，runtime 从镜像（image）加载类的过程会更加精细，在加载类的不同阶段会被标记为不同的类型（还是`objc_class`结构体，只是`flags`不同），例如：
+
+- **future class**（未来要解析的类，也称懒加载类）
+  - named class（已确定名称类）：将`cls`标记为 named class，以`cls->mangledName()`类名为关键字添加到全局记录的`gdb_objc_realized_classes`哈希表中，表示 runtime 开始可以通过类名查找类（注意元类不需要添加）；
+  - allocated class（已分配内存类）：将`cls`及其元类标记为 allocated class，并将两者均添加到全局记录的`allocatedClasses`哈希表中（无需关键字），表示已为类分配固定内存空间；
+- **remapped class**（已重映射类）
+- **realized class**（已认识/实现类）
+- loaded class（已加载类）：已执行`load`方法的类
+- initialized class（已初始化类）：已执行`initialize()`方法的类
+
+> realized: adj. 已实现的; v. 意识到，认识到，理解；实现；把（概念等）具体表现出来.
+>
+> OC 类在被使用之前（譬如调用类方法），需要进行一系列的初始化，譬如：指定 `superclass`、指定 `isa` 指针、`attach categories` 等等；libobjc 在 runtime 阶段就可以做这些事情，但是有些过于浪费，更好的选择是懒处理，这一举措极大优化了程序的执行速度。而 runtime 把对类的惰性初始化过程称为「realize」。
+>
+> 利用已经被 `realize` 的类含有 `RW_REALIZED` 和 `RW_REALIZING` 标记的特点，可以为项目找出无用类；因为没有被使用的类，一定没有被 `realized`。
+
+#### 3.2.1 class_rw_t->flags
+
+`class_rw_t`的`flags`为可读写。其中比较重要的一些值定义列举如下，均以RW_为前缀。
+
+```c++
+// 该类是已实现/已认识/已初始化处理过的类
+#define RW_REALIZED           (1<<31)
+// 该类是尚未解析的unresolved future class
+#define RW_FUTURE             (1<<30)
+// 该类已经初始化。完成执行initialize()
+#define RW_INITIALIZED        (1<<29)
+// 该类正在初始化。正在执行initialize()
+#define RW_INITIALIZING       (1<<28)
+// class_rw_t->ro是class_ro_t的堆拷贝。此时类的class_rw_t->ro是可写入的，拷贝之前ro的内存区域锁死不可写入
+#define RW_COPIED_RO          (1<<27)
+// class allocated but not yet registered
+#define RW_CONSTRUCTING       (1<<26)
+// class allocated and registered
+#define RW_CONSTRUCTED        (1<<25)
+// 该类的load方法已经调用过
+#define RW_LOADED             (1<<23)
+
+#if !SUPPORT_NONPOINTER_ISA
+// 该类的实例可能存在关联对象。默认编译选项下，无需定义该位，因为都可能有关联对象
+#define RW_INSTANCES_HAVE_ASSOCIATED_OBJECTS (1<<22)
+#endif
+
+// 该类的实例具有特定的GC layout
+#define RW_HAS_INSTANCE_SPECIFIC_LAYOUT      (1 << 21)
+// 该类禁止在其实例上使用关联对象
+#define RW_FORBIDS_ASSOCIATED_OBJECTS        (1<<20)
+// 该类正在实现，但是未实现完成
+#define RW_REALIZING          (1<<19)
+```
+
+#### 3.2.2 class_ro_t->flags
+
+`class_ro_t`的`flags`成员为只读。其中比较重要的一些值定义列举如下，均以`RO_`为前缀。
+
+```c++
+// 类是元类
+#define RO_META               (1<<0)
+// 类是根类
+#define RO_ROOT               (1<<1)
+// 类有CXX构造/析构函数
+#define RO_HAS_CXX_STRUCTORS  (1<<2)
+// 类有实现load方法
+// #define RO_HAS_LOAD_METHOD    (1<<3)
+// 隐藏类
+#define RO_HIDDEN             (1<<4)
+// class has attribute(objc_exception): OBJC_EHTYPE_$_ThisClass is non-weak
+#define RO_EXCEPTION          (1<<5)
+// class has ro field for Swift metadata initializer callback
+#define RO_HAS_SWIFT_INITIALIZER (1<<6)
+// 类使用ARC选项编译
+#define RO_IS_ARC             (1<<7)
+// 类有CXX析构函数，但没有CXX构造函数
+#define RO_HAS_CXX_DTOR_ONLY  (1<<8)
+// class is not ARC but has ARC-style weak ivar layout 
+#define RO_HAS_WEAK_WITHOUT_ARC (1<<9)
+// 类禁止使用关联对象
+#define RO_FORBIDS_ASSOCIATED_OBJECTS (1<<10)
+
+// class is in an unloadable bundle - must never be set by compiler
+#define RO_FROM_BUNDLE        (1<<29)
+// class is unrealized future class - must never be set by compiler
+#define RO_FUTURE             (1<<30)
+// class is realized - must never be set by compiler
+#define RO_REALIZED           (1<<31)
+```
+
+### 3.3 _read_images()
 
 观看下面内容之前，如果对 OC 中 `Class`、`Category`、`Protocol`的实现结构(底层的结构体实现及成员变量)不熟悉，建议先看一下[Runtime(一)：面向对象(Class和Object)的基本数据结构]()、[Runtime(二)：Category、Protocol的实现与加载]()
 ```c++
