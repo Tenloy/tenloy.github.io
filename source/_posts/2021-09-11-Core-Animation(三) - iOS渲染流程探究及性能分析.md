@@ -56,7 +56,7 @@ iOS APP 图形图像渲染的基本流程：
 我们看到：
 
 - 在应用程序(Application)和渲染服务器(Render Server)中都有 Core Animation 。我们也可以把iOS下的Core Animation可以理解为一个**复合引擎，主要职责包含：渲染、构建和实现动画**。
-- 可以看到，渲染工作并不是在应用程序里(尽管它有 Core Animation)完成的，这一层主要是CPU在操作。它只是将视图层级(view hierarchy)打包(encode)提交给**渲染服务器(一个单独的进程，也有 Core Animation)**， 视图层级才会被渲染。(“The view hierarchy is then rendered with Core Animation with OpenGL or metal, that’s the GPU.”) 
+- 可以看到，渲染工作并不是在应用程序里(尽管它有 Core Animation)完成的，这一层主要是CPU在操作。它只是将视图层级(view hierarchy)打包(encode)提交给**渲染服务器**(**一个单独的进程，也有 Core Animation**)， 视图层级才会被渲染。(“The view hierarchy is then rendered with Core Animation with OpenGL or metal, that’s the GPU.”) 
 - CPU和GPU双方同处于一个流水线中，协作完成整个渲染工作。
 
 大致流程如下：
@@ -229,7 +229,7 @@ OpenGL会保持状态，除非我们调用OpenGL函数来改变它。就像一�
 如上图所示，我们假设视图层级已经被提交到渲染服务器，并且 Core Animation 已经解码它，现在需要用 OpenGL 或者 metal 去渲染了，文章讲师举例是用的 OpenGL (所以这里的 Slide 比前面讲 Core Animation Pipeline 的 Slide 在 Render Server 这一栏，多了 OpenGL 在里面)。具体流程如下：
 
 - GPU 收到 Command Buffer ；
-- 顶点着色器(Vertex Shader)开始运行，思路就是先将所有的顶点转换到屏幕空间，然后平铺处理，平铺成**瓷砖桶(tile bucket)**的几何图形。
+- 顶点着色器(Vertex Shader)开始运行，思路就是先将所有的顶点转换到屏幕空间，然后平铺处理，平铺成**瓷砖桶**(**tile bucket**)的几何图形。
   - 这里分两步走，先顶点处理然后平铺，统称为 **Tiler stage**，在 Instrument 的 OpenGL ES tiler utilization 能看到这一步。
   - 这一步的产出被写入 Parameter Buffer，下一阶段不会马上启动。相反，会等待，直到 
     - a. 处理完所有的几何体，并且都位于 Parameter Buffer 中；或者 
@@ -380,7 +380,7 @@ OpenGL会保持状态，除非我们调用OpenGL函数来改变它。就像一�
 
 Contex为我们提供OpenGL的运行环境，而具体的操作则是在OpenGL的渲染管线中进行的。
 
-在OpenGL中，任何事物都在3D空间中，而屏幕和窗口却是2D像素数组，这导致OpenGL的大部分工作都是关于把3D坐标转变为适应你屏幕的2D像素。3D坐标转为2D坐标的处理过程是由OpenGL的**图形渲染管线(Graphics Pipeline)**管理的。图形渲染管线可以被划分为两个主要部分：
+在OpenGL中，任何事物都在3D空间中，而屏幕和窗口却是2D像素数组，这导致OpenGL的大部分工作都是关于把3D坐标转变为适应你屏幕的2D像素。3D坐标转为2D坐标的处理过程是由OpenGL的**图形渲染管线**(**Graphics Pipeline**)管理的。图形渲染管线可以被划分为两个主要部分：
 
 - 第一部分把你的3D坐标转换为2D坐标，
 - 第二部分是把2D坐标转变为实际的有颜色的像素。
@@ -390,7 +390,7 @@ Contex为我们提供OpenGL的运行环境，而具体的操作则是在OpenGL�
 图形渲染管线接受一组3D坐标，然后把它们转变为你屏幕上的有色2D像素输出。图形渲染管线可以被划分为几个阶段：
 
 - 每个阶段将会把前一个阶段的输出作为输入。
-- 所有这些阶段都是高度专门化的（它们都有一个特定的函数），并且很容易并行执行。正是由于它们具有并行执行的特性，当今大多数显卡都有成千上万的小处理核心，它们在GPU上为每一个（渲染管线）阶段运行各自的小程序，从而在图形渲染管线中快速处理你的数据。这些小程序叫做**着色器(Shader)**。
+- 所有这些阶段都是高度专门化的（它们都有一个特定的函数），并且很容易并行执行。正是由于它们具有并行执行的特性，当今大多数显卡都有成千上万的小处理核心，它们在GPU上为每一个（渲染管线）阶段运行各自的小程序，从而在图形渲染管线中快速处理你的数据。这些小程序叫做**着色器**(**Shader**)。
 - 着色器是一种非常独立的程序，因为它们之间不能相互通信；它们之间唯一的沟通只有通过输入和输出。
 
 > 着色器(Shader)是运行在GPU上的小程序。这些小程序为完成图形渲染管线的某个特定部分的功能而运行。
@@ -452,7 +452,7 @@ Contex为我们提供OpenGL的运行环境，而具体的操作则是在OpenGL�
 
 在片段着色器运行之前会执行裁切(Clipping)。裁切会丢弃超出你的视图以外的所有像素，用来提升执行效率。
 
-**输出：片元/片段(Fragment)**。 
+**输出：片元/片段**(**Fragment**)
 
 - 光栅化：将图转化为一个个栅格组成的图像，每个栅格此处又称为片元/片段(Fragment)，OpenGL中的一个片段是OpenGL渲染一个像素所需的所有数据。
 - 片元其实已经很接近像素了，但是它还不是像素。片元包含了比RGBA更多的信息，比如可能有深度值，法线，纹理坐标等等信息。
