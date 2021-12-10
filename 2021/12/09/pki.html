@@ -29,7 +29,7 @@
 <meta property="og:locale" content="en_US">
 <meta property="og:image" content="https://tenloy.github.io/images/net/x509.png">
 <meta property="article:published_time" content="2021-12-09T15:07:02.000Z">
-<meta property="article:modified_time" content="2021-12-09T08:19:58.225Z">
+<meta property="article:modified_time" content="2021-12-10T02:03:47.599Z">
 <meta property="article:author" content="Tenloy">
 <meta property="article:tag" content="Tenloy, iOS, Tenloy Blog, 博客，Swift, 编译, 计算机">
 <meta name="twitter:card" content="summary">
@@ -547,12 +547,16 @@ height:40vh;
 <h4 id="3-2-1-PKCS-1"><a href="#3-2-1-PKCS-1" class="headerlink" title="3.2.1 PKCS #1"></a>3.2.1 PKCS #1</h4><p>PKCS #1，RSA Cryptography Standard，定义了RSA Public Key和Private Key数学属性和格式，详见<a target="_blank" rel="noopener" href="https://tools.ietf.org/html/rfc8017">RFC8017</a>。</p>
 <p>详细的介绍了RSA算法的计算过程，包括：key的产生，key的结构，对数字加密／解密／签名／验证签名的过程、对应算法。</p>
 <ol>
-<li><strong>key</strong>：关于key，分别记录了private和public的详细结构，以及存储哪些内容。并且在附录里面推荐了ASN.1 Syntax中的存储结构。注：没有规定实际的物理文件存储结构，比如pem等。</li>
-<li><strong>加密／解密</strong>：详细描述了加密／解密的算法。包括，首先针对字符串，怎么转化成数字，之后，怎么根据数字进行加密。 这里可以看出，标准中没有对超长字符串处理的说明。而转化出的字符串的长度，全都是key的模长度k。<br>在字符串转化成数字过程中，需要增加填充字符，所以，分成了两种不同算法：RSAES-OAEP（现有标准）  RSAES-PKCS1-v1_5（兼容过去标准）。在实际加密过程中，就只有一种算法了</li>
-<li>无论在加密还是签名过程中，都会进行hash操作，hash操作没有自己定义，而是从附录中可以选择需要的hash方式。</li>
-<li><strong>PKCS1填充方式</strong>：在进行RSA运算时需要将源数据D转化为Encryption block（EB）。其中pkcs1padding V1.5的填充模式按照以下方式进行：<h5 id="PKCS1填充方式"><a href="#PKCS1填充方式" class="headerlink" title="PKCS1填充方式"></a>PKCS1填充方式</h5></li>
+<li><p><strong>key</strong>：关于key，分别记录了private和public的详细结构，以及存储哪些内容。并且在附录里面推荐了ASN.1 Syntax中的存储结构。注：没有规定实际的物理文件存储结构，比如pem等。</p>
+</li>
+<li><p><strong>加密／解密</strong>：详细描述了加密／解密的算法。包括，首先针对字符串，怎么转化成数字，之后，怎么根据数字进行加密。 这里可以看出，标准中没有对超长字符串处理的说明。而转化出的字符串的长度，全都是key的模长度k。<br> 在字符串转化成数字过程中，需要增加填充字符，所以，分成了两种不同算法：RSAES-OAEP（现有标准）  RSAES-PKCS1-v1_5（兼容过去标准）。在实际加密过程中，就只有一种算法了</p>
+</li>
+<li><p>无论在加密还是签名过程中，都会进行hash操作，hash操作没有自己定义，而是从附录中可以选择需要的hash方式。</p>
+</li>
+<li><p><strong>PKCS1填充方式</strong>：在进行RSA运算时需要将源数据D转化为Encryption block（EB）。其中pkcs1padding V1.5的填充模式按照以下方式进行。</p>
+</li>
 </ol>
-<p>格式：</p>
+<h5 id="PKCS1填充方式"><a href="#PKCS1填充方式" class="headerlink" title="PKCS1填充方式"></a>PKCS1填充方式</h5><p>格式：</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">格式：加密块EB &#x3D; 00 + 块类型BT + 填充字符PS + 00 + 数据D  &#x2F;&#x2F;以下描述均以十六进制字符串来描述</span><br></pre></td></tr></table></figure>
 
 <p>说明：</p>
@@ -681,7 +685,7 @@ height:40vh;
             <p>Author：<a href="https://tenloy.github.io">Tenloy</a>
             <p>原文链接：<a href="https://tenloy.github.io/2021/12/09/pki.html">https://tenloy.github.io/2021/12/09/pki.html</a>
             <p>发表日期：2021.12.09 , 3:07 PM</p>
-            <p>更新日期：2021.12.09 , 8:19 AM</p>
+            <p>更新日期：2021.12.10 , 2:03 AM</p>
             <p>版权声明：本文采用<a rel="license noopener" target="_blank" href="http://creativecommons.org/licenses/by-nc/4.0/">Crative Commons 4.0 许可协议</a>进行许可</p>
         </div>
     
