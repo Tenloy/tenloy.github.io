@@ -44,8 +44,6 @@ DSL 其实是 Domain Specific Language 的缩写，中文翻译为*领域特定�
 >
 > 没有任何物理系统可以拥有无限内存；如果忽略有限内存的限制，大多数编程语言在其他方面都是图灵完备的。
 
-> 这一小节中的 DSL 指外部 DSL，下一节中会介绍 [内部 DSL/嵌入式 DSL](https://draveness.me/dsl/#embedded-dsl嵌入式-dsl)
-
 但是在里所说的 DSL 并不是图灵完备的，它们的**表达能力有限**，只是在特定领域解决特定任务的。
 
 > A computer programming language of limited expressiveness focused on a particular domain.
@@ -53,6 +51,13 @@ DSL 其实是 Domain Specific Language 的缩写，中文翻译为*领域特定�
 另一个世界级软件开发大师 Martin Fowler 对于领域特定语言的定义在笔者看来就更加具体了，**DSL 通过在表达能力上做的妥协换取在某一领域内的高效**。
 
 而有限的表达能力就成为了 GPL 和 DSL 之间的一条界限。
+
+DSL 分为内部 DSL 和外部 DSL：
+
+- 内部DSL，也被称为嵌入式DSL。内部的实现是建在一种宿主编程语言之上。使用内部 DSL 的优势是我们不必担心创建、编译及解析语法，因为这些已经被宿主语言解决了。劣势是会受限于宿主语言的特性。
+- 外部DSL：内部的实现不依赖于某种宿主语言。DSL 的创建者可以决定语言的方方面面（语法、句法等），但为负责为其创建一个解析器和编译器。该过程比较痛苦。
+
+这一小节中的 DSL 指外部 DSL，下一节中会介绍 [内部 DSL/嵌入式 DSL](https://draveness.me/dsl/#embedded-dsl嵌入式-dsl)
 
 ### 几个栗子
 

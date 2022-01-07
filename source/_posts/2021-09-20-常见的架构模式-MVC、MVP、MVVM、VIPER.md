@@ -1,6 +1,6 @@
 ---
 title: '常见架构模式: MVC、MVP、MVVM、VIPER'
-date: 2021-09-18 17:22:58
+date: 2021-09-20 17:22:58
 urlname: architectural-pattern.html
 tags:
 categories:
