@@ -39,7 +39,7 @@
 <meta property="og:image" content="https://tenloy.github.io/images/git/Snip20200423_11.png">
 <meta property="og:image" content="https://tenloy.github.io/images/git/patch.png">
 <meta property="article:published_time" content="2021-11-10T11:06:05.000Z">
-<meta property="article:modified_time" content="2021-12-17T06:28:56.546Z">
+<meta property="article:modified_time" content="2022-01-07T08:13:36.022Z">
 <meta property="article:author" content="Tenloy">
 <meta property="article:tag" content="Tenloy, iOS, Tenloy Blog, 博客，Swift, 编译, 计算机">
 <meta name="twitter:card" content="summary">
@@ -316,7 +316,7 @@ height:40vh;
                 
                 
                     <div class="post-intro-read">
-                        <span>Word count: <span class="post-count word-count">20.4k</span>Reading time: <span class="post-count reading-time">77 min</span></span>
+                        <span>Word count: <span class="post-count word-count">20.5k</span>Reading time: <span class="post-count reading-time">78 min</span></span>
                     </div>
                 
                 <div class="post-intro-meta">
@@ -937,12 +937,22 @@ height:40vh;
 </li>
 <li><p>Git的版本回退速度非常快，因为Git会保存所有修改，而reset实质上是重置本地仓库的HEAD到指定的commit id，即当你回退版本的时候，Git仅仅是在改变HEAD指向。</p>
 </li>
-<li><p>想从3回滚到1，可以使用<code>git log</code>来查看提交日志，获取commit id；比如reset从commit3回滚到1之后，想再回滚回3，仍然可以使用git reset，此时可以使用 <a target="_blank" rel="noopener" href="https://www.liaoxuefeng.com/wiki/896043488029600/897013573512192">git reflog</a> 查看命令日志，获取3对应的commit id。</p>
+<li><p>想从3回滚到1，可以使用<code>git log</code>来查看提交日志，获取commit id；</p>
 </li>
 <li><p>如果commit已经push到远程仓库，那么origin/HEAD是不受影响的(<code>提交的修改仍保留在远程仓库</code>)，还是指向最新的commit id，此时sourceTree会提示有提交未拉取。</p>
 <p>如果在这个本地仓库的版本上做修改，提交的时候会失败：<code>Updates were rejected because the tip of your current branch is behind its remote counterpart</code>，即告诉你需要先pull再push。</p>
 </li>
 </ul>
+<h5 id="撤销之后想恢复"><a href="#撤销之后想恢复" class="headerlink" title="撤销之后想恢复"></a>撤销之后想恢复</h5><p>假如我们刚刚使用了reset –hard从commit3回滚到了1（并清空了工作区），想再恢复到3：</p>
+<blockquote>
+<p>前提是被丢弃的分支或commit信息还没有被git gc清除，一般情况下，gc对那些无用的object会保留很长时间后才清除的。</p>
+</blockquote>
+<p>第一步：通过git log -g命令来找到需要恢复的信息对应的commitid。可以通过提交的时间和日期来辨别，找到执行reset –hard之前的那个commit对应的commitid。（使用 git reflog 从命令日志中找到commit对应的commitid也是可以的）。</p>
+<p>第二步：</p>
+<ol>
+<li>仍然可以使用git reset：<code>git reset &lt;commitid&gt;</code></li>
+<li>使用<code>git branch &lt;branchname&gt; &lt;commitid&gt;</code>，会新建分支，并将到commitid为止的代码、各种提交记录等信息都恢复到了新分支上。</li>
+</ol>
 <h4 id="6-git-revert-本地仓库的撤销"><a href="#6-git-revert-本地仓库的撤销" class="headerlink" title="6. git revert 本地仓库的撤销"></a>6. git revert 本地仓库的撤销</h4><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git revert &lt;commit&gt;</span><br></pre></td></tr></table></figure>
 
 <p>回滚指定的提交，并产生一条新的commit。</p>
@@ -1205,7 +1215,7 @@ height:40vh;
             <p>Author：<a href="https://tenloy.github.io">Tenloy</a>
             <p>原文链接：<a href="https://tenloy.github.io/2021/11/10/git-use.html">https://tenloy.github.io/2021/11/10/git-use.html</a>
             <p>发表日期：2021.11.10 , 11:06 AM</p>
-            <p>更新日期：2021.12.17 , 6:28 AM</p>
+            <p>更新日期：2022.01.07 , 8:13 AM</p>
             <p>版权声明：本文采用<a rel="license noopener" target="_blank" href="http://creativecommons.org/licenses/by-nc/4.0/">Crative Commons 4.0 许可协议</a>进行许可</p>
         </div>
     
@@ -1347,7 +1357,7 @@ top:40vh;
         <div class="toc-catalog">
             <span class="iconfont-archer catalog-icon">&#xe613;</span><span>CATALOG</span>
         </div>
-        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E3%80%81Git"><span class="toc-text">一、Git</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8C%E3%80%81Git%E7%9A%84%E5%AE%89%E8%A3%85"><span class="toc-text">二、Git的安装</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#2-1-%E9%80%9A%E8%BF%87homebrew%E5%AE%89%E8%A3%85"><span class="toc-text">2.1 通过homebrew安装</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-2-%E9%80%9A%E8%BF%87Command-Line-Tools%E5%AE%89%E8%A3%85"><span class="toc-text">2.2 通过Command Line Tools安装</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%89%E3%80%81Git%E7%9A%84%E9%85%8D%E7%BD%AE"><span class="toc-text">三、Git的配置</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#3-1-%E9%85%8D%E7%BD%AE%E8%BF%9C%E7%A8%8B%E4%BB%93%E5%BA%93"><span class="toc-text">3.1 配置远程仓库</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-2-%E9%85%8D%E7%BD%AE%E5%BF%BD%E7%95%A5%E6%96%87%E4%BB%B6"><span class="toc-text">3.2 配置忽略文件</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#3-2-1-%E5%85%A8%E5%B1%80%E4%B8%8E%E5%B1%80%E9%83%A8%E5%BF%BD%E7%95%A5"><span class="toc-text">3.2.1 全局与局部忽略</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3-2-2-%E5%BF%BD%E7%95%A5%E6%96%87%E4%BB%B6%E7%9A%84%E7%BC%96%E5%86%99"><span class="toc-text">3.2.2 忽略文件的编写</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3-2-3-%E5%BF%BD%E7%95%A5%E6%96%87%E4%BB%B6%E7%9A%84%E6%A3%80%E6%9F%A5"><span class="toc-text">3.2.3 忽略文件的检查</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-3-git-config%E9%85%8D%E7%BD%AE"><span class="toc-text">3.3 git config配置</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#3-3-1-%E4%B8%89%E7%A7%8D%E4%BC%98%E5%85%88%E7%BA%A7%E7%9A%84%E9%85%8D%E7%BD%AE"><span class="toc-text">3.3.1 三种优先级的配置</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3-3-2-%E9%85%8D%E7%BD%AE%E7%94%A8%E6%88%B7%E4%BF%A1%E6%81%AF"><span class="toc-text">3.3.2 配置用户信息</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3-3-3-%E9%85%8D%E7%BD%AE%E6%96%87%E6%9C%AC%E7%BC%96%E8%BE%91%E5%99%A8"><span class="toc-text">3.3.3 配置文本编辑器</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3-3-4-%E9%85%8D%E7%BD%AEGit%E5%88%AB%E5%90%8D"><span class="toc-text">3.3.4 配置Git别名</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3-3-5-%E9%85%8D%E7%BD%AE%E6%9D%83%E9%99%90%E6%A0%A1%E9%AA%8C%E7%BC%93%E5%AD%98"><span class="toc-text">3.3.5 配置权限校验缓存</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3-3-6-%E9%85%8D%E7%BD%AEGit%E7%9A%84%E7%9D%80%E8%89%B2"><span class="toc-text">3.3.6 配置Git的着色</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3-3-7-%E6%9F%A5%E7%9C%8B%E9%85%8D%E7%BD%AE%E4%BF%A1%E6%81%AF"><span class="toc-text">3.3.7 查看配置信息</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9B%9B%E3%80%81%E6%9C%8D%E5%8A%A1%E5%99%A8%E4%B8%8A%E7%9A%84Git"><span class="toc-text">四、服务器上的Git</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#4-1-Git-%E7%9A%84%E5%9B%9B%E7%A7%8D%E4%BC%A0%E8%BE%93%E5%8D%8F%E8%AE%AE"><span class="toc-text">4.1 Git 的四种传输协议</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#4-1-1-%E5%93%91%E5%8D%8F%E8%AE%AE%E4%B8%8E%E6%99%BA%E8%83%BD%E5%8D%8F%E8%AE%AE%E4%B9%8B%E5%88%86"><span class="toc-text">4.1.1 哑协议与智能协议之分</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#4-1-2-%E6%9C%AC%E5%9C%B0%E5%8D%8F%E8%AE%AE"><span class="toc-text">4.1.2 本地协议</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#4-1-3-SSH-%E5%8D%8F%E8%AE%AE"><span class="toc-text">4.1.3 SSH 协议</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#1-%E4%BC%98%E5%8A%BF"><span class="toc-text">1. 优势</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#2-%E7%BC%BA%E7%82%B9"><span class="toc-text">2. 缺点</span></a></li></ol></li><li class="toc-item toc-level-4"><a class="toc-link" href="#4-1-4-Git-%E5%8D%8F%E8%AE%AE"><span class="toc-text">4.1.4 Git 协议</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#1-%E4%BC%98%E7%82%B9"><span class="toc-text">1. 优点</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#2-%E7%BC%BA%E7%82%B9-1"><span class="toc-text">2. 缺点</span></a></li></ol></li><li class="toc-item toc-level-4"><a class="toc-link" href="#4-1-5-HTTP-%E5%8D%8F%E8%AE%AE"><span class="toc-text">4.1.5 HTTP 协议</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#1-%E6%99%BA%E8%83%BD%EF%BC%88Smart%EF%BC%89-HTTP-%E5%8D%8F%E8%AE%AE"><span class="toc-text">1. 智能（Smart） HTTP 协议</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#2-%E5%93%91%EF%BC%88Dumb%EF%BC%89-HTTP-%E5%8D%8F%E8%AE%AE"><span class="toc-text">2. 哑（Dumb） HTTP 协议</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#3-%E4%BC%98%E7%82%B9"><span class="toc-text">3. 优点</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#4-%E7%BC%BA%E7%82%B9"><span class="toc-text">4. 缺点</span></a></li></ol></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-2-%E6%90%AD%E5%BB%BAGit%E6%9C%8D%E5%8A%A1%E5%99%A8"><span class="toc-text">4.2 搭建Git服务器</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-3-error%EF%BC%9Ahung-up-unexpectedly"><span class="toc-text">4.3 error：hung up unexpectedly</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#4-3-1-%E9%85%8D%E7%BD%AEhttp-postBuffer"><span class="toc-text">4.3.1 配置http.postBuffer</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#4-3-2-%E8%A1%A5%E5%85%85%EF%BC%9ATransfer-Encoding-chunked"><span class="toc-text">4.3.2 补充：Transfer-Encoding:chunked</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%94%E3%80%81Git%E7%9A%84%E4%B8%A4%E7%A7%8D%E9%89%B4%E6%9D%83%E6%96%B9%E5%BC%8F"><span class="toc-text">五、Git的两种鉴权方式</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#5-1-SSH"><span class="toc-text">5.1 SSH</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#5-1-1-ssh-agent"><span class="toc-text">5.1.1 ssh-agent</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-2-HTTPS"><span class="toc-text">5.2 HTTPS</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-3-%E9%85%8D%E7%BD%AE%E4%B8%8D%E5%90%8C%E8%B4%A6%E5%8F%B7%E8%AE%BF%E9%97%AE%E4%B8%8D%E5%90%8C%E4%BB%93%E5%BA%93"><span class="toc-text">5.3 配置不同账号访问不同仓库</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#5-3-1-SSH%E7%9A%84%E5%A4%84%E7%90%86"><span class="toc-text">5.3.1 SSH的处理</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#5-3-2-HTTPS%E7%9A%84%E5%A4%84%E7%90%86"><span class="toc-text">5.3.2 HTTPS的处理</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%AD%E3%80%81%E4%BB%8E%E4%BB%93%E5%BA%93%E7%9B%AE%E5%BD%95%E8%A7%92%E5%BA%A6%E4%BA%86%E8%A7%A3Git%E5%B7%A5%E4%BD%9C%E5%8E%9F%E7%90%86"><span class="toc-text">六、从仓库目录角度了解Git工作原理</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#6-1-%E7%9B%AE%E5%BD%95%E7%BB%93%E6%9E%84"><span class="toc-text">6.1 目录结构</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-2-git%E6%96%87%E4%BB%B6%E5%A4%B9-%E7%89%88%E6%9C%AC%E5%BA%93"><span class="toc-text">6.2 .git文件夹(版本库)</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#6-2-1-index"><span class="toc-text">6.2.1 index</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#6-2-2-objects"><span class="toc-text">6.2.2 objects&#x2F;</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#1-%E6%95%B0%E6%8D%AE%E5%AF%B9%E8%B1%A1-%E5%AF%B9%E5%BA%94-%E6%96%87%E4%BB%B6"><span class="toc-text">1. 数据对象(对应 文件)</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#2-%E6%A0%91%E5%AF%B9%E8%B1%A1-%E5%AF%B9%E5%BA%94-%E7%9B%AE%E5%BD%95"><span class="toc-text">2. 树对象(对应 目录)</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#3-%E6%8F%90%E4%BA%A4%E5%AF%B9%E8%B1%A1"><span class="toc-text">3. 提交对象</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#4-%E4%B8%89%E7%A7%8D%E5%AF%B9%E8%B1%A1%E7%9A%84%E5%85%B3%E7%B3%BB%E5%9B%BE"><span class="toc-text">4. 三种对象的关系图</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#5-%E5%AF%B9%E8%B1%A1%E7%9A%84%E5%AD%98%E5%82%A8"><span class="toc-text">5. 对象的存储</span></a></li></ol></li><li class="toc-item toc-level-4"><a class="toc-link" href="#6-2-3-refs"><span class="toc-text">6.2.3 refs&#x2F;</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#1-heads-%E2%80%94-HEAD%E5%BC%95%E7%94%A8"><span class="toc-text">1. heads&#x2F; — HEAD引用</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#2-tags-%E2%80%94-Tag%E5%BC%95%E7%94%A8"><span class="toc-text">2. tags&#x2F; — Tag引用</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#3-remotes-%E2%80%94-%E8%BF%9C%E7%A8%8B%E5%BC%95%E7%94%A8-remote-reference"><span class="toc-text">3. remotes&#x2F; — 远程引用(remote reference)</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#4-for-%E2%80%94-Gerrit"><span class="toc-text">4. for&#x2F; — Gerrit</span></a></li></ol></li><li class="toc-item toc-level-4"><a class="toc-link" href="#6-2-4-HEAD"><span class="toc-text">6.2.4 HEAD</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#6-2-5-config"><span class="toc-text">6.2.5 config</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#6-2-6-description"><span class="toc-text">6.2.6 description</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#6-2-7-hooks"><span class="toc-text">6.2.7 hooks&#x2F;</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#6-2-8-info"><span class="toc-text">6.2.8 info&#x2F;</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%83%E3%80%81%E5%B8%B8%E7%94%A8%E5%91%BD%E4%BB%A4"><span class="toc-text">七、常用命令</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#7-1-%E6%8F%90%E4%BA%A4%E3%80%81%E6%92%A4%E9%94%80%E4%B8%8E%E6%9F%A5%E7%9C%8B"><span class="toc-text">7.1 提交、撤销与查看</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#1-git-checkout-%E5%B7%A5%E4%BD%9C%E5%8C%BA%E7%9A%84%E6%92%A4%E9%94%80"><span class="toc-text">1. git checkout  工作区的撤销</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2-git-add-%E6%9A%82%E5%AD%98%E5%8C%BA%E7%9A%84%E6%8F%90%E4%BA%A4"><span class="toc-text">2. git add 暂存区的提交</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3-git-rm-%E6%9A%82%E5%AD%98%E5%8C%BA%E7%9A%84%E6%8F%90%E4%BA%A4"><span class="toc-text">3. git rm 暂存区的提交</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#4-git-commit-%E6%9C%AC%E5%9C%B0%E4%BB%93%E5%BA%93%E7%9A%84%E6%8F%90%E4%BA%A4"><span class="toc-text">4. git commit 本地仓库的提交</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#5-git-reset-%E6%9A%82%E5%AD%98%E5%8C%BA%E4%B8%8E%E6%9C%AC%E5%9C%B0%E4%BB%93%E5%BA%93%E7%9A%84%E6%92%A4%E9%94%80"><span class="toc-text">5. git reset 暂存区与本地仓库的撤销</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#6-git-revert-%E6%9C%AC%E5%9C%B0%E4%BB%93%E5%BA%93%E7%9A%84%E6%92%A4%E9%94%80"><span class="toc-text">6. git revert 本地仓库的撤销</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#7-git-status"><span class="toc-text">7. git status</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#8-git-log"><span class="toc-text">8. git log</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#9-git-reflog"><span class="toc-text">9. git reflog</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#10-git-push"><span class="toc-text">10. git push</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#11-%E5%86%B2%E7%AA%81%E5%A4%84%E7%90%86"><span class="toc-text">11. 冲突处理</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#12-git-rebase"><span class="toc-text">12. git rebase</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#13-git-pull"><span class="toc-text">13. git pull</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#7-2-%E5%88%86%E6%94%AF-%E5%B9%B3%E8%A1%8C%E5%AE%87%E5%AE%99"><span class="toc-text">7.2 分支(平行宇宙)</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#1-git-branch-%E5%88%9B%E5%BB%BA-%E5%88%A0%E9%99%A4-%E6%9F%A5%E7%9C%8B%E5%88%86%E6%94%AF"><span class="toc-text">1. git branch 创建&#x2F;删除&#x2F;查看分支</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2-git-checkout-%E5%88%87%E6%8D%A2"><span class="toc-text">2. git checkout 切换</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3-%E8%B7%9F%E8%B8%AA%E5%88%86%E6%94%AF"><span class="toc-text">3. 跟踪分支</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#1-%E8%B7%9F%E8%B8%AA%E5%88%86%E6%94%AF%E7%9A%84%E8%AE%BE%E7%BD%AE"><span class="toc-text">1) 跟踪分支的设置</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#2-%E5%A6%82%E6%9E%9C%E6%9C%AA%E8%AE%BE%E7%BD%AE%E8%B7%9F%E8%B8%AA%E5%88%86%E6%94%AF"><span class="toc-text">2) 如果未设置跟踪分支</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#3-%E5%A6%82%E6%9E%9C%E8%AE%BE%E7%BD%AE%E4%BA%86%E8%B7%9F%E8%B8%AA%E5%88%86%E6%94%AF"><span class="toc-text">3) 如果设置了跟踪分支</span></a></li></ol></li><li class="toc-item toc-level-4"><a class="toc-link" href="#4-git-merge-%E5%90%88%E5%B9%B6"><span class="toc-text">4. git merge 合并</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#5-git-log-%E6%9F%A5%E7%9C%8B"><span class="toc-text">5. git log 查看</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#6-git-cherry-pick"><span class="toc-text">6. git cherry-pick</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#7-%E5%88%86%E6%94%AF%E7%AE%A1%E7%90%86%E7%AD%96%E7%95%A5"><span class="toc-text">7. 分支管理策略</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#7-3-stash"><span class="toc-text">7.3 stash</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#7-4-tag"><span class="toc-text">7.4 tag</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#7-5-%E8%A1%A5%E4%B8%81%E7%9A%84%E5%88%9B%E5%BB%BA%E4%B8%8E%E5%BA%94%E7%94%A8"><span class="toc-text">7.5 补丁的创建与应用</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#7-5-1-%E5%88%9B%E5%BB%BA%E8%A1%A5%E4%B8%81git-diff"><span class="toc-text">7.5.1 创建补丁git diff</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#7-5-2-%E5%88%9B%E5%BB%BA%E8%A1%A5%E4%B8%81git-patch"><span class="toc-text">7.5.2 创建补丁git patch</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#7-5-3-%E8%A1%A5%E4%B8%81%E5%BA%94%E7%94%A8git-apply"><span class="toc-text">7.5.3 补丁应用git apply</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#7-5-4-%E6%89%8B%E5%8A%A8%E4%BF%AE%E6%94%B9%E8%A1%A5%E4%B8%81%E6%96%87%E4%BB%B6"><span class="toc-text">7.5.4 手动修改补丁文件</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%AB%E3%80%81%E5%8F%82%E8%80%83%E9%93%BE%E6%8E%A5"><span class="toc-text">八、参考链接</span></a></li></ol>
+        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E3%80%81Git"><span class="toc-text">一、Git</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8C%E3%80%81Git%E7%9A%84%E5%AE%89%E8%A3%85"><span class="toc-text">二、Git的安装</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#2-1-%E9%80%9A%E8%BF%87homebrew%E5%AE%89%E8%A3%85"><span class="toc-text">2.1 通过homebrew安装</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-2-%E9%80%9A%E8%BF%87Command-Line-Tools%E5%AE%89%E8%A3%85"><span class="toc-text">2.2 通过Command Line Tools安装</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%89%E3%80%81Git%E7%9A%84%E9%85%8D%E7%BD%AE"><span class="toc-text">三、Git的配置</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#3-1-%E9%85%8D%E7%BD%AE%E8%BF%9C%E7%A8%8B%E4%BB%93%E5%BA%93"><span class="toc-text">3.1 配置远程仓库</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-2-%E9%85%8D%E7%BD%AE%E5%BF%BD%E7%95%A5%E6%96%87%E4%BB%B6"><span class="toc-text">3.2 配置忽略文件</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#3-2-1-%E5%85%A8%E5%B1%80%E4%B8%8E%E5%B1%80%E9%83%A8%E5%BF%BD%E7%95%A5"><span class="toc-text">3.2.1 全局与局部忽略</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3-2-2-%E5%BF%BD%E7%95%A5%E6%96%87%E4%BB%B6%E7%9A%84%E7%BC%96%E5%86%99"><span class="toc-text">3.2.2 忽略文件的编写</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3-2-3-%E5%BF%BD%E7%95%A5%E6%96%87%E4%BB%B6%E7%9A%84%E6%A3%80%E6%9F%A5"><span class="toc-text">3.2.3 忽略文件的检查</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-3-git-config%E9%85%8D%E7%BD%AE"><span class="toc-text">3.3 git config配置</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#3-3-1-%E4%B8%89%E7%A7%8D%E4%BC%98%E5%85%88%E7%BA%A7%E7%9A%84%E9%85%8D%E7%BD%AE"><span class="toc-text">3.3.1 三种优先级的配置</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3-3-2-%E9%85%8D%E7%BD%AE%E7%94%A8%E6%88%B7%E4%BF%A1%E6%81%AF"><span class="toc-text">3.3.2 配置用户信息</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3-3-3-%E9%85%8D%E7%BD%AE%E6%96%87%E6%9C%AC%E7%BC%96%E8%BE%91%E5%99%A8"><span class="toc-text">3.3.3 配置文本编辑器</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3-3-4-%E9%85%8D%E7%BD%AEGit%E5%88%AB%E5%90%8D"><span class="toc-text">3.3.4 配置Git别名</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3-3-5-%E9%85%8D%E7%BD%AE%E6%9D%83%E9%99%90%E6%A0%A1%E9%AA%8C%E7%BC%93%E5%AD%98"><span class="toc-text">3.3.5 配置权限校验缓存</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3-3-6-%E9%85%8D%E7%BD%AEGit%E7%9A%84%E7%9D%80%E8%89%B2"><span class="toc-text">3.3.6 配置Git的着色</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3-3-7-%E6%9F%A5%E7%9C%8B%E9%85%8D%E7%BD%AE%E4%BF%A1%E6%81%AF"><span class="toc-text">3.3.7 查看配置信息</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9B%9B%E3%80%81%E6%9C%8D%E5%8A%A1%E5%99%A8%E4%B8%8A%E7%9A%84Git"><span class="toc-text">四、服务器上的Git</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#4-1-Git-%E7%9A%84%E5%9B%9B%E7%A7%8D%E4%BC%A0%E8%BE%93%E5%8D%8F%E8%AE%AE"><span class="toc-text">4.1 Git 的四种传输协议</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#4-1-1-%E5%93%91%E5%8D%8F%E8%AE%AE%E4%B8%8E%E6%99%BA%E8%83%BD%E5%8D%8F%E8%AE%AE%E4%B9%8B%E5%88%86"><span class="toc-text">4.1.1 哑协议与智能协议之分</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#4-1-2-%E6%9C%AC%E5%9C%B0%E5%8D%8F%E8%AE%AE"><span class="toc-text">4.1.2 本地协议</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#4-1-3-SSH-%E5%8D%8F%E8%AE%AE"><span class="toc-text">4.1.3 SSH 协议</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#1-%E4%BC%98%E5%8A%BF"><span class="toc-text">1. 优势</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#2-%E7%BC%BA%E7%82%B9"><span class="toc-text">2. 缺点</span></a></li></ol></li><li class="toc-item toc-level-4"><a class="toc-link" href="#4-1-4-Git-%E5%8D%8F%E8%AE%AE"><span class="toc-text">4.1.4 Git 协议</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#1-%E4%BC%98%E7%82%B9"><span class="toc-text">1. 优点</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#2-%E7%BC%BA%E7%82%B9-1"><span class="toc-text">2. 缺点</span></a></li></ol></li><li class="toc-item toc-level-4"><a class="toc-link" href="#4-1-5-HTTP-%E5%8D%8F%E8%AE%AE"><span class="toc-text">4.1.5 HTTP 协议</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#1-%E6%99%BA%E8%83%BD%EF%BC%88Smart%EF%BC%89-HTTP-%E5%8D%8F%E8%AE%AE"><span class="toc-text">1. 智能（Smart） HTTP 协议</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#2-%E5%93%91%EF%BC%88Dumb%EF%BC%89-HTTP-%E5%8D%8F%E8%AE%AE"><span class="toc-text">2. 哑（Dumb） HTTP 协议</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#3-%E4%BC%98%E7%82%B9"><span class="toc-text">3. 优点</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#4-%E7%BC%BA%E7%82%B9"><span class="toc-text">4. 缺点</span></a></li></ol></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-2-%E6%90%AD%E5%BB%BAGit%E6%9C%8D%E5%8A%A1%E5%99%A8"><span class="toc-text">4.2 搭建Git服务器</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-3-error%EF%BC%9Ahung-up-unexpectedly"><span class="toc-text">4.3 error：hung up unexpectedly</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#4-3-1-%E9%85%8D%E7%BD%AEhttp-postBuffer"><span class="toc-text">4.3.1 配置http.postBuffer</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#4-3-2-%E8%A1%A5%E5%85%85%EF%BC%9ATransfer-Encoding-chunked"><span class="toc-text">4.3.2 补充：Transfer-Encoding:chunked</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%94%E3%80%81Git%E7%9A%84%E4%B8%A4%E7%A7%8D%E9%89%B4%E6%9D%83%E6%96%B9%E5%BC%8F"><span class="toc-text">五、Git的两种鉴权方式</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#5-1-SSH"><span class="toc-text">5.1 SSH</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#5-1-1-ssh-agent"><span class="toc-text">5.1.1 ssh-agent</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-2-HTTPS"><span class="toc-text">5.2 HTTPS</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-3-%E9%85%8D%E7%BD%AE%E4%B8%8D%E5%90%8C%E8%B4%A6%E5%8F%B7%E8%AE%BF%E9%97%AE%E4%B8%8D%E5%90%8C%E4%BB%93%E5%BA%93"><span class="toc-text">5.3 配置不同账号访问不同仓库</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#5-3-1-SSH%E7%9A%84%E5%A4%84%E7%90%86"><span class="toc-text">5.3.1 SSH的处理</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#5-3-2-HTTPS%E7%9A%84%E5%A4%84%E7%90%86"><span class="toc-text">5.3.2 HTTPS的处理</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%AD%E3%80%81%E4%BB%8E%E4%BB%93%E5%BA%93%E7%9B%AE%E5%BD%95%E8%A7%92%E5%BA%A6%E4%BA%86%E8%A7%A3Git%E5%B7%A5%E4%BD%9C%E5%8E%9F%E7%90%86"><span class="toc-text">六、从仓库目录角度了解Git工作原理</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#6-1-%E7%9B%AE%E5%BD%95%E7%BB%93%E6%9E%84"><span class="toc-text">6.1 目录结构</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-2-git%E6%96%87%E4%BB%B6%E5%A4%B9-%E7%89%88%E6%9C%AC%E5%BA%93"><span class="toc-text">6.2 .git文件夹(版本库)</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#6-2-1-index"><span class="toc-text">6.2.1 index</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#6-2-2-objects"><span class="toc-text">6.2.2 objects&#x2F;</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#1-%E6%95%B0%E6%8D%AE%E5%AF%B9%E8%B1%A1-%E5%AF%B9%E5%BA%94-%E6%96%87%E4%BB%B6"><span class="toc-text">1. 数据对象(对应 文件)</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#2-%E6%A0%91%E5%AF%B9%E8%B1%A1-%E5%AF%B9%E5%BA%94-%E7%9B%AE%E5%BD%95"><span class="toc-text">2. 树对象(对应 目录)</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#3-%E6%8F%90%E4%BA%A4%E5%AF%B9%E8%B1%A1"><span class="toc-text">3. 提交对象</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#4-%E4%B8%89%E7%A7%8D%E5%AF%B9%E8%B1%A1%E7%9A%84%E5%85%B3%E7%B3%BB%E5%9B%BE"><span class="toc-text">4. 三种对象的关系图</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#5-%E5%AF%B9%E8%B1%A1%E7%9A%84%E5%AD%98%E5%82%A8"><span class="toc-text">5. 对象的存储</span></a></li></ol></li><li class="toc-item toc-level-4"><a class="toc-link" href="#6-2-3-refs"><span class="toc-text">6.2.3 refs&#x2F;</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#1-heads-%E2%80%94-HEAD%E5%BC%95%E7%94%A8"><span class="toc-text">1. heads&#x2F; — HEAD引用</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#2-tags-%E2%80%94-Tag%E5%BC%95%E7%94%A8"><span class="toc-text">2. tags&#x2F; — Tag引用</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#3-remotes-%E2%80%94-%E8%BF%9C%E7%A8%8B%E5%BC%95%E7%94%A8-remote-reference"><span class="toc-text">3. remotes&#x2F; — 远程引用(remote reference)</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#4-for-%E2%80%94-Gerrit"><span class="toc-text">4. for&#x2F; — Gerrit</span></a></li></ol></li><li class="toc-item toc-level-4"><a class="toc-link" href="#6-2-4-HEAD"><span class="toc-text">6.2.4 HEAD</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#6-2-5-config"><span class="toc-text">6.2.5 config</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#6-2-6-description"><span class="toc-text">6.2.6 description</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#6-2-7-hooks"><span class="toc-text">6.2.7 hooks&#x2F;</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#6-2-8-info"><span class="toc-text">6.2.8 info&#x2F;</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%83%E3%80%81%E5%B8%B8%E7%94%A8%E5%91%BD%E4%BB%A4"><span class="toc-text">七、常用命令</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#7-1-%E6%8F%90%E4%BA%A4%E3%80%81%E6%92%A4%E9%94%80%E4%B8%8E%E6%9F%A5%E7%9C%8B"><span class="toc-text">7.1 提交、撤销与查看</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#1-git-checkout-%E5%B7%A5%E4%BD%9C%E5%8C%BA%E7%9A%84%E6%92%A4%E9%94%80"><span class="toc-text">1. git checkout  工作区的撤销</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2-git-add-%E6%9A%82%E5%AD%98%E5%8C%BA%E7%9A%84%E6%8F%90%E4%BA%A4"><span class="toc-text">2. git add 暂存区的提交</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3-git-rm-%E6%9A%82%E5%AD%98%E5%8C%BA%E7%9A%84%E6%8F%90%E4%BA%A4"><span class="toc-text">3. git rm 暂存区的提交</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#4-git-commit-%E6%9C%AC%E5%9C%B0%E4%BB%93%E5%BA%93%E7%9A%84%E6%8F%90%E4%BA%A4"><span class="toc-text">4. git commit 本地仓库的提交</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#5-git-reset-%E6%9A%82%E5%AD%98%E5%8C%BA%E4%B8%8E%E6%9C%AC%E5%9C%B0%E4%BB%93%E5%BA%93%E7%9A%84%E6%92%A4%E9%94%80"><span class="toc-text">5. git reset 暂存区与本地仓库的撤销</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#%E6%92%A4%E9%94%80%E4%B9%8B%E5%90%8E%E6%83%B3%E6%81%A2%E5%A4%8D"><span class="toc-text">撤销之后想恢复</span></a></li></ol></li><li class="toc-item toc-level-4"><a class="toc-link" href="#6-git-revert-%E6%9C%AC%E5%9C%B0%E4%BB%93%E5%BA%93%E7%9A%84%E6%92%A4%E9%94%80"><span class="toc-text">6. git revert 本地仓库的撤销</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#7-git-status"><span class="toc-text">7. git status</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#8-git-log"><span class="toc-text">8. git log</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#9-git-reflog"><span class="toc-text">9. git reflog</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#10-git-push"><span class="toc-text">10. git push</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#11-%E5%86%B2%E7%AA%81%E5%A4%84%E7%90%86"><span class="toc-text">11. 冲突处理</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#12-git-rebase"><span class="toc-text">12. git rebase</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#13-git-pull"><span class="toc-text">13. git pull</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#7-2-%E5%88%86%E6%94%AF-%E5%B9%B3%E8%A1%8C%E5%AE%87%E5%AE%99"><span class="toc-text">7.2 分支(平行宇宙)</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#1-git-branch-%E5%88%9B%E5%BB%BA-%E5%88%A0%E9%99%A4-%E6%9F%A5%E7%9C%8B%E5%88%86%E6%94%AF"><span class="toc-text">1. git branch 创建&#x2F;删除&#x2F;查看分支</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2-git-checkout-%E5%88%87%E6%8D%A2"><span class="toc-text">2. git checkout 切换</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3-%E8%B7%9F%E8%B8%AA%E5%88%86%E6%94%AF"><span class="toc-text">3. 跟踪分支</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#1-%E8%B7%9F%E8%B8%AA%E5%88%86%E6%94%AF%E7%9A%84%E8%AE%BE%E7%BD%AE"><span class="toc-text">1) 跟踪分支的设置</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#2-%E5%A6%82%E6%9E%9C%E6%9C%AA%E8%AE%BE%E7%BD%AE%E8%B7%9F%E8%B8%AA%E5%88%86%E6%94%AF"><span class="toc-text">2) 如果未设置跟踪分支</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#3-%E5%A6%82%E6%9E%9C%E8%AE%BE%E7%BD%AE%E4%BA%86%E8%B7%9F%E8%B8%AA%E5%88%86%E6%94%AF"><span class="toc-text">3) 如果设置了跟踪分支</span></a></li></ol></li><li class="toc-item toc-level-4"><a class="toc-link" href="#4-git-merge-%E5%90%88%E5%B9%B6"><span class="toc-text">4. git merge 合并</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#5-git-log-%E6%9F%A5%E7%9C%8B"><span class="toc-text">5. git log 查看</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#6-git-cherry-pick"><span class="toc-text">6. git cherry-pick</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#7-%E5%88%86%E6%94%AF%E7%AE%A1%E7%90%86%E7%AD%96%E7%95%A5"><span class="toc-text">7. 分支管理策略</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#7-3-stash"><span class="toc-text">7.3 stash</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#7-4-tag"><span class="toc-text">7.4 tag</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#7-5-%E8%A1%A5%E4%B8%81%E7%9A%84%E5%88%9B%E5%BB%BA%E4%B8%8E%E5%BA%94%E7%94%A8"><span class="toc-text">7.5 补丁的创建与应用</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#7-5-1-%E5%88%9B%E5%BB%BA%E8%A1%A5%E4%B8%81git-diff"><span class="toc-text">7.5.1 创建补丁git diff</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#7-5-2-%E5%88%9B%E5%BB%BA%E8%A1%A5%E4%B8%81git-patch"><span class="toc-text">7.5.2 创建补丁git patch</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#7-5-3-%E8%A1%A5%E4%B8%81%E5%BA%94%E7%94%A8git-apply"><span class="toc-text">7.5.3 补丁应用git apply</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#7-5-4-%E6%89%8B%E5%8A%A8%E4%BF%AE%E6%94%B9%E8%A1%A5%E4%B8%81%E6%96%87%E4%BB%B6"><span class="toc-text">7.5.4 手动修改补丁文件</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%AB%E3%80%81%E5%8F%82%E8%80%83%E9%93%BE%E6%8E%A5"><span class="toc-text">八、参考链接</span></a></li></ol>
     </div>
     
     <div class="back-top iconfont-archer">&#xe639;</div>
@@ -1365,7 +1375,7 @@ top:40vh;
     
         <span class="sidebar-category-name" data-categories="操作系统"><span class="iconfont-archer">&#xe60a;</span>操作系统</span>
     
-        <span class="sidebar-category-name" data-categories="Data"><span class="iconfont-archer">&#xe60a;</span>Data</span>
+        <span class="sidebar-category-name" data-categories="数据的格式与编码"><span class="iconfont-archer">&#xe60a;</span>数据的格式与编码</span>
     
         <span class="sidebar-category-name" data-categories="Swift"><span class="iconfont-archer">&#xe60a;</span>Swift</span>
     
@@ -1374,6 +1384,8 @@ top:40vh;
         <span class="sidebar-category-name" data-categories="编译链接与装载"><span class="iconfont-archer">&#xe60a;</span>编译链接与装载</span>
     
         <span class="sidebar-category-name" data-categories="计算机组成原理"><span class="iconfont-archer">&#xe60a;</span>计算机组成原理</span>
+    
+        <span class="sidebar-category-name" data-categories="计算机网络"><span class="iconfont-archer">&#xe60a;</span>计算机网络</span>
     
         <span class="sidebar-category-name" data-categories="DSL"><span class="iconfont-archer">&#xe60a;</span>DSL</span>
     
@@ -1384,8 +1396,6 @@ top:40vh;
         <span class="sidebar-category-name" data-categories="图形处理与渲染"><span class="iconfont-archer">&#xe60a;</span>图形处理与渲染</span>
     
         <span class="sidebar-category-name" data-categories="架构与设计模式"><span class="iconfont-archer">&#xe60a;</span>架构与设计模式</span>
-    
-        <span class="sidebar-category-name" data-categories="计算机网络"><span class="iconfont-archer">&#xe60a;</span>计算机网络</span>
     
         <span class="sidebar-category-name" data-categories="汇编语言"><span class="iconfont-archer">&#xe60a;</span>汇编语言</span>
     
@@ -2042,9 +2052,101 @@ top:40vh;
     
     
     
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
     <div class="total-and-search">
         <div class="total-archive">
-        Total : 47
+        Total : 53
         </div>
         <!-- search  -->
         
@@ -2061,6 +2163,21 @@ top:40vh;
     
     <div class="archive-year"> 2021 </div>
     <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/22</span><a class="archive-post-title" href= "/2021/12/22/aes.html" >数据加密 — 对称加密(以AES为例)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/21</span><a class="archive-post-title" href= "/2021/12/21/aes-standard.html" >[转] AES标准及Rijndael算法解析</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/20</span><a class="archive-post-title" href= "/2021/12/20/asymmetric.html" >数据加密 — 非对称加密(加签/加密，以RSA为例)</a>
+        </li>
     
     
         <li class="archive-post-item">
@@ -2119,7 +2236,12 @@ top:40vh;
     
     
         <li class="archive-post-item">
-            <span class="archive-post-date">09/18</span><a class="archive-post-title" href= "/2021/09/18/architectural-pattern.html" >常见架构模式: MVC、MVP、MVVM、VIPER</a>
+            <span class="archive-post-date">09/20</span><a class="archive-post-title" href= "/2021/09/20/architectural-pattern.html" >常见架构模式: MVC、MVP、MVVM、VIPER</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/18</span><a class="archive-post-title" href= "/2021/09/18/design-pattern.html" >常见的设计模式</a>
         </li>
     
     
@@ -2209,7 +2331,17 @@ top:40vh;
     
     
         <li class="archive-post-item">
-            <span class="archive-post-date">06/24</span><a class="archive-post-title" href= "/2021/06/24/Protocol-Buffer.html" >Protocol Buffer的基本介绍</a>
+            <span class="archive-post-date">06/25</span><a class="archive-post-title" href= "/2021/06/25/Protocol-Buffer.html" >Protocol Buffer的基本介绍</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/24</span><a class="archive-post-title" href= "/2021/06/24/base64.html" >Base64编码及iOS中的Base64</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/23</span><a class="archive-post-title" href= "/2021/06/23/chinese-encode.html" >[转] 彻底弄懂常见的7种中文字符编码</a>
         </li>
     
     

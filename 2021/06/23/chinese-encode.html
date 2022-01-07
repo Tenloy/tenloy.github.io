@@ -1,0 +1,1906 @@
+<!DOCTYPE html>
+<html lang="en">
+    <!-- title -->
+
+
+
+
+<!-- keywords -->
+
+
+
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" >
+    <meta name="author" content="Tenloy">
+    <meta name="renderer" content="webkit">
+    <meta name="copyright" content="Tenloy">
+    
+    <meta name="keywords" content="Tenloy,iOS,Swift">
+    
+    <meta name="description" content="学习 生活 记录 回忆">
+    <meta name="description" content="原文链接 程序开发常见的ASCII、GB2312、GBK、GB18030、UTF8、ANSI、Latin1中文编码到底有何不同？如果你在业务中也曾经被乱码搞晕过，不妨一起探究一下。 一、字符编码概述1.1 什么是字符集编码编码是信息从一种形式或格式转换为另一种形式的过程；解码则是编码的逆过程。 我们通常所说的编码一般就是指 字符集编码  字符串集编码是把字符集中的字符编码为指定集合中某一对象（例如">
+<meta property="og:type" content="article">
+<meta property="og:title" content="[转] 彻底弄懂常见的7种中文字符编码">
+<meta property="og:url" content="https://tenloy.github.io/2021/06/23/chinese-encode.html">
+<meta property="og:site_name" content="Tenloy&#39;s Blog">
+<meta property="og:description" content="原文链接 程序开发常见的ASCII、GB2312、GBK、GB18030、UTF8、ANSI、Latin1中文编码到底有何不同？如果你在业务中也曾经被乱码搞晕过，不妨一起探究一下。 一、字符编码概述1.1 什么是字符集编码编码是信息从一种形式或格式转换为另一种形式的过程；解码则是编码的逆过程。 我们通常所说的编码一般就是指 字符集编码  字符串集编码是把字符集中的字符编码为指定集合中某一对象（例如">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://tenloy.github.io/images/encode/01.jpg">
+<meta property="og:image" content="https://tenloy.github.io/images/encode/02.jpg">
+<meta property="og:image" content="https://tenloy.github.io/images/encode/03.png">
+<meta property="og:image" content="https://tenloy.github.io/images/encode/04.jpg">
+<meta property="og:image" content="https://tenloy.github.io/images/encode/05.jpg">
+<meta property="og:image" content="https://tenloy.github.io/images/encode/06.png">
+<meta property="og:image" content="https://tenloy.github.io/images/encode/07.jpg">
+<meta property="og:image" content="https://tenloy.github.io/images/encode/08.png">
+<meta property="article:published_time" content="2021-06-23T13:45:19.000Z">
+<meta property="article:modified_time" content="2022-01-07T08:13:36.014Z">
+<meta property="article:author" content="Tenloy">
+<meta property="article:tag" content="Tenloy, iOS, Tenloy Blog, 博客，Swift, 编译, 计算机">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://tenloy.github.io/images/encode/01.jpg">
+    <meta http-equiv="Cache-control" content="no-cache">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"/>
+    
+    <title>[转] 彻底弄懂常见的7种中文字符编码 · Tenloy&#39;s Blog</title>
+    <style type="text/css">
+    @font-face {
+        font-family: 'Oswald-Regular';
+        src: url("/font/Oswald-Regular.ttf");
+    }
+
+    body {
+        margin: 0;
+    }
+
+    header,
+    footer,
+    .back-top,
+    .sidebar,
+    .container,
+    .site-intro-meta,
+    .toc-wrapper {
+        display: none;
+    }
+
+    .site-intro {
+        position: relative;
+        z-index: 3;
+        width: 100%;
+        /* height: 50vh; */
+        overflow: hidden;
+    }
+
+    .site-intro-placeholder {
+        position: absolute;
+        z-index: -2;
+        top: 0;
+        left: 0;
+        width: calc(100% + 300px);
+        height: 100%;
+        background: repeating-linear-gradient(-45deg, #444 0, #444 80px, #333 80px, #333 160px);
+        background-position: center center;
+        transform: translate3d(-226px, 0, 0);
+        animation: gradient-move 2.5s ease-out 0s infinite;
+    }
+
+    @keyframes gradient-move {
+        0% {
+            transform: translate3d(-226px, 0, 0);
+        }
+        100% {
+            transform: translate3d(0, 0, 0);
+        }
+    }
+
+</style>
+
+    <link rel="preload" href= "/css/style.css?v=20180824" as="style" onload="this.onload=null;this.rel='stylesheet'" />
+    <link rel="stylesheet" href= "/css/mobile.css?v=20180824" media="(max-width: 980px)">
+    
+    <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.2.5/jquery.fancybox.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'" />
+    
+    <!-- /*! loadCSS. [c]2017 Filament Group, Inc. MIT License */
+/* This file is meant as a standalone workflow for
+- testing support for link[rel=preload]
+- enabling async CSS loading in browsers that do not support rel=preload
+- applying rel preload css once loaded, whether supported or not.
+*/ -->
+<script>
+(function( w ){
+	"use strict";
+	// rel=preload support test
+	if( !w.loadCSS ){
+		w.loadCSS = function(){};
+	}
+	// define on the loadCSS obj
+	var rp = loadCSS.relpreload = {};
+	// rel=preload feature support test
+	// runs once and returns a function for compat purposes
+	rp.support = (function(){
+		var ret;
+		try {
+			ret = w.document.createElement( "link" ).relList.supports( "preload" );
+		} catch (e) {
+			ret = false;
+		}
+		return function(){
+			return ret;
+		};
+	})();
+
+	// if preload isn't supported, get an asynchronous load by using a non-matching media attribute
+	// then change that media back to its intended value on load
+	rp.bindMediaToggle = function( link ){
+		// remember existing media attr for ultimate state, or default to 'all'
+		var finalMedia = link.media || "all";
+
+		function enableStylesheet(){
+			link.media = finalMedia;
+		}
+
+		// bind load handlers to enable media
+		if( link.addEventListener ){
+			link.addEventListener( "load", enableStylesheet );
+		} else if( link.attachEvent ){
+			link.attachEvent( "onload", enableStylesheet );
+		}
+
+		// Set rel and non-applicable media type to start an async request
+		// note: timeout allows this to happen async to let rendering continue in IE
+		setTimeout(function(){
+			link.rel = "stylesheet";
+			link.media = "only x";
+		});
+		// also enable media after 3 seconds,
+		// which will catch very old browsers (android 2.x, old firefox) that don't support onload on link
+		setTimeout( enableStylesheet, 3000 );
+	};
+
+	// loop through link elements in DOM
+	rp.poly = function(){
+		// double check this to prevent external calls from running
+		if( rp.support() ){
+			return;
+		}
+		var links = w.document.getElementsByTagName( "link" );
+		for( var i = 0; i < links.length; i++ ){
+			var link = links[ i ];
+			// qualify links to those with rel=preload and as=style attrs
+			if( link.rel === "preload" && link.getAttribute( "as" ) === "style" && !link.getAttribute( "data-loadcss" ) ){
+				// prevent rerunning on link
+				link.setAttribute( "data-loadcss", true );
+				// bind listeners to toggle media back
+				rp.bindMediaToggle( link );
+			}
+		}
+	};
+
+	// if unsupported, run the polyfill
+	if( !rp.support() ){
+		// run once at least
+		rp.poly();
+
+		// rerun poly on an interval until onload
+		var run = w.setInterval( rp.poly, 500 );
+		if( w.addEventListener ){
+			w.addEventListener( "load", function(){
+				rp.poly();
+				w.clearInterval( run );
+			} );
+		} else if( w.attachEvent ){
+			w.attachEvent( "onload", function(){
+				rp.poly();
+				w.clearInterval( run );
+			} );
+		}
+	}
+
+
+	// commonjs
+	if( typeof exports !== "undefined" ){
+		exports.loadCSS = loadCSS;
+	}
+	else {
+		w.loadCSS = loadCSS;
+	}
+}( typeof global !== "undefined" ? global : this ) );
+</script>
+
+    <link rel="icon" href= "/assets/favicon.ico" />
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.min.js" as="script" />
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js" as="script" />
+    <link rel="preload" href="/scripts/main.js" as="script" />
+    <link rel="preload" as="font" href="/font/Oswald-Regular.ttf" crossorigin>
+    <link rel="preload" as="font" href="https://at.alicdn.com/t/font_327081_1dta1rlogw17zaor.woff" crossorigin>
+    
+        <!-- algolia -->
+        <script>
+            
+            var hits = JSON.parse('{"per_page":10}')
+            var labels = JSON.parse('{"input_placeholder":"Search for Posts","hits_empty":"没有找到任何搜索结果: ${query}","hits_stats":"找到约${hits}条结果（用时${time}ms）"}')
+
+            var algolia = {
+                applicationID: 'V0HYXBS9FB',
+                apiKey: '6550d5de786935564142097c3e78c380',
+                indexName: 'law_blog_index',
+                hits: hits,
+                labels: labels
+            }
+        </script>
+    
+    <!-- fancybox -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.2.5/jquery.fancybox.min.js" defer></script>
+    <!-- 百度统计  -->
+    
+    <!-- 谷歌统计  -->
+    
+<meta name="generator" content="Hexo 5.4.0"><link rel="alternate" href="/atom.xml" title="Tenloy's Blog" type="application/atom+xml">
+</head>
+
+    
+        <body class="post-body">
+    
+    
+<header class="header">
+
+    <div class="read-progress"></div>
+    <div class="header-sidebar-menu">&#xe775;</div>
+    <!-- post页的toggle banner  -->
+    
+    <div class="banner">
+            <div class="blog-title">
+                <a href="/" >Tenloy&#39;s Blog</a>
+            </div>
+            <div class="post-title">
+                <a href="#" class="post-name">[转] 彻底弄懂常见的7种中文字符编码</a>
+            </div>
+    </div>
+    
+    <!-- 将home-link的操作改为应用到header-top-right上 -->
+    <div class="header-top-right">
+        <!-- search  -->
+        
+            <div class="site-search popup-trigger tl-search">
+                <span class="iconfont-jian tl-search-icon">&#xe7fc;搜索</span>
+            </div>
+            
+        <a class="home-link" href=/>Tenloy's Blog</a>
+    </div>
+</header>
+    <div class="wrapper">
+        <div class="site-intro" style="
+
+
+
+
+
+
+
+height:40vh;
+">
+    
+    <!-- 主页  -->
+    
+    
+    <!-- 404页  -->
+            
+    <div class="site-intro-placeholder"></div>
+    <div class="site-intro-img" style="background-image: url(/intro/post-bg.jpg)"></div>
+    <div class="site-intro-meta">
+        <!-- 标题  -->
+        <h1 class="intro-title">
+            <!-- 主页  -->
+            
+            [转] 彻底弄懂常见的7种中文字符编码
+            <!-- 404 -->
+            
+        </h1>
+        <!-- 副标题 -->
+        <p class="intro-subtitle">
+            <!-- 主页副标题  -->
+            
+            
+            <!-- 404 -->
+            
+        </p>
+        <!-- 文章页meta -->
+        
+            <div class="post-intros">
+                <!-- 文章页标签  -->
+                
+                
+                    <div class="post-intro-read">
+                        <span>Word count: <span class="post-count word-count">4.4k</span>Reading time: <span class="post-count reading-time">15 min</span></span>
+                    </div>
+                
+                <div class="post-intro-meta">
+                    <span class="post-intro-calander iconfont-archer">&#xe676;</span>
+                    <span class="post-intro-time">2021/06/23</span>
+                    
+                    <span id="busuanzi_container_page_pv" class="busuanzi-pv">
+                        <span class="iconfont-archer">&#xe602;</span>
+                        <span id="busuanzi_value_page_pv"></span>
+                    </span>
+                    
+                    <span class="shareWrapper">
+                        <span class="iconfont-archer shareIcon">&#xe71d;</span>
+                        <span class="shareText">Share</span>
+                        <ul class="shareList">
+                            <li class="iconfont-archer share-qr" data-type="qr">&#xe75b;
+                                <div class="share-qrcode"></div>
+                            </li>
+                            <li class="iconfont-archer" data-type="weibo">&#xe619;</li>
+                            <li class="iconfont-archer" data-type="qzone">&#xe62e;</li>
+                            <li class="iconfont-archer" data-type="twitter">&#xe634;</li>
+                            <li class="iconfont-archer" data-type="facebook">&#xe67a;</li>
+                        </ul>
+                    </span>
+                </div>
+            </div>
+        
+    </div>
+</div>
+        <script>
+ 
+  // get user agent
+  var browser = {
+    versions: function () {
+      var u = window.navigator.userAgent;
+      return {
+        userAgent: u,
+        trident: u.indexOf('Trident') > -1, //IE内核
+        presto: u.indexOf('Presto') > -1, //opera内核
+        webKit: u.indexOf('AppleWebKit') > -1, //苹果、谷歌内核
+        gecko: u.indexOf('Gecko') > -1 && u.indexOf('KHTML') == -1, //火狐内核
+        mobile: !!u.match(/AppleWebKit.*Mobile.*/), //是否为移动终端
+        ios: !!u.match(/\(i[^;]+;( U;)? CPU.+Mac OS X/), //ios终端
+        android: u.indexOf('Android') > -1 || u.indexOf('Linux') > -1, //android终端或者uc浏览器
+        iPhone: u.indexOf('iPhone') > -1 || u.indexOf('Mac') > -1, //是否为iPhone或者安卓QQ浏览器
+        iPad: u.indexOf('iPad') > -1, //是否为iPad
+        webApp: u.indexOf('Safari') == -1, //是否为web应用程序，没有头部与底部
+        weixin: u.indexOf('MicroMessenger') == -1, //是否为微信浏览器
+        uc: u.indexOf('UCBrowser') > -1 //是否为android下的UC浏览器
+      };
+    }()
+  }
+  console.log("userAgent:" + browser.versions.userAgent);
+
+  // callback
+  function fontLoaded() {
+    console.log('font loaded');
+    if (document.getElementsByClassName('site-intro-meta')) {
+      document.getElementsByClassName('intro-title')[0].classList.add('intro-fade-in');
+      document.getElementsByClassName('intro-subtitle')[0].classList.add('intro-fade-in');
+      var postIntros = document.getElementsByClassName('post-intros')[0]
+      if (postIntros) {
+        postIntros.classList.add('post-fade-in');
+      }
+    }
+  }
+
+  // UC不支持跨域，所以直接显示
+  function asyncCb(){
+    if (browser.versions.uc) {
+      console.log("UCBrowser");
+      fontLoaded();
+    } else {
+      WebFont.load({
+        custom: {
+          families: ['Oswald-Regular']
+        },
+        loading: function () {  //所有字体开始加载
+          // console.log('loading');
+        },
+        active: function () {  //所有字体已渲染
+          fontLoaded();
+        },
+        inactive: function () { //字体预加载失败，无效字体或浏览器不支持加载
+          console.log('inactive: timeout');
+          fontLoaded();
+        },
+        timeout: 5000 // Set the timeout to two seconds
+      });
+    }
+  }
+
+  function asyncErr(){
+    console.warn('script load from CDN failed, will load local script')
+  }
+
+  // load webfont-loader async, and add callback function
+  function async(u, cb, err) {
+    var d = document, t = 'script',
+      o = d.createElement(t),
+      s = d.getElementsByTagName(t)[0];
+    o.src = u;
+    if (cb) { o.addEventListener('load', function (e) { cb(null, e); }, false); }
+    if (err) { o.addEventListener('error', function (e) { err(null, e); }, false); }
+    s.parentNode.insertBefore(o, s);
+  }
+
+  var asyncLoadWithFallBack = function(arr, success, reject) {
+      var currReject = function(){
+        reject()
+        arr.shift()
+        if(arr.length)
+          async(arr[0], success, currReject)
+        }
+
+      async(arr[0], success, currReject)
+  }
+
+  asyncLoadWithFallBack([
+    "https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.min.js", 
+    "https://cdn.bootcss.com/webfont/1.6.28/webfontloader.js",
+    "/lib/webfontloader.min.js"
+  ], asyncCb, asyncErr)
+</script>        
+        <img class="loading" src="/assets/loading.svg" style="display: block; margin: 6rem auto 0 auto; width: 6rem; height: 6rem;" />
+        <div class="container container-unloaded">
+            <main class="main post-page">
+    <article class="article-entry">
+        <p><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/46216008">原文链接</a> 程序开发常见的ASCII、GB2312、GBK、GB18030、UTF8、ANSI、Latin1中文编码到底有何不同？如果你在业务中也曾经被乱码搞晕过，不妨一起探究一下。</p>
+<h2 id="一、字符编码概述"><a href="#一、字符编码概述" class="headerlink" title="一、字符编码概述"></a>一、字符编码概述</h2><h3 id="1-1-什么是字符集编码"><a href="#1-1-什么是字符集编码" class="headerlink" title="1.1 什么是字符集编码"></a>1.1 什么是字符集编码</h3><p>编码是信息从一种形式或格式转换为另一种形式的过程；解码则是编码的逆过程。</p>
+<p>我们通常所说的编码一般就是指 字符集编码</p>
+<blockquote>
+<p>字符串集编码是把字符集中的字符编码为指定集合中某一对象（例如：比特模式、自然数序列、8位组或者电脉冲），以便文本在计算机中存储(计算机只能识别二进制，为了让计算机可以识别字符)和通过通信网络的传递。</p>
+</blockquote>
+<p>常见的例子包括将拉丁字母表编码成摩斯电码和ASCII。其中，ASCII将字母、数字和其它符号编号，并用7比特的二进制来表示这个整数。通常会额外使用一个扩充的比特，以便于以1个字节的方式存储。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">二进制  &lt;=== 字符集编/解码规则 ===&gt; 可读数据(英文、汉语等自然语言文字)</span><br></pre></td></tr></table></figure>
+
+<p>常见的字符集编码规则：</p>
+<ul>
+<li><p><code>ASCII码</code>：计算机最早诞生的时候，没有中文，在美国。当时计算机只能识别 0 或者 1。随着计算机普及到了世界各地，ASCII 码 已经不能满足世界各地人们的需求了。</p>
+</li>
+<li><p><code>gbk</code>：计算机进入中国之后，后来在原来的 ASCII 码基础之上扩展了一个新的字符集编码：gb2012，utf-8。用来支持中文字节的转化。</p>
+</li>
+<li><p><code>Unicode</code>：官方中文名称为统一码，也译名为万国码、国际码、单一码，是计算机科学领域的业界标准。它整理、编码了世界上大部分的文字系统，使得电脑可以用更为简单的方式来呈现和处理文字。实现方式有<code>UTF8</code>、<code>UTF16</code>等</p>
+</li>
+<li><p><strong>不同编码的数据，想要转换，通常都要先通过二进制中转</strong></p>
+</li>
+</ul>
+<p>乱码：</p>
+<ul>
+<li><p>造成乱码的原因其实就是：读取的编码和文件的编码不一致</p>
+</li>
+<li><p>如何解决乱码？让文件和读取的字符编码集一致即可…</p>
+</li>
+</ul>
+<h3 id="1-2-字符编码要做什么事情？"><a href="#1-2-字符编码要做什么事情？" class="headerlink" title="1.2 字符编码要做什么事情？"></a>1.2 字符编码要做什么事情？</h3><p>在计算机眼里读到的所有文字都是由0和1组成的字符串，为了能让汉字正常显示在屏幕上，我们需要做以下两件事情：</p>
+<blockquote>
+<p>1、给所有的汉字一个独一无二的数字编号，做一个数字编号到汉字的mapping关系（即字符集）<br>2、把这个数字编号能用0和1表示出来</p>
+</blockquote>
+<p>这里需要说明的是，第2件事情并不是直接把数字编号用二进制表示出来那么简单，还要处理多个字连在一起的时候如何做分隔的问题。</p>
+<p>例如如果我把”腾”编为1号（二进制<code>00000001</code>，占1byte），把“讯”编为5号（二进制<code>00000101</code>，占1byte），汉字这么多，一定还有一个汉字被编为了133号（二进制<code>00000001 00000101</code>，占2bytes）。</p>
+<p>那么现在问题来了，当计算机读到<code>00000001 00000101</code>这一串的时候，它应该显示“腾讯”两个字还是显示那一个133号的文字？因此如何做分隔也是字符编码需要考虑的事情。</p>
+<p>第2件事情通常解决方案要么就是规定好每个字长度（例如所有文字都是2bytes，不够的前面用0补齐），要么就是在用0和1表示的时候，不仅需要表示出数字编码，还要暗示给计算机接下来多少个连续byte构成一个字，这个后面UTF8编码中会提到。</p>
+<p>我们通常所说的Unicode，其实只做了第1件事情，并且是给全世界所有语言的所有文字或字母一个独一无二的数字编码，这样只要设计一种机制做第2件事情来表示Unicode，就可以显示全球范围内任何文字了。Unicode具体对所有语言的每个字母、文字的数字编号可以从其官方网站<a href="https://link.zhihu.com/?target=http://www.unicode.org/charts/">Unicode编码表</a> 查询。该官网一大亮点是，中文编码表的体量远远超过其他任何语言……</p>
+<p><em>（为了让文章易懂，我暂时舍弃一些晦涩概念。晦涩地讲，现代字符编码模型其实分5个层次，可以参考链接了解：<a href="https://link.zhihu.com/?target=http://www.unicode.org/reports/tr17/">Unicode Technical Report #17</a> ，不在我们讨论范围内了）</em></p>
+<h3 id="1-3-几种常见中文编码的关系如何？"><a href="#1-3-几种常见中文编码的关系如何？" class="headerlink" title="1.3 几种常见中文编码的关系如何？"></a>1.3 几种常见中文编码的关系如何？</h3><p>几种常见中文编码之间存在兼容性，一图胜千言：</p>
+<img src="/images/encode/01.jpg" alt="01" style="zoom:85%;" />
+
+<p>所谓兼容性可以简单理解为子集，同时存在也不冲突，不会出现上文所说的不知道是“腾讯”还是133号文字的情况。</p>
+<p>图中我们可以看出，<strong>ASCII被所有编码兼容</strong>，而最常见的UTF8与GBK之间除了ASCII部分之外没有交集，这也是平时业务中最常见的导致乱码场景，使用UTF8去读取GBK编码的文字，可能会看到各种乱码。而GB系列的几种编码，<strong>GB18030兼容GBK，GBK又兼容GB2312</strong>，下文细讲。</p>
+<h2 id="二、ASCII编码"><a href="#二、ASCII编码" class="headerlink" title="二、ASCII编码"></a>二、ASCII编码</h2><p>ASCII编码每个字母或符号占1byte（8bits），并且8bits的最高位是0，因此<strong>ASCII能编码的字母和符号只有128个</strong>。有一些编码把8bits最高位为1的后128个值也编码上，使得1byte可以表示256个值，但是这属于扩展的ASCII，并非标准ASCII。通常所说的标准ASCII只有前128个值！</p>
+<p>ASCII编码几乎被世界上所有编码所兼容（UTF16和UTF32是个例外），因此如果一个文本文档里面的内容全都由ASCII里面的字母或符号构成，那么不管你如何展示该文档的内容，都不可能出现乱码的情况。</p>
+<img src="/images/encode/02.jpg" alt="01" style="zoom:95%;" />
+
+<h2 id="三、GB2312、GBK、GB18030编码"><a href="#三、GB2312、GBK、GB18030编码" class="headerlink" title="三、GB2312、GBK、GB18030编码"></a>三、GB2312、GBK、GB18030编码</h2><p>GB全称GuoBiao国标，GBK全称GuoBiaoKuozhan国标扩展。GB18030编码兼容GBK，GBK兼容GB2312，其实这三种编码有着非常深厚的渊源，我们放在一起进行比较。</p>
+<h3 id="3-1【GB2312】"><a href="#3-1【GB2312】" class="headerlink" title="3.1【GB2312】"></a>3.1【GB2312】</h3><p>最早一版的中文编码，<strong>每个字占据2bytes</strong>。由于要和ASCII兼容，那这2bytes最高位不可以为0了（否则和ASCII会有冲突）。在GB2312中收录了6763个汉字以及682个特殊符号，已经囊括了生活中最常用的所有汉字。（GB2312编码全表：<a href="https://link.zhihu.com/?target=http://tools.jb51.net/table/gb2312">链接</a>）</p>
+<p>GB2312编码表有个值得注意的点，这个表中也有一些数字和字母，与ASCII里面的字母非常像。例如A3B2对应的是数字2（如下图），但是ASCII里面50（十进制）对应的也是数字2。他们的区别就是输入法中所说的<strong>“半角”和“全角”</strong>。全角的数字2占两个字节。</p>
+<p>通常，我们在打字或编程中都使用半角，即ASCII来编写数字或英文字母。特别是编程中，如果写全角的数字或字母，编译器很有可能不认识……</p>
+<p>GB2312与ASCII重合的部分字符：</p>
+<img src="/images/encode/03.png" alt="01" style="zoom:80%;" />
+
+<h3 id="3-2-【GBK】"><a href="#3-2-【GBK】" class="headerlink" title="3.2 【GBK】"></a>3.2 【GBK】</h3><p>由于GB2312只有6763个汉字，我汉语博大精深，只有6763个字怎么够？于是GBK中在保证不和GB2312、ASCII冲突（即兼容GB2312和ASCII）的前提下，也用每个字占据2bytes的方式又编码了许多汉字。经过GBK编码后，可以表示的汉字达到了20902个，另有984个汉语标点符号、部首等。值得注意的是这20902个汉字还包含了繁体字，但是该繁体字与台湾Big5编码不兼容，因为同一个繁体字很可能在GBK和Big5中数字编码是不一样的。（GBK编码全表：<a href="https://link.zhihu.com/?target=http://tools.jb51.net/table/gbk_table">链接</a>）</p>
+<h3 id="3-3-【GB18030】"><a href="#3-3-【GB18030】" class="headerlink" title="3.3 【GB18030】"></a>3.3 【GB18030】</h3><p>然而，GBK的两万多字也已经无法满足我们的需求了，还有更多可能你自己从来没见过的汉字需要编码。</p>
+<p>这时候显然只用2bytes表示一个字已经不够用了（2bytes最多只有65536种组合，然而为了和ASCII兼容，最高位不能为0就已经直接淘汰了一半的组合，只剩下3万多种组合无法满足全部汉字要求）。因此<strong>GB18030多出来的汉字使用4bytes编码。</strong>当然，为了兼容GBK，这个四字节的前两位显然不能与GBK冲突（实操中发现后两位也并没有和GBK冲突）。</p>
+<p>我国在2000年和2005年分别颁布的两次GB18030编码，其中2005年的是在2000年基础上进一步补充。至此，GB18030编码的中文文件已经有七万多个汉字了，甚至包含了少数民族文字。有兴趣的可以到国家标准委官网了解详情，<a href="https://link.zhihu.com/?target=http://www.gb688.cn/bzgk/gb/newGbInfo?hcno=C344D8D120B341A8DD328954A9B27A99">链接</a></p>
+<p>GB2312，GBK，GB18030都是采取了固定长度的办法来解决字符分隔（即前文所提的第2件事情）问题。GBK和GB2312比ASCII多出来的字都是2bytes，GB18030比GBK多出来的字都是4bytes。至于他们具体是如何做到兼容的，可以参考下图：</p>
+<p>几种不同编码的前2字节值域：</p>
+<img src="/images/encode/04.jpg" alt="01" style="zoom:85%;" />
+
+<p>这图中展示了前文所述的几种编码在编码完成后，前2个byte的值域（用16进制表示）。每个byte可以表示00到FF（即0至255）。ASCII编码由于是单字节，所以没有第2位。因为GBK兼容GB2312，所以理论上上图中GB2312的领土面积也可以算在GBK的范围内，GB18030也同理。</p>
+<p>上图只是展示出了比之前编码“多”出来的面积。GB18030由于是4bytes编码，上图只是展示了前2bytes的值域，虽然面积最小，但是如果后2bytes也算上，GB18030新编码的字数实际上远远多于GBK。</p>
+<p>可以看出为了做到兼容性，以上所有编码的前2bytes做到了相互值域不冲突，这样就可以允许几种不同编码中的文字同时出现在同一个文本文件中。只要全都按照GB18030编码的规则去解析并展示文件，就不会有乱码出现。实际业务中GB18030很少提到，通常GBK见得比较多，这是因为如果你去看一下GB18030里面所编码的文字，你会发现自己一个字也不认识……</p>
+<p>GB18030编码的部分汉字：</p>
+<img src="/images/encode/05.jpg" alt="01" style="zoom:85%;" />
+
+<h2 id="四、UTF8编码"><a href="#四、UTF8编码" class="headerlink" title="四、UTF8编码"></a>四、UTF8编码</h2><p>互联网的普及，强烈要求出现一种统一的编码方式。UTF-8 就是在互联网上使用最广的一种 Unicode 的实现方式。其他实现方式还包括 UTF-16（字符用两个字节或四个字节表示）和 UTF-32（字符用四个字节表示），不过在互联网上基本不用。<strong>重复一遍，这里的关系是，UTF-8 是 Unicode 的实现方式之一</strong>(<a target="_blank" rel="noopener" href="http://www.ruanyifeng.com/blog/2007/10/ascii_unicode_and_utf-8.html">摘自</a>)。</p>
+<blockquote>
+<p>UTF是”Unicode/UCS Transformation Format”的首字母缩写，即把Unicode字符转换为某种格式之意。</p>
+</blockquote>
+<blockquote>
+<p>UTF-16是Unicode字符编码五层次模型的第三层：字符编码表（Character Encoding Form，也称为”storage format”）的一种实现方式。即把Unicode字符集的抽象码位映射为16位长的整数（即码元）的序列，用于数据存储或传递。<br>Unicode字符的码位，需要1个或者2个16位长的码元来表示，因此这是一个变长表示。即UTF-16是变长编码方式，每个字符编码为16位或32位；大部分汉字采用两个字节编码，少量不常用汉字采用四个字节编码。</p>
+</blockquote>
+<p><strong>UTF-8 最大的一个特点，就是它是一种变长的编码方式。</strong>它可以使用1~4个字节表示一个符号，根据不同的符号而变化字节长度。</p>
+<p>99%的前端写网页时都会加上<code>&lt;meta charset=&quot;utf-8&quot;&gt;</code>，99%的后端工程师新建数据库表时都会加上<code>DEFAULT CHARSET=utf8</code>（剩下的1%应该是忘了写）。</p>
+<p>之所以我们想让UTF8一统天下，就是因为UTF8可以表示出世界上所有的文字！UTF8与前面说的GB系列编码不兼容，所以如果一个文件中即有UTF8编码的文字，又有GB18030编码的文字，那绝对会有乱码。</p>
+<p>Unicode赋予了全世界所有文字和符号一个独一无二的数字编号，UTF8所做的事情就是把这个数字编号表示出来（即解决前文提到的第2件事情）。<strong>UTF8解决字符间分隔的方式是数二进制中最高位连续1的个数来决定这个字是几字节编码。</strong>0开头的属于单字节，和ASCII码重合，做到了兼容。</p>
+<img src="/images/encode/06.png" alt="01" style="zoom:75%;" />
+
+<p>以三字节为例，开头第一个字节的”1110”，有连续三个1，说明包括本字节在内，接下来三个字节一起构成了一个文字。凡是不属于文字首字节的byte都以“10”开头，上表中标注X的位置才是真正用来表示Unicode数值的。</p>
+<p>这种巧妙设计，把Unicode的数值和每个字的字节数融合在一起，最坏情况是6个字节表示一个字，已经足够表示世界上所有语言的所有文字了。不过从这种表示方式也可以很显然地看出来，UTF8和GBK没有任何关系，除了都兼容ASCII以外。</p>
+<p>鹅 字的UTF8编码计算过程：</p>
+<img src="/images/encode/07.jpg" alt="01" style="zoom:70%;" />
+
+<p>举例说明，中文“鹅”字，Unicode十进制值为40517（16进制为<code>9E45</code>，2进制为<code>1001 1110 0100 0101</code>）。这个2进制值长度为12位，查询上面表格发现，二字节不够表示，四字节太长，三字节刚好，因此可以表示为 <code>11101001 10111001 10000101</code>，换算为16进制即<code>E9B985</code>，这就是“鹅”字的UTF8编码，占3字节。另外，经查询，“鹅”的GBK编码为<code>B6EC</code>，和UTF8的值完全不相干。</p>
+<p><strong>对于中文汉字来说，所有<code>常用</code>汉字的Unicode值都可以用3字节的UTF8表示出来，而GBK编码的汉字基本是2字节</strong>（GB18030虽4字节但是日常没人会写那些字）。这也就导致了，如果把GBK编码的中文文本另存为UTF8编码，体积会大50%左右。这也是<strong>UTF8的一点小瑕疵，存储同样的汉字，体积比GBK要大50%。</strong></p>
+<p>不过在“可表示世界上所有文字”这一巨大优势面前，UTF8的这点小瑕疵可以忽略了，所以日常开发中最常使用UTF8。</p>
+<h2 id="五、其他经常遇到的编码：ANSI、Latin1"><a href="#五、其他经常遇到的编码：ANSI、Latin1" class="headerlink" title="五、其他经常遇到的编码：ANSI、Latin1"></a>五、其他经常遇到的编码：ANSI、Latin1</h2><h3 id="5-1-【ANSI编码】"><a href="#5-1-【ANSI编码】" class="headerlink" title="5.1 【ANSI编码】"></a>5.1 【ANSI编码】</h3><p>准确说，并不存在哪种具体的编码方式叫做ANSI，它只是一个Windows操作系统上的别称而已。在中文简体Windows操作系统上，ANSI就是GBK；在泰语操作系统上，ANSI就是TIS-620（一种泰语编码）；在韩语操作系统上，ANSI就是EUC-KR（一种韩语编码）。并且所谓的ANSI只存在于Windows操作系统上。</p>
+<h3 id="5-2【Latin1编码-又名ISO-8859-1编码-】"><a href="#5-2【Latin1编码-又名ISO-8859-1编码-】" class="headerlink" title="5.2【Latin1编码(又名ISO-8859-1编码)】"></a>5.2【Latin1编码(又名ISO-8859-1编码)】</h3><p>相信99%的人第一次听到Latin1都是在使用Mysql数据库的时候接触到的。Latin1是Mysql数据库表的默认编码方式。Latin1也是单字节编码方式，也就是说最多只能表示256个字母或符号，并且前128个和ASCII完全吻合。</p>
+<p>Latin1在ASCII基础上又充分利用了后面那128个值，赋予他们一些泰语、希腊语等字母或符号，将1个字节的256个值全部占满了。因为项目中用不到，我对这种编码的细节没兴趣了解，唯一感兴趣的是为什么Mysql选它做默认编码（为什么默认编码不是UTF8）？以及如果忘了设置Mysql表的编码方式时，用Latin1存储中文会不会出问题？</p>
+<p>Latin1编码表：</p>
+<img src="/images/encode/08.png" alt="01" style="zoom:95%;" />
+
+<p>为什么默认编码是Latin1而不是UTF8？原因之一是Mysql最开始是某瑞典公司搞的项目，故默认collate都是latin1_swedish_ci。swedish可以理解为其私心，不过latin1不管是否出于私心目的，单字节编码作为默认值肯定是比多字节做默认值更不容易在插入数据时报错。</p>
+<p>既然Latin1为单字节编码，并且将1个字节的所有256个值全部占满，因此理论上把任何编码的值塞到Latin1字段都是可以存的（无非就是显示乱码而已）。</p>
+<p>假设默认为UTF8这一多字节编码，在用户误把一个不使用UTF8编码的字符串存进去时，很有可能因为该字符串不符合UTF8的编码要求导致Mysql根本没法处理。这也是<strong>单字节编码的一大好处：显示可以乱码，但是里面的数据值永远正确。</strong></p>
+<p><strong>用Latin1存储中文有没有问题？答案是没有问题，但是并不建议</strong>。例如你把UTF8编码的“讯”字（UTF8编码为0xE8AEAF，占三个字节）存入了Latin1编码的Mysql表，那么在Mysql眼里，你存入的并不是一个“讯”字，而是三个Latin1的字母（0xE8，0xAE，0xAF）。本质上，你存的数据值依然是0xE8AEAF，这种“欺骗”Mysql的行为并没有导致数据丢失，只不过你需要注意读取出来该值的时候，自己要以UTF8编码的方式显示出来，要不然就是乱码。</p>
+<p>因此，<strong>用Latin1存任何文字技术上都可以，但是经常会导致数据显示乱码。</strong>通常的解决方案，就是让UTF8一统天下，建表的时候就声明charset为utf8。</p>
+
+    </article>
+    <!-- license  -->
+    
+        <div class="license-wrapper">
+            <p>Author：<a href="https://tenloy.github.io">Tenloy</a>
+            <p>原文链接：<a href="https://tenloy.github.io/2021/06/23/chinese-encode.html">https://tenloy.github.io/2021/06/23/chinese-encode.html</a>
+            <p>发表日期：2021.06.23 , 1:45 PM</p>
+            <p>更新日期：2022.01.07 , 8:13 AM</p>
+            <p>版权声明：本文采用<a rel="license noopener" target="_blank" href="http://creativecommons.org/licenses/by-nc/4.0/">Crative Commons 4.0 许可协议</a>进行许可</p>
+        </div>
+    
+    <!-- paginator  -->
+    <ul class="post-paginator">
+        <li class="next">
+            
+                <div class="nextSlogan">Next Post</div>
+                <a href= "/2021/06/24/base64.html" title= "Base64编码及iOS中的Base64">
+                    <div class="nextTitle">Base64编码及iOS中的Base64</div>
+                </a>
+            
+        </li>
+        <li class="previous">
+            
+                <div class="prevSlogan">Previous Post</div>
+                <a href= "/2021/06/22/dynamic-programming.html" title= "(二) 动态规划算法">
+                    <div class="prevTitle">(二) 动态规划算法</div>
+                </a>
+            
+        </li>
+    </ul>
+    <!-- 评论插件 -->
+    <!-- 来必力City版安装代码 -->
+
+<!-- City版安装代码已完成 -->
+    
+    
+    <!-- gitalk评论 -->
+
+    <!-- utteranc评论 -->
+
+    <!-- partial('_partial/comment/changyan') -->
+    <!--PC版-->
+
+
+    
+    
+
+    <!-- 评论 -->
+</main>
+            <!-- profile -->
+            
+        </div>
+        <footer class="footer footer-unloaded">
+    <!-- social  -->
+    
+    <div class="social">
+        
+    
+        
+            
+                <a href="mailto:luotengoto@163.com" class="iconfont-archer email" title=email ></a>
+            
+        
+    
+        
+            
+                <a href="//github.com/Tenloy" class="iconfont-archer github" target="_blank" title=github></a>
+            
+        
+    
+        
+            
+                <a href="https://www.jianshu.com/u/8db1bc12db9f" class="iconfont-jian jianshu" target="_blank" title=jianshu></a>
+            
+        
+    
+        
+            
+                <a href="/atom.xml" class="iconfont-archer rss" target="_blank" title=rss></a>
+            
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+
+    </div>
+    
+    <!-- powered by Hexo  -->
+    <div class="copyright">
+        <span id="hexo-power">Powered by <a href="https://hexo.io/" target="_blank">Hexo</a></span><span class="iconfont-archer power">&#xe635;</span><span id="theme-info">theme <a href="https://github.com/fi3ework/hexo-theme-archer" target="_blank">Archer</a></span>
+    </div>
+    <!-- 不蒜子  -->
+    
+    <div class="busuanzi-container">
+    
+     
+    <span id="busuanzi_container_site_pv">PV: <span id="busuanzi_value_site_pv"></span> :)</span>
+    
+    </div>
+    
+</footer>
+    </div>
+    <!-- toc -->
+    
+    <div class="toc-wrapper" style=
+    
+
+
+
+
+
+
+
+top:40vh;
+
+    >
+        <div class="toc-catalog">
+            <span class="iconfont-archer catalog-icon">&#xe613;</span><span>CATALOG</span>
+        </div>
+        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E3%80%81%E5%AD%97%E7%AC%A6%E7%BC%96%E7%A0%81%E6%A6%82%E8%BF%B0"><span class="toc-text">一、字符编码概述</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-1-%E4%BB%80%E4%B9%88%E6%98%AF%E5%AD%97%E7%AC%A6%E9%9B%86%E7%BC%96%E7%A0%81"><span class="toc-text">1.1 什么是字符集编码</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-2-%E5%AD%97%E7%AC%A6%E7%BC%96%E7%A0%81%E8%A6%81%E5%81%9A%E4%BB%80%E4%B9%88%E4%BA%8B%E6%83%85%EF%BC%9F"><span class="toc-text">1.2 字符编码要做什么事情？</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-3-%E5%87%A0%E7%A7%8D%E5%B8%B8%E8%A7%81%E4%B8%AD%E6%96%87%E7%BC%96%E7%A0%81%E7%9A%84%E5%85%B3%E7%B3%BB%E5%A6%82%E4%BD%95%EF%BC%9F"><span class="toc-text">1.3 几种常见中文编码的关系如何？</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8C%E3%80%81ASCII%E7%BC%96%E7%A0%81"><span class="toc-text">二、ASCII编码</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%89%E3%80%81GB2312%E3%80%81GBK%E3%80%81GB18030%E7%BC%96%E7%A0%81"><span class="toc-text">三、GB2312、GBK、GB18030编码</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#3-1%E3%80%90GB2312%E3%80%91"><span class="toc-text">3.1【GB2312】</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-2-%E3%80%90GBK%E3%80%91"><span class="toc-text">3.2 【GBK】</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-3-%E3%80%90GB18030%E3%80%91"><span class="toc-text">3.3 【GB18030】</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9B%9B%E3%80%81UTF8%E7%BC%96%E7%A0%81"><span class="toc-text">四、UTF8编码</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%94%E3%80%81%E5%85%B6%E4%BB%96%E7%BB%8F%E5%B8%B8%E9%81%87%E5%88%B0%E7%9A%84%E7%BC%96%E7%A0%81%EF%BC%9AANSI%E3%80%81Latin1"><span class="toc-text">五、其他经常遇到的编码：ANSI、Latin1</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#5-1-%E3%80%90ANSI%E7%BC%96%E7%A0%81%E3%80%91"><span class="toc-text">5.1 【ANSI编码】</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-2%E3%80%90Latin1%E7%BC%96%E7%A0%81-%E5%8F%88%E5%90%8DISO-8859-1%E7%BC%96%E7%A0%81-%E3%80%91"><span class="toc-text">5.2【Latin1编码(又名ISO-8859-1编码)】</span></a></li></ol></li></ol>
+    </div>
+    
+    <div class="back-top iconfont-archer">&#xe639;</div>
+    <div class="sidebar sidebar-hide">
+    <ul class="sidebar-tabs sidebar-tabs-active-0">
+        <li class="sidebar-tab-categories"><span class="iconfont-archer">&#xe666;</span><span class="tab-name">Cate</span></li>
+        <li class="sidebar-tab-archives"><span class="iconfont-archer">&#xe67d;</span><span class="tab-name">Archive</span></li>
+        <li class="sidebar-tab-tags"><span class="iconfont-archer">&#xe61b;</span><span class="tab-name">Tag</span></li>
+    </ul>
+    <div class="sidebar-content sidebar-content-show-archive">
+        <div class="sidebar-panel-categories">
+    <div class="sidebar-categories-name">
+    
+        <span class="sidebar-category-name" data-categories="软件工程"><span class="iconfont-archer">&#xe60a;</span>软件工程</span>
+    
+        <span class="sidebar-category-name" data-categories="操作系统"><span class="iconfont-archer">&#xe60a;</span>操作系统</span>
+    
+        <span class="sidebar-category-name" data-categories="数据的格式与编码"><span class="iconfont-archer">&#xe60a;</span>数据的格式与编码</span>
+    
+        <span class="sidebar-category-name" data-categories="Swift"><span class="iconfont-archer">&#xe60a;</span>Swift</span>
+    
+        <span class="sidebar-category-name" data-categories="性能优化"><span class="iconfont-archer">&#xe60a;</span>性能优化</span>
+    
+        <span class="sidebar-category-name" data-categories="编译链接与装载"><span class="iconfont-archer">&#xe60a;</span>编译链接与装载</span>
+    
+        <span class="sidebar-category-name" data-categories="计算机组成原理"><span class="iconfont-archer">&#xe60a;</span>计算机组成原理</span>
+    
+        <span class="sidebar-category-name" data-categories="计算机网络"><span class="iconfont-archer">&#xe60a;</span>计算机网络</span>
+    
+        <span class="sidebar-category-name" data-categories="DSL"><span class="iconfont-archer">&#xe60a;</span>DSL</span>
+    
+        <span class="sidebar-category-name" data-categories="数据结构与算法"><span class="iconfont-archer">&#xe60a;</span>数据结构与算法</span>
+    
+        <span class="sidebar-category-name" data-categories="iOS"><span class="iconfont-archer">&#xe60a;</span>iOS</span>
+    
+        <span class="sidebar-category-name" data-categories="图形处理与渲染"><span class="iconfont-archer">&#xe60a;</span>图形处理与渲染</span>
+    
+        <span class="sidebar-category-name" data-categories="架构与设计模式"><span class="iconfont-archer">&#xe60a;</span>架构与设计模式</span>
+    
+        <span class="sidebar-category-name" data-categories="汇编语言"><span class="iconfont-archer">&#xe60a;</span>汇编语言</span>
+    
+        <span class="sidebar-category-name" data-categories="React"><span class="iconfont-archer">&#xe60a;</span>React</span>
+    
+        <span class="sidebar-category-name" data-categories="Web"><span class="iconfont-archer">&#xe60a;</span>Web</span>
+    
+        <span class="sidebar-category-name" data-categories="Git"><span class="iconfont-archer">&#xe60a;</span>Git</span>
+    
+    </div>
+    <div class="iconfont-archer sidebar-categories-empty">&#xe678;</div>
+    <div class="sidebar-categories-list"></div>
+</div>
+          <div class="sidebar-panel-archives">
+    <!-- 在ejs中将archive按照时间排序 -->
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    <div class="total-and-search">
+        <div class="total-archive">
+        Total : 53
+        </div>
+        <!-- search  -->
+        
+            <div class="site-search popup-trigger tl-side-search"> 
+                <span class="iconfont-jian search-icon">&#xe7fc;搜索</span>
+            </div>
+        
+    </div>
+    
+    <div class="post-archive">
+    
+    
+    
+    
+    <div class="archive-year"> 2021 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/22</span><a class="archive-post-title" href= "/2021/12/22/aes.html" >数据加密 — 对称加密(以AES为例)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/21</span><a class="archive-post-title" href= "/2021/12/21/aes-standard.html" >[转] AES标准及Rijndael算法解析</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/20</span><a class="archive-post-title" href= "/2021/12/20/asymmetric.html" >数据加密 — 非对称加密(加签/加密，以RSA为例)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/09</span><a class="archive-post-title" href= "/2021/12/09/pki.html" >常见的PKI标准(X.509、PKCS)及证书相关介绍</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/22</span><a class="archive-post-title" href= "/2021/11/22/bit-calculation.html" >[转] 位运算实现加、减、乘、除运算</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/10</span><a class="archive-post-title" href= "/2021/11/10/git-use.html" >Git的使用总结</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/11</span><a class="archive-post-title" href= "/2021/10/11/runtime-data-structure.html" >Objc Runtime总结</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/28</span><a class="archive-post-title" href= "/2021/09/28/dyld-objc.html" >(七) dyld与Objc—_objc_init、map_images、load_images</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/27</span><a class="archive-post-title" href= "/2021/09/27/compile-dynamic-link.html" >(六) Mach-O 文件的动态链接、库、Dyld(含dlopen)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/26</span><a class="archive-post-title" href= "/2021/09/26/compile-vm-asrl.html" >(五) Mach-O 文件之进程(虚拟)地址空间、ASLR</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/25</span><a class="archive-post-title" href= "/2021/09/25/compile-load.html" >(四) Mach-O 文件的装载</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/24</span><a class="archive-post-title" href= "/2021/09/24/compile-static-link.html" >(三) Mach-O 文件的静态链接</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/23</span><a class="archive-post-title" href= "/2021/09/23/compile-macho.html" >(二) Mach-O 文件结构</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/22</span><a class="archive-post-title" href= "/2021/09/22/compile-clang-llvm.html" >(一) Clang/LLVM 介绍、OC 程序的编译过程</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/20</span><a class="archive-post-title" href= "/2021/09/20/architectural-pattern.html" >常见架构模式: MVC、MVP、MVVM、VIPER</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/18</span><a class="archive-post-title" href= "/2021/09/18/design-pattern.html" >常见的设计模式</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/15</span><a class="archive-post-title" href= "/2021/09/15/graphics-processing-case.html" >图形处理(三) - 图形处理实践案例</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/15</span><a class="archive-post-title" href= "/2021/09/15/graphics-processing.html" >图形处理(二) - 图形与视频处理相关的框架</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/13</span><a class="archive-post-title" href= "/2021/09/13/image-encode-decode.html" >图形处理(一) - 图片的加载与编解码</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/12</span><a class="archive-post-title" href= "/2021/09/12/iOS-Render.html" >[转] iOS离屏渲染原理及优化</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/11</span><a class="archive-post-title" href= "/2021/09/11/core-animation03.html" >Core-Animation(三) - 渲染流程探究及性能分析</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/09</span><a class="archive-post-title" href= "/2021/09/09/core-animation02.html" >Core Animation(二) - 隐式动画、CATransaction与CAAction</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/07</span><a class="archive-post-title" href= "/2021/09/07/core-animation01.html" >Core Animation(一) - UIView与CALayer</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/05</span><a class="archive-post-title" href= "/2021/09/05/AFN-Analyse.html" >[转] AFN框架实现解析</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/03</span><a class="archive-post-title" href= "/2021/09/03/computer-network-knowledge.html" >计算机网络相关知识汇总</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/02</span><a class="archive-post-title" href= "/2021/09/02/Log.html" >移动端日志库设计</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/01</span><a class="archive-post-title" href= "/2021/07/01/Crash-Monitor.html" >iOS崩溃监控与分析</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/30</span><a class="archive-post-title" href= "/2021/06/30/Lag-Monitor.html" >iOS卡顿监控</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/29</span><a class="archive-post-title" href= "/2021/06/29/SwiftUI.html" >SwiftUI</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/29</span><a class="archive-post-title" href= "/2021/06/29/Swift-Version-History.html" >Swift版本更新API介绍</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/28</span><a class="archive-post-title" href= "/2021/06/28/GCD.html" >深入浅出GCD常用API</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/28</span><a class="archive-post-title" href= "/2021/06/28/AutoreleasePool.html" >AutoreleasePool</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/26</span><a class="archive-post-title" href= "/2021/06/26/RunLoop-Reposted-From-ibireme.html" >[转] 深入理解RunLoop—ibireme</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/25</span><a class="archive-post-title" href= "/2021/06/25/Protocol-Buffer.html" >Protocol Buffer的基本介绍</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/24</span><a class="archive-post-title" href= "/2021/06/24/base64.html" >Base64编码及iOS中的Base64</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/23</span><a class="archive-post-title" href= "/2021/06/23/chinese-encode.html" >[转] 彻底弄懂常见的7种中文字符编码</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/22</span><a class="archive-post-title" href= "/2021/06/22/dynamic-programming.html" >(二) 动态规划算法</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/18</span><a class="archive-post-title" href= "/2021/06/18/Web-Module.html" >前端各种模块化方案总结</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/27</span><a class="archive-post-title" href= "/2021/05/27/Fiber.html" >[转] 最通俗的 React Fiber(时间分片)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/27</span><a class="archive-post-title" href= "/2021/05/27/Coroutine.html" >[转] 什么是协程</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/29</span><a class="archive-post-title" href= "/2021/04/29/DSL.html" >[转] 谈谈DSL以及DSL的应用（以CocoaPods 为例）</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/26</span><a class="archive-post-title" href= "/2021/04/26/Containers.html" >常见的容器概念：Linux容器、Docker容器、服务器容器</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/24</span><a class="archive-post-title" href= "/2021/04/24/Dock-Reprinted-from-RuanYIFeng.html" >[转] Docker入门教程</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/20</span><a class="archive-post-title" href= "/2021/04/20/Sync-Async.html" >同步和异步解读及编程中的使用场景</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/17</span><a class="archive-post-title" href= "/2021/04/17/Arm64-Handbook.html" >ARM64指令简易手册</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/16</span><a class="archive-post-title" href= "/2021/04/16/Arm64-Introduce.html" >iOS需要了解的ARM64汇编</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/15</span><a class="archive-post-title" href= "/2021/04/15/Ins-SysCall-Kernel-Shell.html" >指令、系统调用、库、Shell、APP的层次关系</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/14</span><a class="archive-post-title" href= "/2021/04/14/ISA-Microarch-Soc.html" >指令集、微架构、手机芯片(Soc)及ARM的介绍</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/13</span><a class="archive-post-title" href= "/2021/04/13/Command-Line.html" >CLI-Shell-Terminal-脚本概念梳理</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/12</span><a class="archive-post-title" href= "/2021/04/12/CI-CD.html" >CI-CD</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/11</span><a class="archive-post-title" href= "/2021/04/11/Engineering.html" >工程化、动态化、容器化、组件化</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/10</span><a class="archive-post-title" href= "/2021/04/10/GithubPages-Hexo.html" >使用Hexo+Github Pages搭建个人博客</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/06</span><a class="archive-post-title" href= "/2021/04/06/iOS_Knowledge_Tree.html" >iOS-interview</a>
+        </li>
+    
+    </div>
+  </div>
+        <div class="sidebar-panel-tags">
+    <div class="sidebar-tags-name">
+    
+        <span class="sidebar-tag-name" data-tags="hexo"><span class="iconfont-archer">&#xe606;</span>hexo</span>
+    
+        <span class="sidebar-tag-name" data-tags="CI/CD"><span class="iconfont-archer">&#xe606;</span>CI/CD</span>
+    
+        <span class="sidebar-tag-name" data-tags="多线程"><span class="iconfont-archer">&#xe606;</span>多线程</span>
+    
+        <span class="sidebar-tag-name" data-tags="协程"><span class="iconfont-archer">&#xe606;</span>协程</span>
+    
+        <span class="sidebar-tag-name" data-tags="SwiftUI"><span class="iconfont-archer">&#xe606;</span>SwiftUI</span>
+    
+        <span class="sidebar-tag-name" data-tags="Swift-Syntax"><span class="iconfont-archer">&#xe606;</span>Swift-Syntax</span>
+    
+        <span class="sidebar-tag-name" data-tags="Log"><span class="iconfont-archer">&#xe606;</span>Log</span>
+    
+        <span class="sidebar-tag-name" data-tags="CLI"><span class="iconfont-archer">&#xe606;</span>CLI</span>
+    
+        <span class="sidebar-tag-name" data-tags="Shell"><span class="iconfont-archer">&#xe606;</span>Shell</span>
+    
+        <span class="sidebar-tag-name" data-tags="ISA"><span class="iconfont-archer">&#xe606;</span>ISA</span>
+    
+        <span class="sidebar-tag-name" data-tags="Microarch"><span class="iconfont-archer">&#xe606;</span>Microarch</span>
+    
+        <span class="sidebar-tag-name" data-tags="Soc"><span class="iconfont-archer">&#xe606;</span>Soc</span>
+    
+        <span class="sidebar-tag-name" data-tags="Docker"><span class="iconfont-archer">&#xe606;</span>Docker</span>
+    
+        <span class="sidebar-tag-name" data-tags="DSL"><span class="iconfont-archer">&#xe606;</span>DSL</span>
+    
+        <span class="sidebar-tag-name" data-tags="dp"><span class="iconfont-archer">&#xe606;</span>dp</span>
+    
+        <span class="sidebar-tag-name" data-tags="AutoreleasePool"><span class="iconfont-archer">&#xe606;</span>AutoreleasePool</span>
+    
+        <span class="sidebar-tag-name" data-tags="ARM64"><span class="iconfont-archer">&#xe606;</span>ARM64</span>
+    
+        <span class="sidebar-tag-name" data-tags="RunLoop"><span class="iconfont-archer">&#xe606;</span>RunLoop</span>
+    
+        <span class="sidebar-tag-name" data-tags="LagMonitor"><span class="iconfont-archer">&#xe606;</span>LagMonitor</span>
+    
+        <span class="sidebar-tag-name" data-tags="CrashMonitor"><span class="iconfont-archer">&#xe606;</span>CrashMonitor</span>
+    
+        <span class="sidebar-tag-name" data-tags="Fiber"><span class="iconfont-archer">&#xe606;</span>Fiber</span>
+    
+        <span class="sidebar-tag-name" data-tags="interview"><span class="iconfont-archer">&#xe606;</span>interview</span>
+    
+        <span class="sidebar-tag-name" data-tags="GCD"><span class="iconfont-archer">&#xe606;</span>GCD</span>
+    
+        <span class="sidebar-tag-name" data-tags="AFN"><span class="iconfont-archer">&#xe606;</span>AFN</span>
+    
+    </div>
+    <div class="iconfont-archer sidebar-tags-empty">&#xe678;</div>
+    <div class="tag-load-fail" style="display: none; color: #ccc; font-size: 0.6rem;">
+    缺失模块。<br/>
+    1、请确保node版本大于6.2<br/>
+    2、在博客根目录（注意不是archer根目录）执行以下命令：<br/>
+    <span style="color: #f75357; font-size: 1rem; line-height: 2rem;">npm i hexo-generator-json-content --save</span><br/>
+    3、在根目录_config.yml里添加配置：
+    <pre style="color: #787878; font-size: 0.6rem;">
+jsonContent:
+  meta: false
+  pages: false
+  posts:
+    title: true
+    date: true
+    path: true
+    text: false
+    raw: false
+    content: false
+    slug: false
+    updated: false
+    comments: false
+    link: false
+    permalink: false
+    excerpt: false
+    categories: true
+    tags: true</pre>
+    </div> 
+    <div class="sidebar-tags-list"></div>
+</div>
+    </div>
+</div> 
+    <script>
+    var siteMeta = {
+        root: "/",
+        author: "Tenloy"
+    }
+</script>
+    <!-- CDN failover -->
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js"></script>
+    <script type="text/javascript">
+        if (typeof window.$ === 'undefined')
+        {
+            console.warn('jquery load from jsdelivr failed, will load local script')
+            document.write('<script src="/lib/jquery.min.js">\x3C/script>')
+        }
+    </script>
+    <script src="/scripts/main.js"></script>
+    <!-- algolia -->
+    
+        <div class="site-search">
+  <div class="algolia-popup popup">
+    <div class="algolia-search">
+      <div class="algolia-search-input-icon">
+        <i class="fa fa-search"></i>
+      </div>
+      <div class="algolia-search-input" id="algolia-search-input"></div>
+    </div>
+
+    <div class="algolia-results">
+      <div id="algolia-stats"></div>
+      <div id="algolia-hits"></div>
+      <div id="algolia-pagination" class="algolia-pagination"></div>
+    </div>
+
+    <span class="popup-btn-close">
+      <i class="iconfont-archer">&#xe609;</i>
+    </span>
+  </div>
+</div>
+        <script src="https://cdn.jsdelivr.net/npm/instantsearch.js@2.8.0/dist/instantsearch.min.js" defer></script>
+        <script src="/scripts/search.js" defer></script>
+    
+    <!-- busuanzi  -->
+    
+    <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    
+    <!-- CNZZ  -->
+    
+    </div>
+    <!-- async load share.js -->
+    
+        <script src="/scripts/share.js" async></script>    
+     
+    </body>
+</html>
+
+
