@@ -1340,6 +1340,18 @@ Return-to-libc攻击（缩写：ret2libc），即“返回至C标准库攻击”
 
 ## 11.1 Swift语法
 
+[**SwiftUI 入门指北**](https://zhuanlan.zhihu.com/p/343896847)
+
+https://developer.apple.com/videos/wwdc2019?q=swiftui
+
+https://developer.apple.com/videos/wwdc2020?q=swiftui
+
+https://developer.apple.com/tutorials/swiftui
+
+[**SwiftUI 学习资料整理**](https://zhuanlan.zhihu.com/p/369562707)
+
+[使用 Swift 特性 Result Builder 定制 DSL](https://mp.weixin.qq.com/s/Rq1c26L9AnjdOtPSA96Ovw)
+
 ## 11.2 SwiftUI
 
 - oc怎么转换成SwiftUI
@@ -1467,7 +1479,7 @@ APP安装包都有什么，怎么瘦身，背后怎么做的，哪些场景可�
 7：自动释放池  自动师范池与runloop的区别
 8：堆和栈的区别
 9：block  为什么要用copy修饰  注意点 
-10： 启动优化  load  initialize 的区别
+10：启动优化  load  initialize 的区别
 11：App 打包成 api 做了那些事
 12：自动化搭建
 13：线上的问题的定位 修复 监护 卡顿
@@ -1495,20 +1507,712 @@ APP安装包都有什么，怎么瘦身，背后怎么做的，哪些场景可�
 
 
 
-iOS6以下系统，默认navBar和tabBar都不占空间。
+**MachO文件结构**
 
-iOS7及以上系统默认：
+有几块
 
-- self.navigationController.navigationBar.translucent(半透明)为YES
-- self.edgesForExtendedLayout = UIRectEdgeAll
-- 此时，self.view.frame.origin.y从0开始（屏幕最上部、navigationBar的顶部）。
-
-设置translucent=NO、与edgesForExtendedLayout=UIRectEdgeNone 都会使self.view.frame.origin.y下移(navBar高度)个像素，即self.view中的子控件布局从navBar下方开始
-
-- 如果只设置后者，由于navBar是透明的，会出现64像素的黑色区域。设置背景色、背景图片都有点问题，所以最好设置前者
+MachO里面有记录哪个类、方法有使用，哪个没使用？？？然后根据这个做优化？删除无用代码
 
 
-iOS7之后也增加了一个self.tabBarController.tabBar.translucent的属性，默认为YES。效果同上
 
-注意：在viewDidLoad中打印self.view.frame是屏幕宽高，在viewWillAppear及之后的生命周期方法中，才会因为上面的设置而改变
+Swift struct的特性
+
+值类型
+
+创建在栈上，不用开发者管理内存。内存相比引用类型小一点，后者需要一个指针变量，堆上的空间前16字节还要存其他的数据。
+
+当没有属性时，结构体实例应该就1字节？对象也malloc 16的倍数
+
+通过协议实现多重继承
+
+修改实例内存中的数据，要用@muting修饰
+
+
+
+组件化
+
+基础模块 业务模块 上层是业务逻辑？
+
+路由分两种：对外是URL 对内就是协议，但它的协议是不需要注册的(额，不方便对外透露…)
+
+
+
+组件化的方案与组件间的通信(解耦方案)是两码事？
+
+
+
+面试题
+
+
+
+https://sq.163yun.com/blog/article/200743376636538880
+
+
+
+class和struct的区别，为什么Swift是面向协议的，map，flatmap。。高级函数的区别
+
+
+
+什么是锁的低优先级反转
+
+
+
+__weak 指向一个对象，再次指向一个对象，会发生什么
+
+
+
+知识点 1: NSProxy
+
+   2：苹果对copy的优化
+
+ 	  3： 最大并发数设置：3.0的operationQueue是用于接收NSURLSessionDelegate回调的；
+
+
+
+self.operationQueue.maxConcurrentOperationCount = 1，是为了达到串行回调的效果，况且加了锁；
+
+
+
+各位大佬 
+
+
+
+af 3.0之后不是只有一条线程了嘛
+
+
+
+为什么下面这操作要加锁啊
+
+
+
+
+
+4 Runtime runloop 多线程，约束的实现原理，动画。layer和view的区别以及联系，锁,显式动画，隐式动画区别
+
+
+
+5 之前微博有个面试题，让实现，两个实例对象，调用同一个方法，一个生效一个不生效，而且还不能崩溃
+
+
+
+6 如何保证不碰撞，dictionary的实现原理，hashmap如何做到查找最快的
+
+
+
+7 手势的原理
+
+
+
+8 多个线程share一个裸指针如何保证安全
+
+
+
+9 https://www.cnblogs.com/doudouyoutang/p/6275077.html
+
+
+
+10 一个面试题，像微信app聊天界面一样，大量的读写操作，如果是你，你怎么处理优化
+
+
+
+综合一下，感觉先试用mmap，等存够一定数量然后再使用fmdb存
+
+可以参考
+
+https://github.com/Tencent/MMKV/blob/master/readme_cn.md
+
+iOS内存映射mmap详解：https://www.jianshu.com/p/13f254cf58a7
+
+
+
+11 还有个印象比较深的问题，OC跟swift桥接的原理是怎么样的
+
+ 
+
+12 问了一些闭包原理和一些语法，其他的主要是混编的内容，比如OC的指针传递在swift怎么用
+
+
+
+13 https://halfrost.com/ios_block_retain_circle/
+
+
+
+14 一般在runloop obersever里面注册的事件都会创建自动释放池，比如响应链、视图刷新等
+
+
+
+15 多自动释放池嵌套，在某一个自动释放池外定义，池内初始化，问这个对象由谁管理，什么时候释放
+
+
+
+16 出作用域就释放嘛。那现在开个串行队列。来一个N次的自动释放，会咋样
+
+
+
+17 如何hook cocoapods，做自己的插件化编译
+
+
+
+18 异步加入定时器
+
+
+
+19 swift闭包和oc的block的汇编代码
+
+ 20
+
+
+
+
+
+https://www.bilibili.com/video/BV1Mx411v7rJ
+
+
+
+
+
+文件添加编译顺序
+
+
+
+
+
+
+
+https://www.jianshu.com/p/c294d1bd963d  
+
+
+
+
+
+
+
+
+
+https://www.jianshu.com/p/24a9447d70f8?utm_campaign=hugo&utm_medium=reader_share&utm_content=note&utm_source=weixin-friends
+
+
+
+
+
+class_getInstanceSize(type(of: point)) 返回某个类对象至少需要多少空间
+
+malloc_size()返回的是实际分配的内存空间
+
+MemoryLayout<Session>.size // 实际可能用到的空间大小  
+
+MemoryLayout<Session>.stride // 分配占用的空间大小  
+
+MemoryLayout<Session>.alignment // 对齐参数 
+
+
+
+方法占用对象的内存吗
+
+不占用 方法的本质是函数 方法，函数都存放在代码段
+
+
+
+
+
+https://www.jianshu.com/p/18401f252293 讲述内存对齐原则
+
+下面的MemoryLayout.size打印为什么不一样
+
+struct Person {				
+
+​      var a = 11
+
+​      var c = 2
+
+​      var b = true
+
+​       
+
+ }
+
+
+
+struct Person {
+
+​      var a = 11
+
+​      var b = true
+
+​      var c = 2
+
+ }
+
+
+
+闭包捕获变量的规则，还有和block的区别
+
+
+
+
+
+
+
+看视频，研究inout的本质
+
+
+
+
+
+string和array占据的内存
+
+
+
+内存访问冲突
+
+
+
+
+
+filter map reduce flatmap的区别
+
+
+
+
+
+
+
+hash表
+
+uitablewiew重用机制
+
+内存泄露监控
+
+png图片压缩机制
+
+数组越界的处理，除了hook外，有什么更好的处理方式
+
+
+
+\1. 死锁的原因，如何解决，如果要在GCD里面取消任务 怎么操作
+
+
+
+
+
+崩溃的地址一般代表什么
+
+
+
+1.混合架构的framework 静态库 需要分离么
+
+2.静态库中包含分类文件，如何调用。
+
+3.为什么需要加Objc，静态库的加载流程，Objc的语义？
+
+4.静态库中swift与OC如何实现混编？
+
+5.swift 与 OC混编 module的原理是什么？
+
+6.swift 与 OC 混编 module的配置流程？
+
+
+
+我点一下图标 iPhone经历什么？
+
+
+
+分类 为什么在静态库下 默认无法加载？ 说一说静态库的加载流程 
+
+
+
+copy strong底层实现
+
+
+
+成员变量放在哪里
+
+
+
+initialize是通过消息发送机制调用的，initialize调用顺序
+
+
+
+分类什么时候加载
+
+
+
+
+
+ 
+
+swift为什么使用结构体
+
+\1. protobuff 是怎么进行解析的， 有啥可以优化点，
+
+\2. 跨平台的方案分析，选型以及优化点
+
+\3. RAC 如果出现 A->B->C->A, 那么怎么断环
+
+\4. 10进制转16进制 算法。
+
+\5. webp 和 Lottie 在对动图的优化，webp压缩算法 丢弃了什么
+
+\6. 为什么 swift 推荐 使用结构体，swift数组为什么选择使用 结构体
+
+\7. 如果多个组件，还有 弹窗，前后台切换，页面push等等 都可能 控制 播放器的播放和停止，那么你怎么设计一个无依赖的方案
+
+oc的 KVO 你已经知道了，那么 swift 的KVO 原理懂么
+
+
+
+
+
+
+
+nil调用方法会怎么样
+
+
+
+@飞⃰不⃰飞⃰ weak，自动释放池，你最骄傲的事，属性的修饰关键字，启动优化。
+
+
+
+CI构建，编译打包流程；Runtime/Runloop这种机制，为啥要设计这种机制呢，编译时运行时；几种多线程方案的利弊；APP安装包都有什么，怎么瘦身，背后怎么做的，哪些场景可能会引起包体积增大；怎么看待异常；进程和线程；对iOS新技术有关注吗（我说了Flutter，那Flutter具体怎么做的，事件响应怎么设计之类的。。。）
+
+
+
+组件化 理解 解耦 方式
+
+2：项目结构 模块 
+
+3：网络模块 怎么处理 AFNetWorking 源码 NSURLConnection NSURLSession的区别  
+
+4: HTTP HTTPS 加密过程
+
+5：TCP网络三次握手
+
+6：网络相关常见错误码
+
+7：自动释放池 自动师范池与runloop的区别
+
+8：堆和栈的区别
+
+9：block 为什么要用copy修饰 注意点 
+
+10： 启动优化 load initialize 的区别
+
+11：App 打包成 api 做了那些事
+
+12：自动化搭建
+
+13：线上的问题的定位 修复 监护 卡顿
+
+14：崩溃类型 解决方案
+
+15：空指针
+
+16：单例
+
+17：设计模式
+
+18：原生和H5的交互 释放时间 监控白屏 其他坑
+
+19：内存占用 内存泄漏
+
+20：卡顿：tableView  切圆角 离屏渲染
+
+21：最近学习东西
+
+22：isa
+
+
+
+swift 面向协议 结构和类，监听者，还有三方的库的架构。大多数问这些
+
+
+
+https://segmentfault.com/a/1190000020013573
+
+
+
+1：App 换肤
+
+2：项目瘦身
+
+3：启动优化
+
+4：动画的属性
+
+5：KVO不移除
+
+
+
+百度个人云
+
+
+
+1：数组和链表的区别
+
+
+
+2：NSAarry 的底层结构
+
+
+
+3：OC对象的内存字节大小
+
+
+
+4：NSArray copy 和NSMutableArray copy 的区别
+
+
+
+5：NSArray 属性修饰 
+
+
+
+6：多线程
+
+
+
+7：性能优化
+
+
+
+8：对锁了解哪些        9： url 不变 图片资源变了 怎么处理
+
+
+
+美团
+
+
+
+项目聊得多一些
+
+
+
+1：性能优化
+
+
+
+2：load 方法 放到initlize 里面遇到的问题
+
+
+
+3：对象调用方法的流程
+
+
+
+4：响应链的传递过程
+
+
+
+5：https cdn dns
+
+
+
+算法：i am teach 倒叙
+
+
+
+顺丰
+
+
+
+1：MVC 解耦
+
+
+
+2：block 与代理的区别
+
+
+
+3：aotoreleasepool
+
+
+
+4:runtime 的使用
+
+
+
+5：循环引用
+
+
+
+6：UIView CALayer之间的关系
+
+
+
+算法 ： 数组 【1，2，3，3，2】中出现一次的数
+
+
+
+符号表有什么
+
+
+
+pod instal和pod update，pod install怎么做到pod update
+
+flatmap和map，filte，reduce
+
+swift为什么被称为面向协议编程
+
+gcd串行同步会造成死锁吗，并行异步一定会创建线程
+
+
+
+**链表是否有环**
+
+
+
+二叉树两个Node的最近父节点
+
+手写二叉树遍历迭代
+
+
+
+NSTimer对self的引用，使用weakSelf解决不了，内部有类似代码：_strong strongSelf = self;
+
+
+
+多线程数据同步功能
+
+
+
+socket保证连接，心跳包
+
+
+
+大文件写入数据
+
+
+
+Runloop
+
+
+
+双指针
+
+
+
+关键字strong weak assign
+
+
+
+runtime
+
+
+
+category
+
+
+
+avfoundation原理
+
+
+
+
+
+日志采集逻辑
+
+
+
+崩溃采集上报、分析
+
+
+
+数据库升级、老表数据迁移新表(什么情况下老表不能用)
+
+
+
+会说话的萝卜丝 头条面试题
+
+
+
+抖音：其他组件 需要控制 app 视频的 播放 和停止，怎么做到解藕
+
+
+
+
+
+博客1：UI的创建和更新的渲染流程。第3章的autolayout、第42章渲染机制、异步绘制 https://juejin.im/post/5d8acadde51d45782f663b89
+
+- autolayout的使用、两个优先级，还会写复杂UI吗？比如UITableViewCell动态高度？
+
+- autolayout与手动布局选哪个？首先排除性能，再优化也只不过与手动布局性能相差无几。
+
+没有讲到 cell 里面 label的高度自适应问题，这个在layout应该使用频率比较高吧
+
+作者回复: 具体使用，可以看我这篇文章，里面涉及到 https://github.com/ming1016/study/wiki/Masonry
+ 
+我把相关内容截取到这里  主要是UILabel的高度会有变化，所以这里主要是说说label变化时如何处理，设置UILabel的时候注意要设置preferredMaxLayoutWidth这个宽度，还有ContentHuggingPriority为UILayoutPriorityRequried  
+
+```objectivec
+CGFloat maxWidth = [UIScreen mainScreen].bounds.size.width - 10 * 2;
+textLabel = [UILabel new];
+textLabel.numberOfLines = 0;
+textLabel.preferredMaxLayoutWidth = maxWidth;
+[self.contentView addSubview:textLabel];
+
+[textLabel mas_makeConstraints:^(MASConstraintMaker *make) {
+  make.top.equalTo(statusView.mas_bottom).with.offset(10);
+  make.left.equalTo(self.contentView).with.offset(10);
+  make.right.equalTo(self.contentView).with.offset(-10);
+  make.bottom.equalTo(self.contentView).with.offset(-10);
+}];
+[_contentLabel setContentHuggingPriority:UILayoutPriorityRequired forAxis:UILayoutConstraintAxisVertical];
+```
+
+如果版本支持最低版本为iOS 8以上的话可以直接利用UITableViewAutomaticDimension在tableview的heightForRowAtIndexPath直接返回即可。
+
+```objectivec
+tableView.rowHeight = UITableViewAutomaticDimension;
+tableView.estimatedRowHeight = 80; //减少第一次计算量，iOS7后支持
+
+- (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath {
+  // 只用返回这个！
+  return UITableViewAutomaticDimension;
+}
+```
+
+  但如果需要兼容iOS 8之前版本的话，就要回到老路子上了，主要是用systemLayoutSizeFittingSize来取高。步骤是先在数据model中添加一个height的属性用来缓存高，然后在table view的heightForRowAtIndexPath代理里static一个只初始化一次的Cell实例，然后根据model内容填充数据，最后根据cell的contentView的systemLayoutSizeFittingSize的方法获取到cell的高。具体代码如下
+
+```objectivec
+//在model中添加属性缓存高度
+@interface DataModel : NSObject
+@property (copy, nonatomic) NSString *text;
+@property (assign, nonatomic) CGFloat cellHeight; //缓存高度
+@end
+- (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath {
+  static CustomCell *cell;
+  //只初始化一次cell
+  static dispatch_once_t onceToken;
+  dispatch_once(&onceToken, ^{
+    cell = [tableView dequeueReusableCellWithIdentifier:NSStringFromClass([CustomCell class])];
+  });
+}
+```
+
+还有这篇 https://ming1016.github.io/2015/11/03/deeply-analyse-autolayout/ 会讲的更详细些
+
+
+
+# 十六、非技术问题
+
+问：你的期望薪资是多少？
+
+答：xxx-xxx《注意：停顿一下，别太急》 不过相比薪资，我更看重........
+
+问：你的薪资要的有点高了（展示自己的资本、优势）
+
+答：因为我现在的薪资是....，我期望这个涨幅，自我感觉应该还算合理，不过现在市场行情，我也不是很了解，我只是从我手里目前有几个offer、朋友之间沟通定位的自己的薪资。我想问下，咱们公司对我的定级是什么的。（一般定级对应着一个薪资范围）
+
+解决过的最有成就感的问题？ 问题难度高一点，解决过程涉及技术栈高一点
+
+崩溃率 keep 万2，看两篇性能优化文章
+
+UI层API的相关渲染问题
+
+项目多少人？
+
+你有什么问题要问我的？ 
+
+http://www.360doc.com/content/18/0309/22/39790328_735768826.shtml
+http://arts.51job.com/arts/05/397182.html
 
