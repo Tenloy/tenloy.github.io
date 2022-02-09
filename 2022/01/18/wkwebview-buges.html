@@ -1,0 +1,1983 @@
+<!DOCTYPE html>
+<html lang="en">
+    <!-- title -->
+
+
+
+
+<!-- keywords -->
+
+
+
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" >
+    <meta name="author" content="Tenloy">
+    <meta name="renderer" content="webkit">
+    <meta name="copyright" content="Tenloy">
+    
+    <meta name="keywords" content="Tenloy,iOS,Swift">
+    
+    <meta name="description" content="学习 生活 记录 回忆">
+    <meta name="description" content="WKWebView API1. 属性关于 extendedLayoutIncludesOpaqueBars 和 automaticallyAdjustsScrollViewInsets  这两个属性属于UIViewController 默认情况下extendedLayoutIncludesOpaqueBars &#x3D; false 扩展布局不包含导航栏 默认情况下automaticallyAdjusts">
+<meta property="og:type" content="article">
+<meta property="og:title" content="WKWebView使用过程中遇到的坑">
+<meta property="og:url" content="https://tenloy.github.io/2022/01/18/wkwebview-buges.html">
+<meta property="og:site_name" content="Tenloy&#39;s Blog">
+<meta property="og:description" content="WKWebView API1. 属性关于 extendedLayoutIncludesOpaqueBars 和 automaticallyAdjustsScrollViewInsets  这两个属性属于UIViewController 默认情况下extendedLayoutIncludesOpaqueBars &#x3D; false 扩展布局不包含导航栏 默认情况下automaticallyAdjusts">
+<meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2022-01-18T17:39:45.000Z">
+<meta property="article:modified_time" content="2022-02-09T09:25:55.034Z">
+<meta property="article:author" content="Tenloy">
+<meta property="article:tag" content="Tenloy, iOS, Tenloy Blog, 博客，Swift, 编译, 计算机">
+<meta name="twitter:card" content="summary">
+    <meta http-equiv="Cache-control" content="no-cache">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"/>
+    
+    <title>WKWebView使用过程中遇到的坑 · Tenloy&#39;s Blog</title>
+    <style type="text/css">
+    @font-face {
+        font-family: 'Oswald-Regular';
+        src: url("/font/Oswald-Regular.ttf");
+    }
+
+    body {
+        margin: 0;
+    }
+
+    header,
+    footer,
+    .back-top,
+    .sidebar,
+    .container,
+    .site-intro-meta,
+    .toc-wrapper {
+        display: none;
+    }
+
+    .site-intro {
+        position: relative;
+        z-index: 3;
+        width: 100%;
+        /* height: 50vh; */
+        overflow: hidden;
+    }
+
+    .site-intro-placeholder {
+        position: absolute;
+        z-index: -2;
+        top: 0;
+        left: 0;
+        width: calc(100% + 300px);
+        height: 100%;
+        background: repeating-linear-gradient(-45deg, #444 0, #444 80px, #333 80px, #333 160px);
+        background-position: center center;
+        transform: translate3d(-226px, 0, 0);
+        animation: gradient-move 2.5s ease-out 0s infinite;
+    }
+
+    @keyframes gradient-move {
+        0% {
+            transform: translate3d(-226px, 0, 0);
+        }
+        100% {
+            transform: translate3d(0, 0, 0);
+        }
+    }
+
+</style>
+
+    <link rel="preload" href= "/css/style.css?v=20180824" as="style" onload="this.onload=null;this.rel='stylesheet'" />
+    <link rel="stylesheet" href= "/css/mobile.css?v=20180824" media="(max-width: 980px)">
+    
+    <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.2.5/jquery.fancybox.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'" />
+    
+    <!-- /*! loadCSS. [c]2017 Filament Group, Inc. MIT License */
+/* This file is meant as a standalone workflow for
+- testing support for link[rel=preload]
+- enabling async CSS loading in browsers that do not support rel=preload
+- applying rel preload css once loaded, whether supported or not.
+*/ -->
+<script>
+(function( w ){
+	"use strict";
+	// rel=preload support test
+	if( !w.loadCSS ){
+		w.loadCSS = function(){};
+	}
+	// define on the loadCSS obj
+	var rp = loadCSS.relpreload = {};
+	// rel=preload feature support test
+	// runs once and returns a function for compat purposes
+	rp.support = (function(){
+		var ret;
+		try {
+			ret = w.document.createElement( "link" ).relList.supports( "preload" );
+		} catch (e) {
+			ret = false;
+		}
+		return function(){
+			return ret;
+		};
+	})();
+
+	// if preload isn't supported, get an asynchronous load by using a non-matching media attribute
+	// then change that media back to its intended value on load
+	rp.bindMediaToggle = function( link ){
+		// remember existing media attr for ultimate state, or default to 'all'
+		var finalMedia = link.media || "all";
+
+		function enableStylesheet(){
+			link.media = finalMedia;
+		}
+
+		// bind load handlers to enable media
+		if( link.addEventListener ){
+			link.addEventListener( "load", enableStylesheet );
+		} else if( link.attachEvent ){
+			link.attachEvent( "onload", enableStylesheet );
+		}
+
+		// Set rel and non-applicable media type to start an async request
+		// note: timeout allows this to happen async to let rendering continue in IE
+		setTimeout(function(){
+			link.rel = "stylesheet";
+			link.media = "only x";
+		});
+		// also enable media after 3 seconds,
+		// which will catch very old browsers (android 2.x, old firefox) that don't support onload on link
+		setTimeout( enableStylesheet, 3000 );
+	};
+
+	// loop through link elements in DOM
+	rp.poly = function(){
+		// double check this to prevent external calls from running
+		if( rp.support() ){
+			return;
+		}
+		var links = w.document.getElementsByTagName( "link" );
+		for( var i = 0; i < links.length; i++ ){
+			var link = links[ i ];
+			// qualify links to those with rel=preload and as=style attrs
+			if( link.rel === "preload" && link.getAttribute( "as" ) === "style" && !link.getAttribute( "data-loadcss" ) ){
+				// prevent rerunning on link
+				link.setAttribute( "data-loadcss", true );
+				// bind listeners to toggle media back
+				rp.bindMediaToggle( link );
+			}
+		}
+	};
+
+	// if unsupported, run the polyfill
+	if( !rp.support() ){
+		// run once at least
+		rp.poly();
+
+		// rerun poly on an interval until onload
+		var run = w.setInterval( rp.poly, 500 );
+		if( w.addEventListener ){
+			w.addEventListener( "load", function(){
+				rp.poly();
+				w.clearInterval( run );
+			} );
+		} else if( w.attachEvent ){
+			w.attachEvent( "onload", function(){
+				rp.poly();
+				w.clearInterval( run );
+			} );
+		}
+	}
+
+
+	// commonjs
+	if( typeof exports !== "undefined" ){
+		exports.loadCSS = loadCSS;
+	}
+	else {
+		w.loadCSS = loadCSS;
+	}
+}( typeof global !== "undefined" ? global : this ) );
+</script>
+
+    <link rel="icon" href= "/assets/favicon.ico" />
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.min.js" as="script" />
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js" as="script" />
+    <link rel="preload" href="/scripts/main.js" as="script" />
+    <link rel="preload" as="font" href="/font/Oswald-Regular.ttf" crossorigin>
+    <link rel="preload" as="font" href="https://at.alicdn.com/t/font_327081_1dta1rlogw17zaor.woff" crossorigin>
+    
+        <!-- algolia -->
+        <script>
+            
+            var hits = JSON.parse('{"per_page":10}')
+            var labels = JSON.parse('{"input_placeholder":"Search for Posts","hits_empty":"没有找到任何搜索结果: ${query}","hits_stats":"找到约${hits}条结果（用时${time}ms）"}')
+
+            var algolia = {
+                applicationID: 'V0HYXBS9FB',
+                apiKey: '6550d5de786935564142097c3e78c380',
+                indexName: 'law_blog_index',
+                hits: hits,
+                labels: labels
+            }
+        </script>
+    
+    <!-- fancybox -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.2.5/jquery.fancybox.min.js" defer></script>
+    <!-- 百度统计  -->
+    
+    <!-- 谷歌统计  -->
+    
+<meta name="generator" content="Hexo 5.4.0"><link rel="alternate" href="/atom.xml" title="Tenloy's Blog" type="application/atom+xml">
+</head>
+
+    
+        <body class="post-body">
+    
+    
+<header class="header">
+
+    <div class="read-progress"></div>
+    <div class="header-sidebar-menu">&#xe775;</div>
+    <!-- post页的toggle banner  -->
+    
+    <div class="banner">
+            <div class="blog-title">
+                <a href="/" >Tenloy&#39;s Blog</a>
+            </div>
+            <div class="post-title">
+                <a href="#" class="post-name">WKWebView使用过程中遇到的坑</a>
+            </div>
+    </div>
+    
+    <!-- 将home-link的操作改为应用到header-top-right上 -->
+    <div class="header-top-right">
+        <!-- search  -->
+        
+            <div class="site-search popup-trigger tl-search">
+                <span class="iconfont-jian tl-search-icon">&#xe7fc;搜索</span>
+            </div>
+            
+        <a class="home-link" href=/>Tenloy's Blog</a>
+    </div>
+</header>
+    <div class="wrapper">
+        <div class="site-intro" style="
+
+
+
+
+
+
+
+height:40vh;
+">
+    
+    <!-- 主页  -->
+    
+    
+    <!-- 404页  -->
+            
+    <div class="site-intro-placeholder"></div>
+    <div class="site-intro-img" style="background-image: url(/intro/post-bg.jpg)"></div>
+    <div class="site-intro-meta">
+        <!-- 标题  -->
+        <h1 class="intro-title">
+            <!-- 主页  -->
+            
+            WKWebView使用过程中遇到的坑
+            <!-- 404 -->
+            
+        </h1>
+        <!-- 副标题 -->
+        <p class="intro-subtitle">
+            <!-- 主页副标题  -->
+            
+            
+            <!-- 404 -->
+            
+        </p>
+        <!-- 文章页meta -->
+        
+            <div class="post-intros">
+                <!-- 文章页标签  -->
+                
+                
+                    <div class="post-intro-read">
+                        <span>Word count: <span class="post-count word-count">3.3k</span>Reading time: <span class="post-count reading-time">12 min</span></span>
+                    </div>
+                
+                <div class="post-intro-meta">
+                    <span class="post-intro-calander iconfont-archer">&#xe676;</span>
+                    <span class="post-intro-time">2022/01/18</span>
+                    
+                    <span id="busuanzi_container_page_pv" class="busuanzi-pv">
+                        <span class="iconfont-archer">&#xe602;</span>
+                        <span id="busuanzi_value_page_pv"></span>
+                    </span>
+                    
+                    <span class="shareWrapper">
+                        <span class="iconfont-archer shareIcon">&#xe71d;</span>
+                        <span class="shareText">Share</span>
+                        <ul class="shareList">
+                            <li class="iconfont-archer share-qr" data-type="qr">&#xe75b;
+                                <div class="share-qrcode"></div>
+                            </li>
+                            <li class="iconfont-archer" data-type="weibo">&#xe619;</li>
+                            <li class="iconfont-archer" data-type="qzone">&#xe62e;</li>
+                            <li class="iconfont-archer" data-type="twitter">&#xe634;</li>
+                            <li class="iconfont-archer" data-type="facebook">&#xe67a;</li>
+                        </ul>
+                    </span>
+                </div>
+            </div>
+        
+    </div>
+</div>
+        <script>
+ 
+  // get user agent
+  var browser = {
+    versions: function () {
+      var u = window.navigator.userAgent;
+      return {
+        userAgent: u,
+        trident: u.indexOf('Trident') > -1, //IE内核
+        presto: u.indexOf('Presto') > -1, //opera内核
+        webKit: u.indexOf('AppleWebKit') > -1, //苹果、谷歌内核
+        gecko: u.indexOf('Gecko') > -1 && u.indexOf('KHTML') == -1, //火狐内核
+        mobile: !!u.match(/AppleWebKit.*Mobile.*/), //是否为移动终端
+        ios: !!u.match(/\(i[^;]+;( U;)? CPU.+Mac OS X/), //ios终端
+        android: u.indexOf('Android') > -1 || u.indexOf('Linux') > -1, //android终端或者uc浏览器
+        iPhone: u.indexOf('iPhone') > -1 || u.indexOf('Mac') > -1, //是否为iPhone或者安卓QQ浏览器
+        iPad: u.indexOf('iPad') > -1, //是否为iPad
+        webApp: u.indexOf('Safari') == -1, //是否为web应用程序，没有头部与底部
+        weixin: u.indexOf('MicroMessenger') == -1, //是否为微信浏览器
+        uc: u.indexOf('UCBrowser') > -1 //是否为android下的UC浏览器
+      };
+    }()
+  }
+  console.log("userAgent:" + browser.versions.userAgent);
+
+  // callback
+  function fontLoaded() {
+    console.log('font loaded');
+    if (document.getElementsByClassName('site-intro-meta')) {
+      document.getElementsByClassName('intro-title')[0].classList.add('intro-fade-in');
+      document.getElementsByClassName('intro-subtitle')[0].classList.add('intro-fade-in');
+      var postIntros = document.getElementsByClassName('post-intros')[0]
+      if (postIntros) {
+        postIntros.classList.add('post-fade-in');
+      }
+    }
+  }
+
+  // UC不支持跨域，所以直接显示
+  function asyncCb(){
+    if (browser.versions.uc) {
+      console.log("UCBrowser");
+      fontLoaded();
+    } else {
+      WebFont.load({
+        custom: {
+          families: ['Oswald-Regular']
+        },
+        loading: function () {  //所有字体开始加载
+          // console.log('loading');
+        },
+        active: function () {  //所有字体已渲染
+          fontLoaded();
+        },
+        inactive: function () { //字体预加载失败，无效字体或浏览器不支持加载
+          console.log('inactive: timeout');
+          fontLoaded();
+        },
+        timeout: 5000 // Set the timeout to two seconds
+      });
+    }
+  }
+
+  function asyncErr(){
+    console.warn('script load from CDN failed, will load local script')
+  }
+
+  // load webfont-loader async, and add callback function
+  function async(u, cb, err) {
+    var d = document, t = 'script',
+      o = d.createElement(t),
+      s = d.getElementsByTagName(t)[0];
+    o.src = u;
+    if (cb) { o.addEventListener('load', function (e) { cb(null, e); }, false); }
+    if (err) { o.addEventListener('error', function (e) { err(null, e); }, false); }
+    s.parentNode.insertBefore(o, s);
+  }
+
+  var asyncLoadWithFallBack = function(arr, success, reject) {
+      var currReject = function(){
+        reject()
+        arr.shift()
+        if(arr.length)
+          async(arr[0], success, currReject)
+        }
+
+      async(arr[0], success, currReject)
+  }
+
+  asyncLoadWithFallBack([
+    "https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.min.js", 
+    "https://cdn.bootcss.com/webfont/1.6.28/webfontloader.js",
+    "/lib/webfontloader.min.js"
+  ], asyncCb, asyncErr)
+</script>        
+        <img class="loading" src="/assets/loading.svg" style="display: block; margin: 6rem auto 0 auto; width: 6rem; height: 6rem;" />
+        <div class="container container-unloaded">
+            <main class="main post-page">
+    <article class="article-entry">
+        <h1 id="WKWebView-API"><a href="#WKWebView-API" class="headerlink" title="WKWebView API"></a>WKWebView API</h1><h2 id="1-属性"><a href="#1-属性" class="headerlink" title="1. 属性"></a>1. 属性</h2><p>关于 <code>extendedLayoutIncludesOpaqueBars</code> 和 <code>automaticallyAdjustsScrollViewInsets</code></p>
+<ul>
+<li>这两个属性属于UIViewController</li>
+<li>默认情况下extendedLayoutIncludesOpaqueBars = false 扩展布局不包含导航栏</li>
+<li>默认情况下automaticallyAdjustsScrollViewInsets = true 自动计算滚动视图的内容边距</li>
+<li>但是，当 导航栏 是 不透明时，而tabBar为透明的时候，为了正确显示tableView的全部内容，需要重新设置这两个属性的值，然后设置contentInset(参考代码).</li>
+</ul>
+<p>在iOS11 中， UIViewController的 <code>automaticallyAdjustsScrollViewInsets</code> 属性已经不再使用，我们需要使用UIScrollView的 <code>contentInsetAdjustmentBehavior </code> 属性来替代它.</p>
+<p>UIScrollViewContentInsetAdjustmentBehavior 是一个枚举类型，值有以下几种:</p>
+<ul>
+<li>automatic 和scrollableAxes一样，scrollView会自动计算和适应顶部和底部的内边距并且在scrollView 不可滚动时，也会设置内边距.</li>
+<li>scrollableAxes 自动计算内边距.</li>
+<li>never不计算内边距</li>
+<li>always 根据safeAreaInsets 计算内边距一般我们肯定需要设置为 never，我们自己来控制间距，但是在iOS 12的webView中，就会出现开始所说的问题，需要设置为automatic才能解决</li>
+</ul>
+<p><strong>调整WKWebView布局方式，避免调整webView.scrollView.contentInset。实际上，即便在 UIWebView 上也不建议直接调整webView.scrollView.contentInset的值.</strong></p>
+<h2 id="2-调整滚动速率"><a href="#2-调整滚动速率" class="headerlink" title="2. 调整滚动速率"></a>2. 调整滚动速率</h2><p>WKWebView 需要通过 scrollView delegate 调整滚动速率：</p>
+<figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">- (<span class="keyword">void</span>)scrollViewWillBeginDragging:(<span class="built_in">UIScrollView</span> *)scrollView &#123;</span><br><span class="line">  scrollView.decelerationRate = <span class="built_in">UIScrollViewDecelerationRateNormal</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="3-视频自动播放"><a href="#3-视频自动播放" class="headerlink" title="3. 视频自动播放"></a>3. 视频自动播放</h2><p>WKWebView 需要通过WKWebViewConfiguration.mediaPlaybackRequiresUserAction设置是否允许自动播放，但一定要在 WKWebView 初始化之前设置，在 WKWebView 初始化之后设置无效。</p>
+<h2 id="4-goBack-API问题"><a href="#4-goBack-API问题" class="headerlink" title="4. goBack API问题"></a>4. goBack API问题</h2><p>WKWebView 上调用 -[WKWebView goBack]， 回退到上一个页面后不会触发window.onload()函数、不会执行JS。</p>
+<h1 id="遇到的坑"><a href="#遇到的坑" class="headerlink" title="遇到的坑"></a>遇到的坑</h1><p>在以前，一直以为Hybrid App开发是一种略显简单的事，不会使用太多能发挥移动端原生本身优势的复杂API，后来在新公司的工作(半混合式开发)过程中，发现混合式开发也是很多坑… 或者说WKWebView好多坑…</p>
+<blockquote>
+<p> 以下所说的内容，<a target="_blank" rel="noopener" href="https://mp.weixin.qq.com/s/rhYKLIbXOsUJC_n6dt9UfA">参考链接</a>上基本上都有，本文的叙述方式主要是结合自己的经历(自己踩过的总结总是那么的深刻…[\捂脸])</p>
+<p> 应该在开始混合开发之前就看下这篇文章的，结果真的是等自己踩坑踩了一遍，总结之后，发现这篇文章上都有….[\大哭]</p>
+<p> 参考链接2： <a target="_blank" rel="noopener" href="https://www.jianshu.com/p/86d99192df68">https://www.jianshu.com/p/86d99192df68</a></p>
+</blockquote>
+<h2 id="1-加载URL的-encode问题"><a href="#1-加载URL的-encode问题" class="headerlink" title="1. 加载URL的 encode问题"></a>1. 加载URL的 encode问题</h2><p>在数据网络请求或其他情况下，需要把URL中的一些特殊字符转换成UTF-8编码，比如：中文。解决<code>无法加载</code>的问题</p>
+<h5 id="编码："><a href="#编码：" class="headerlink" title="编码："></a>编码：</h5><figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// iOS 9以前</span></span><br><span class="line">stringByAddingPercentEscapesUsingEncoding: <span class="built_in">NSUTF8StringEncoding</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// ios9后对其方法进行了修改</span></span><br><span class="line">stringByAddingPercentEncodingWithAllowedCharacters: [<span class="built_in">NSCharacterSet</span> URLQueryAllowedCharacterSet]</span><br></pre></td></tr></table></figure>
+
+<h5 id="解码"><a href="#解码" class="headerlink" title="解码"></a>解码</h5><figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// iOS 9以前</span></span><br><span class="line">stringByReplacingPercentEscapesUsingEncoding: <span class="built_in">NSUTF8StringEncoding</span></span><br><span class="line">  </span><br><span class="line"><span class="comment">// iOS 9以后</span></span><br><span class="line">stringByRemovingPercentEncoding</span><br></pre></td></tr></table></figure>
+
+<p>总结：</p>
+<ul>
+<li>混合开发中，最好将所有的URL的编解码问题都<strong>交给前端或者后端来做</strong>，毕竟移动端发版不够灵活。</li>
+<li>API编写时，要<strong>保证iOS与Android两端的处理一致</strong>，否则前端同学做处理就太麻烦了。</li>
+</ul>
+<h2 id="2-loadRequest造成的body数据丢失"><a href="#2-loadRequest造成的body数据丢失" class="headerlink" title="2. loadRequest造成的body数据丢失"></a>2. loadRequest造成的body数据丢失</h2><p>在 WKWebView 上通过 loadRequest 发起的 post 请求 body 数据会丢失：</p>
+<figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//同样是由于进程间通信性能问题，HTTPBody字段被丢弃[request setHTTPMethod:@&quot;POST&quot;];</span></span><br><span class="line">[request setHTTPBody:[<span class="string">@&quot;bodyData&quot;</span> dataUsingEncoding:<span class="built_in">NSUTF8StringEncoding</span>]];</span><br><span class="line">[wkwebview loadRequest: request];</span><br></pre></td></tr></table></figure>
+
+<p>解决方案：见参考链接，目前暂无使用场景</p>
+<h2 id="3-WKUserContentController造成内存泄漏"><a href="#3-WKUserContentController造成内存泄漏" class="headerlink" title="3. WKUserContentController造成内存泄漏"></a>3. WKUserContentController造成内存泄漏</h2><blockquote>
+<p>self -&gt; webView -&gt; WKWebViewConfiguration -&gt; WKUserContentController -&gt; self (addScriptMessageHandler)</p>
+</blockquote>
+<p>以下的方法，并不能解决问题</p>
+<figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">__<span class="keyword">weak</span> <span class="keyword">typeof</span>(<span class="keyword">self</span>) copy_self = <span class="keyword">self</span>;</span><br><span class="line">addScriptMessageHandler: copy_self</span><br></pre></td></tr></table></figure>
+
+<p>解决方案： 单独创建一个类实现<code>WKScriptMessageHandler</code>协议，然后在该类中再创建一个协议，由self来实现协议。</p>
+<figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">self</span> -&gt; webView -&gt; <span class="built_in">WKWebViewConfiguration</span> -&gt; <span class="built_in">WKUserContentController</span> -&gt; <span class="keyword">weak</span> delegate obj --delegate--&gt; <span class="keyword">self</span></span><br></pre></td></tr></table></figure>
+
+<p>示例代码：</p>
+<figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//1.创建一个新类WeakScriptMessageDelegate</span></span><br><span class="line"><span class="meta">#import <span class="meta-string">&lt;Foundation/Foundation.h&gt;</span></span></span><br><span class="line"><span class="meta">#import <span class="meta-string">&lt;WebKit/WebKit.h&gt;</span></span></span><br><span class="line"><span class="class"><span class="keyword">@interface</span> <span class="title">WeakScriptMessageDelegate</span> : <span class="title">NSObject</span></span></span><br><span class="line"><span class="keyword">@property</span> (<span class="keyword">nonatomic</span>, <span class="keyword">weak</span>) <span class="keyword">id</span>&lt;<span class="built_in">WKScriptMessageHandler</span>&gt; scriptDelegate;</span><br><span class="line">- (<span class="keyword">instancetype</span>)initWithDelegate:(<span class="keyword">id</span>&lt;<span class="built_in">WKScriptMessageHandler</span>&gt;)scriptDelegate;</span><br><span class="line"><span class="keyword">@end</span></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">@implementation</span> <span class="title">WeakScriptMessageDelegate</span></span></span><br><span class="line"></span><br><span class="line">- (<span class="keyword">instancetype</span>)initWithDelegate:(<span class="keyword">id</span>&lt;<span class="built_in">WKScriptMessageHandler</span>&gt;)scriptDelegate &#123;</span><br><span class="line">    <span class="keyword">self</span> = [<span class="keyword">super</span> init];</span><br><span class="line">    <span class="keyword">if</span> (<span class="keyword">self</span>) &#123;</span><br><span class="line">      _scriptDelegate = scriptDelegate;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">self</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">- (<span class="keyword">void</span>)userContentController:(<span class="built_in">WKUserContentController</span> *)userContentController didReceiveScriptMessage:(<span class="built_in">WKScriptMessage</span> *)message &#123;</span><br><span class="line">    [<span class="keyword">self</span>.scriptDelegate userContentController:userContentController didReceiveScriptMessage:message];</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">@end</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// 2.在我们使用WKWebView的控制器中引入我们创建的那个类，将注入js对象的代码改为:</span></span><br><span class="line">[config.userContentController addScriptMessageHandler:[[WeakScriptMessageDelegate alloc] initWithDelegate:<span class="keyword">self</span>] name:scriptMessage];</span><br><span class="line"></span><br><span class="line"><span class="comment">// 3.在delloc方法中通过下面的方式移除注入的js对象</span></span><br><span class="line">[<span class="keyword">self</span>.config.userContentController removeScriptMessageHandlerForName:scriptMessage];</span><br></pre></td></tr></table></figure>
+
+<p>上面三步就可以解决控制器不能被释放的问题了。</p>
+<h2 id="4-WKWebView的白屏问题-拍照引起"><a href="#4-WKWebView的白屏问题-拍照引起" class="headerlink" title="4.  WKWebView的白屏问题(拍照引起)"></a>4.  WKWebView的白屏问题(拍照引起)</h2><h3 id="原理"><a href="#原理" class="headerlink" title="原理"></a>原理</h3><p>WKWebView 自诩拥有更快的加载速度，更低的内存占用，但实际上 WKWebView 是一个多进程组件，Network Loading 以及 UI Rendering 在其它进程中执行。</p>
+<p>换WKWebView加载网页后，App 进程内存消耗反而大幅下降，但是仔细观察会发现，Other Process 的内存占用会增加。<strong>在一些用 webGL 渲染的复杂页面，使用 WKWebView 总体的内存占用（App Process Memory + Other Process Memory）不见得比 UIWebView 少很多。</strong></p>
+<ul>
+<li><p>在 UIWebView 上当内存占用太大的时候，App Process 会 crash；</p>
+</li>
+<li><p>在 WKWebView 上当总体的内存占用比较大的时候，WebContent Process 会 crash，从而出现白屏现象</p>
+</li>
+</ul>
+<h3 id="解决方案"><a href="#解决方案" class="headerlink" title="解决方案"></a>解决方案</h3><p>总结下来，白屏的现象有几种：</p>
+<ul>
+<li>WKWebView的URL为空，出现白屏，这种现象可以通过loadRequest解决。</li>
+<li>WKWebView的URL不空，出现白屏、部分白屏、白屏部分能点击，这种现象无论是reload还是loadRequest都不能刷出网页。（可以尝试3、4）</li>
+</ul>
+<h4 id="方案1-ContentProcessDidTerminate"><a href="#方案1-ContentProcessDidTerminate" class="headerlink" title="方案1. ContentProcessDidTerminate"></a>方案1. ContentProcessDidTerminate</h4><p>借助 iOS 9以后 <code>WKNavigtionDelegate</code> 新增了一个回调函数：</p>
+<figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">- (<span class="keyword">void</span>)webViewWebContentProcessDidTerminate:(<span class="built_in">WKWebView</span> *)webView API_AVAILABLE(macosx(<span class="number">10.11</span>), ios(<span class="number">9.0</span>));</span><br></pre></td></tr></table></figure>
+
+<p>当 WKWebView 总体内存占用过大，页面即将白屏的时候，系统会调用上面的回调函数，我们在该函数里执行<code>[webView reload]</code>(这个时候 webView.URL 取值尚不为 nil）解决白屏问题。在一些高内存消耗的页面可能会频繁刷新当前页面，H5侧也要做相应的适配操作。</p>
+<h4 id="方案2-检测-webView-title-是否为空"><a href="#方案2-检测-webView-title-是否为空" class="headerlink" title="方案2. 检测 webView.title 是否为空"></a>方案2. 检测 webView.title 是否为空</h4><p>并不是所有H5页面白屏的时候都会调用上面的回调函数，比如，最近遇到在一个高内存消耗的<code>意见反馈</code>H5页面上 present 系统相机，拍照完毕后返回原来页面的时候出现白屏现象（拍照过程消耗了大量内存，导致内存紧张，<strong>WebContent Process 被系统挂起</strong>），但上面的回调函数并没有被调用。</p>
+<p>在WKWebView白屏的时候，另一种现象是 webView.titile 会被置空， 因此，可以在 viewWillAppear 的时候检测 <code>webView.title</code> 是否为空来 reload 页面。</p>
+<p>注意：可能<strong>有的前端页面确实没写title标签</strong>，在前端移动端开发中是可能会有这种场景的，会造成页面反复刷新</p>
+<p>综合以上两种方法可以解决绝大多数的白屏问题。</p>
+<h4 id="方案3-检索WKCompositingView控件"><a href="#方案3-检索WKCompositingView控件" class="headerlink" title="方案3. 检索WKCompositingView控件"></a>方案3. 检索WKCompositingView控件</h4><blockquote>
+<p>（<em>未验证，有人说不好使</em>）</p>
+</blockquote>
+<p>WKWebView的URL不空，出现白屏不能点击、白屏部分能点击、部分白屏能点击等，这种现象无论是reload、loadRequest、清缓存、setNeedsLayout都不能刷出网页，只能回收旧webview（webview = nil 后记得清除代理，移除监听，要不然会crash）创建新的 webview， 然后重新request。</p>
+<figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 判断是否白屏</span></span><br><span class="line">- (<span class="built_in">BOOL</span>)isBlankView:(<span class="built_in">UIView</span> *)view &#123; <span class="comment">// YES：blank</span></span><br><span class="line">    Class wkCompositingView = <span class="built_in">NSClassFromString</span>(<span class="string">@&quot;WKCompositingView&quot;</span>);</span><br><span class="line">    <span class="keyword">if</span> ([view isKindOfClass:[wkCompositingView <span class="keyword">class</span>]]) &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">NO</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">for</span>(<span class="built_in">UIView</span> * subView <span class="keyword">in</span> view.subviews) &#123;</span><br><span class="line">        <span class="keyword">if</span> (![<span class="keyword">self</span> isBlankView:subView]) &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="literal">NO</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">	<span class="keyword">return</span> <span class="literal">YES</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="方案4-html中加入资源加载的监听"><a href="#方案4-html中加入资源加载的监听" class="headerlink" title="方案4. html中加入资源加载的监听"></a>方案4. html中加入资源加载的监听</h4><p>在本地html中加入资源加载的监听，只要发生错误，就调用location.reload();重载当前文档。</p>
+<figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//监控资源加载错误(img,script,css,以及jsonp)</span></span><br><span class="line">window.addEventListener(<span class="string">&#x27;error&#x27;</span>, function (e) &#123;</span><br><span class="line">    console.log(<span class="string">&quot;===&quot;</span> + e.message + <span class="string">&quot;===&quot;</span>);</span><br><span class="line">    location.reload();</span><br><span class="line">&#125;, <span class="literal">true</span>);</span><br><span class="line"></span><br><span class="line">window.onerror = function (errorMessage, scriptURI, lineNumber, columnNumber, errorObj) &#123;</span><br><span class="line">    console.log(<span class="string">&quot;错误信息：&quot;</span>, errorMessage);</span><br><span class="line">    console.log(<span class="string">&quot;出错文件：&quot;</span>, scriptURI);</span><br><span class="line">    console.log(<span class="string">&quot;出错行号：&quot;</span>, lineNumber);</span><br><span class="line">    console.log(<span class="string">&quot;出错列号：&quot;</span>, columnNumber);</span><br><span class="line">    console.log(<span class="string">&quot;错误详情：&quot;</span>, errorObj);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>注：这段代码要放在head内，并且css不能内联。</p>
+<h2 id="5-NSURLProtocol-做网页缓存"><a href="#5-NSURLProtocol-做网页缓存" class="headerlink" title="5. NSURLProtocol(做网页缓存)"></a>5. NSURLProtocol(做网页缓存)</h2><p>见<a target="_blank" rel="noopener" href="https://www.jianshu.com/p/9989ef064f7d">WKWebView中NSURLProtocol的使用以及对H5的缓存</a>，这是利用NSURLProtocol做网页缓存以及带来的隐患。</p>
+<h2 id="6-WKWebView的截屏问题-做意见反馈"><a href="#6-WKWebView的截屏问题-做意见反馈" class="headerlink" title="6.  WKWebView的截屏问题(做意见反馈)"></a>6.  WKWebView的截屏问题(做意见反馈)</h2><p>WKWebView 下通过 <code>-[CALayer renderInContext:]</code>实现截屏的方式失效，需要通过以下方式实现截屏功能：</p>
+<figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">@implementation</span> <span class="title">UIView</span> (<span class="title">ImageSnapshot</span>) </span></span><br><span class="line">- (<span class="built_in">UIImage</span>*)imageSnapshot &#123; </span><br><span class="line">    <span class="built_in">UIGraphicsBeginImageContextWithOptions</span>(<span class="keyword">self</span>.bounds.size,<span class="literal">YES</span>,<span class="keyword">self</span>.contentScaleFactor); </span><br><span class="line">    [<span class="keyword">self</span> drawViewHierarchyInRect:<span class="keyword">self</span>.bounds afterScreenUpdates:<span class="literal">YES</span>]; </span><br><span class="line">    <span class="built_in">UIImage</span>* newImage = <span class="built_in">UIGraphicsGetImageFromCurrentImageContext</span>(); </span><br><span class="line">    <span class="built_in">UIGraphicsEndImageContext</span>(); </span><br><span class="line">    <span class="keyword">return</span> newImage; </span><br><span class="line">&#125; </span><br><span class="line"><span class="keyword">@end</span></span><br></pre></td></tr></table></figure>
+<p>然而这种方式依然解决不了 webGL 页面的截屏问题，Safari 以及 Chrome 这两个全量切换到 WKWebView 的浏览器也存在同样的问题：<strong>对webGL 页面的截屏结果不是空白就是纯黑图片</strong>。</p>
+<h2 id="7-window-alert-引起的crash问题-暂时没遇到"><a href="#7-window-alert-引起的crash问题-暂时没遇到" class="headerlink" title="7. window.alert()引起的crash问题(暂时没遇到)"></a>7. window.alert()引起的crash问题(暂时没遇到)</h2><h2 id="8-WKWebView拦截协议"><a href="#8-WKWebView拦截协议" class="headerlink" title="8. WKWebView拦截协议"></a>8. WKWebView拦截协议</h2><p>WKWebView内默认不允许iTunes、weixin等协议跳转。</p>
+<p>UIWebView打开ituns.apple.com、跳转到appStore、拨打电话、唤起邮箱等一系列操作，UIWebView自己处理不了会自动交给UIApplication 来处理。</p>
+<p>WKWebView上述事件WKWebView 不会自动交给UIApplication 来处理，除此之外，js端通过window.open() 打开新的网页的动作也被禁掉了。</p>
+<h2 id="9-User-Agent修改"><a href="#9-User-Agent修改" class="headerlink" title="9. User-Agent修改"></a>9. User-Agent修改</h2><ul>
+<li><p>在UIWebView初始化之前，全局设置User-Agent才会生效</p>
+</li>
+<li><p>在shouldStartLoadWithRequest可以给某个request设置UA，但是需要重新[webView loadUrl]，注意判断条件，不要死循环</p>
+</li>
+<li><p><strong>不要擅自修改webView的User-Agent，务必要跟前端反复确认，是否有用UA来做一些设备区分，进而做一些系统、机型适配问题。</strong></p>
+</li>
+</ul>
+<h2 id="10-didFinish不调用"><a href="#10-didFinish不调用" class="headerlink" title="10. didFinish不调用"></a>10. didFinish不调用</h2><p>WKWebView didFinishNavigation明明看起来页面加载完全，却不调用(<strong>一般只发生在第一次进入该页面</strong>)。经过自定义NSURLProtocol，拦截所有的H5加载资源，并在didCompleteWithError中打印资源的加载情况，发现有图片资源，域名有问题。</p>
+<figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Error Domain=<span class="built_in">NSURLErrorDomain</span> Code=<span class="number">-1003</span> <span class="string">&quot;未能找到使用指定主机名的服务器。 </span></span><br></pre></td></tr></table></figure>
+
+<p>原因：DNS解析失败导致系统认定H5一直没加载完成！第二次再进入，系统缓存了DNS解析的映射记录，所以很快就认定资源错误，调用了didFinish方法。</p>
+<h2 id="11-UI细节问题"><a href="#11-UI细节问题" class="headerlink" title="11. UI细节问题"></a>11. UI细节问题</h2><h3 id="11-1-WKWebView中-h5绝对布局不生效"><a href="#11-1-WKWebView中-h5绝对布局不生效" class="headerlink" title="11.1 WKWebView中 h5绝对布局不生效"></a>11.1 WKWebView中 h5绝对布局不生效</h3><figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// ios 11之后</span></span><br><span class="line">_baseWebView.scrollView.contentInsetAdjustmentBehavior = <span class="built_in">UIScrollViewContentInsetAdjustmentNever</span>;</span><br></pre></td></tr></table></figure>
+<p>然后：前端需要在meta标签中增加 <strong>iPhoneX</strong>的适配**—<strong>适配方案</strong>viewport-fit<strong>：</strong>cover**</p>
+<h3 id="11-2-iOS-12中WKWebView中表单-键盘"><a href="#11-2-iOS-12中WKWebView中表单-键盘" class="headerlink" title="11.2. iOS 12中WKWebView中表单 键盘"></a>11.2. iOS 12中WKWebView中表单 键盘</h3><p>iOS 12中WKWebView中表单键盘弹起自动上移，导致的兼容问题。</p>
+<p>WKWebView会自动监听键盘弹出，并做上下移动处理(效果如同IQKeyboardManage这些库)，但是在iOS12中会有一些问题，键盘收起后，控件不恢复原状，或者部分控件消失等不兼容问题</p>
+<p>解决方案：</p>
+<figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span>(kSystemVersion &lt; <span class="number">12.0</span>) &#123;</span><br><span class="line">    <span class="keyword">if</span> (@available(iOS <span class="number">11.0</span>, *)) &#123;</span><br><span class="line">        _webview.scrollView.contentInsetAdjustmentBehavior = <span class="built_in">UIScrollViewContentInsetAdjustmentNever</span>;</span><br><span class="line">    &#125; </span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">if</span> (@available(iOS <span class="number">12.0</span>, *)) &#123;</span><br><span class="line">     _webview.scrollView.contentInsetAdjustmentBehavior = <span class="built_in">UIScrollViewContentInsetAdjustmentAutomatic</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="11-3-WKWebview会下移20"><a href="#11-3-WKWebview会下移20" class="headerlink" title="11.3 WKWebview会下移20"></a>11.3 WKWebview会下移20</h3><p>解决方案：</p>
+<figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//iOS11前</span></span><br><span class="line">VC.automaticallyAdjustsScrollViewInsets = <span class="literal">NO</span>;  </span><br><span class="line"><span class="comment">//iOS11及以后</span></span><br><span class="line">_webview.scrollView.contentInsetAdjustmentBehavior;</span><br></pre></td></tr></table></figure>
+
+<h2 id="12-H5标签不可点击，Native不受影响"><a href="#12-H5标签不可点击，Native不受影响" class="headerlink" title="12. H5标签不可点击，Native不受影响"></a>12. H5标签不可点击，Native不受影响</h2><p><em>iOS 11系统上，WKWebView内H5标签不可点击，Native不受影响。</em></p>
+<p>在频繁的切换页面、刷新WKWebView的情况下，会出现WKWebView卡死，所有的H5标签不可点击，Native的UI不受影响，TabBarVC的几个子控制器最为严重，有时候切换、刷新四五次左右，就会出现这种情况。</p>
+<p><strong>更新：结论：在viewWillAppear方法中调用了<code>evaluateJavaScript: completionHandler:</code>方法，将该方法的调用移到viewDidAppear方法中即可。</strong></p>
+<p>下面是探索的一些步骤，也走了一些弯路，可绕过：</p>
+<blockquote>
+<p>分别从内存、视图、网络请求几个方面入手，按照以下步骤定位问题：</p>
+<ol>
+<li><p>对APP进行内存泄漏检测，优化了几处代码。毫无用处</p>
+</li>
+<li><p>WKWebView单独进程内存问题？因为有一些二级页面按照问题出现流程复现了N多次，都没有出现，所以暂时先排除</p>
+</li>
+<li><p>网速问题。发现网速差时，确实很容易复现，网速好的时候，试了好几次没复现！做了一些网络优化，比如及时cancel掉一些不需要的请求，没有效果。</p>
+</li>
+<li><p>视图加载、更新问题。猜测依据：一级页面更容易复现，且比二级页面多了一个Tabbar的视图。</p>
+</li>
+<li><p>结论：结合第3、4，猜测是网络过慢时，tabbar出现、隐藏，及WKWebView刷新、加载、渲染HTML，几种情况结合导致的WKWebView布局混乱。</p>
+</li>
+</ol>
+<p>最后解决方法：包含WKWebView的一级页面，<code>viewDidAppear</code>时重新设置了一下WKWebView的约束。(设置UIScrollViewContentInsetAdjustmentAutomatic = YES，没有效果)</p>
+<p>效果：大大改善了，但却没有根治问题。加了个保底方案，下拉刷新时，销毁旧WKWebView，创建新的，并loadRequest。(因为这些情况下iOS 11上出现的，且没有更低版本的测试机复现，所以暂时把修改限制在了iOS 11及以下的系统)</p>
+</blockquote>
+<p><strong>最后</strong>：有个最省事的方案，针对这些页面，<strong>将WKWebView替换成UIWebView</strong>。 可行，但逃避问题，不太可取，而且UIWebView、WKWebView各有一些特性，另一个不支持，比如WKWebView支持html，滚动时实时回调，而UIWebView只支持滚动停止时回调。且苹果已经不太支持UIWebView。还是早点拥抱WKWebView吧。</p>
+
+    </article>
+    <!-- license  -->
+    
+        <div class="license-wrapper">
+            <p>Author：<a href="https://tenloy.github.io">Tenloy</a>
+            <p>原文链接：<a href="https://tenloy.github.io/2022/01/18/wkwebview-buges.html">https://tenloy.github.io/2022/01/18/wkwebview-buges.html</a>
+            <p>发表日期：2022.01.18 , 5:39 PM</p>
+            <p>更新日期：2022.02.09 , 9:25 AM</p>
+            <p>版权声明：本文采用<a rel="license noopener" target="_blank" href="http://creativecommons.org/licenses/by-nc/4.0/">Crative Commons 4.0 许可协议</a>进行许可</p>
+        </div>
+    
+    <!-- paginator  -->
+    <ul class="post-paginator">
+        <li class="next">
+            
+                <div class="nextSlogan">Next Post</div>
+                <a href= "/2022/02/09/OAuth.html" title= "[转] OAuth 2.0简述">
+                    <div class="nextTitle">[转] OAuth 2.0简述</div>
+                </a>
+            
+        </li>
+        <li class="previous">
+            
+                <div class="prevSlogan">Previous Post</div>
+                <a href= "/2021/12/22/aes.html" title= "数据加密 — 对称加密(以AES为例)">
+                    <div class="prevTitle">数据加密 — 对称加密(以AES为例)</div>
+                </a>
+            
+        </li>
+    </ul>
+    <!-- 评论插件 -->
+    <!-- 来必力City版安装代码 -->
+
+<!-- City版安装代码已完成 -->
+    
+    
+    <!-- gitalk评论 -->
+
+    <!-- utteranc评论 -->
+
+    <!-- partial('_partial/comment/changyan') -->
+    <!--PC版-->
+
+
+    
+    
+
+    <!-- 评论 -->
+</main>
+            <!-- profile -->
+            
+        </div>
+        <footer class="footer footer-unloaded">
+    <!-- social  -->
+    
+    <div class="social">
+        
+    
+        
+            
+                <a href="mailto:luotengoto@163.com" class="iconfont-archer email" title=email ></a>
+            
+        
+    
+        
+            
+                <a href="//github.com/Tenloy" class="iconfont-archer github" target="_blank" title=github></a>
+            
+        
+    
+        
+            
+                <a href="https://www.jianshu.com/u/8db1bc12db9f" class="iconfont-jian jianshu" target="_blank" title=jianshu></a>
+            
+        
+    
+        
+            
+                <a href="/atom.xml" class="iconfont-archer rss" target="_blank" title=rss></a>
+            
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+
+    </div>
+    
+    <!-- powered by Hexo  -->
+    <div class="copyright">
+        <span id="hexo-power">Powered by <a href="https://hexo.io/" target="_blank">Hexo</a></span><span class="iconfont-archer power">&#xe635;</span><span id="theme-info">theme <a href="https://github.com/fi3ework/hexo-theme-archer" target="_blank">Archer</a></span>
+    </div>
+    <!-- 不蒜子  -->
+    
+    <div class="busuanzi-container">
+    
+     
+    <span id="busuanzi_container_site_pv">PV: <span id="busuanzi_value_site_pv"></span> :)</span>
+    
+    </div>
+    
+</footer>
+    </div>
+    <!-- toc -->
+    
+    <div class="toc-wrapper" style=
+    
+
+
+
+
+
+
+
+top:40vh;
+
+    >
+        <div class="toc-catalog">
+            <span class="iconfont-archer catalog-icon">&#xe613;</span><span>CATALOG</span>
+        </div>
+        <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#WKWebView-API"><span class="toc-text">WKWebView API</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-%E5%B1%9E%E6%80%A7"><span class="toc-text">1. 属性</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-%E8%B0%83%E6%95%B4%E6%BB%9A%E5%8A%A8%E9%80%9F%E7%8E%87"><span class="toc-text">2. 调整滚动速率</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-%E8%A7%86%E9%A2%91%E8%87%AA%E5%8A%A8%E6%92%AD%E6%94%BE"><span class="toc-text">3. 视频自动播放</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-goBack-API%E9%97%AE%E9%A2%98"><span class="toc-text">4. goBack API问题</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E9%81%87%E5%88%B0%E7%9A%84%E5%9D%91"><span class="toc-text">遇到的坑</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-%E5%8A%A0%E8%BD%BDURL%E7%9A%84-encode%E9%97%AE%E9%A2%98"><span class="toc-text">1. 加载URL的 encode问题</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#%E7%BC%96%E7%A0%81%EF%BC%9A"><span class="toc-text">编码：</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#%E8%A7%A3%E7%A0%81"><span class="toc-text">解码</span></a></li></ol></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-loadRequest%E9%80%A0%E6%88%90%E7%9A%84body%E6%95%B0%E6%8D%AE%E4%B8%A2%E5%A4%B1"><span class="toc-text">2. loadRequest造成的body数据丢失</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-WKUserContentController%E9%80%A0%E6%88%90%E5%86%85%E5%AD%98%E6%B3%84%E6%BC%8F"><span class="toc-text">3. WKUserContentController造成内存泄漏</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-WKWebView%E7%9A%84%E7%99%BD%E5%B1%8F%E9%97%AE%E9%A2%98-%E6%8B%8D%E7%85%A7%E5%BC%95%E8%B5%B7"><span class="toc-text">4.  WKWebView的白屏问题(拍照引起)</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%8E%9F%E7%90%86"><span class="toc-text">原理</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88"><span class="toc-text">解决方案</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%96%B9%E6%A1%881-ContentProcessDidTerminate"><span class="toc-text">方案1. ContentProcessDidTerminate</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%96%B9%E6%A1%882-%E6%A3%80%E6%B5%8B-webView-title-%E6%98%AF%E5%90%A6%E4%B8%BA%E7%A9%BA"><span class="toc-text">方案2. 检测 webView.title 是否为空</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%96%B9%E6%A1%883-%E6%A3%80%E7%B4%A2WKCompositingView%E6%8E%A7%E4%BB%B6"><span class="toc-text">方案3. 检索WKCompositingView控件</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%96%B9%E6%A1%884-html%E4%B8%AD%E5%8A%A0%E5%85%A5%E8%B5%84%E6%BA%90%E5%8A%A0%E8%BD%BD%E7%9A%84%E7%9B%91%E5%90%AC"><span class="toc-text">方案4. html中加入资源加载的监听</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#5-NSURLProtocol-%E5%81%9A%E7%BD%91%E9%A1%B5%E7%BC%93%E5%AD%98"><span class="toc-text">5. NSURLProtocol(做网页缓存)</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#6-WKWebView%E7%9A%84%E6%88%AA%E5%B1%8F%E9%97%AE%E9%A2%98-%E5%81%9A%E6%84%8F%E8%A7%81%E5%8F%8D%E9%A6%88"><span class="toc-text">6.  WKWebView的截屏问题(做意见反馈)</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#7-window-alert-%E5%BC%95%E8%B5%B7%E7%9A%84crash%E9%97%AE%E9%A2%98-%E6%9A%82%E6%97%B6%E6%B2%A1%E9%81%87%E5%88%B0"><span class="toc-text">7. window.alert()引起的crash问题(暂时没遇到)</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#8-WKWebView%E6%8B%A6%E6%88%AA%E5%8D%8F%E8%AE%AE"><span class="toc-text">8. WKWebView拦截协议</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#9-User-Agent%E4%BF%AE%E6%94%B9"><span class="toc-text">9. User-Agent修改</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#10-didFinish%E4%B8%8D%E8%B0%83%E7%94%A8"><span class="toc-text">10. didFinish不调用</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#11-UI%E7%BB%86%E8%8A%82%E9%97%AE%E9%A2%98"><span class="toc-text">11. UI细节问题</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#11-1-WKWebView%E4%B8%AD-h5%E7%BB%9D%E5%AF%B9%E5%B8%83%E5%B1%80%E4%B8%8D%E7%94%9F%E6%95%88"><span class="toc-text">11.1 WKWebView中 h5绝对布局不生效</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#11-2-iOS-12%E4%B8%ADWKWebView%E4%B8%AD%E8%A1%A8%E5%8D%95-%E9%94%AE%E7%9B%98"><span class="toc-text">11.2. iOS 12中WKWebView中表单 键盘</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#11-3-WKWebview%E4%BC%9A%E4%B8%8B%E7%A7%BB20"><span class="toc-text">11.3 WKWebview会下移20</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#12-H5%E6%A0%87%E7%AD%BE%E4%B8%8D%E5%8F%AF%E7%82%B9%E5%87%BB%EF%BC%8CNative%E4%B8%8D%E5%8F%97%E5%BD%B1%E5%93%8D"><span class="toc-text">12. H5标签不可点击，Native不受影响</span></a></li></ol></li></ol>
+    </div>
+    
+    <div class="back-top iconfont-archer">&#xe639;</div>
+    <div class="sidebar sidebar-hide">
+    <ul class="sidebar-tabs sidebar-tabs-active-0">
+        <li class="sidebar-tab-categories"><span class="iconfont-archer">&#xe666;</span><span class="tab-name">Cate</span></li>
+        <li class="sidebar-tab-archives"><span class="iconfont-archer">&#xe67d;</span><span class="tab-name">Archive</span></li>
+        <li class="sidebar-tab-tags"><span class="iconfont-archer">&#xe61b;</span><span class="tab-name">Tag</span></li>
+    </ul>
+    <div class="sidebar-content sidebar-content-show-archive">
+        <div class="sidebar-panel-categories">
+    <div class="sidebar-categories-name">
+    
+        <span class="sidebar-category-name" data-categories="软件工程"><span class="iconfont-archer">&#xe60a;</span>软件工程</span>
+    
+        <span class="sidebar-category-name" data-categories="操作系统"><span class="iconfont-archer">&#xe60a;</span>操作系统</span>
+    
+        <span class="sidebar-category-name" data-categories="数据的格式与编码"><span class="iconfont-archer">&#xe60a;</span>数据的格式与编码</span>
+    
+        <span class="sidebar-category-name" data-categories="Swift"><span class="iconfont-archer">&#xe60a;</span>Swift</span>
+    
+        <span class="sidebar-category-name" data-categories="性能优化"><span class="iconfont-archer">&#xe60a;</span>性能优化</span>
+    
+        <span class="sidebar-category-name" data-categories="编译链接与装载"><span class="iconfont-archer">&#xe60a;</span>编译链接与装载</span>
+    
+        <span class="sidebar-category-name" data-categories="计算机组成原理"><span class="iconfont-archer">&#xe60a;</span>计算机组成原理</span>
+    
+        <span class="sidebar-category-name" data-categories="计算机网络"><span class="iconfont-archer">&#xe60a;</span>计算机网络</span>
+    
+        <span class="sidebar-category-name" data-categories="Hybid-APP"><span class="iconfont-archer">&#xe60a;</span>Hybid-APP</span>
+    
+        <span class="sidebar-category-name" data-categories="DSL"><span class="iconfont-archer">&#xe60a;</span>DSL</span>
+    
+        <span class="sidebar-category-name" data-categories="数据结构与算法"><span class="iconfont-archer">&#xe60a;</span>数据结构与算法</span>
+    
+        <span class="sidebar-category-name" data-categories="iOS"><span class="iconfont-archer">&#xe60a;</span>iOS</span>
+    
+        <span class="sidebar-category-name" data-categories="图形处理与渲染"><span class="iconfont-archer">&#xe60a;</span>图形处理与渲染</span>
+    
+        <span class="sidebar-category-name" data-categories="架构与设计模式"><span class="iconfont-archer">&#xe60a;</span>架构与设计模式</span>
+    
+        <span class="sidebar-category-name" data-categories="互联网标准RFC"><span class="iconfont-archer">&#xe60a;</span>互联网标准RFC</span>
+    
+        <span class="sidebar-category-name" data-categories="汇编语言"><span class="iconfont-archer">&#xe60a;</span>汇编语言</span>
+    
+        <span class="sidebar-category-name" data-categories="React"><span class="iconfont-archer">&#xe60a;</span>React</span>
+    
+        <span class="sidebar-category-name" data-categories="Web"><span class="iconfont-archer">&#xe60a;</span>Web</span>
+    
+        <span class="sidebar-category-name" data-categories="Git"><span class="iconfont-archer">&#xe60a;</span>Git</span>
+    
+    </div>
+    <div class="iconfont-archer sidebar-categories-empty">&#xe678;</div>
+    <div class="sidebar-categories-list"></div>
+</div>
+          <div class="sidebar-panel-archives">
+    <!-- 在ejs中将archive按照时间排序 -->
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    <div class="total-and-search">
+        <div class="total-archive">
+        Total : 55
+        </div>
+        <!-- search  -->
+        
+            <div class="site-search popup-trigger tl-side-search"> 
+                <span class="iconfont-jian search-icon">&#xe7fc;搜索</span>
+            </div>
+        
+    </div>
+    
+    <div class="post-archive">
+    
+    
+    
+    
+    <div class="archive-year"> 2022 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/09</span><a class="archive-post-title" href= "/2022/02/09/OAuth.html" >[转] OAuth 2.0简述</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/18</span><a class="archive-post-title" href= "/2022/01/18/wkwebview-buges.html" >WKWebView使用过程中遇到的坑</a>
+        </li>
+    
+    
+    
+    
+    
+        </ul>
+    
+    <div class="archive-year"> 2021 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/22</span><a class="archive-post-title" href= "/2021/12/22/aes.html" >数据加密 — 对称加密(以AES为例)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/21</span><a class="archive-post-title" href= "/2021/12/21/aes-standard.html" >[转] AES标准及Rijndael算法解析</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/20</span><a class="archive-post-title" href= "/2021/12/20/asymmetric.html" >数据加密 — 非对称加密(加签/加密，以RSA为例)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/09</span><a class="archive-post-title" href= "/2021/12/09/pki.html" >常见的PKI标准(X.509、PKCS)及证书相关介绍</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/22</span><a class="archive-post-title" href= "/2021/11/22/bit-calculation.html" >[转] 位运算实现加、减、乘、除运算</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/10</span><a class="archive-post-title" href= "/2021/11/10/git-use.html" >Git的使用总结</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/11</span><a class="archive-post-title" href= "/2021/10/11/runtime-data-structure.html" >Objc Runtime总结</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/28</span><a class="archive-post-title" href= "/2021/09/28/dyld-objc.html" >(七) dyld与Objc—_objc_init、map_images、load_images</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/27</span><a class="archive-post-title" href= "/2021/09/27/compile-dynamic-link.html" >(六) Mach-O 文件的动态链接、库、Dyld(含dlopen)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/26</span><a class="archive-post-title" href= "/2021/09/26/compile-vm-asrl.html" >(五) Mach-O 文件之进程(虚拟)地址空间、ASLR</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/25</span><a class="archive-post-title" href= "/2021/09/25/compile-load.html" >(四) Mach-O 文件的装载</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/24</span><a class="archive-post-title" href= "/2021/09/24/compile-static-link.html" >(三) Mach-O 文件的静态链接</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/23</span><a class="archive-post-title" href= "/2021/09/23/compile-macho.html" >(二) Mach-O 文件结构</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/22</span><a class="archive-post-title" href= "/2021/09/22/compile-clang-llvm.html" >(一) Clang/LLVM 介绍、OC 程序的编译过程</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/20</span><a class="archive-post-title" href= "/2021/09/20/architectural-pattern.html" >常见架构模式: MVC、MVP、MVVM、VIPER</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/18</span><a class="archive-post-title" href= "/2021/09/18/design-pattern.html" >常见的设计模式</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/15</span><a class="archive-post-title" href= "/2021/09/15/graphics-processing-case.html" >图形处理(三) - 图形处理实践案例</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/15</span><a class="archive-post-title" href= "/2021/09/15/graphics-processing.html" >图形处理(二) - 图形与视频处理相关的框架</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/13</span><a class="archive-post-title" href= "/2021/09/13/image-encode-decode.html" >图形处理(一) - 图片的加载与编解码</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/12</span><a class="archive-post-title" href= "/2021/09/12/iOS-Render.html" >[转] iOS离屏渲染原理及优化</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/11</span><a class="archive-post-title" href= "/2021/09/11/core-animation03.html" >Core-Animation(三) - 渲染流程探究及性能分析</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/09</span><a class="archive-post-title" href= "/2021/09/09/core-animation02.html" >Core Animation(二) - 隐式动画、CATransaction与CAAction</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/07</span><a class="archive-post-title" href= "/2021/09/07/core-animation01.html" >Core Animation(一) - UIView与CALayer</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/05</span><a class="archive-post-title" href= "/2021/09/05/AFN-Analyse.html" >[转] AFN框架实现解析</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/03</span><a class="archive-post-title" href= "/2021/09/03/computer-network-knowledge.html" >计算机网络相关知识汇总</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/02</span><a class="archive-post-title" href= "/2021/09/02/Log.html" >移动端日志库设计</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/01</span><a class="archive-post-title" href= "/2021/07/01/Crash-Monitor.html" >iOS崩溃监控与分析</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/30</span><a class="archive-post-title" href= "/2021/06/30/Lag-Monitor.html" >iOS卡顿监控</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/29</span><a class="archive-post-title" href= "/2021/06/29/SwiftUI.html" >SwiftUI</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/29</span><a class="archive-post-title" href= "/2021/06/29/Swift-Version-History.html" >Swift版本更新API介绍</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/28</span><a class="archive-post-title" href= "/2021/06/28/GCD.html" >深入浅出GCD常用API</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/28</span><a class="archive-post-title" href= "/2021/06/28/AutoreleasePool.html" >AutoreleasePool</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/26</span><a class="archive-post-title" href= "/2021/06/26/RunLoop-Reposted-From-ibireme.html" >[转] 深入理解RunLoop—ibireme</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/25</span><a class="archive-post-title" href= "/2021/06/25/Protocol-Buffer.html" >Protocol Buffer的基本介绍</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/24</span><a class="archive-post-title" href= "/2021/06/24/base64.html" >Base64编码及iOS中的Base64</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/23</span><a class="archive-post-title" href= "/2021/06/23/chinese-encode.html" >[转] 彻底弄懂常见的7种中文字符编码</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/22</span><a class="archive-post-title" href= "/2021/06/22/dynamic-programming.html" >(二) 动态规划算法</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/18</span><a class="archive-post-title" href= "/2021/06/18/Web-Module.html" >前端各种模块化方案总结</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/27</span><a class="archive-post-title" href= "/2021/05/27/Fiber.html" >[转] 最通俗的 React Fiber(时间分片)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/27</span><a class="archive-post-title" href= "/2021/05/27/Coroutine.html" >[转] 什么是协程</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/29</span><a class="archive-post-title" href= "/2021/04/29/DSL.html" >[转] 谈谈DSL以及DSL的应用（以CocoaPods 为例）</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/26</span><a class="archive-post-title" href= "/2021/04/26/Containers.html" >常见的容器概念：Linux容器、Docker容器、服务器容器</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/24</span><a class="archive-post-title" href= "/2021/04/24/Dock-Reprinted-from-RuanYIFeng.html" >[转] Docker入门教程</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/20</span><a class="archive-post-title" href= "/2021/04/20/Sync-Async.html" >同步和异步解读及编程中的使用场景</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/17</span><a class="archive-post-title" href= "/2021/04/17/Arm64-Handbook.html" >ARM64指令简易手册</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/16</span><a class="archive-post-title" href= "/2021/04/16/Arm64-Introduce.html" >iOS需要了解的ARM64汇编</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/15</span><a class="archive-post-title" href= "/2021/04/15/Ins-SysCall-Kernel-Shell.html" >指令、系统调用、库、Shell、APP的层次关系</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/14</span><a class="archive-post-title" href= "/2021/04/14/ISA-Microarch-Soc.html" >指令集、微架构、手机芯片(Soc)及ARM的介绍</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/13</span><a class="archive-post-title" href= "/2021/04/13/Command-Line.html" >CLI-Shell-Terminal-脚本概念梳理</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/12</span><a class="archive-post-title" href= "/2021/04/12/CI-CD.html" >CI-CD</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/11</span><a class="archive-post-title" href= "/2021/04/11/Engineering.html" >工程化、动态化、容器化、组件化</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/10</span><a class="archive-post-title" href= "/2021/04/10/GithubPages-Hexo.html" >使用Hexo+Github Pages搭建个人博客</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/06</span><a class="archive-post-title" href= "/2021/04/06/iOS_Knowledge_Tree.html" >iOS-interview</a>
+        </li>
+    
+    </div>
+  </div>
+        <div class="sidebar-panel-tags">
+    <div class="sidebar-tags-name">
+    
+        <span class="sidebar-tag-name" data-tags="hexo"><span class="iconfont-archer">&#xe606;</span>hexo</span>
+    
+        <span class="sidebar-tag-name" data-tags="CI/CD"><span class="iconfont-archer">&#xe606;</span>CI/CD</span>
+    
+        <span class="sidebar-tag-name" data-tags="多线程"><span class="iconfont-archer">&#xe606;</span>多线程</span>
+    
+        <span class="sidebar-tag-name" data-tags="协程"><span class="iconfont-archer">&#xe606;</span>协程</span>
+    
+        <span class="sidebar-tag-name" data-tags="SwiftUI"><span class="iconfont-archer">&#xe606;</span>SwiftUI</span>
+    
+        <span class="sidebar-tag-name" data-tags="Swift-Syntax"><span class="iconfont-archer">&#xe606;</span>Swift-Syntax</span>
+    
+        <span class="sidebar-tag-name" data-tags="Log"><span class="iconfont-archer">&#xe606;</span>Log</span>
+    
+        <span class="sidebar-tag-name" data-tags="CLI"><span class="iconfont-archer">&#xe606;</span>CLI</span>
+    
+        <span class="sidebar-tag-name" data-tags="Shell"><span class="iconfont-archer">&#xe606;</span>Shell</span>
+    
+        <span class="sidebar-tag-name" data-tags="ISA"><span class="iconfont-archer">&#xe606;</span>ISA</span>
+    
+        <span class="sidebar-tag-name" data-tags="Microarch"><span class="iconfont-archer">&#xe606;</span>Microarch</span>
+    
+        <span class="sidebar-tag-name" data-tags="Soc"><span class="iconfont-archer">&#xe606;</span>Soc</span>
+    
+        <span class="sidebar-tag-name" data-tags="Docker"><span class="iconfont-archer">&#xe606;</span>Docker</span>
+    
+        <span class="sidebar-tag-name" data-tags="DSL"><span class="iconfont-archer">&#xe606;</span>DSL</span>
+    
+        <span class="sidebar-tag-name" data-tags="dp"><span class="iconfont-archer">&#xe606;</span>dp</span>
+    
+        <span class="sidebar-tag-name" data-tags="AutoreleasePool"><span class="iconfont-archer">&#xe606;</span>AutoreleasePool</span>
+    
+        <span class="sidebar-tag-name" data-tags="ARM64"><span class="iconfont-archer">&#xe606;</span>ARM64</span>
+    
+        <span class="sidebar-tag-name" data-tags="RunLoop"><span class="iconfont-archer">&#xe606;</span>RunLoop</span>
+    
+        <span class="sidebar-tag-name" data-tags="LagMonitor"><span class="iconfont-archer">&#xe606;</span>LagMonitor</span>
+    
+        <span class="sidebar-tag-name" data-tags="CrashMonitor"><span class="iconfont-archer">&#xe606;</span>CrashMonitor</span>
+    
+        <span class="sidebar-tag-name" data-tags="Fiber"><span class="iconfont-archer">&#xe606;</span>Fiber</span>
+    
+        <span class="sidebar-tag-name" data-tags="interview"><span class="iconfont-archer">&#xe606;</span>interview</span>
+    
+        <span class="sidebar-tag-name" data-tags="GCD"><span class="iconfont-archer">&#xe606;</span>GCD</span>
+    
+        <span class="sidebar-tag-name" data-tags="AFN"><span class="iconfont-archer">&#xe606;</span>AFN</span>
+    
+    </div>
+    <div class="iconfont-archer sidebar-tags-empty">&#xe678;</div>
+    <div class="tag-load-fail" style="display: none; color: #ccc; font-size: 0.6rem;">
+    缺失模块。<br/>
+    1、请确保node版本大于6.2<br/>
+    2、在博客根目录（注意不是archer根目录）执行以下命令：<br/>
+    <span style="color: #f75357; font-size: 1rem; line-height: 2rem;">npm i hexo-generator-json-content --save</span><br/>
+    3、在根目录_config.yml里添加配置：
+    <pre style="color: #787878; font-size: 0.6rem;">
+jsonContent:
+  meta: false
+  pages: false
+  posts:
+    title: true
+    date: true
+    path: true
+    text: false
+    raw: false
+    content: false
+    slug: false
+    updated: false
+    comments: false
+    link: false
+    permalink: false
+    excerpt: false
+    categories: true
+    tags: true</pre>
+    </div> 
+    <div class="sidebar-tags-list"></div>
+</div>
+    </div>
+</div> 
+    <script>
+    var siteMeta = {
+        root: "/",
+        author: "Tenloy"
+    }
+</script>
+    <!-- CDN failover -->
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js"></script>
+    <script type="text/javascript">
+        if (typeof window.$ === 'undefined')
+        {
+            console.warn('jquery load from jsdelivr failed, will load local script')
+            document.write('<script src="/lib/jquery.min.js">\x3C/script>')
+        }
+    </script>
+    <script src="/scripts/main.js"></script>
+    <!-- algolia -->
+    
+        <div class="site-search">
+  <div class="algolia-popup popup">
+    <div class="algolia-search">
+      <div class="algolia-search-input-icon">
+        <i class="fa fa-search"></i>
+      </div>
+      <div class="algolia-search-input" id="algolia-search-input"></div>
+    </div>
+
+    <div class="algolia-results">
+      <div id="algolia-stats"></div>
+      <div id="algolia-hits"></div>
+      <div id="algolia-pagination" class="algolia-pagination"></div>
+    </div>
+
+    <span class="popup-btn-close">
+      <i class="iconfont-archer">&#xe609;</i>
+    </span>
+  </div>
+</div>
+        <script src="https://cdn.jsdelivr.net/npm/instantsearch.js@2.8.0/dist/instantsearch.min.js" defer></script>
+        <script src="/scripts/search.js" defer></script>
+    
+    <!-- busuanzi  -->
+    
+    <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    
+    <!-- CNZZ  -->
+    
+    </div>
+    <!-- async load share.js -->
+    
+        <script src="/scripts/share.js" async></script>    
+     
+    </body>
+</html>
+
+
