@@ -95,7 +95,51 @@ stringByRemovingPercentEncoding
 [wkwebview loadRequest: request];
 ```
 
-解决方案：见参考链接，目前暂无使用场景
+目前也已经有成熟的解决方案了，见[KKJSBridge库](https://github.com/karosLi/KKJSBridge#ajax-hook-%E6%96%B9%E6%A1%88%E5%AF%B9%E6%AF%94)。原理上都是hook ajax，不过细节上分两种：
+
+这里只对比方案间相互比较的优缺点，共同的优点，就不赘述了。如果对私有 API 不敏感的，我是比较推荐使用方案一的。
+
+### 方案一：Ajax Hook 部分 API + NSURLProtocol
+
+这个方案对应的是这里的 `KKJSBridge/AjaxProtocolHook`。
+
+原理介绍：此种方案，是只需要 hook ajax 中的 open/send 方法。
+
+1. 在 hook 的 send 方法里，先把要发送的 body 通过 JSBridge 发送到 Native 侧去缓存起来。
+   - *为每一个post请求设置一个id，对应其缓存起来的body数据？*
+   - *如果不想缓存，那先把post转get、或者body参数存header中，缺点都是body有限制。这种适合参数较少时。注意有个坑就是修改header可能会导致发出options请求。—— 来自群友交流*
+2. 缓存成功后，再去执行真实的 send 方法，NSURLProtocol 此时会拦截到该请求，然后取出之前缓存的 body 数据，重新拼接请求，就可以发送出去了。
+3. 然后通过 NSURLProtocol 把请求结果返回给 WebView 内核。
+
+优点：
+
+- 兼容性会更好，网络请求都是走 webview 原生的方式。
+- hook 的逻辑会更少，会更加稳定。
+- 可以更好的支持 ajax 获取二进制的数据。例如 H5 小游戏场景（白鹭引擎是通过异步获取图片资源）。
+
+缺点：
+
+- 需要使用到私有 API browsingContextController 去注册 http/https。（其实现在大部分的离线包方案也是使用了这个私有 API 了）
+
+### 方案二：Ajax Hook 全部 API
+
+这个方案对应的是这里的 `KKJSBridge/AjaxHook`。
+
+原理介绍：此种方案，是使用 hook 的 XMLHttpRequest 对象来代理真实的 XMLHttpRequest 去发送请求，相当于是需要 hook ajax 中的所有方法。
+
+- 在 hook 的 open 方法里，调用 JSBridge 让 Native 去创建一个 NSMutableRequest 对象。
+- 在 hook 的 send 方法里，把要发送的 body 通过 JSBridge 发送到 Native 侧，并把 body 设置给刚才创建的 NSMutableRequest 对象。
+- 在 Native 侧完成请求后，通过 JS 执行函数，把请求结果通知给 JS 侧，JS 侧找到 hook 的 XMLHttpRequest 对象，最后调用 onreadystatechange 函数，让 H5 知道有请求结果了。
+
+优点：
+
+- 没有使用私有 API。
+
+缺点：
+
+- 需要 hook XMLHttpRequest 的所有方法。
+- 请求结果是通过 JSBrdige 来进行传输的，性能上肯定没有原生的性能好。
+- 不能支持 ajax 获取二进制的数据。要想支持的话，还需要额外的序列化工作。
 
 ## 3. WKUserContentController造成内存泄漏
 
