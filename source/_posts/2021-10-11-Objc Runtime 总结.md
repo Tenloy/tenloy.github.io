@@ -1025,19 +1025,29 @@ Ivar * class_copyIvarList(Class cls, unsigned int *outCount)
 ```c++
 typedef struct method_t *Method;
 
-// 获取实例方法
-Method class_getInstanceMethod ( Class cls, SEL name );
+// 获取实例方法。注意：如果这个类中没有实现selector这个方法，会沿着继承链向上找到为止，即可能会返回它某父类中的Method对象
+Method class_getInstanceMethod (Class cls, SEL name);
 
 // 获取类方法
-Method class_getClassMethod ( Class cls, SEL name );
+Method class_getClassMethod (Class cls, SEL name);
 
 // 获取所有方法的数组
-Method * class_copyMethodList ( Class cls, unsigned int *outCount );
+Method * class_copyMethodList (Class cls, unsigned int *outCount);
 
-// 添加方法. (和成员变量不同的是可以为类动态添加方法。如果有同名会返回NO，修改的话需要使用method_setImplementation)
+// 添加方法. 和成员变量不同的是可以为类动态添加方法。
+/*
+  class_addMethod可以添加父类中方法实现的override，但不会替换该类中的现有实现。
+  如果已有同名的方法实现（包含分类中的方法）会返回NO。要更改现有的实现，请使用method_setImplementation。
+ */
 BOOL class_addMethod(Class cls, SEL name, IMP imp, const char *types)
 
-// 替代方法的实现(内部也是调用的_method_setImplementation)
+// 替代方法的实现。返回cls标识的类中，name标识的方法的以前实现。
+/*
+ * 如果通过名称标识的方法还不存在(本类、分类中都没实现)，就会像调用class_addMethod一样添加它。使用由types指定的类型编码。
+ * 返回：NULL
+ * 如果通过名称标识的方法确实存在(本类或分类中实现了)，那么它的IMP将被替换，就像调用了method_setImplementation一样。类型指定的类型编码将被忽略。
+ * 返回：SEL name之前的实现IMP
+ */
 IMP class_replaceMethod(Class cls, SEL name, IMP imp, const char *types)
 
 // 返回方法的具体实现
@@ -2069,9 +2079,18 @@ id objc_msgSendSuper2(struct objc_super * _Nonnull super, SEL _Nonnull op, ...);
 
 ### 4.5.1 使用method swizzling需要注意的问题
 
-- Swizzling应该总在+load中执行：objectivec在运行时会自动调用类的两个方法+load和+initialize。+load会在类初始加载时调用，和+initialize比较+load能保证在类的初始化过程中被加载。
-- Swizzling应该总是在dispatch_once中执行：swizzling会改变全局状态，所以在运行时采取一些预防措施，使用dispatch_once就能够确保代码不管有多少线程都只被执行一次。这将成为method swizzling的最佳实践。
-- Selector，Method和Implementation：这几个之间关系可以这样理解，一个类维护一个运行时可接收的消息分发表，分发表中每个入口是一个Method，其中key是一个特定的名称，及SEL，与其对应的实现是IMP即指向底层C函数的指针。
+- **Swizzling应该总在+load中执行**：objectivec在运行时会自动调用类的两个方法+load和+initialize。+load会在类初始加载时调用，和+initialize比较+load能保证在类的初始化过程中被加载。
+  - Swizzling在+load中执行时，不要调用[super load]。原因同下面一条，如果是多继承，并且对同一个方法都进行了Swizzling（*没有在dispatch_once中执行*），那么调用[super load]以后，父类的Swizzling就失效了。
+
+- **Swizzling应该总是在dispatch_once中执行**：swizzling会改变全局状态，所以在运行时采取一些预防措施，使用dispatch_once就能够确保代码不管有多少线程都只被执行一次。这将成为method swizzling的最佳实践。
+  - 如果不写dispatch_once，偶数次交换以后，相当于没有交换，Swizzling失效！
+
+- **Swizzling时，需要注意class_getInstanceMethod的特性**：该方法的实现中，如果这个类中没有实现selector这个方法，那么它会沿着继承链找到为止，即其可能返回的是它某父类的Method对象。所以提前判断很重要，避免错误的交换了父类中的方法。
+- 交换的分类方法应尽量调用原实现。
+  - 很多情况我们不清楚被交换的的方法具体做了什么内部逻辑，而且很多被交换的方法都是系统封装的方法，所以为了保证其逻辑性都应该在分类的交换方法中去调用原被交换方法。
+  - 注意：调用时方法交换已经完成，在分类方法中应该调用分类方法本身才正确。
+  - 作用：比如之前a应该和b互换了方法，c方法在不知情的状况下和a互换了方法。只有在交换的方法中调用原实现，才能保证c→b→a中的代码都能得到执行。
+
 
 ### 4.5.2 实现一
 
@@ -2106,7 +2125,7 @@ id objc_msgSendSuper2(struct objc_super * _Nonnull super, SEL _Nonnull op, ...);
                class_replaceMethod(class,
                     swizzledSelector,
                     method_getImplementation(originalMethod),
-               method_getTypeEncoding(originalMethod));
+                    method_getTypeEncoding(originalMethod));
           } else {
                method_exchangeImplementations(originalMethod, swizzledMethod);
           }
@@ -2134,27 +2153,91 @@ method_setImplementation(m2, imp1);
 
 ### 4.5.3 实现二
 
-另一种Method Swizzling的实现
-
 ```objc
-+ (void)load {
-     SEL originalSelector = @selector(ReceiveMessage:);
-     SEL overrideSelector = @selector(replacementReceiveMessage:);
-     Method originalMethod = class_getInstanceMethod(self, originalSelector);
-     Method overrideMethod = class_getInstanceMethod(self, overrideSelector);
-     if (class_addMethod(self, originalSelector, method_getImplementation(overrideMethod), method_getTypeEncoding(overrideMethod))) {
-          class_replaceMethod(self, overrideSelector, method_getImplementation(originalMethod), method_getTypeEncoding(originalMethod));
-     } else {
-          method_exchangeImplementations(originalMethod, overrideMethod);
-     }
-}
-
-- (void)replacementReceiveMessage:(const struct BInstantMessage *)arg1 {
-     NSLog(@"arg1 is %@", arg1);
-     [self replacementReceiveMessage:arg1];
++ (void) load{
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        Method originalMethod = class_getInstanceMethod([self class], @selector(xxxx));
+        Method swizzledMethod = class_getInstanceMethod([self class], @selector(x_xxxxx));
+        // 判断两个方法是不是空，本类和父类都找不到则直接return
+        if (!originalMethod || !swizzledMethod) return;
+        // 不管方法在不在本类，都执行class_addMethod方法，最后的结果是本类中两个方法都存在了，这样也不用管他们有没有被交换过。
+        class_addMethod([self class], method_getName(originalMethod), method_getImplementation(originalMethod), method_getTypeEncoding(originalMethod));
+        class_addMethod([self class], method_getName(swizzledMethod), method_getImplementation(swizzledMethod), method_getTypeEncoding(swizzledMethod));
+        // 交换，此时就不用再考虑本类父类的逻辑
+        method_exchangeImplementations(originalMethod, swizzledMethod);
+    });
 }
 ```
 
+### 4.5.4 错误实现
+
+#### 1. 不加判断直接exchange
+
+```objc
+@interface Base : NSObject
+- (void)basePrint;
+@end
+@implementation Base
+- (void)basePrint{
+    NSLog(@"%s",__func__);
+}
+@end
+
+@interface B : Base
+@end
+@implementation B
+@end
+  
+@interface A : NSObject
+- (void)APrint;
+@end
+@implementation A
++ (void)load{
+    Class cls = [B class];
+    Method originalMethod = class_getInstanceMethod(cls, @selector(basePrint));
+    Method swizzledMethod = class_getInstanceMethod([self class], @selector(APrint));
+    //这种不加判断的交换是不合理的。直接将父类的方法实现交换了
+    method_exchangeImplementations(originalMethod, swizzledMethod);
+}
+- (void)APrint{
+    NSLog(@"%s",__func__);
+}
+@end
+```
+
+#### 2. 错误使用class_replaceMethod
+
+```objectivec
++ (void) load{
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        Method originalMethod = class_getInstanceMethod([self class], @selector(xxxx));
+        Method swizzledMethod = class_getInstanceMethod([self class], @selector(x_xxxxx));
+// ===== 错误一：如果本类中已有实现
+        class_replaceMethod([self class],
+                          method_getName(originalMethod),
+                          method_getImplementation(swizzledMethod),
+                          method_getTypeEncoding(swizzledMethod));
+        class_replaceMethod([self class],
+                          method_getName(swizzledMethod),
+                          //此时originalMethod已经被replace imp了，即其imp，实际上已经是swizzledMethod的IMP了
+                          method_getImplementation(originalMethod), 
+                          method_getTypeEncoding(originalMethod));
+// ===== 错误二：如果本类中没有实现
+        // 当cls中此时没有origSelector的实现时，那class_replaceMethod实质上是class_addMethod，返回值为NULL
+        IMP previousIMP = class_replaceMethod([self class],
+                                      method_getName(originalMethod),,
+                                      method_getImplementation(swizzledMethod),
+                                      method_getTypeEncoding(swizzledMethod));
+        // 如果previousIMP，那么replaceMethod失败，即保持原样。
+        class_replaceMethod([self class],
+                            method_getName(swizzledMethod),,
+                            previousIMP,
+                            method_getTypeEncoding(originalMethod));
+    });
+}
+```
 
 这里有几个关于Method Swizzling的资源可以参考
 
@@ -2487,7 +2570,7 @@ const char *class_getImageName(Class cls);
 const char **objc_copyClassNamesForImage(const char *image, unsigned int *outCount);
 ```
 
-示例：通过这些函数获取某个类所有的库，以及某个库中包含哪些类：
+示例：通过这些函数获取某个类所在的库，以及某个库中包含哪些类：
 
 ```c++
 NSLog(@"获取指定类所在动态库");
