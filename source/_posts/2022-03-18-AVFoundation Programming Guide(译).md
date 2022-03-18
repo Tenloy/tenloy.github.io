@@ -24,18 +24,18 @@ iOS 上的架构：
 
 <img src="/images/avf/frameworksBlockDiagramOSX_2x.png" alt="img" style="zoom:70%;" />
 
+AVFoundation 框架包含视频API 和音频API 两方面。较早的与音频相关的类提供了处理音频的简单方法：
+
+- 播放声音文件，可以使用 AVAudioPlayer。
+- 录制音频，可以使用 AVAudioRecorder。
+- 使用 AVAudioSession 配置应用程序的音频行为。
+
 在完成具体的开发任务时，你应该尽可能的选择更高层次的抽象框架。
 
 - 如果只需要播放视频，可以使用 AVKit 框架
 - 如果需要在 iOS 设备上录制视频，而且并不关心更具体的录制参数，可以使用 UIKit 中 UIImagePickerController 类。
 
 需要注意的是，在 AVFoundation 框架中使用的一些原始数据结构 (包括时间相关的数据结构和存储描述媒体数据的底层对象)，都在 Core Media 框架中声明。
-
-AVFoundation 框架包含视频API 和音频API 两方面。较早的与音频相关的类提供了处理音频的简单方法：
-
-- 播放声音文件，可以使用 AVAudioPlayer。
-- 录制音频，可以使用 AVAudioRecorder。
-- 使用 AVAudioSession 配置应用程序的音频行为。
 
 # 一、使用Assets
 
