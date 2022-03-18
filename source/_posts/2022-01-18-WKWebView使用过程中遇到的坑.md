@@ -60,7 +60,7 @@ WKWebView 上调用 -[WKWebView goBack]， 回退到上一个页面后不会触�
 ## 1. 加载URL的 encode问题
 
 在数据网络请求或其他情况下，需要把URL中的一些特殊字符转换成UTF-8编码，比如：中文。解决`无法加载`的问题
-##### 编码：
+### 编码
 
 ```objectivec
 // iOS 9以前
@@ -70,7 +70,7 @@ stringByAddingPercentEscapesUsingEncoding: NSUTF8StringEncoding
 stringByAddingPercentEncodingWithAllowedCharacters: [NSCharacterSet URLQueryAllowedCharacterSet]
 ```
 
-##### 解码
+### 解码
 
 ```objectivec
 // iOS 9以前

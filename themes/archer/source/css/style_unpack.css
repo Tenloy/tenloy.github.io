@@ -100,6 +100,21 @@ h1 {
     margin: 0.67em 0
 }
 
+h2 {
+    font-size: 1.75em;
+    margin: 0.67em 0
+}
+
+h3 {
+    font-size: 1.55em;
+    margin: 0.67em 0
+}
+
+h4{
+    font-size: 1.35em;
+    margin: 0.67em 0
+}
+
 mark {
     background: #ff0;
     color: #000
@@ -2594,8 +2609,8 @@ html::-webkit-scrollbar-track:hover,
 
 .abstract-content h5,
 .article-entry h5 {
-    font-size: 1rem;
-    margin: 1rem 0
+    font-size: 1.15rem;
+    margin: 0.67rem 0
 }
 
 .abstract-content h6,
