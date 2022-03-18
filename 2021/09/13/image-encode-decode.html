@@ -28,7 +28,7 @@
 <meta property="og:description" content="一、位图、色彩空间1.1 色彩空间色彩空间（Color space）是对色彩的组织方式&#x2F;表示方式。借助色彩空间和针对物理设备的测试，可以得到色彩的固定模拟和数字表示。数字表示，如Adobe RGB、sRGB、RGBA。 色彩空间并不唯一，比如：  当在计算机监视器上显示颜色的时候，通常使用RGB（红色、绿色、蓝色）色彩空间定义，这是另外一种生成同样颜色的方法，红色、绿色、蓝色被当作X、Y和Z坐标轴">
 <meta property="og:locale" content="en_US">
 <meta property="article:published_time" content="2021-09-13T19:01:06.000Z">
-<meta property="article:modified_time" content="2022-03-02T07:04:33.909Z">
+<meta property="article:modified_time" content="2022-03-18T11:05:31.302Z">
 <meta property="article:author" content="Tenloy">
 <meta property="article:tag" content="Tenloy, iOS, Tenloy Blog, 博客，Swift, 编译, 计算机">
 <meta name="twitter:card" content="summary">
@@ -487,16 +487,11 @@ height:40vh;
 <p>矢量图是根据几何特性来绘制图形，矢量可以是一个点或一条线，矢量图只能靠软件生成，文件占用内在空间较小，因为这种类型的图像文件包含独立的分离图像，可以自由无限制的重新组合。它的特点是放大后图像不会失真，和分辨率无关，适用于图形设计、文字设计和一些标志设计、版式设计等。</p>
 <p>矢量图的特点</p>
 <ol>
-<li><p>文件小，图像中保存的是线条和图块的信息，所以矢量图形文件与分辨率和图像大小无关，只与图像的复杂程度有关，图像文件所占的存储空间较小。</p>
-</li>
-<li><p>图像可以无级缩放，对图形进行缩放，旋转或变形操作时，图形不会产生锯齿效果。</p>
-</li>
-<li><p>可采取高分辨率印刷，矢量图形文件可以在任何输出设备打印机上以打印或印刷的最高分辨率进行打印输出。</p>
-</li>
-<li><p>最大的缺点是难以表现色彩层次丰富的逼真图像效果。</p>
-</li>
-<li><p>矢量图与位图的效果是天壤之别。矢量图无限放大不模糊，大部分位图都是由矢量导出来的，也可以说矢量图就是位图的源码，源码是可以编辑的。</p>
-</li>
+<li>文件小，图像中保存的是线条和图块的信息，所以矢量图形文件与分辨率和图像大小无关，只与图像的复杂程度有关，图像文件所占的存储空间较小。</li>
+<li>图像可以无级缩放，对图形进行缩放，旋转或变形操作时，图形不会产生锯齿效果。</li>
+<li>可采取高分辨率印刷，矢量图形文件可以在任何输出设备打印机上以打印或印刷的最高分辨率进行打印输出。</li>
+<li>最大的缺点是难以表现色彩层次丰富的逼真图像效果。</li>
+<li>矢量图与位图的效果是天壤之别。矢量图无限放大不模糊，大部分位图都是由矢量导出来的，也可以说矢量图就是位图的源码，源码是可以编辑的。</li>
 </ol>
 <h2 id="二、图片、编解码"><a href="#二、图片、编解码" class="headerlink" title="二、图片、编解码"></a>二、图片、编解码</h2><h3 id="2-1-编码与解码"><a href="#2-1-编码与解码" class="headerlink" title="2.1 编码与解码"></a>2.1 编码与解码</h3><p>图片的编码： 在当前APP的开发中，图片是经常会使用到的，关于图片有很多种格式，例如JPEG，PNG等。其实这些各种各样的图片格式都对应了位图(bitmap)经过不同算法编码(压缩)后的图片。 苹果提供2种图片编码格式，PNG和JPEG：</p>
 <ul>
@@ -505,10 +500,8 @@ height:40vh;
 </ul>
 <p>图片的解码： </p>
 <ul>
-<li><p>app从磁盘中读入编码后的图片，需要经过解码把图片变成位图(bitmap)读入，这样才能显示在屏幕上。 </p>
-</li>
-<li><p>iOS 默认会在主线程对图像进行解码，解压缩后的图片大小与原始文件大小之间没有任何关系，而只与图片的像素有关：</p>
-</li>
+<li>app从磁盘中读入编码后的图片，需要经过解码把图片变成位图(bitmap)读入，这样才能显示在屏幕上。 </li>
+<li>iOS 默认会在主线程对图像进行解码，解压缩后的图片大小与原始文件大小之间没有任何关系，而只与图片的像素有关：</li>
 </ul>
 <figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">位图大小 = 图片的像素宽  * 图片的像素高  * 每个像素所占的字节数(取决于像素格式)</span><br></pre></td></tr></table></figure>
 
@@ -543,7 +536,7 @@ height:40vh;
 <ul>
 <li>后面的参数是icon的名字。图片可以存在项目中，也可以存在Assets中。</li>
 <li>这个方法加载完图片后会存在Cache里面，当用这个方法加载的时候，它会在系统缓存中查找并返回一个对象，如果缓存中没有找到对应的对象，这个方法会从指定的文档中加载，再返回对象。</li>
-<li>优点是提高了运行速度，缺点是消耗内存。如果是不会复用的、大图，最好不要用该方法加载。</li>
+<li>优点是提高了运行速度，缺点是消耗内存。如果是不会复用的大图，最好不要用该方法加载。</li>
 </ul>
 <p><code>imageWithContentsOfFile</code>方法</p>
 <ol>
@@ -551,7 +544,7 @@ height:40vh;
 <li>加载图片时，会根据路径查找，直接加载，使用完后释放，不会存入内存.</li>
 <li>优点是节省内存，缺点是消耗性能。适用于一些不常用的图片或icon，或者资源比较大图片。</li>
 </ol>
-<p>总结：一些小的icon可以存在Assets里面，用imageNamed加载。一些比较大的，使用频率低的可以建立一个bundle存放图片，使用imageWithContentsOfFile 加载。</p>
+<p>总结：一些小的icon可以存在Assets里面，用imageNamed加载。一些比较大的、使用频率低的可以建立一个bundle存放图片，使用imageWithContentsOfFile 加载。</p>
 <h3 id="3-3-图片的解码"><a href="#3-3-图片的解码" class="headerlink" title="3.3 图片的解码"></a>3.3 图片的解码</h3><h4 id="3-3-1-解码触发时机"><a href="#3-3-1-解码触发时机" class="headerlink" title="3.3.1 解码触发时机"></a>3.3.1 解码触发时机</h4><p>UIImage 是 iOS 中处理图像的高级类。创建一个 UIImage 实例只会加载 Data Buffer，也就是说以上只是把图片转为UIImage对象，该对象存储在Data Buffer里。此时并没有对图片进行解码。</p>
 <p>当将图像显示到屏幕上会触发隐式解码（<strong>必须同时满足图像被设置到 UIImageView 中、UIImageView 添加到视图，才会触发图像解码</strong>）。也就是说你就算实例了一个UIImageView，但是没有把他addSubview，显示到视图上，系统也是不会进行解码的。</p>
 <h4 id="3-3-2-主线程解码的性能问题"><a href="#3-3-2-主线程解码的性能问题" class="headerlink" title="3.3.2  主线程解码的性能问题"></a>3.3.2  主线程解码的性能问题</h4><p>这个解码过程默认是发生在主线程上面的，而且非常消耗 CPU，所以到如果在 tableView 或者 collectionView 中有相当多的图片需要显示的话，这些图片在主线程的解码操作必然会影响滑动的顺畅度。所以我们是否可以在子线程强制将其解码，然后在主线程让系统渲染解码之后的图片呢？当然可以，现在基本上所有的开源图片库都会实现这个操作。例如：YYImage\SDWebImage。</p>
@@ -594,7 +587,7 @@ height:40vh;
             <p>Author：<a href="https://tenloy.github.io">Tenloy</a>
             <p>原文链接：<a href="https://tenloy.github.io/2021/09/13/image-encode-decode.html">https://tenloy.github.io/2021/09/13/image-encode-decode.html</a>
             <p>发表日期：2021.09.13 , 7:01 PM</p>
-            <p>更新日期：2022.03.02 , 7:04 AM</p>
+            <p>更新日期：2022.03.18 , 11:05 AM</p>
             <p>版权声明：本文采用<a rel="license noopener" target="_blank" href="http://creativecommons.org/licenses/by-nc/4.0/">Crative Commons 4.0 许可协议</a>进行许可</p>
         </div>
     
@@ -1537,9 +1530,24 @@ top:40vh;
     
     
     
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
     <div class="total-and-search">
         <div class="total-archive">
-        Total : 53
+        Total : 54
         </div>
         <!-- search  -->
         
@@ -1556,6 +1564,11 @@ top:40vh;
     
     <div class="archive-year"> 2022 </div>
     <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/18</span><a class="archive-post-title" href= "/2022/03/18/OAuth.html" >AVFoundation Programming Guide(译)</a>
+        </li>
     
     
         <li class="archive-post-item">
