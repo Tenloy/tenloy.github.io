@@ -174,7 +174,10 @@ OC的代码貌似不会编译出`Weak Bind`. 目前遇到的`Weak Bind`都是C++
 常见的可执行文件的形式：
 - Linux系统中，ELF动态链接文件被称为**动态共享对象**(`DSO，Dynamic SharedObjects`)，简称共享对象，一般都是以 `.so` 为扩展名的一些文件；
 - Windows系统中，动态链接文件被称为**动态链接库**(`Dynamical Linking Library`)，通常就是我们平时很常见的以 `.dll` 为扩展名的文件；
-- OS X 和其他 UN\*X 不同，它的库不是“共享对象(.so)”，因为 OS X 和 ELF 不兼容，而且这个概念在 Mach-O 中不存在。OS 中的动态链接文件一般称为**动态库**文件，带有 `.dylib`、`.framework`及链接符号`.tbd`。可以在 `/usr/lib` 目录下找到(这一点和其他所有的 UN*X 一样，不同的是在OS X 和 iOS 中没有/lib目录)
+- OS X 和其他 UN\*X 不同，它的库不是“共享对象(.so)”，因为 OS X 和 ELF 不兼容，而且这个概念在 Mach-O 中不存在。OS 中的动态链接文件一般称为**动态库**文件，带有 `.dylib`、`.framework`及链接符号`.tbd`。
+  - 库文件可以在 `/usr/lib` 目录下找到(这一点和其他所有的 UN*X 一样，不同的是在OS X 和 iOS 中没有/lib目录)，这些库已被设置全局可用。
+  - 我们在使用系统的.dylib动态库时，经常发现没有头文件，其实这些库的头文件都位于一个已知位置，如`/usr/local/include`、`/usr/include`等 (后者文件夹在新系统中由SDK附带了，见 [/usr/include missing on macOS Catalina (with Xcode 11)](https://apple.stackexchange.com/questions/372032/usr-include-missing-on-macos-catalina-with-xcode-11) )。
+
 - OS X 与其他 UN\*X 另一点不同是：没有`libc`。开发者可能熟悉其他 UN\*X 上的C运行时库(或Windows上的MSVCRT) 。但是在 OS X 上对应的库`/usr/lib/libc.dylib`只不过是指向`libSystem.B.dylib`的符号链接。
 - 以C语言运行库为例，补充一下**运行库**的概念：任何一个C程序，它的背后都有一套庞大的代码来进行支撑，以使得该程序能够正常运行。这套代码至少包括入口函数，及其所依赖的函数所构成的函数集合。当然，它还理应包括各种标准库函数的实现。这样的一个代码集合称之为运行时库（Runtime Library）。而C语言的运行库，即被称为C运行库（CRT）。**运行库顾名思义是让程序能正常运行的一个库。**
 
@@ -198,7 +201,7 @@ libSystem 库是系统上所有二进制代码的绝对先决条件，即所有�
 - `映像(image)` ，通常也是指这两者。可执行文件/动态链接文件，在装载时被直接映射到进程的虚拟地址空间中运行，它是进程的虚拟空间的映像，所以很多时候，也被叫做映像/镜像文件(Image File)。
 
 ### 2.5 .a/.dylib与.framework的区别
-前者是纯二进制文件，文件不能直接使用，需要有.h文件的配合(我们在使用系统的.dylib动态库时，经常发现没有头文件，其实这些库的头文件都位于一个已知位置，如`usr/include`(新系统中这个文件夹由SDK附带了，见 [[/usr/include missing on macOS Catalina (with Xcode 11)]](https://apple.stackexchange.com/questions/372032/usr-include-missing-on-macos-catalina-with-xcode-11) )，库文件位于`usr/lib`，使得这些库全局可用)，后者除了二进制文件、头文件还有资源文件，代码可以直接导入使用(`.a + .h + sourceFile = .framework`)。
+前者是纯二进制文件，文件不能直接使用，需要有.h文件的配合，后者除了二进制文件、头文件还有资源文件，代码可以直接导入使用(`.a + .h + sourceFile = .framework`)。
 
 Framework 是苹果公司的 Cocoa/Cocoa Touch 程序中使用的一种资源打包方式，可以将代码文件、头文件、资源文件（nib/xib、图片、国际化文本）、说明文档等集中在一起，方便开发者使用。**Framework 其实是资源打包的方式，和静态库动态库的本质是没有什么关系**(**所以framework文件可以是静态库也可以是动态库，iOS 中用到的所有系统 framework 都是动态链接的**)。
 
