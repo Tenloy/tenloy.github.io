@@ -2512,11 +2512,8 @@
             }, {
                 key: "_createPostDom",
                 value: function _createPostDom(postInfo) {
-                    let timeStr = postInfo.date;
-                    if (timeStr.endsWith('Z')) {
-                        timeStr = timeStr.substr(0, timeStr.length - 1);
-                    }
-                    var $tagItem = $('<li class="meta-post-item"><span class="meta-post-date">' + _util.default.dateFormater(new Date(Date.parse(timeStr)), 'yyyy/MM/dd') + '</span></li>');
+                    console.log('postInfo.date-----', postInfo.date, Date.parse(postInfo.date),_util.default.dateFormater(new Date(Date.parse(postInfo.date)), 'yyyy/MM/dd'));
+                    var $tagItem = $('<li class="meta-post-item"><span class="meta-post-date">' + _util.default.dateFormater(new Date(Date.parse(postInfo.date)), 'yyyy/MM/dd') + '</span></li>');
                     var $aItem = $('<a class="meta-post-title" href="' + siteMeta.root + postInfo.path + '">' + postInfo.title + '</a>');
                     $tagItem.append($aItem);
                     return $tagItem[0];
