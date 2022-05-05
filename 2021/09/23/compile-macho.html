@@ -34,7 +34,7 @@
 <meta property="og:image" content="https://tenloy.github.io/images/compilelink/16.png">
 <meta property="og:image" content="https://tenloy.github.io/images/compilelink/17.jpg">
 <meta property="article:published_time" content="2021-09-23T14:25:50.000Z">
-<meta property="article:modified_time" content="2022-03-18T11:12:20.119Z">
+<meta property="article:modified_time" content="2022-05-05T03:50:24.200Z">
 <meta property="article:author" content="Tenloy">
 <meta property="article:tag" content="Tenloy, iOS, Tenloy Blog, 博客，Swift, 编译, 计算机">
 <meta name="twitter:card" content="summary">
@@ -311,7 +311,7 @@ height:40vh;
                 
                 
                     <div class="post-intro-read">
-                        <span>Word count: <span class="post-count word-count">6.4k</span>Reading time: <span class="post-count reading-time">24 min</span></span>
+                        <span>Word count: <span class="post-count word-count">6.9k</span>Reading time: <span class="post-count reading-time">26 min</span></span>
                     </div>
                 
                 <div class="post-intro-meta">
@@ -519,7 +519,7 @@ height:40vh;
 <p>在《深入解析 Mac OS X &amp; iOS操作系统》中有详细的验证，也可以参考<a target="_blank" rel="noopener" href="http://satanwoo.github.io/2017/06/13/Macho-1/">深入剖析Macho (1)</a> 自己动手验证一下。</p>
 <h3 id="3-5-Load-Command"><a href="#3-5-Load-Command" class="headerlink" title="3.5 Load Command"></a>3.5 Load Command</h3><p>Mach-O文件头中包含了非常详细的指令，这些指令在被调用时清晰地指导了如何设置并加载二进制数据。这些指令，或称为“加载命令”，紧跟在基本的mach_header之后。</p>
 <p>每一条命令，在<code>load.c</code>文件中，都有对应的结构体，来记录信息。共同点是都采用“<code>类型-长度-值</code>”的格式：</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">xxx_command</span> &#123;</span></span><br><span class="line">  <span class="keyword">uint32_t</span>	cmd;       <span class="comment">/* 32位的cmd值(表示类型) ，下面列举了部分 */</span></span><br><span class="line">  <span class="keyword">uint32_t</span>	cmdsize;   <span class="comment">/* 32位的cmdsize值(32位二进制为4的倍数，64位二进制为8的倍数) */</span></span><br><span class="line">  ...                      <span class="comment">/* 记录命令本身的一些信息 */</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 下面列举一些load command的类型(对应的cmd值)，这里只列举了部分，全面的可以看源码，总共50多种load command。按照加载命令是由内核加载器、动态链接器处理分开记录。</span></span><br><span class="line"><span class="comment">// 内核加载器处理的加载命令：</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span>  LC_SEGMENT                0x1	  <span class="comment">/* 定义一个段(Segment)，加载后被映射到内存中，包括里面的节(Section) */</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span>  LC_LOAD_DYLINKER          0xe	  <span class="comment">/* 默认的加载器路径。通常路径是“/usr/lib/dyld” */</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span>  LC_UUID                   0x1b   <span class="comment">/* 用于标识Mach-0文件的ID，匹配二进制文件与符号表。在分析崩溃堆栈信息能用到，通过地址在符号表中找到符号 */</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span>  LC_CODE_SIGNATURE         0x1d	  <span class="comment">/* 代码签名信息 */</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span>  LC_ENCRYPTION_INFO_64     0x2C   <span class="comment">/* 文件是否加密的标志，加密内容的偏移和大小 */</span></span></span><br><span class="line"></span><br><span class="line"><span class="comment">// 动态链接器处理的加载命令：</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span>  LC_SYMTAB                 0x2	  <span class="comment">/* 为文件定义符号表和字符串表，在链接文件时被链接器使用，同时也用于调试器映射符号到源文件。符号表定义的本地符号仅用于调试，而已定义和未定义的 external 符号被链接器使用 */</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span>  LC_DYSYMTAB               0xb	  <span class="comment">/* 将符号表中给出符号的额外符号信息提供给动态链接器。 */</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span>  LC_ID_DYLIB               0xd	  <span class="comment">/* 依赖的动态库，包括动态库名称、当前版本号、兼容版本号。可以使用“otool-L xxx”命令查看 */</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span>  LC_RPATH                 (0x1c | LC_REQ_DYLD)    <span class="comment">/* RunpathSearchPaths，@rpath搜索的路径 */</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span>	 LC_DYLD_INFO              0x22	  <span class="comment">/* compressed dyld information */</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span>  LC_DYLD_INFO_ONLY        (0x22 | LC_REQ_DYLD)	  <span class="comment">/* 记录了有关链接的重要信息，包括在__LINKEDIT中动态链接相关信息的具体偏移和大小。ONLY表示这个加载指令是程序运行所必需的，如果旧的链接器无法识别它，程序就会出错 */</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span>  LC_VERSION_MIN_IPHONEOS   0x25   <span class="comment">/* 系统要求的最低版本 */</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span>  LC_FUNCTION_STARTS        0x26   <span class="comment">/* 函数起始地址表，使调试器和其他程序能很容易地看到一个地址是否在函数内 */</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span>  LC_MAIN                  (0x28 | LC_REQ_DYLD)    <span class="comment">/* 程序的入口。dyld获取该地址，然后跳转到该处执行。replacement for LC_UNIXTHREAD */</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span>  LC_DATA_IN_CODE           0x29   <span class="comment">/* 定义在代码段内的非指令的表   */</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span>  LC_SOURCE_VERSION         0x2A   <span class="comment">/* 构建二进制文件的源代码版本号 */</span></span></span><br></pre></td></tr></table></figure>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">xxx_command</span> &#123;</span></span><br><span class="line">  <span class="keyword">uint32_t</span>	cmd;       <span class="comment">/* 32位的cmd值(表示类型) ，下面列举了部分 */</span></span><br><span class="line">  <span class="keyword">uint32_t</span>	cmdsize;   <span class="comment">/* 32位的cmdsize值(32位二进制为4的倍数，64位二进制为8的倍数) */</span></span><br><span class="line">  ...                      <span class="comment">/* 记录命令本身的一些信息 */</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 下面列举一些load command的类型(对应的cmd值)，这里只列举了部分，全面的可以看源码，总共50多种load command。按照加载命令是由内核加载器、动态链接器处理分开记录。</span></span><br><span class="line"><span class="comment">// 内核加载器处理的加载命令：</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span>  LC_SEGMENT                0x1	  <span class="comment">/* 定义一个段(Segment)，加载后被映射到内存中，包括里面的节(Section) */</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span>  LC_LOAD_DYLINKER          0xe	  <span class="comment">/* 默认的加载器路径。通常路径是“/usr/lib/dyld” */</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span>  LC_UUID                   0x1b   <span class="comment">/* 用于标识Mach-0文件的ID，匹配二进制文件与符号表。在分析崩溃堆栈信息能用到，通过地址在符号表中找到符号 */</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span>  LC_CODE_SIGNATURE         0x1d	  <span class="comment">/* 代码签名信息 */</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span>  LC_ENCRYPTION_INFO_64     0x2C   <span class="comment">/* 文件是否加密的标志，加密内容的偏移和大小 */</span></span></span><br><span class="line"></span><br><span class="line"><span class="comment">// 动态链接器处理的加载命令：</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span>  LC_SYMTAB                 0x2	  <span class="comment">/* 为文件定义符号表和字符串表，在链接文件时被链接器使用，同时也用于调试器映射符号到源文件。符号表定义的本地符号仅用于调试，而已定义和未定义的 external 符号被链接器使用 */</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span>  LC_DYSYMTAB               0xb	  <span class="comment">/* 将符号表中给出符号的额外符号信息提供给动态链接器。 */</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span>  LC_LOAD_DYLIB             0xc    <span class="comment">/* 加载动态链接库 */</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span>  LC_ID_DYLIB               0xd	  <span class="comment">/* 动态库的标识，包括动态库名称、当前版本号、兼容版本号。可以使用“otool-L xxx”命令查看 */</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span>  LC_RPATH                 (0x1c | LC_REQ_DYLD)    <span class="comment">/* RunpathSearchPaths，@rpath搜索的路径 */</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span>	 LC_DYLD_INFO              0x22	  <span class="comment">/* compressed dyld information */</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span>  LC_DYLD_INFO_ONLY        (0x22 | LC_REQ_DYLD)	  <span class="comment">/* 记录了有关链接的重要信息，包括在__LINKEDIT中动态链接相关信息的具体偏移和大小。ONLY表示这个加载指令是程序运行所必需的，如果旧的链接器无法识别它，程序就会出错 */</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span>  LC_VERSION_MIN_IPHONEOS   0x25   <span class="comment">/* 系统要求的最低版本 */</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span>  LC_FUNCTION_STARTS        0x26   <span class="comment">/* 函数起始地址表，使调试器和其他程序能很容易地看到一个地址是否在函数内 */</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span>  LC_MAIN                  (0x28 | LC_REQ_DYLD)    <span class="comment">/* 程序的入口。dyld获取该地址，然后跳转到该处执行。replacement for LC_UNIXTHREAD */</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span>  LC_DATA_IN_CODE           0x29   <span class="comment">/* 定义在代码段内的非指令的表   */</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span>  LC_SOURCE_VERSION         0x2A   <span class="comment">/* 构建二进制文件的源代码版本号 */</span></span></span><br></pre></td></tr></table></figure>
 
 <p>有一些命令是由<code>内核加载器</code>(定义在<code>bsd/kern/mach_loader.c</code>文件中) 直接使用的， 其他命令是由<code>动态链接器</code>处理的。</p>
 <img src="/images/compilelink/14.png" alt="12" style="zoom:70%;" />
@@ -529,17 +529,26 @@ height:40vh;
 
 <p>在Mach-O文件加载解析时，多个Load Command会告诉操作系统应当如何加载文件中每个Segment的数据，对系统内核加载器和动态链接器起引导作用。(不同的数据对应不同的加载命令，可以看到<code>segment_command_64</code>、<code>symtab_command</code>、<code>dylib_command</code>等，下面我们会讲解Segment的加载命令，下一节讲静态链接时，会涉及符号表symtab的加载命令)。</p>
 <p>下面，以三个内核加载器负责解析处理的load command，来简单看下：</p>
-<h4 id="3-5-1-LC-CODE-SIGNATURE-数字签名"><a href="#3-5-1-LC-CODE-SIGNATURE-数字签名" class="headerlink" title="3.5.1 LC_CODE_SIGNATURE(数字签名)"></a>3.5.1 LC_CODE_SIGNATURE(数字签名)</h4><p>Mach-O二进制文件有一个重要特性就是可以进行数字签名。尽管在 OS X 中仍然没怎么使用数字签名，不过由于代码签名和新改进的沙盒机制绑定在一起，所以签名的使用率也越来越高。在 iOS 中，代码签名是强制要求的，这也是苹果尽可能对系统封锁的另一种尝试：在 iOS 中只有苹果自己的签名才会被认可。在 OS X 中，code sign(1) 工具可以用于操纵和显示代码签名。man手册页，以及 Apple’s code signing guide 和 Mac OS X Code Signing In Depth文档都从系统管理员的角度详细解释了代码签名机制。</p>
+<h4 id="3-5-1-LC-LOAD-DYLIB与LC-ID-DYLIB"><a href="#3-5-1-LC-LOAD-DYLIB与LC-ID-DYLIB" class="headerlink" title="3.5.1 LC_LOAD_DYLIB与LC_ID_DYLIB"></a>3.5.1 LC_LOAD_DYLIB与LC_ID_DYLIB</h4><p>可执行文件（MH_EXECUTE类型）的Mach-O都会存在LC_LOAD_DYLIB类型的Load Command，该Load Command指定了当前Mach-O需要依赖的动态库（可以是系统的动态库也可以是开发者创建的动态库）。</p>
+<p>LC_LOAD_DYLIB类型的Load Command在内存中对应struct dylib_command结构，dylib_command结构包含struct dylib结构，struct dylib结构中name字段标记了动态库的路径。那么这个路径是从哪里来的呢？</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/*</span></span><br><span class="line"><span class="comment"> 动态链接库由两个东西标识。</span></span><br><span class="line"><span class="comment">   路径名（为执行而找到的库的名称）和兼容性版本号。 路径名必须匹配，并且库的用户中的兼容性号必须大于或等于正在使用的库。 </span></span><br><span class="line"><span class="comment">   时间戳用于记录库的构建和复制到用户的时间，因此它可以用来确定运行时使用的库是否与构建程序时使用的完全相同。</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">dylib</span> &#123;</span></span><br><span class="line">    <span class="class"><span class="keyword">union</span> <span class="title">lc_str</span>  <span class="title">name</span>;</span>			<span class="comment">/* library&#x27;s path name */</span></span><br><span class="line">    <span class="keyword">uint32_t</span> timestamp;			<span class="comment">/* library&#x27;s build time stamp */</span></span><br><span class="line">    <span class="keyword">uint32_t</span> current_version;		<span class="comment">/* library&#x27;s current version number */</span></span><br><span class="line">    <span class="keyword">uint32_t</span> compatibility_version;	<span class="comment">/* library&#x27;s compatibility vers number*/</span></span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="comment">/*</span></span><br><span class="line"><span class="comment"> 动态链接库（mach header中的filetype == MH_DYLIB）包含一个 dylib_command (cmd == LC_ID_DYLIB) 来标识库。</span></span><br><span class="line"><span class="comment"> 使用动态链接库的模块包含它使用到的每个动态库的 dylib_command（cmd == LC_LOAD_DYLIB、LC_LOAD_WEAK_DYLIB 或 LC_REEXPORT_DYLIB）。</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">dylib_command</span> &#123;</span></span><br><span class="line">	<span class="keyword">uint32_t</span>	cmd;		<span class="comment">/* LC_ID_DYLIB, LC_LOAD_&#123;,WEAK_&#125;DYLIB, LC_REEXPORT_DYLIB */</span></span><br><span class="line">	<span class="keyword">uint32_t</span>	cmdsize;	<span class="comment">/* includes pathname string */</span></span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">dylib</span>	<span class="title">dylib</span>;</span>		<span class="comment">/* the library identification */</span></span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<p>LC_ID_DYLIB：动态库的Mach-O是MH_DYLIB类型的，一个动态库中必须包含一个LC_ID_DYLIB类型的Load Command（一般位于__LINKEDIT之后），它在内存中也是一个struct dylib_command结构，会有name字段。</p>
+<ul>
+<li>这里的dylib_command信息会在LINK时作为LC_LOAD_DYLIB类型的Load Command插入进可执行文件（MH_EXECUTE 类型的Mach-O）中。</li>
+</ul>
+<p>打开APP时，dyld会先递归遍历所有类型为LC_LOAD_DYLIB的Load Command从而查找依赖库，查找的路径即是由对应的dylib_command结构的name指定，一般为@rpath/DYNAME.framework/DYNAME。如果在指定各种查找路径都找不到，就会出现”dyld: Library not loaded”错误。</p>
+<h4 id="3-5-2-LC-CODE-SIGNATURE-数字签名"><a href="#3-5-2-LC-CODE-SIGNATURE-数字签名" class="headerlink" title="3.5.2 LC_CODE_SIGNATURE(数字签名)"></a>3.5.2 LC_CODE_SIGNATURE(数字签名)</h4><p>Mach-O二进制文件有一个重要特性就是可以进行数字签名。尽管在 OS X 中仍然没怎么使用数字签名，不过由于代码签名和新改进的沙盒机制绑定在一起，所以签名的使用率也越来越高。在 iOS 中，代码签名是强制要求的，这也是苹果尽可能对系统封锁的另一种尝试：在 iOS 中只有苹果自己的签名才会被认可。在 OS X 中，code sign(1) 工具可以用于操纵和显示代码签名。man手册页，以及 Apple’s code signing guide 和 Mac OS X Code Signing In Depth文档都从系统管理员的角度详细解释了代码签名机制。</p>
 <p><code>LC_CODE_SIGNATURE</code> 包含了 Mach-O 二进制文件的代码签名，如果这个签名和代码本身不匹配(或者如果在iOS上这条命令不存在)，那么内核会立即给进程发送一个SIGKILL信号将进程杀掉，没有商量的余地，毫不留情。</p>
 <p>在iOS 4之前，还可以通过两条sysctl(8)命令覆盖负责强制执行(利用内核的MAC，即Mandatory AccessControl)的内核变量，从而实现禁用代码签名检查：</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">sysctl -w security.mac.proc_enforce &#x3D; 0 &#x2F;&#x2F;禁用进程的MAC</span><br><span class="line">sysctl -w security.mac.vnode_enforce&#x3D;0 &#x2F;&#x2F;禁用VNode的MAC</span><br></pre></td></tr></table></figure>
 <p>而在之后版本的iOS中，苹果意识到只要能够获得root权限，越狱者就可以覆盖内核变量。因此这些变量变成了只读变量。untethered越狱(即完美越狱)因为利用了一个内核漏洞所以可以修改这些变量。由于这些变量的默认值都是启用签名检查，所以不完美越狱会导致非苹果签名的应用程序崩溃——除非i设备以完美越狱的方式引导。</p>
 <p>此外，通过 Saurik 的 ldid 这类工具可以在 Mach-O 中嵌入伪代码签名。这个工具可以替代OS X的code sign(1)，允许生成自我签署认证的伪签名。这在iOS中尤为重要，因为签名和沙盒模型的应用程序“entitlement”绑定在一起， 而后者在iOS中是强制要求的。entitlement 是声明式的许可(以plist的形式保存)，必须内嵌在Mach-O中并且通过签名盖章，从而允许执行安全敏感的操作时具有运行时权限。</p>
 <p>OS X 和 iOS 都有一个特殊的系统调用csops(#169)用于代码签名的操作</p>
-<h4 id="3-5-2-LC-SEGMENT-进程虚拟内存设置"><a href="#3-5-2-LC-SEGMENT-进程虚拟内存设置" class="headerlink" title="3.5.2 LC_SEGMENT(进程虚拟内存设置)"></a>3.5.2 LC_SEGMENT(进程虚拟内存设置)</h4><p>LC_SEGMENT(或LC_SEGMENT_64) 命令是最主要的加载命令，这条命令指导内核如何设置新运行的进程的内存空间。这些“段”直接从Mach-O二进制文件加载到内存中。</p>
+<h4 id="3-5-3-LC-SEGMENT-进程虚拟内存设置"><a href="#3-5-3-LC-SEGMENT-进程虚拟内存设置" class="headerlink" title="3.5.3 LC_SEGMENT(进程虚拟内存设置)"></a>3.5.3 LC_SEGMENT(进程虚拟内存设置)</h4><p>LC_SEGMENT(或LC_SEGMENT_64) 命令是最主要的加载命令，这条命令指导内核如何设置新运行的进程的内存空间。这些“段”直接从Mach-O二进制文件加载到内存中。</p>
 <p>每一条LC_SEGMENT[64] 命令都提供了段布局的所有必要细节信息。见上文的数据结构成员变量。</p>
 <p>有了LC_SEGMENT命令，设置进程虚拟内存的过程就变成遵循LC_SEGMENT命令的简单操作。对于每一个段，将文件中相应的内容加载到内存中：<strong>从偏移量为 fileoff 处加载 filesize 字节到虚拟内存地址 vmaddr 处的 vmsize 字节</strong>。每一个段的页面都根据 initprot 进行初始化，initprot 指定了如何通过读/写/执行位初始化页面的保护级别。段的保护设置可以动态改变，但是不能超过 maxprot 中指定的值(在iOS中，+x和+w是互斥的)。</p>
-<h4 id="3-5-3-LC-MAIN-设置主线程入口地址"><a href="#3-5-3-LC-MAIN-设置主线程入口地址" class="headerlink" title="3.5.3 LC_MAIN(设置主线程入口地址)"></a>3.5.3 LC_MAIN(设置主线程入口地址)</h4><p>从Mountain Lion开始，一条新的加载命令<code>LC_MAIN</code>替代了<code>LC_UNIX_THREAD</code>命令。</p>
+<h4 id="3-5-4-LC-MAIN-设置主线程入口地址"><a href="#3-5-4-LC-MAIN-设置主线程入口地址" class="headerlink" title="3.5.4 LC_MAIN(设置主线程入口地址)"></a>3.5.4 LC_MAIN(设置主线程入口地址)</h4><p>从Mountain Lion开始，一条新的加载命令<code>LC_MAIN</code>替代了<code>LC_UNIX_THREAD</code>命令。</p>
 <ul>
 <li>后者的作用是：开启一个unix线程，初始化栈和寄存器，通常情况下，除了指令指针(Intel的IP)或程序计数器(ARM的r15)之外，所有的寄存器值都为0。</li>
 <li>前者作用是<strong>设置程序主线程的入口点地址和栈大小</strong>。</li>
@@ -597,7 +606,7 @@ height:40vh;
             <p>Author：<a href="https://tenloy.github.io">Tenloy</a>
             <p>原文链接：<a href="https://tenloy.github.io/2021/09/23/compile-macho.html">https://tenloy.github.io/2021/09/23/compile-macho.html</a>
             <p>发表日期：2021.09.23 , 2:25 PM</p>
-            <p>更新日期：2022.03.18 , 11:12 AM</p>
+            <p>更新日期：2022.05.05 , 3:50 AM</p>
             <p>版权声明：本文采用<a rel="license noopener" target="_blank" href="http://creativecommons.org/licenses/by-nc/4.0/">Crative Commons 4.0 许可协议</a>进行许可</p>
         </div>
     
@@ -739,7 +748,7 @@ top:40vh;
         <div class="toc-catalog">
             <span class="iconfont-archer catalog-icon">&#xe613;</span><span>CATALOG</span>
         </div>
-        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E3%80%81%E8%BF%9B%E7%A8%8B%E4%B8%8E%E4%BA%8C%E8%BF%9B%E5%88%B6%E6%A0%BC%E5%BC%8F"><span class="toc-text">一、进程与二进制格式</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8C%E3%80%81%E7%9B%B8%E5%85%B3%E5%B7%A5%E5%85%B7"><span class="toc-text">二、相关工具</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%89%E3%80%81Mach-O-%E6%96%87%E4%BB%B6%E6%A0%BC%E5%BC%8F"><span class="toc-text">三、Mach-O 文件格式</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#3-1-%E7%A4%BA%E4%BE%8B"><span class="toc-text">3.1 示例</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-2-Mach-O-%E5%A4%B4"><span class="toc-text">3.2 Mach-O 头</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-3-Data"><span class="toc-text">3.3 Data</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#3-3-1-Segment-%E6%AE%B5"><span class="toc-text">3.3.1 Segment(段)</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3-3-2-Section-%E8%8A%82"><span class="toc-text">3.3.2 Section(节)</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-4-stubs-%E4%B8%8E-stub-helper"><span class="toc-text">3.4 __stubs 与 __stub_helper</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-5-Load-Command"><span class="toc-text">3.5 Load Command</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#3-5-1-LC-CODE-SIGNATURE-%E6%95%B0%E5%AD%97%E7%AD%BE%E5%90%8D"><span class="toc-text">3.5.1 LC_CODE_SIGNATURE(数字签名)</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3-5-2-LC-SEGMENT-%E8%BF%9B%E7%A8%8B%E8%99%9A%E6%8B%9F%E5%86%85%E5%AD%98%E8%AE%BE%E7%BD%AE"><span class="toc-text">3.5.2 LC_SEGMENT(进程虚拟内存设置)</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3-5-3-LC-MAIN-%E8%AE%BE%E7%BD%AE%E4%B8%BB%E7%BA%BF%E7%A8%8B%E5%85%A5%E5%8F%A3%E5%9C%B0%E5%9D%80"><span class="toc-text">3.5.3 LC_MAIN(设置主线程入口地址)</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9B%9B%E3%80%81%E9%80%9A%E7%94%A8%E4%BA%8C%E8%BF%9B%E5%88%B6%E6%A0%BC%E5%BC%8F%EF%BC%88Universal-Binary%EF%BC%89"><span class="toc-text">四、通用二进制格式（Universal Binary）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%94%E3%80%81%E5%8F%82%E8%80%83%E9%93%BE%E6%8E%A5"><span class="toc-text">五、参考链接</span></a></li></ol>
+        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E3%80%81%E8%BF%9B%E7%A8%8B%E4%B8%8E%E4%BA%8C%E8%BF%9B%E5%88%B6%E6%A0%BC%E5%BC%8F"><span class="toc-text">一、进程与二进制格式</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8C%E3%80%81%E7%9B%B8%E5%85%B3%E5%B7%A5%E5%85%B7"><span class="toc-text">二、相关工具</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%89%E3%80%81Mach-O-%E6%96%87%E4%BB%B6%E6%A0%BC%E5%BC%8F"><span class="toc-text">三、Mach-O 文件格式</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#3-1-%E7%A4%BA%E4%BE%8B"><span class="toc-text">3.1 示例</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-2-Mach-O-%E5%A4%B4"><span class="toc-text">3.2 Mach-O 头</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-3-Data"><span class="toc-text">3.3 Data</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#3-3-1-Segment-%E6%AE%B5"><span class="toc-text">3.3.1 Segment(段)</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3-3-2-Section-%E8%8A%82"><span class="toc-text">3.3.2 Section(节)</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-4-stubs-%E4%B8%8E-stub-helper"><span class="toc-text">3.4 __stubs 与 __stub_helper</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-5-Load-Command"><span class="toc-text">3.5 Load Command</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#3-5-1-LC-LOAD-DYLIB%E4%B8%8ELC-ID-DYLIB"><span class="toc-text">3.5.1 LC_LOAD_DYLIB与LC_ID_DYLIB</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3-5-2-LC-CODE-SIGNATURE-%E6%95%B0%E5%AD%97%E7%AD%BE%E5%90%8D"><span class="toc-text">3.5.2 LC_CODE_SIGNATURE(数字签名)</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3-5-3-LC-SEGMENT-%E8%BF%9B%E7%A8%8B%E8%99%9A%E6%8B%9F%E5%86%85%E5%AD%98%E8%AE%BE%E7%BD%AE"><span class="toc-text">3.5.3 LC_SEGMENT(进程虚拟内存设置)</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3-5-4-LC-MAIN-%E8%AE%BE%E7%BD%AE%E4%B8%BB%E7%BA%BF%E7%A8%8B%E5%85%A5%E5%8F%A3%E5%9C%B0%E5%9D%80"><span class="toc-text">3.5.4 LC_MAIN(设置主线程入口地址)</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9B%9B%E3%80%81%E9%80%9A%E7%94%A8%E4%BA%8C%E8%BF%9B%E5%88%B6%E6%A0%BC%E5%BC%8F%EF%BC%88Universal-Binary%EF%BC%89"><span class="toc-text">四、通用二进制格式（Universal Binary）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%94%E3%80%81%E5%8F%82%E8%80%83%E9%93%BE%E6%8E%A5"><span class="toc-text">五、参考链接</span></a></li></ol>
     </div>
     
     <div class="back-top iconfont-archer">&#xe639;</div>
@@ -757,7 +766,7 @@ top:40vh;
     
         <span class="sidebar-category-name" data-categories="操作系统"><span class="iconfont-archer">&#xe60a;</span>操作系统</span>
     
-        <span class="sidebar-category-name" data-categories="数据的格式与编码"><span class="iconfont-archer">&#xe60a;</span>数据的格式与编码</span>
+        <span class="sidebar-category-name" data-categories="数据的传输与存储"><span class="iconfont-archer">&#xe60a;</span>数据的传输与存储</span>
     
         <span class="sidebar-category-name" data-categories="Swift"><span class="iconfont-archer">&#xe60a;</span>Swift</span>
     
@@ -1555,9 +1564,41 @@ top:40vh;
     
     
     
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
     <div class="total-and-search">
         <div class="total-archive">
-        Total : 54
+        Total : 56
         </div>
         <!-- search  -->
         
@@ -1574,6 +1615,16 @@ top:40vh;
     
     <div class="archive-year"> 2022 </div>
     <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/05</span><a class="archive-post-title" href= "/2022/05/05/sqlite.html" >iOS SQLite的使用与优化</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/28</span><a class="archive-post-title" href= "/2022/04/28/mmap.html" >内存映射mmap函数的原理与应用</a>
+        </li>
     
     
         <li class="archive-post-item">

@@ -40,7 +40,7 @@
 <meta property="og:image" content="https://tenloy.github.io/images/compilelink/33.png">
 <meta property="og:image" content="https://tenloy.github.io/images/compilelink/34.png">
 <meta property="article:published_time" content="2021-09-27T14:26:09.000Z">
-<meta property="article:modified_time" content="2022-03-18T11:12:20.123Z">
+<meta property="article:modified_time" content="2022-05-05T03:50:24.204Z">
 <meta property="article:author" content="Tenloy">
 <meta property="article:tag" content="Tenloy, iOS, Tenloy Blog, 博客，Swift, 编译, 计算机">
 <meta name="twitter:card" content="summary">
@@ -516,11 +516,20 @@ height:40vh;
 </ul>
 <p>常见的可执行文件的形式：</p>
 <ul>
-<li>Linux系统中，ELF动态链接文件被称为<strong>动态共享对象</strong>(<code>DSO，Dynamic SharedObjects</code>)，简称共享对象，一般都是以 <code>.so</code> 为扩展名的一些文件；</li>
-<li>Windows系统中，动态链接文件被称为<strong>动态链接库</strong>(<code>Dynamical Linking Library</code>)，通常就是我们平时很常见的以 <code>.dll</code> 为扩展名的文件；</li>
-<li>OS X 和其他 UN*X 不同，它的库不是“共享对象(.so)”，因为 OS X 和 ELF 不兼容，而且这个概念在 Mach-O 中不存在。OS 中的动态链接文件一般称为<strong>动态库</strong>文件，带有 <code>.dylib</code>、<code>.framework</code>及链接符号<code>.tbd</code>。可以在 <code>/usr/lib</code> 目录下找到(这一点和其他所有的 UN*X 一样，不同的是在OS X 和 iOS 中没有/lib目录)</li>
-<li>OS X 与其他 UN*X 另一点不同是：没有<code>libc</code>。开发者可能熟悉其他 UN*X 上的C运行时库(或Windows上的MSVCRT) 。但是在 OS X 上对应的库<code>/usr/lib/libc.dylib</code>只不过是指向<code>libSystem.B.dylib</code>的符号链接。</li>
-<li>以C语言运行库为例，补充一下<strong>运行库</strong>的概念：任何一个C程序，它的背后都有一套庞大的代码来进行支撑，以使得该程序能够正常运行。这套代码至少包括入口函数，及其所依赖的函数所构成的函数集合。当然，它还理应包括各种标准库函数的实现。这样的一个代码集合称之为运行时库（Runtime Library）。而C语言的运行库，即被称为C运行库（CRT）。<strong>运行库顾名思义是让程序能正常运行的一个库。</strong></li>
+<li><p>Linux系统中，ELF动态链接文件被称为<strong>动态共享对象</strong>(<code>DSO，Dynamic SharedObjects</code>)，简称共享对象，一般都是以 <code>.so</code> 为扩展名的一些文件；</p>
+</li>
+<li><p>Windows系统中，动态链接文件被称为<strong>动态链接库</strong>(<code>Dynamical Linking Library</code>)，通常就是我们平时很常见的以 <code>.dll</code> 为扩展名的文件；</p>
+</li>
+<li><p>OS X 和其他 UN*X 不同，它的库不是“共享对象(.so)”，因为 OS X 和 ELF 不兼容，而且这个概念在 Mach-O 中不存在。OS 中的动态链接文件一般称为<strong>动态库</strong>文件，带有 <code>.dylib</code>、<code>.framework</code>及链接符号<code>.tbd</code>。</p>
+<ul>
+<li>库文件可以在 <code>/usr/lib</code> 目录下找到(这一点和其他所有的 UN*X 一样，不同的是在OS X 和 iOS 中没有/lib目录)，这些库已被设置全局可用。</li>
+<li>我们在使用系统的.dylib动态库时，经常发现没有头文件，其实这些库的头文件都位于一个已知位置，如<code>/usr/local/include</code>、<code>/usr/include</code>等 (后者文件夹在新系统中由SDK附带了，见 <a target="_blank" rel="noopener" href="https://apple.stackexchange.com/questions/372032/usr-include-missing-on-macos-catalina-with-xcode-11">/usr/include missing on macOS Catalina (with Xcode 11)</a> )。</li>
+</ul>
+</li>
+<li><p>OS X 与其他 UN*X 另一点不同是：没有<code>libc</code>。开发者可能熟悉其他 UN*X 上的C运行时库(或Windows上的MSVCRT) 。但是在 OS X 上对应的库<code>/usr/lib/libc.dylib</code>只不过是指向<code>libSystem.B.dylib</code>的符号链接。</p>
+</li>
+<li><p>以C语言运行库为例，补充一下<strong>运行库</strong>的概念：任何一个C程序，它的背后都有一套庞大的代码来进行支撑，以使得该程序能够正常运行。这套代码至少包括入口函数，及其所依赖的函数所构成的函数集合。当然，它还理应包括各种标准库函数的实现。这样的一个代码集合称之为运行时库（Runtime Library）。而C语言的运行库，即被称为C运行库（CRT）。<strong>运行库顾名思义是让程序能正常运行的一个库。</strong></p>
+</li>
 </ul>
 <h3 id="2-3-两个非常重要的库-LibSystem、libobjc"><a href="#2-3-两个非常重要的库-LibSystem、libobjc" class="headerlink" title="2.3  两个非常重要的库 LibSystem、libobjc"></a>2.3  两个非常重要的库 LibSystem、libobjc</h3><p>libSystem 提供了 LibC(运行库) 的功能，还包含了在其他 UN*X 上原本由其他一些库提供的功能，列几个熟知的：</p>
 <ul>
@@ -537,7 +546,7 @@ height:40vh;
 <li><code>程序模块</code>：从本质上讲，普通可执行程序和动态库中都包含指令和数据，这一点没有区别。在使用动态库的情况下，程序本身被分为了程序主要模块(<code>Program1</code>)和动态链接文件(<code>Lib.so</code> <code>Lib.dylib</code> <code>Lib.dll</code>)，但实际上它们都可以看作是整个程序的一个模块，所以当我们提到程序模块时可以指程序主模块也可以指动态链接库。</li>
 <li><code>映像(image)</code> ，通常也是指这两者。可执行文件/动态链接文件，在装载时被直接映射到进程的虚拟地址空间中运行，它是进程的虚拟空间的映像，所以很多时候，也被叫做映像/镜像文件(Image File)。</li>
 </ul>
-<h3 id="2-5-a-dylib与-framework的区别"><a href="#2-5-a-dylib与-framework的区别" class="headerlink" title="2.5 .a/.dylib与.framework的区别"></a>2.5 .a/.dylib与.framework的区别</h3><p>前者是纯二进制文件，文件不能直接使用，需要有.h文件的配合(我们在使用系统的.dylib动态库时，经常发现没有头文件，其实这些库的头文件都位于一个已知位置，如<code>usr/include</code>(新系统中这个文件夹由SDK附带了，见 <a target="_blank" rel="noopener" href="https://apple.stackexchange.com/questions/372032/usr-include-missing-on-macos-catalina-with-xcode-11">[/usr/include missing on macOS Catalina (with Xcode 11)]</a> )，库文件位于<code>usr/lib</code>，使得这些库全局可用)，后者除了二进制文件、头文件还有资源文件，代码可以直接导入使用(<code>.a + .h + sourceFile = .framework</code>)。</p>
+<h3 id="2-5-a-dylib与-framework的区别"><a href="#2-5-a-dylib与-framework的区别" class="headerlink" title="2.5 .a/.dylib与.framework的区别"></a>2.5 .a/.dylib与.framework的区别</h3><p>前者是纯二进制文件，文件不能直接使用，需要有.h文件的配合，后者除了二进制文件、头文件还有资源文件，代码可以直接导入使用(<code>.a + .h + sourceFile = .framework</code>)。</p>
 <p>Framework 是苹果公司的 Cocoa/Cocoa Touch 程序中使用的一种资源打包方式，可以将代码文件、头文件、资源文件（nib/xib、图片、国际化文本）、说明文档等集中在一起，方便开发者使用。<strong>Framework 其实是资源打包的方式，和静态库动态库的本质是没有什么关系</strong>(<strong>所以framework文件可以是静态库也可以是动态库，iOS 中用到的所有系统 framework 都是动态链接的</strong>)。</p>
 <p>在其它大部分平台上，动态库都可以用于不同应用间共享， 共享可执行文件，这就大大节省了内存。但是iOS平台在 iOS 8 之前，苹果不允许第三方框架使用动态方式加载，开发者可以使用的动态 Framework 只有苹果系统提供的 UIKit.Framework，Foundation.Framework 等。开发者要进行模块化，只能打包成静态库文件：<code>.a + 头文件</code>、<code>.framework</code>(这时候的 Framework 只支持打包成静态库的 Framework)，前种方式打包不够方便，使用时也比较麻烦，没有后者的便捷性。</p>
 <p>iOS 8/Xcode 6 推出之后，允许开发者有条件地创建和使用动态库，支持了动态 Framework。开发者打包的动态 Framework 和系统的 UIKit.Framework 还是有很大区别。后者不需要拷贝到目标程序中，是一个链接。而前者在打包和提交 app 时会<strong>被放到 app  main bundle 的根目录中，运行在沙盒里</strong>，而不是系统中。也就是说，不同的 app 就算使用了同样的 framework，但还是会有多份的框架被分别签名，打包和加载，因此苹果又把这种 Framework 称为 Embedded Framework(可植入性 Framework)。</p>
@@ -727,7 +736,7 @@ height:40vh;
             <p>Author：<a href="https://tenloy.github.io">Tenloy</a>
             <p>原文链接：<a href="https://tenloy.github.io/2021/09/27/compile-dynamic-link.html">https://tenloy.github.io/2021/09/27/compile-dynamic-link.html</a>
             <p>发表日期：2021.09.27 , 2:26 PM</p>
-            <p>更新日期：2022.03.18 , 11:12 AM</p>
+            <p>更新日期：2022.05.05 , 3:50 AM</p>
             <p>版权声明：本文采用<a rel="license noopener" target="_blank" href="http://creativecommons.org/licenses/by-nc/4.0/">Crative Commons 4.0 许可协议</a>进行许可</p>
         </div>
     
@@ -887,7 +896,7 @@ top:40vh;
     
         <span class="sidebar-category-name" data-categories="操作系统"><span class="iconfont-archer">&#xe60a;</span>操作系统</span>
     
-        <span class="sidebar-category-name" data-categories="数据的格式与编码"><span class="iconfont-archer">&#xe60a;</span>数据的格式与编码</span>
+        <span class="sidebar-category-name" data-categories="数据的传输与存储"><span class="iconfont-archer">&#xe60a;</span>数据的传输与存储</span>
     
         <span class="sidebar-category-name" data-categories="Swift"><span class="iconfont-archer">&#xe60a;</span>Swift</span>
     
@@ -1685,9 +1694,41 @@ top:40vh;
     
     
     
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
     <div class="total-and-search">
         <div class="total-archive">
-        Total : 54
+        Total : 56
         </div>
         <!-- search  -->
         
@@ -1704,6 +1745,16 @@ top:40vh;
     
     <div class="archive-year"> 2022 </div>
     <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/05</span><a class="archive-post-title" href= "/2022/05/05/sqlite.html" >iOS SQLite的使用与优化</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/28</span><a class="archive-post-title" href= "/2022/04/28/mmap.html" >内存映射mmap函数的原理与应用</a>
+        </li>
     
     
         <li class="archive-post-item">
