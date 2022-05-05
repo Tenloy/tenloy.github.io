@@ -2512,6 +2512,7 @@
             }, {
                 key: "_createPostDom",
                 value: function _createPostDom(postInfo) {
+                    console.log('postInfo.date-----', postInfo.date, Date.parse(postInfo.date),_util.default.dateFormater(new Date(Date.parse(postInfo.date)), 'yyyy/MM/dd'));
                     var $tagItem = $('<li class="meta-post-item"><span class="meta-post-date">' + _util.default.dateFormater(new Date(Date.parse(postInfo.date)), 'yyyy/MM/dd') + '</span></li>');
                     var $aItem = $('<a class="meta-post-title" href="' + siteMeta.root + postInfo.path + '">' + postInfo.title + '</a>');
                     $tagItem.append($aItem);
