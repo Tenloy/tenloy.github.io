@@ -7,7 +7,6 @@ branches:
     only:
       - master # build master branch only
 script:
-    - npm update
     - hexo clean && hexo generate
     - export HEXO_ALGOLIA_INDEXING_KEY=$Algolia_APIKey
     # - hexo algolia 因为自动部署服务器，是去install的hexo algolia新包，改动不生效，那么手动调用吧。
