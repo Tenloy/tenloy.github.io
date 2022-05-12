@@ -1,10 +1,10 @@
 ---
 title: AVFoundation Programming Guide(译)
 date: 2022-03-18 16:54:19
-urlname: OAuth.html
+urlname: avfoundation.html
 tags:
 categories:
-  - iOS
+  - 音视频处理
 ---
 
 # AVFoundation概述
