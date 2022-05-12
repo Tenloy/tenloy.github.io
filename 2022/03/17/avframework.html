@@ -29,7 +29,7 @@
 <meta property="og:locale" content="en_US">
 <meta property="og:image" content="https://tenloy.github.io/images/avf/frameworksBlockDiagram_2x.png">
 <meta property="article:published_time" content="2022-03-17T08:29:54.000Z">
-<meta property="article:modified_time" content="2022-05-12T12:37:42.672Z">
+<meta property="article:modified_time" content="2022-05-12T12:47:33.251Z">
 <meta property="article:author" content="Tenloy">
 <meta property="article:tag" content="Tenloy, iOS, Tenloy Blog, 博客，Swift, 编译, 计算机">
 <meta name="twitter:card" content="summary">
@@ -457,29 +457,22 @@ height:40vh;
 <p>定义视听资产，控制设备摄像头，处理音频和配置系统音频交互。</p>
 <p>结合了六大技术领域，共同涵盖了在 Apple 平台上捕获、处理、合成、控制、导入和导出视听媒体的广泛任务。</p>
 </blockquote>
-<p><code>AVFoundation</code> 是苹果的现代媒体框架，它包含了一些不同的用途的 API 和不同层级的抽象。其中有一些是现代 Objective-C 对于底层 C 语言接口的封装。除了少数的例外情况，<code>AVFoundation</code> 可以同时在 iOS 和 OS X 中使用。</p>
+<p>AVFoundation 是苹果的现代媒体框架，它包含了一些不同的用途的 API 和不同层级的抽象。其中有一些是现代 Objective-C 对于底层 C 语言接口的封装。除了少数的例外情况，<code>AVFoundation</code> 可以同时在 iOS 和 OS X 中使用。</p>
 <ul>
-<li><p>AVAudioSession 操作音频会话</p>
-</li>
-<li><p>AVAudioFile(iOS8) 读写音频文件</p>
-</li>
-<li><p>AVAudioRecorder 录制音频文件</p>
-</li>
-<li><p>AVAudioPlayer 和 AVPlayer 播放音频文件</p>
-</li>
-<li><p>AVCaptureSession 录制音频和视频数据。 </p>
-</li>
-<li><p>在 iOS 8 之前使用 AVAssetWritter 将 PCM 音频写入 AAC LC 编码格式的音频文件，而且使用的是硬编码。 </p>
-</li>
-<li><p>在 iOS 8 及以后可以使用 AVAudioEngine 进行均衡器、混响和混音等操作，其基于底层的 AudioUnit ，但比后者更易用。 </p>
-</li>
+<li>AVAudioSession 操作音频会话</li>
+<li>AVAudioFile(iOS8) 读写音频文件</li>
+<li>AVAudioRecorder 录制音频文件</li>
+<li>AVAudioPlayer 和 AVPlayer 播放音频文件</li>
+<li>AVCaptureSession 录制音频和视频数据。 </li>
+<li>在 iOS 8 之前使用 AVAssetWritter 将 PCM 音频写入 AAC LC 编码格式的音频文件，而且使用的是硬编码。 </li>
+<li>在 iOS 8 及以后可以使用 AVAudioEngine 进行均衡器、混响和混音等操作，其基于底层的 AudioUnit ，但比后者更易用。 </li>
 </ul>
-<h3 id="AVAudioSession"><a href="#AVAudioSession" class="headerlink" title="AVAudioSession"></a>AVAudioSession</h3><p><code>AVAudioSession</code> 是用于 iOS 系统中协调应用程序之间的音频播放的 API 的。例如，当有电话打进来时，音频的播放就会被暂停；在用户启动电影时，音乐的播放就会停止。我们需要使用这些 API 来确保一个应用程序能够正确响应并处理这类事件。</p>
+<h3 id="AVAudioSession"><a href="#AVAudioSession" class="headerlink" title="AVAudioSession"></a>AVAudioSession</h3><p>AVAudioSession 是用于 iOS 系统中协调应用程序之间的音频播放的 API 的。例如，当有电话打进来时，音频的播放就会被暂停；在用户启动电影时，音乐的播放就会停止。我们需要使用这些 API 来确保一个应用程序能够正确响应并处理这类事件。</p>
 <h3 id="AVAudioPlayer"><a href="#AVAudioPlayer" class="headerlink" title="AVAudioPlayer"></a>AVAudioPlayer</h3><p>这个高层级的 API 为你提供一个简单的接口，用来播放本地或者内存中的音频。这是一个无界面的音频播放器 (也就是说没有提供 UI 元素)，使用起来也很直接简单。它不适用于网络音频流或者低延迟的实时音频播放。如果这些问题都不需要担心，那么 <code>AVAudioPlayer</code> 可能就是正确的选择。音频播放器的 API 也为我们带来了一些额外的功能，比如循环播放、获取音频的音量强度等等。</p>
 <h3 id="AVAudioRecorder"><a href="#AVAudioRecorder" class="headerlink" title="AVAudioRecorder"></a>AVAudioRecorder</h3><p>作为与 <code>AVAudioPlayer</code> 相对应的 API，<code>AVAudioRecorder</code> 是将音频录制为文件的最简单的方法。除了用一个音量计接受音量的峰值和平均值以外，这个 API 简单粗暴，但要是你的使用场景很简单的话，这可能恰恰就是你想要的方法。</p>
-<h3 id="AVPlayer"><a href="#AVPlayer" class="headerlink" title="AVPlayer"></a>AVPlayer</h3><p><code>AVPlayer</code> 与上面提到的 API 相比，提供了更多的灵活性和可控性。它基于 <code>AVPlayerItem</code> 和 <code>AVAsset</code>，为你提供了颗粒度更细的权限来获取资源，比如选择指定的音轨。它还通过 <code>AVQueuePlayer</code> 子类支持播放列表，而且你可以控制这些资源是否能够通过 AirPlay 发送。</p>
+<h3 id="AVPlayer"><a href="#AVPlayer" class="headerlink" title="AVPlayer"></a>AVPlayer</h3><p>AVPlayer 与上面提到的 API 相比，提供了更多的灵活性和可控性。它基于 <code>AVPlayerItem</code> 和 <code>AVAsset</code>，为你提供了颗粒度更细的权限来获取资源，比如选择指定的音轨。它还通过 <code>AVQueuePlayer</code> 子类支持播放列表，而且你可以控制这些资源是否能够通过 AirPlay 发送。</p>
 <p>与 <code>AVAudioPlayer</code> 最主要的区别是，<code>AVPlayer</code> 对来自网络的流媒体资源的 “开箱即用” 支持。这增加了处理播放状态的复杂性，但是你可以使用 KVO 来观测所有的状态参数来解决这个问题。</p>
-<h3 id="AVAudioEngine"><a href="#AVAudioEngine" class="headerlink" title="AVAudioEngine"></a>AVAudioEngine</h3><p><code>AVAudioEngine</code> 是播放和录制的 Objective-C 接口。它提供了以前需要深入到 Audio Toolbox 框架的 C API 才能做的控制 (例如一些实时音频任务)。该音频引擎 API 对底层的 API 建立了优秀的接口。如果你不得不处理底层的问题，你仍然可以使用 Audio Toolbox 框架。</p>
+<h3 id="AVAudioEngine"><a href="#AVAudioEngine" class="headerlink" title="AVAudioEngine"></a>AVAudioEngine</h3><p>AVAudioEngine 是播放和录制的 Objective-C 接口。它提供了以前需要深入到 Audio Toolbox 框架的 C API 才能做的控制 (例如一些实时音频任务)。该音频引擎 API 对底层的 API 建立了优秀的接口。如果你不得不处理底层的问题，你仍然可以使用 Audio Toolbox 框架。</p>
 <p>这个 API 的基本概念是建立一个音频的节点图，从源节点 (播放器和麦克风) 以及过处理 (overprocessing) 节点 (混音器和效果器) 到目标节点 (硬件输出)。每一个节点都具有一定数量的输入和输出总线，同时这些总线也有良好定义的数据格式。这种结构使得它非常的灵活和强大。而且它集成了音频单元 (audio unit)。</p>
 <h2 id="AudioToolbox"><a href="#AudioToolbox" class="headerlink" title="AudioToolbox"></a>AudioToolbox</h2><p>Audio Toolbox 框架是强大的，但是它的层级却非常的低。在过去，它基于 C++ 所编写，但是<strong>其大多数的功能现在都可以通过 <code>AVFoundation</code> 实现。</strong></p>
 <p>简单介绍：</p>
@@ -496,15 +489,13 @@ height:40vh;
 <h2 id="其他"><a href="#其他" class="headerlink" title="其他"></a>其他</h2><ul>
 <li><strong>MIDI</strong>：在 iOS 上，Core MIDI 和 CoreAudioKit 可以被用来使应用程序表现为 MIDI 设备。在 OS X 上，Music Sequencing 服务提供了基于 MIDI 的控制和对音乐数据访问的权限。Core MIDI 服务为服务器和驱动程序提供了支持。</li>
 <li>在 OS X 中，最基本的音频接口就是 <code>NSBeep()</code>，它能够简单地播放系统中的声音。</li>
-<li><code>NSSound</code> 类为 OS X 提供了用于播放声音的简单接口，与 iOS 中的 <code>AVAudioPlayer</code> 在概念上基本类似。</li>
+<li><strong>NSSound 类</strong>：为 OS X 提供了用于播放声音的简单接口，与 iOS 中的 <code>AVAudioPlayer</code> 在概念上基本类似。</li>
 <li>所有的通知 API，包括 iOS 中的本地通知或者推送通知、OS X 中的 <code>NSUserNotification</code> 以及 CloudKit 通知，都可以播放声音。</li>
 <li>QTKit 和 QuickTime 框架现在已经过时了，它们不应该被用在以后的开发中。我们应该使用 <code>AVFoundation</code> (和 AVKit) 来代替它们。</li>
 </ul>
 <h2 id="第三方库"><a href="#第三方库" class="headerlink" title="第三方库"></a>第三方库</h2><ul>
-<li><p>FAAC：将 PCM 软编码为 AAC LC。 </p>
-</li>
-<li><p>FFmpeg、FAAD2：将 AAC LC 软解码为 PCM 、 PCM 重采样(Resample)。</p>
-</li>
+<li>FAAC：将 PCM 软编码为 AAC LC。 </li>
+<li>FFmpeg、FAAD2：将 AAC LC 软解码为 PCM 、 PCM 重采样(Resample)。</li>
 </ul>
 <h1 id="Video"><a href="#Video" class="headerlink" title="Video"></a>Video</h1><ul>
 <li><p>iOS 框架：MediaPlayer、AVKit、UIKit、AVFoundation、VideoToolBox、GLKit(OpenGL ES) 。</p>
@@ -528,20 +519,15 @@ height:40vh;
 <li>使用 UIVideoEditorController 可对视频进行简单编辑。 </li>
 </ul>
 <h2 id="AVFoundation-1"><a href="#AVFoundation-1" class="headerlink" title="AVFoundation"></a>AVFoundation</h2><ul>
-<li><p>使用 AVPlayer 播放视频文件或流</p>
-</li>
-<li><p>使用AVCaptureSession 录制视频帧。 </p>
-</li>
-<li><p>在 iOS 8 之前使用 AVFoundation 框架的 AVAssetWritter 将 YUV 数据写入 H.264 编码格式的视频文件，而且使用的是硬编码。 </p>
-</li>
+<li>使用 AVPlayer 播放视频文件或流</li>
+<li>使用AVCaptureSession 录制视频帧。 </li>
+<li>在 iOS 8 之前使用 AVFoundation 框架的 AVAssetWritter 将 YUV 数据写入 H.264 编码格式的视频文件，而且使用的是硬编码。 </li>
 </ul>
 <h2 id="VideoToolBox"><a href="#VideoToolBox" class="headerlink" title="VideoToolBox"></a>VideoToolBox</h2><p>在 iOS 8 及以后使用 VideoToolBox 框架将 YUV 视频数据硬编码为 H.264 ，以及将 H.264 硬解码为 YUV 视频数据。 </p>
 <h2 id="GLKit"><a href="#GLKit" class="headerlink" title="GLKit"></a>GLKit</h2><p>使用 GLKit 将 sRGB 或 YUV 视频数据渲染输出到屏幕。 </p>
 <h2 id="第三方库-1"><a href="#第三方库-1" class="headerlink" title="第三方库"></a>第三方库</h2><ul>
-<li><p>FFmpeg：将 H.264 软解码为 YUV 。 </p>
-</li>
-<li><p>x264：将 YUV 视频软编码为 H.264 。</p>
-</li>
+<li>FFmpeg：将 H.264 软解码为 YUV 。 </li>
+<li>x264：将 YUV 视频软编码为 H.264 。</li>
 </ul>
 
     </article>
@@ -551,7 +537,7 @@ height:40vh;
             <p>Author：<a href="https://tenloy.github.io">Tenloy</a>
             <p>原文链接：<a href="https://tenloy.github.io/2022/03/17/avframework.html">https://tenloy.github.io/2022/03/17/avframework.html</a>
             <p>发表日期：2022.03.17 , 8:29 AM</p>
-            <p>更新日期：2022.05.12 , 12:37 PM</p>
+            <p>更新日期：2022.05.12 , 12:47 PM</p>
             <p>版权声明：本文采用<a rel="license noopener" target="_blank" href="http://creativecommons.org/licenses/by-nc/4.0/">Crative Commons 4.0 许可协议</a>进行许可</p>
         </div>
     
