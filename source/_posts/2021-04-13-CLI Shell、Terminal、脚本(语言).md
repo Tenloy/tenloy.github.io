@@ -1,5 +1,5 @@
 ---
-title: CLI-Shell-Terminal-脚本概念梳理
+title: CLI Shell、Terminal、脚本(语言)
 date: 2021-04-13 15:00:20
 urlname: Command-Line.html
 tags:
@@ -100,17 +100,26 @@ OS提供了一组不同操作命令组成的集合，每个命令实现用户所
 
 不同的GUI Shell提供给用户不同的界面风格、操作方式，不同的 CLI Shell也会提供给用户不同风格的命令语法：除非我们需要编写shell脚本，普通用户一般很难发现不同shell脚本语言差异。对文件操作ls、pwd等等这些常用命令所有shell都一样支持。
 
-[Bash，Zsh和其他Linux Shell之间有什么区别？](https://links.jianshu.com/go?to=http%3A%2F%2Fwww.howtoip.com%2Fhtg-explains-what-are-the-differences-between-linux-shells%2F)
+[Bash，Zsh和其他Linux Shell之间有什么区别？](http://www.howtoip.com/htg-explains-what-are-the-differences-between-linux-shells/)
 
 - `Thompson Shell`：是第一个shell环境，在贝尔实验室开发并于1971年发布。Shell环境一直在基于这个概念，添加了各种新功能，功能和速度的改进
+
 - `C shell(csh)`：发布于1978年，它添加了许多交互式元素，用户可以控制他们的系统，如别名（长命令的快捷方式），作业管理能力，命令历史等。
+
 - `Bourne Shell(sh)`：被称作现代Shell最突出的祖先，发布于1979年，它成为Unix中的默认命令解释器，因为它支持命令替换，管道，变量，条件测试和循环，以及其他功能。 它没有为用户提供太多的定制，并且不支持像别名，命令完成和shell函数这样的现代化的细节。
+
 - `tcsh`、`ksh`：随着时间的推移，很多人修复了bug，并向C shell添加了功能，最终导致了csh的改进版本，称为“`tcsh`”。 但是csh在基于Unix的计算机上仍然是默认的，并且添加了一些非标准的功能。 贝尔实验室的David Korn致力于`KornShell`或“`ksh`”，它试图通过向后兼容Bourne shell的语言来改进这种情况，但增加了csh shell的许多功能。 它在1983年发布，但是根据专有许可。 它不是自由软件，直到2000年代，当它发布了各种开源许可证。
+
 - `Bash`：是Bourne shell的后继兼容版本与开放源代码版本，于1989年发布第一个正式版本，原先是计划用在GNU操作系统上，但能运行于大多数[类Unix系统的操作系统之上，包括Linux与Mac OS X v10.4都将它作为默认shell。
+
 - `ash`
+
 - `dash`：设计是符合POSIX的和轻量级的，所以它比Bash快，但不会有所有的功能
+
 - `Z shell(zsh)`：目前非常流行，1990年创建的，它是一个Bourne风格的shell。这个较新的shell与bash兼容，但包括更多的功能。 zsh shell提供内置的拼写校正，改进的命令行完成，充当shell插件的可加载模块，允许您在命令行上别名文件名或其他任何东西的全局别名，而不仅仅是命令，以及更多主题支持。 它像bash，但有很多附加功能，附加功能和可配置选项，你可能会喜欢，如果你在命令行上花费大量的时间。
-      如果你熟悉bash，你可以切换到zsh，而不学习不同的语法，你只会获得额外的功能。
+  
+  如果你熟悉bash，你可以切换到zsh，而不学习不同的语法，你只会获得额外的功能。
+  
 - `fish`：更新的一个shell，2005年发布，它有一个独特的命令行语法，旨在更容易学习，但不是从Bourne shell或C shell派生。
 
 ### 2.3 不同操作系统的Shell举例
@@ -298,23 +307,15 @@ TTY 是 Teletype 或 Teletypewriter 的缩写，原来是指电传打字机，�
 
 最早的终端(terminal) 是一台独立于计算机的设备(teletype 即, TTY)，通过线缆与计算机连接，并完成计算机的输入输出功能。
 
-**TTY设备**
+##### TTY设备
 
 从历史上看，终端刚开始就是终端机，配有打印机，键盘，带有一个串口，通过串口传送数据到主机端，然后主机处理完交给终端打印出来。电传打字机(teletype)可以被看作是这类设备的统称，因此终端也被简称为 TTY(teletype 的缩写)。
 
 <img src="/images/OS/CLI/2181780-32c55593fee90d0c.png" style="zoom:90%">
 
-- UART 驱动
-
-  如上图所示，物理终端通过电缆连接到计算机上的 UART(通用异步接收器和发射器)。操作系统中有一个 UART 驱动程序用于管理字节的物理传输。
-
-- 行规范
-
-  上图中内核中的 Line discipline(行规范)用来提供一个编辑缓冲区和一些基本的编辑命令(退格，清除单个单词，清除行，重新打印)，主要用来支持用户在输入时的行为(比如输错了，需要退格)。
-
-- TTY 驱动
-
-  TTY 驱动用来进行会话管理，并且处理各种终端设备。
+- **UART 驱动：**如上图所示，物理终端通过电缆连接到计算机上的 UART(通用异步接收器和发射器)。操作系统中有一个 UART 驱动程序用于管理字节的物理传输。
+- **行规范：**上图中内核中的 Line discipline(行规范)用来提供一个编辑缓冲区和一些基本的编辑命令(退格，清除单个单词，清除行，重新打印)，主要用来支持用户在输入时的行为(比如输错了，需要退格)。
+- **TTY 驱动：**TTY 驱动用来进行会话管理，并且处理各种终端设备。
 
 **UART 驱动、行规范和 TTY 驱动都位于内核中，它们的一端是终端设备，另一端是用户进程。因为在 Linux 下所有的设备都是文件，所以它们三个加在一起被称为 "TTY 设备"，即我们常说的 TTY。**
 
@@ -329,11 +330,8 @@ TTY 是 Teletype 或 Teletypewriter 的缩写，原来是指电传打字机，�
 现在我们知道：
 
 - 终端只负责信息的输入和输出，没有任何的运算处理功能。
-
   - 从用户这里接收输入（键盘、鼠标等输入设备），扔给 Shell。
-
   - 把 Shell 返回的结果展示给用户（比如通过显示器）
-
 - 而 Shell 干的活儿是从终端那里拿到用户输入的命令，解析后交给操作系统内核去执行，并把执行结果返回给终端。
 
 以Mac为例，可以在终端中：
@@ -363,7 +361,7 @@ TTY 是 Teletype 或 Teletypewriter 的缩写，原来是指电传打字机，�
 
 ### 5.1 概述
 
-早期，脚本语言经常被称为[批处理](https://links.jianshu.com/go?to=https%3A%2F%2Fzh.wikipedia.org%2Fwiki%2F%E6%89%B9%E5%A4%84%E7%90%86)语言或**工作控制语言**。百度百科中，也称为**扩建的语言**或**动态语言**。编写出的脚本也只是为了实现一些简单任务的自动化，比如使得本来要用键盘进行的相互式操作自动化。
+早期，脚本语言经常被称为[批处理](https://zh.wikipedia.org/wiki/%E6%89%B9%E6%AC%A1%E6%AA%94)语言或**工作控制语言**。百度百科中，也称为**扩建的语言**或**动态语言**。编写出的脚本也只是为了实现一些简单任务的自动化，比如使得本来要用键盘进行的相互式操作自动化。
 
 比如：一个Shell脚本主要由原本需要在**命令行**输入的命令组成。在一个**文本编辑器**中，用户可以使用脚本来把一些常用的操作组合成一组序列。
 
@@ -388,9 +386,9 @@ TTY 是 Teletype 或 Teletypewriter 的缩写，原来是指电传打字机，�
 
 #### 5.3.1 发展
 
-脚本语言是为了缩短传统的“编写、编译、链接、运行”过程而创建的计算机编程语言。早期，脚本语言经常被称为[批处理](https://links.jianshu.com/go?to=https%3A%2F%2Fzh.wikipedia.org%2Fwiki%2F%E6%89%B9%E5%A4%84%E7%90%86)语言或**工作控制语言**。百度百科中，也称为**扩建的语言**或**动态语言**。
+脚本语言是为了缩短传统的“编写、编译、链接、运行”过程而创建的计算机编程语言。早期，脚本语言经常被称为批处理语言或**工作控制语言**。百度百科中，也称为**扩建的语言**或**动态语言**。
 
-一个脚本通常是**解释运行**而非编译。脚本语言通常都有简单、易学、易用的特性，目的就是希望能让程序员快速完成程序的编写工作。[宏语言](https://links.jianshu.com/go?to=https%3A%2F%2Fzh.wikipedia.org%2Fwiki%2F%E5%AE%8F%E8%AF%AD%E8%A8%80)则可视为脚本语言的分支，两者也有实质上的相同之处。在许多方面，高级[编程语言](https://links.jianshu.com/go?to=https%3A%2F%2Fzh.wikipedia.org%2Fwiki%2F%E7%BC%96%E7%A8%8B%E8%AF%AD%E8%A8%80)和脚本语言之间互相交叉，二者之间没有明确的界限。
+一个脚本通常是**解释运行**而非编译。脚本语言通常都有简单、易学、易用的特性，目的就是希望能让程序员快速完成程序的编写工作。[宏语言](https://zh.wikipedia.org/wiki/%E5%B7%A8%E9%9B%86)则可视为脚本语言的分支，两者也有实质上的相同之处。在许多方面，高级编程语言和脚本语言之间互相交叉，二者之间没有明确的界限。
 
 现在，虽然许多脚本语言都超越了计算机简单任务自动化的领域，可以**脱离被扩建的程序**单独存在(有自己的运行库、标准语言库函数等)，成熟到可以自己编写精巧的程序，但仍然还是被称为脚本。
 
@@ -412,10 +410,38 @@ TTY 是 Teletype 或 Teletypewriter 的缩写，原来是指电传打字机，�
 
 **脚本语言工作必须依赖对应的解释器，创造一门语言的同时，需要创建(使用已有的)对应的编译器、解释器**。
 
-#### 参考链接
+## 六、Shell脚本编程
 
-- [你真的知道什么是终端吗？](https://links.jianshu.com/go?to=https%3A%2F%2Fwww.linuxdashen.com%2F%E4%BD%A0%E7%9C%9F%E7%9A%84%E7%9F%A5%E9%81%93%E4%BB%80%E4%B9%88%E6%98%AF%E7%BB%88%E7%AB%AF%E5%90%97%EF%BC%9F)
-- [Linux 终端(TTY)](https://links.jianshu.com/go?to=https%3A%2F%2Fwww.cnblogs.com%2Fsparkdev%2Fp%2F11460821.html)
-- [命令行界面 (CLI)、终端 (Terminal)、Shell、TTY，傻傻分不清楚？](https://links.jianshu.com/go?to=https%3A%2F%2Fprintempw.github.io%2Fthe-difference-between-cli-terminal-shell-tty%2F)
-- [脚本语言](https://links.jianshu.com/go?to=https%3A%2F%2Fzh.wikipedia.org%2Fwiki%2F%E8%84%9A%E6%9C%AC%E8%AF%AD%E8%A8%80)
-- [Bash，Zsh和其他Linux Shell之间有什么区别？](https://links.jianshu.com/go?to=http%3A%2F%2Fwww.howtoip.com%2Fhtg-explains-what-are-the-differences-between-linux-shells%2F)
+上面已经说过，不管是正流行的bash、zsh本质上都是解释器，它们都服务的是shell语言，因此bash脚本、zsh脚本程序在使用shell commands(类比SDK API)编程时，语法上基本相同，部分兼容性差异可参考：[zsh和bash的兼容性差异](https://segmentfault.com/a/1190000011122024)。（*这个类似JS代码在Chrome、Safari、Edge等浏览器平台的兼容性*）
+
+- [Bash 脚本教程 — 阮一峰](https://wangdoc.com/bash/)
+  - [ 简介](https://wangdoc.com/bash/intro.html)
+  - [ 基本语法](https://wangdoc.com/bash/grammar.html)
+  - [ 模式扩展](https://wangdoc.com/bash/expansion.html)
+  - [ 引号和转义](https://wangdoc.com/bash/quotation.html)
+  - [ 变量](https://wangdoc.com/bash/variable.html)
+  - [ 字符串操作](https://wangdoc.com/bash/string.html)
+  - [ 算术运算](https://wangdoc.com/bash/arithmetic.html)
+  - [ 行操作](https://wangdoc.com/bash/readline.html)
+  - [ 目录堆栈](https://wangdoc.com/bash/stack.html)
+  - [ 脚本入门](https://wangdoc.com/bash/script.html)
+  - [ read 命令](https://wangdoc.com/bash/read.html)
+  - [ 条件判断](https://wangdoc.com/bash/condition.html)
+  - [ 循环](https://wangdoc.com/bash/loop.html)
+  - [ 函数](https://wangdoc.com/bash/function.html)
+  - [ 数组](https://wangdoc.com/bash/array.html)
+  - [ set 命令，shopt 命令](https://wangdoc.com/bash/set.html)
+  - [ 脚本除错](https://wangdoc.com/bash/debug.html)
+  - [ mktemp 命令，trap 命令](https://wangdoc.com/bash/mktemp.html)
+  - [ 启动环境](https://wangdoc.com/bash/startup.html)
+  - [ 命令提示符](https://wangdoc.com/bash/prompt.html)
+- [curl 的用法指南 — 阮一峰](https://www.ruanyifeng.com/blog/2019/09/curl-reference.html)
+- 使用jq进行json的解析
+
+## 七、参考链接
+
+- [你真的知道什么是终端吗？](https://www.linuxdashen.com/%E4%BD%A0%E7%9C%9F%E7%9A%84%E7%9F%A5%E9%81%93%E4%BB%80%E4%B9%88%E6%98%AF%E7%BB%88%E7%AB%AF%E5%90%97%EF%BC%9F)
+- [Linux 终端(TTY)](https://www.cnblogs.com/sparkdev/p/11460821.html)
+- [命令行界面 (CLI)、终端 (Terminal)、Shell、TTY，傻傻分不清楚？](https://printempw.github.io/the-difference-between-cli-terminal-shell-tty/)
+- [脚本语言](https://zh.wikipedia.org/wiki/%E8%84%9A%E6%9C%AC%E8%AF%AD%E8%A8%80)
+- [Bash，Zsh和其他Linux Shell之间有什么区别？](http://www.howtoip.com/htg-explains-what-are-the-differences-between-linux-shells/)
