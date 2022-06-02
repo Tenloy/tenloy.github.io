@@ -22,7 +22,7 @@
     <meta name="description" content="学习 生活 记录 回忆">
     <meta name="description" content="命令行界面已经使用了很久，平时也有很多常用的命令行工具，但是对一些相关的概念(终端、Shell、命令、脚本等)却一直有些似懂非懂，今天记录一下，一是梳理自己的思路，二也是希望能对读到这篇博客的人有所帮助。  命令行界面(CLI)和命令(行) —— 是一种页面交互风格，对比于GUI 终端(Terminal) —— 人与机器交互的接口，负责数据的输入与输出 现在的一些叫法名词(本小节可只看这一段) 历">
 <meta property="og:type" content="article">
-<meta property="og:title" content="CLI-Shell-Terminal-脚本概念梳理">
+<meta property="og:title" content="CLI Shell、Terminal、脚本(语言)">
 <meta property="og:url" content="https://tenloy.github.io/2021/04/13/Command-Line.html">
 <meta property="og:site_name" content="Tenloy&#39;s Blog">
 <meta property="og:description" content="命令行界面已经使用了很久，平时也有很多常用的命令行工具，但是对一些相关的概念(终端、Shell、命令、脚本等)却一直有些似懂非懂，今天记录一下，一是梳理自己的思路，二也是希望能对读到这篇博客的人有所帮助。  命令行界面(CLI)和命令(行) —— 是一种页面交互风格，对比于GUI 终端(Terminal) —— 人与机器交互的接口，负责数据的输入与输出 现在的一些叫法名词(本小节可只看这一段) 历">
@@ -36,7 +36,7 @@
 <meta property="og:image" content="https://tenloy.github.io/images/OS/CLI/2181780-9b4168b70942c326.jpg">
 <meta property="og:image" content="https://tenloy.github.io/images/OS/CLI/2181780-32c55593fee90d0c.png">
 <meta property="article:published_time" content="2021-04-13T15:00:20.000Z">
-<meta property="article:modified_time" content="2022-06-02T06:47:01.939Z">
+<meta property="article:modified_time" content="2022-06-02T09:28:07.812Z">
 <meta property="article:author" content="Tenloy">
 <meta property="article:tag" content="CLI">
 <meta property="article:tag" content="Shell">
@@ -45,7 +45,7 @@
     <meta http-equiv="Cache-control" content="no-cache">
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"/>
     
-    <title>CLI-Shell-Terminal-脚本概念梳理 · Tenloy&#39;s Blog</title>
+    <title>CLI Shell、Terminal、脚本(语言) · Tenloy&#39;s Blog</title>
     <style type="text/css">
     @font-face {
         font-family: 'Oswald-Regular';
@@ -256,7 +256,7 @@
                 <a href="/" >Tenloy&#39;s Blog</a>
             </div>
             <div class="post-title">
-                <a href="#" class="post-name">CLI-Shell-Terminal-脚本概念梳理</a>
+                <a href="#" class="post-name">CLI Shell、Terminal、脚本(语言)</a>
             </div>
     </div>
     
@@ -295,7 +295,7 @@ height:40vh;
         <h1 class="intro-title">
             <!-- 主页  -->
             
-            CLI-Shell-Terminal-脚本概念梳理
+            CLI Shell、Terminal、脚本(语言)
             <!-- 404 -->
             
         </h1>
@@ -322,7 +322,7 @@ height:40vh;
                 
                 
                     <div class="post-intro-read">
-                        <span>Word count: <span class="post-count word-count">8.4k</span>Reading time: <span class="post-count reading-time">29 min</span></span>
+                        <span>Word count: <span class="post-count word-count">8.6k</span>Reading time: <span class="post-count reading-time">30 min</span></span>
                     </div>
                 
                 <div class="post-intro-meta">
@@ -516,19 +516,27 @@ height:40vh;
 </ul>
 <p><strong>不管是GUI shell 还是命令行 Shell，其实都是在解释命令，只不过GUI shell隐藏解释命令细节，用户通过点击鼠标的操作操作内核命令。所以Shell本质上就是个命令解释器。</strong></p>
 <h3 id="2-2-CLI-Shell的发展"><a href="#2-2-CLI-Shell的发展" class="headerlink" title="2.2 CLI Shell的发展"></a>2.2 CLI Shell的发展</h3><p>不同的GUI Shell提供给用户不同的界面风格、操作方式，不同的 CLI Shell也会提供给用户不同风格的命令语法：除非我们需要编写shell脚本，普通用户一般很难发现不同shell脚本语言差异。对文件操作ls、pwd等等这些常用命令所有shell都一样支持。</p>
-<p><a target="_blank" rel="noopener" href="https://links.jianshu.com/go?to=http://www.howtoip.com/htg-explains-what-are-the-differences-between-linux-shells/">Bash，Zsh和其他Linux Shell之间有什么区别？</a></p>
+<p><a target="_blank" rel="noopener" href="http://www.howtoip.com/htg-explains-what-are-the-differences-between-linux-shells/">Bash，Zsh和其他Linux Shell之间有什么区别？</a></p>
 <ul>
-<li><code>Thompson Shell</code>：是第一个shell环境，在贝尔实验室开发并于1971年发布。Shell环境一直在基于这个概念，添加了各种新功能，功能和速度的改进</li>
-<li><code>C shell(csh)</code>：发布于1978年，它添加了许多交互式元素，用户可以控制他们的系统，如别名（长命令的快捷方式），作业管理能力，命令历史等。</li>
-<li><code>Bourne Shell(sh)</code>：被称作现代Shell最突出的祖先，发布于1979年，它成为Unix中的默认命令解释器，因为它支持命令替换，管道，变量，条件测试和循环，以及其他功能。 它没有为用户提供太多的定制，并且不支持像别名，命令完成和shell函数这样的现代化的细节。</li>
-<li><code>tcsh</code>、<code>ksh</code>：随着时间的推移，很多人修复了bug，并向C shell添加了功能，最终导致了csh的改进版本，称为“<code>tcsh</code>”。 但是csh在基于Unix的计算机上仍然是默认的，并且添加了一些非标准的功能。 贝尔实验室的David Korn致力于<code>KornShell</code>或“<code>ksh</code>”，它试图通过向后兼容Bourne shell的语言来改进这种情况，但增加了csh shell的许多功能。 它在1983年发布，但是根据专有许可。 它不是自由软件，直到2000年代，当它发布了各种开源许可证。</li>
-<li><code>Bash</code>：是Bourne shell的后继兼容版本与开放源代码版本，于1989年发布第一个正式版本，原先是计划用在GNU操作系统上，但能运行于大多数[类Unix系统的操作系统之上，包括Linux与Mac OS X v10.4都将它作为默认shell。</li>
-<li><code>ash</code></li>
-<li><code>dash</code>：设计是符合POSIX的和轻量级的，所以它比Bash快，但不会有所有的功能</li>
-<li><code>Z shell(zsh)</code>：目前非常流行，1990年创建的，它是一个Bourne风格的shell。这个较新的shell与bash兼容，但包括更多的功能。 zsh shell提供内置的拼写校正，改进的命令行完成，充当shell插件的可加载模块，允许您在命令行上别名文件名或其他任何东西的全局别名，而不仅仅是命令，以及更多主题支持。 它像bash，但有很多附加功能，附加功能和可配置选项，你可能会喜欢，如果你在命令行上花费大量的时间。<pre><code>如果你熟悉bash，你可以切换到zsh，而不学习不同的语法，你只会获得额外的功能。
-</code></pre>
+<li><p><code>Thompson Shell</code>：是第一个shell环境，在贝尔实验室开发并于1971年发布。Shell环境一直在基于这个概念，添加了各种新功能，功能和速度的改进</p>
 </li>
-<li><code>fish</code>：更新的一个shell，2005年发布，它有一个独特的命令行语法，旨在更容易学习，但不是从Bourne shell或C shell派生。</li>
+<li><p><code>C shell(csh)</code>：发布于1978年，它添加了许多交互式元素，用户可以控制他们的系统，如别名（长命令的快捷方式），作业管理能力，命令历史等。</p>
+</li>
+<li><p><code>Bourne Shell(sh)</code>：被称作现代Shell最突出的祖先，发布于1979年，它成为Unix中的默认命令解释器，因为它支持命令替换，管道，变量，条件测试和循环，以及其他功能。 它没有为用户提供太多的定制，并且不支持像别名，命令完成和shell函数这样的现代化的细节。</p>
+</li>
+<li><p><code>tcsh</code>、<code>ksh</code>：随着时间的推移，很多人修复了bug，并向C shell添加了功能，最终导致了csh的改进版本，称为“<code>tcsh</code>”。 但是csh在基于Unix的计算机上仍然是默认的，并且添加了一些非标准的功能。 贝尔实验室的David Korn致力于<code>KornShell</code>或“<code>ksh</code>”，它试图通过向后兼容Bourne shell的语言来改进这种情况，但增加了csh shell的许多功能。 它在1983年发布，但是根据专有许可。 它不是自由软件，直到2000年代，当它发布了各种开源许可证。</p>
+</li>
+<li><p><code>Bash</code>：是Bourne shell的后继兼容版本与开放源代码版本，于1989年发布第一个正式版本，原先是计划用在GNU操作系统上，但能运行于大多数[类Unix系统的操作系统之上，包括Linux与Mac OS X v10.4都将它作为默认shell。</p>
+</li>
+<li><p><code>ash</code></p>
+</li>
+<li><p><code>dash</code>：设计是符合POSIX的和轻量级的，所以它比Bash快，但不会有所有的功能</p>
+</li>
+<li><p><code>Z shell(zsh)</code>：目前非常流行，1990年创建的，它是一个Bourne风格的shell。这个较新的shell与bash兼容，但包括更多的功能。 zsh shell提供内置的拼写校正，改进的命令行完成，充当shell插件的可加载模块，允许您在命令行上别名文件名或其他任何东西的全局别名，而不仅仅是命令，以及更多主题支持。 它像bash，但有很多附加功能，附加功能和可配置选项，你可能会喜欢，如果你在命令行上花费大量的时间。</p>
+<p>如果你熟悉bash，你可以切换到zsh，而不学习不同的语法，你只会获得额外的功能。</p>
+</li>
+<li><p><code>fish</code>：更新的一个shell，2005年发布，它有一个独特的命令行语法，旨在更容易学习，但不是从Bourne shell或C shell派生。</p>
+</li>
 </ul>
 <h3 id="2-3-不同操作系统的Shell举例"><a href="#2-3-不同操作系统的Shell举例" class="headerlink" title="2.3 不同操作系统的Shell举例"></a>2.3 不同操作系统的Shell举例</h3><p>Unix：第一个Unix壳层(Unix shell)是以Multics上的shell为范本所写出的Thompson shell</p>
 <p>Windows：同时提供了图形壳层、命令行壳层的功能</p>
@@ -681,36 +689,25 @@ height:40vh;
 <p><strong>因此，现在 Console 与 Terminal 基本被看作是同义词。</strong></p>
 <h4 id="3-4-2-TTY"><a href="#3-4-2-TTY" class="headerlink" title="3.4.2 TTY"></a>3.4.2 TTY</h4><p>TTY 是 Teletype 或 Teletypewriter 的缩写，原来是指电传打字机，后来这种设备逐渐键盘和显示器取代。不管是电传打字机还是键盘显示器，都是作为计算机的终端设备存在的，所以 TTY 也泛指计算机的终端(terminal)设备。为了支持这些 TTY 设备，Linux 实现了一个叫做 TTY 的子系统。所以 <strong>TTY 既指终端，也指 Linux 的 TTY 子系统</strong>。</p>
 <p>最早的终端(terminal) 是一台独立于计算机的设备(teletype 即, TTY)，通过线缆与计算机连接，并完成计算机的输入输出功能。</p>
-<p><strong>TTY设备</strong></p>
-<p>从历史上看，终端刚开始就是终端机，配有打印机，键盘，带有一个串口，通过串口传送数据到主机端，然后主机处理完交给终端打印出来。电传打字机(teletype)可以被看作是这类设备的统称，因此终端也被简称为 TTY(teletype 的缩写)。</p>
+<h5 id="TTY设备"><a href="#TTY设备" class="headerlink" title="TTY设备"></a>TTY设备</h5><p>从历史上看，终端刚开始就是终端机，配有打印机，键盘，带有一个串口，通过串口传送数据到主机端，然后主机处理完交给终端打印出来。电传打字机(teletype)可以被看作是这类设备的统称，因此终端也被简称为 TTY(teletype 的缩写)。</p>
 <img src="/images/OS/CLI/2181780-32c55593fee90d0c.png" style="zoom:90%">
 
 <ul>
-<li><p>UART 驱动</p>
-<p>如上图所示，物理终端通过电缆连接到计算机上的 UART(通用异步接收器和发射器)。操作系统中有一个 UART 驱动程序用于管理字节的物理传输。</p>
-</li>
-<li><p>行规范</p>
-<p>上图中内核中的 Line discipline(行规范)用来提供一个编辑缓冲区和一些基本的编辑命令(退格，清除单个单词，清除行，重新打印)，主要用来支持用户在输入时的行为(比如输错了，需要退格)。</p>
-</li>
-<li><p>TTY 驱动</p>
-<p>TTY 驱动用来进行会话管理，并且处理各种终端设备。</p>
-</li>
+<li><strong>UART 驱动：</strong>如上图所示，物理终端通过电缆连接到计算机上的 UART(通用异步接收器和发射器)。操作系统中有一个 UART 驱动程序用于管理字节的物理传输。</li>
+<li><strong>行规范：</strong>上图中内核中的 Line discipline(行规范)用来提供一个编辑缓冲区和一些基本的编辑命令(退格，清除单个单词，清除行，重新打印)，主要用来支持用户在输入时的行为(比如输错了，需要退格)。</li>
+<li><strong>TTY 驱动：</strong>TTY 驱动用来进行会话管理，并且处理各种终端设备。</li>
 </ul>
 <p><strong>UART 驱动、行规范和 TTY 驱动都位于内核中，它们的一端是终端设备，另一端是用户进程。因为在 Linux 下所有的设备都是文件，所以它们三个加在一起被称为 “TTY 设备”，即我们常说的 TTY。</strong></p>
 <h4 id="3-4-3-终端服务器"><a href="#3-4-3-终端服务器" class="headerlink" title="3.4.3 终端服务器"></a>3.4.3 终端服务器</h4><p>当公司或大学的资金只能买一台大型机或小型机时，所有的终端都直接连到这台主机。随着时间的推移，主机价格逐渐下降，这时一个机构内部有多个主机。如何才能让每个终端都能连接到任何一个主机呢？在各个终端和主机之间牵一根线代价太大，而且线路容易搞混。这时候终端服务器就派上用场了。</p>
 <p>各个终端与终端服务器相连，各个主机也与终端服务器相连。当终端启动时，终端服务器询问用户要登录哪个主机，用户指定主机后，再输入用户名和密码登录相应的主机。这种拓扑结构很像今天的家庭网络，终端服务器相当于路由器。</p>
 <h2 id="四、Shell与终端的分工"><a href="#四、Shell与终端的分工" class="headerlink" title="四、Shell与终端的分工"></a>四、Shell与终端的分工</h2><p>现在我们知道：</p>
 <ul>
-<li><p>终端只负责信息的输入和输出，没有任何的运算处理功能。</p>
-<ul>
-<li><p>从用户这里接收输入（键盘、鼠标等输入设备），扔给 Shell。</p>
-</li>
-<li><p>把 Shell 返回的结果展示给用户（比如通过显示器）</p>
-</li>
+<li>终端只负责信息的输入和输出，没有任何的运算处理功能。<ul>
+<li>从用户这里接收输入（键盘、鼠标等输入设备），扔给 Shell。</li>
+<li>把 Shell 返回的结果展示给用户（比如通过显示器）</li>
 </ul>
 </li>
-<li><p>而 Shell 干的活儿是从终端那里拿到用户输入的命令，解析后交给操作系统内核去执行，并把执行结果返回给终端。</p>
-</li>
+<li>而 Shell 干的活儿是从终端那里拿到用户输入的命令，解析后交给操作系统内核去执行，并把执行结果返回给终端。</li>
 </ul>
 <p>以Mac为例，可以在终端中：</p>
 <ul>
@@ -737,7 +734,7 @@ height:40vh;
 <li>行编辑、输入历史与自动补全等功能是由 Shell 提供的（比如 fish 这个 Shell 就有着很好用的历史命令与命令自动补全功能）。不过终端也能自己实现这些功能，比如说 XShell 这个终端模拟器就可以在本地写完一行命令，然后整条发送给远程服务器中的 Shell（在连接状况不佳时很有用，不然打个字都要卡半天）；</li>
 <li>终端中的复制粘贴功能（<code>Shift + Insert</code> 或者鼠标右键等）基本上都是由终端提供的。举个例子，Windows 默认的终端对于复制粘贴的支持很屎，而换一个终端（例如 ConEmu）后就可以很好地支持复制粘贴。不过 Shell 以及其他命令行程序也可以提供自己的复制粘贴机制（例如 vim）。</li>
 </ul>
-<h2 id="五、脚本Script"><a href="#五、脚本Script" class="headerlink" title="五、脚本Script"></a>五、脚本Script</h2><h3 id="5-1-概述"><a href="#5-1-概述" class="headerlink" title="5.1 概述"></a>5.1 概述</h3><p>早期，脚本语言经常被称为<a target="_blank" rel="noopener" href="https://links.jianshu.com/go?to=https://zh.wikipedia.org/wiki/%E6%89%B9%E5%A4%84%E7%90%86">批处理</a>语言或<strong>工作控制语言</strong>。百度百科中，也称为<strong>扩建的语言</strong>或<strong>动态语言</strong>。编写出的脚本也只是为了实现一些简单任务的自动化，比如使得本来要用键盘进行的相互式操作自动化。</p>
+<h2 id="五、脚本Script"><a href="#五、脚本Script" class="headerlink" title="五、脚本Script"></a>五、脚本Script</h2><h3 id="5-1-概述"><a href="#5-1-概述" class="headerlink" title="5.1 概述"></a>5.1 概述</h3><p>早期，脚本语言经常被称为<a target="_blank" rel="noopener" href="https://zh.wikipedia.org/wiki/%E6%89%B9%E6%AC%A1%E6%AA%94">批处理</a>语言或<strong>工作控制语言</strong>。百度百科中，也称为<strong>扩建的语言</strong>或<strong>动态语言</strong>。编写出的脚本也只是为了实现一些简单任务的自动化，比如使得本来要用键盘进行的相互式操作自动化。</p>
 <p>比如：一个Shell脚本主要由原本需要在<strong>命令行</strong>输入的命令组成。在一个<strong>文本编辑器</strong>中，用户可以使用脚本来把一些常用的操作组合成一组序列。</p>
 <p>用来书写这种脚本的语言叫做脚本语言。</p>
 <h3 id="5-2-脚本、程序、软件"><a href="#5-2-脚本、程序、软件" class="headerlink" title="5.2 脚本、程序、软件"></a>5.2 脚本、程序、软件</h3><p>脚本(Script)语义较抽象，可以借助script的另一个翻译—剧本来理解：</p>
@@ -754,8 +751,8 @@ height:40vh;
 <li>软件：软件工程领域对于软件的定义是程序以及文档的集合体</li>
 </ul>
 <p>不用纠结脚本、解释型语言程序的区别，如果是个纯文本文件、解释执行、代码量不大，功能较简练，可以叫脚本，也可以叫程序。 <strong>脚本和传统编程语言程序之间的界限越来越模糊</strong>。</p>
-<h3 id="5-3-脚本语言及分类"><a href="#5-3-脚本语言及分类" class="headerlink" title="5.3 脚本语言及分类"></a>5.3 脚本语言及分类</h3><h4 id="5-3-1-发展"><a href="#5-3-1-发展" class="headerlink" title="5.3.1 发展"></a>5.3.1 发展</h4><p>脚本语言是为了缩短传统的“编写、编译、链接、运行”过程而创建的计算机编程语言。早期，脚本语言经常被称为<a target="_blank" rel="noopener" href="https://links.jianshu.com/go?to=https://zh.wikipedia.org/wiki/%E6%89%B9%E5%A4%84%E7%90%86">批处理</a>语言或<strong>工作控制语言</strong>。百度百科中，也称为<strong>扩建的语言</strong>或<strong>动态语言</strong>。</p>
-<p>一个脚本通常是<strong>解释运行</strong>而非编译。脚本语言通常都有简单、易学、易用的特性，目的就是希望能让程序员快速完成程序的编写工作。<a target="_blank" rel="noopener" href="https://links.jianshu.com/go?to=https://zh.wikipedia.org/wiki/%E5%AE%8F%E8%AF%AD%E8%A8%80">宏语言</a>则可视为脚本语言的分支，两者也有实质上的相同之处。在许多方面，高级<a target="_blank" rel="noopener" href="https://links.jianshu.com/go?to=https://zh.wikipedia.org/wiki/%E7%BC%96%E7%A8%8B%E8%AF%AD%E8%A8%80">编程语言</a>和脚本语言之间互相交叉，二者之间没有明确的界限。</p>
+<h3 id="5-3-脚本语言及分类"><a href="#5-3-脚本语言及分类" class="headerlink" title="5.3 脚本语言及分类"></a>5.3 脚本语言及分类</h3><h4 id="5-3-1-发展"><a href="#5-3-1-发展" class="headerlink" title="5.3.1 发展"></a>5.3.1 发展</h4><p>脚本语言是为了缩短传统的“编写、编译、链接、运行”过程而创建的计算机编程语言。早期，脚本语言经常被称为批处理语言或<strong>工作控制语言</strong>。百度百科中，也称为<strong>扩建的语言</strong>或<strong>动态语言</strong>。</p>
+<p>一个脚本通常是<strong>解释运行</strong>而非编译。脚本语言通常都有简单、易学、易用的特性，目的就是希望能让程序员快速完成程序的编写工作。<a target="_blank" rel="noopener" href="https://zh.wikipedia.org/wiki/%E5%B7%A8%E9%9B%86">宏语言</a>则可视为脚本语言的分支，两者也有实质上的相同之处。在许多方面，高级编程语言和脚本语言之间互相交叉，二者之间没有明确的界限。</p>
 <p>现在，虽然许多脚本语言都超越了计算机简单任务自动化的领域，可以<strong>脱离被扩建的程序</strong>单独存在(有自己的运行库、标准语言库函数等)，成熟到可以自己编写精巧的程序，但仍然还是被称为脚本。</p>
 <h4 id="5-3-2-分类"><a href="#5-3-2-分类" class="headerlink" title="5.3.2 分类"></a>5.3.2 分类</h4><p>脚本的使用有很多，时至今日，脚本语言也各种各样。<strong>有脚本，必然有与之对应的解释器</strong>，进而对应的用途也很广泛，根据解释器/用途，可以将脚本语言分为很多种：</p>
 <ul>
@@ -778,12 +775,40 @@ height:40vh;
 </li>
 </ul>
 <p><strong>脚本语言工作必须依赖对应的解释器，创造一门语言的同时，需要创建(使用已有的)对应的编译器、解释器</strong>。</p>
-<h4 id="参考链接"><a href="#参考链接" class="headerlink" title="参考链接"></a>参考链接</h4><ul>
-<li><a target="_blank" rel="noopener" href="https://links.jianshu.com/go?to=https://www.linuxdashen.com/%E4%BD%A0%E7%9C%9F%E7%9A%84%E7%9F%A5%E9%81%93%E4%BB%80%E4%B9%88%E6%98%AF%E7%BB%88%E7%AB%AF%E5%90%97%EF%BC%9F">你真的知道什么是终端吗？</a></li>
-<li><a target="_blank" rel="noopener" href="https://links.jianshu.com/go?to=https://www.cnblogs.com/sparkdev/p/11460821.html">Linux 终端(TTY)</a></li>
-<li><a target="_blank" rel="noopener" href="https://links.jianshu.com/go?to=https://printempw.github.io/the-difference-between-cli-terminal-shell-tty/">命令行界面 (CLI)、终端 (Terminal)、Shell、TTY，傻傻分不清楚？</a></li>
-<li><a target="_blank" rel="noopener" href="https://links.jianshu.com/go?to=https://zh.wikipedia.org/wiki/%E8%84%9A%E6%9C%AC%E8%AF%AD%E8%A8%80">脚本语言</a></li>
-<li><a target="_blank" rel="noopener" href="https://links.jianshu.com/go?to=http://www.howtoip.com/htg-explains-what-are-the-differences-between-linux-shells/">Bash，Zsh和其他Linux Shell之间有什么区别？</a></li>
+<h2 id="六、Shell脚本编程"><a href="#六、Shell脚本编程" class="headerlink" title="六、Shell脚本编程"></a>六、Shell脚本编程</h2><p>上面已经说过，不管是正流行的bash、zsh本质上都是解释器，它们都服务的是shell语言，因此bash脚本、zsh脚本程序在使用shell commands(类比SDK API)编程时，语法上基本相同，部分兼容性差异可参考：<a target="_blank" rel="noopener" href="https://segmentfault.com/a/1190000011122024">zsh和bash的兼容性差异</a>。（<em>这个类似JS代码在Chrome、Safari、Edge等浏览器平台的兼容性</em>）</p>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://wangdoc.com/bash/">Bash 脚本教程 — 阮一峰</a><ul>
+<li><a target="_blank" rel="noopener" href="https://wangdoc.com/bash/intro.html"> 简介</a></li>
+<li><a target="_blank" rel="noopener" href="https://wangdoc.com/bash/grammar.html"> 基本语法</a></li>
+<li><a target="_blank" rel="noopener" href="https://wangdoc.com/bash/expansion.html"> 模式扩展</a></li>
+<li><a target="_blank" rel="noopener" href="https://wangdoc.com/bash/quotation.html"> 引号和转义</a></li>
+<li><a target="_blank" rel="noopener" href="https://wangdoc.com/bash/variable.html"> 变量</a></li>
+<li><a target="_blank" rel="noopener" href="https://wangdoc.com/bash/string.html"> 字符串操作</a></li>
+<li><a target="_blank" rel="noopener" href="https://wangdoc.com/bash/arithmetic.html"> 算术运算</a></li>
+<li><a target="_blank" rel="noopener" href="https://wangdoc.com/bash/readline.html"> 行操作</a></li>
+<li><a target="_blank" rel="noopener" href="https://wangdoc.com/bash/stack.html"> 目录堆栈</a></li>
+<li><a target="_blank" rel="noopener" href="https://wangdoc.com/bash/script.html"> 脚本入门</a></li>
+<li><a target="_blank" rel="noopener" href="https://wangdoc.com/bash/read.html"> read 命令</a></li>
+<li><a target="_blank" rel="noopener" href="https://wangdoc.com/bash/condition.html"> 条件判断</a></li>
+<li><a target="_blank" rel="noopener" href="https://wangdoc.com/bash/loop.html"> 循环</a></li>
+<li><a target="_blank" rel="noopener" href="https://wangdoc.com/bash/function.html"> 函数</a></li>
+<li><a target="_blank" rel="noopener" href="https://wangdoc.com/bash/array.html"> 数组</a></li>
+<li><a target="_blank" rel="noopener" href="https://wangdoc.com/bash/set.html"> set 命令，shopt 命令</a></li>
+<li><a target="_blank" rel="noopener" href="https://wangdoc.com/bash/debug.html"> 脚本除错</a></li>
+<li><a target="_blank" rel="noopener" href="https://wangdoc.com/bash/mktemp.html"> mktemp 命令，trap 命令</a></li>
+<li><a target="_blank" rel="noopener" href="https://wangdoc.com/bash/startup.html"> 启动环境</a></li>
+<li><a target="_blank" rel="noopener" href="https://wangdoc.com/bash/prompt.html"> 命令提示符</a></li>
+</ul>
+</li>
+<li><a target="_blank" rel="noopener" href="https://www.ruanyifeng.com/blog/2019/09/curl-reference.html">curl 的用法指南 — 阮一峰</a></li>
+<li>使用jq进行json的解析</li>
+</ul>
+<h2 id="七、参考链接"><a href="#七、参考链接" class="headerlink" title="七、参考链接"></a>七、参考链接</h2><ul>
+<li><a target="_blank" rel="noopener" href="https://www.linuxdashen.com/%E4%BD%A0%E7%9C%9F%E7%9A%84%E7%9F%A5%E9%81%93%E4%BB%80%E4%B9%88%E6%98%AF%E7%BB%88%E7%AB%AF%E5%90%97%EF%BC%9F">你真的知道什么是终端吗？</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.cnblogs.com/sparkdev/p/11460821.html">Linux 终端(TTY)</a></li>
+<li><a target="_blank" rel="noopener" href="https://printempw.github.io/the-difference-between-cli-terminal-shell-tty/">命令行界面 (CLI)、终端 (Terminal)、Shell、TTY，傻傻分不清楚？</a></li>
+<li><a target="_blank" rel="noopener" href="https://zh.wikipedia.org/wiki/%E8%84%9A%E6%9C%AC%E8%AF%AD%E8%A8%80">脚本语言</a></li>
+<li><a target="_blank" rel="noopener" href="http://www.howtoip.com/htg-explains-what-are-the-differences-between-linux-shells/">Bash，Zsh和其他Linux Shell之间有什么区别？</a></li>
 </ul>
 
     </article>
@@ -793,7 +818,7 @@ height:40vh;
             <p>Author：<a href="https://tenloy.github.io">Tenloy</a>
             <p>原文链接：<a href="https://tenloy.github.io/2021/04/13/Command-Line.html">https://tenloy.github.io/2021/04/13/Command-Line.html</a>
             <p>发表日期：2021.04.13 , 3:00 PM</p>
-            <p>更新日期：2022.06.02 , 6:47 AM</p>
+            <p>更新日期：2022.06.02 , 9:28 AM</p>
             <p>版权声明：本文采用<a rel="license noopener" target="_blank" href="http://creativecommons.org/licenses/by-nc/4.0/">Crative Commons 4.0 许可协议</a>进行许可</p>
         </div>
     
@@ -802,16 +827,16 @@ height:40vh;
         <li class="next">
             
                 <div class="nextSlogan">Next Post</div>
-                <a href= "/2021/04/14/ISA-Microarch-Soc.html" title= "指令集、微架构、手机芯片(Soc)及ARM的介绍">
-                    <div class="nextTitle">指令集、微架构、手机芯片(Soc)及ARM的介绍</div>
+                <a href= "/2021/04/16/Arm64-Introduce.html" title= "iOS需要了解的ARM64汇编">
+                    <div class="nextTitle">iOS需要了解的ARM64汇编</div>
                 </a>
             
         </li>
         <li class="previous">
             
                 <div class="prevSlogan">Previous Post</div>
-                <a href= "/2021/04/05/iOS-CI.html" title= "iOS的持续集成">
-                    <div class="prevTitle">iOS的持续集成</div>
+                <a href= "/2021/04/10/Ins-SysCall-Kernel-Shell.html" title= "指令、系统调用、库、Shell、APP的层次关系">
+                    <div class="prevTitle">指令、系统调用、库、Shell、APP的层次关系</div>
                 </a>
             
         </li>
@@ -935,7 +960,7 @@ top:40vh;
         <div class="toc-catalog">
             <span class="iconfont-archer catalog-icon">&#xe613;</span><span>CATALOG</span>
         </div>
-        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E3%80%81%E5%91%BD%E4%BB%A4%E8%A1%8C%E7%95%8C%E9%9D%A2-CLI-%E5%92%8C%E5%91%BD%E4%BB%A4-%E8%A1%8C"><span class="toc-text">一、命令行界面(CLI)和命令(行)</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-1-CLI%E3%80%81GUI%E6%98%AF%E4%BB%80%E4%B9%88%EF%BC%9F"><span class="toc-text">1.1 CLI、GUI是什么？</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-2-%E5%91%BD%E4%BB%A4"><span class="toc-text">1.2 命令</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-3-%E5%B8%B8%E8%A7%81%E7%9A%84CLI%E7%A8%8B%E5%BA%8F"><span class="toc-text">1.3 常见的CLI程序</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8C%E3%80%81Shell"><span class="toc-text">二、Shell</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#2-1-Shell-%E5%88%86%E7%B1%BB"><span class="toc-text">2.1 Shell 分类</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-2-CLI-Shell%E7%9A%84%E5%8F%91%E5%B1%95"><span class="toc-text">2.2 CLI Shell的发展</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-3-%E4%B8%8D%E5%90%8C%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E7%9A%84Shell%E4%B8%BE%E4%BE%8B"><span class="toc-text">2.3 不同操作系统的Shell举例</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-4-Shell%E4%B8%8EShell%E8%84%9A%E6%9C%AC"><span class="toc-text">2.4 Shell与Shell脚本</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%89%E3%80%81%E7%BB%88%E7%AB%AF-Terminal"><span class="toc-text">三、终端(Terminal)</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#3-1-%E7%8E%B0%E5%9C%A8%E7%9A%84%E4%B8%80%E4%BA%9B%E5%8F%AB%E6%B3%95%E5%90%8D%E8%AF%8D"><span class="toc-text">3.1 现在的一些叫法名词</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-2-%E5%8E%86%E5%8F%B2"><span class="toc-text">3.2 历史</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#3-2-1-%E6%97%A9%E6%9C%9F%E7%9A%84%E7%BB%88%E7%AB%AF"><span class="toc-text">3.2.1 早期的终端</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3-2-2-%E5%AD%97%E7%AC%A6%E7%BB%88%E7%AB%AF%EF%BC%88%E5%93%91%E7%BB%88%E7%AB%AF%E3%80%81%E6%99%BA%E8%83%BD%E7%BB%88%E7%AB%AF"><span class="toc-text">3.2.2 字符终端（哑终端、智能终端)</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3-2-3-%E5%9B%BE%E5%BD%A2%E7%BB%88%E7%AB%AF"><span class="toc-text">3.2.3 图形终端</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-3-%E7%8E%B0%E4%BB%A3-%E7%BB%88%E7%AB%AF%E6%A8%A1%E6%8B%9F%E5%99%A8"><span class="toc-text">3.3 现代: 终端模拟器</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E4%BD%9C%E7%94%A8"><span class="toc-text">作用</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%B7%A5%E4%BD%9C%E6%B5%81%E7%A8%8B"><span class="toc-text">工作流程</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%B8%B8%E8%A7%81%E7%9A%84%E7%BB%88%E7%AB%AF%E6%A8%A1%E6%8B%9F%E5%99%A8"><span class="toc-text">常见的终端模拟器</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E4%B8%A4%E7%A7%8D%E5%BD%A2%E5%BC%8F"><span class="toc-text">两种形式</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-4-%E8%A1%A5%E5%85%85-%E6%8E%A7%E5%88%B6%E5%8F%B0%E3%80%81TTY%E3%80%81%E7%BB%88%E7%AB%AF%E6%9C%8D%E5%8A%A1%E5%99%A8"><span class="toc-text">3.4 补充: 控制台、TTY、终端服务器</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#3-4-1-%E6%8E%A7%E5%88%B6%E5%8F%B0-Console"><span class="toc-text">3.4.1 控制台(Console)</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3-4-2-TTY"><span class="toc-text">3.4.2 TTY</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3-4-3-%E7%BB%88%E7%AB%AF%E6%9C%8D%E5%8A%A1%E5%99%A8"><span class="toc-text">3.4.3 终端服务器</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9B%9B%E3%80%81Shell%E4%B8%8E%E7%BB%88%E7%AB%AF%E7%9A%84%E5%88%86%E5%B7%A5"><span class="toc-text">四、Shell与终端的分工</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%94%E3%80%81%E8%84%9A%E6%9C%ACScript"><span class="toc-text">五、脚本Script</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#5-1-%E6%A6%82%E8%BF%B0"><span class="toc-text">5.1 概述</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-2-%E8%84%9A%E6%9C%AC%E3%80%81%E7%A8%8B%E5%BA%8F%E3%80%81%E8%BD%AF%E4%BB%B6"><span class="toc-text">5.2 脚本、程序、软件</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-3-%E8%84%9A%E6%9C%AC%E8%AF%AD%E8%A8%80%E5%8F%8A%E5%88%86%E7%B1%BB"><span class="toc-text">5.3 脚本语言及分类</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#5-3-1-%E5%8F%91%E5%B1%95"><span class="toc-text">5.3.1 发展</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#5-3-2-%E5%88%86%E7%B1%BB"><span class="toc-text">5.3.2 分类</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%8F%82%E8%80%83%E9%93%BE%E6%8E%A5"><span class="toc-text">参考链接</span></a></li></ol></li></ol></li></ol>
+        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E3%80%81%E5%91%BD%E4%BB%A4%E8%A1%8C%E7%95%8C%E9%9D%A2-CLI-%E5%92%8C%E5%91%BD%E4%BB%A4-%E8%A1%8C"><span class="toc-text">一、命令行界面(CLI)和命令(行)</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-1-CLI%E3%80%81GUI%E6%98%AF%E4%BB%80%E4%B9%88%EF%BC%9F"><span class="toc-text">1.1 CLI、GUI是什么？</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-2-%E5%91%BD%E4%BB%A4"><span class="toc-text">1.2 命令</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-3-%E5%B8%B8%E8%A7%81%E7%9A%84CLI%E7%A8%8B%E5%BA%8F"><span class="toc-text">1.3 常见的CLI程序</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8C%E3%80%81Shell"><span class="toc-text">二、Shell</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#2-1-Shell-%E5%88%86%E7%B1%BB"><span class="toc-text">2.1 Shell 分类</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-2-CLI-Shell%E7%9A%84%E5%8F%91%E5%B1%95"><span class="toc-text">2.2 CLI Shell的发展</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-3-%E4%B8%8D%E5%90%8C%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E7%9A%84Shell%E4%B8%BE%E4%BE%8B"><span class="toc-text">2.3 不同操作系统的Shell举例</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-4-Shell%E4%B8%8EShell%E8%84%9A%E6%9C%AC"><span class="toc-text">2.4 Shell与Shell脚本</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%89%E3%80%81%E7%BB%88%E7%AB%AF-Terminal"><span class="toc-text">三、终端(Terminal)</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#3-1-%E7%8E%B0%E5%9C%A8%E7%9A%84%E4%B8%80%E4%BA%9B%E5%8F%AB%E6%B3%95%E5%90%8D%E8%AF%8D"><span class="toc-text">3.1 现在的一些叫法名词</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-2-%E5%8E%86%E5%8F%B2"><span class="toc-text">3.2 历史</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#3-2-1-%E6%97%A9%E6%9C%9F%E7%9A%84%E7%BB%88%E7%AB%AF"><span class="toc-text">3.2.1 早期的终端</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3-2-2-%E5%AD%97%E7%AC%A6%E7%BB%88%E7%AB%AF%EF%BC%88%E5%93%91%E7%BB%88%E7%AB%AF%E3%80%81%E6%99%BA%E8%83%BD%E7%BB%88%E7%AB%AF"><span class="toc-text">3.2.2 字符终端（哑终端、智能终端)</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3-2-3-%E5%9B%BE%E5%BD%A2%E7%BB%88%E7%AB%AF"><span class="toc-text">3.2.3 图形终端</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-3-%E7%8E%B0%E4%BB%A3-%E7%BB%88%E7%AB%AF%E6%A8%A1%E6%8B%9F%E5%99%A8"><span class="toc-text">3.3 现代: 终端模拟器</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E4%BD%9C%E7%94%A8"><span class="toc-text">作用</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%B7%A5%E4%BD%9C%E6%B5%81%E7%A8%8B"><span class="toc-text">工作流程</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%B8%B8%E8%A7%81%E7%9A%84%E7%BB%88%E7%AB%AF%E6%A8%A1%E6%8B%9F%E5%99%A8"><span class="toc-text">常见的终端模拟器</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E4%B8%A4%E7%A7%8D%E5%BD%A2%E5%BC%8F"><span class="toc-text">两种形式</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-4-%E8%A1%A5%E5%85%85-%E6%8E%A7%E5%88%B6%E5%8F%B0%E3%80%81TTY%E3%80%81%E7%BB%88%E7%AB%AF%E6%9C%8D%E5%8A%A1%E5%99%A8"><span class="toc-text">3.4 补充: 控制台、TTY、终端服务器</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#3-4-1-%E6%8E%A7%E5%88%B6%E5%8F%B0-Console"><span class="toc-text">3.4.1 控制台(Console)</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3-4-2-TTY"><span class="toc-text">3.4.2 TTY</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#TTY%E8%AE%BE%E5%A4%87"><span class="toc-text">TTY设备</span></a></li></ol></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3-4-3-%E7%BB%88%E7%AB%AF%E6%9C%8D%E5%8A%A1%E5%99%A8"><span class="toc-text">3.4.3 终端服务器</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9B%9B%E3%80%81Shell%E4%B8%8E%E7%BB%88%E7%AB%AF%E7%9A%84%E5%88%86%E5%B7%A5"><span class="toc-text">四、Shell与终端的分工</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%94%E3%80%81%E8%84%9A%E6%9C%ACScript"><span class="toc-text">五、脚本Script</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#5-1-%E6%A6%82%E8%BF%B0"><span class="toc-text">5.1 概述</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-2-%E8%84%9A%E6%9C%AC%E3%80%81%E7%A8%8B%E5%BA%8F%E3%80%81%E8%BD%AF%E4%BB%B6"><span class="toc-text">5.2 脚本、程序、软件</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-3-%E8%84%9A%E6%9C%AC%E8%AF%AD%E8%A8%80%E5%8F%8A%E5%88%86%E7%B1%BB"><span class="toc-text">5.3 脚本语言及分类</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#5-3-1-%E5%8F%91%E5%B1%95"><span class="toc-text">5.3.1 发展</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#5-3-2-%E5%88%86%E7%B1%BB"><span class="toc-text">5.3.2 分类</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%AD%E3%80%81Shell%E8%84%9A%E6%9C%AC%E7%BC%96%E7%A8%8B"><span class="toc-text">六、Shell脚本编程</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%83%E3%80%81%E5%8F%82%E8%80%83%E9%93%BE%E6%8E%A5"><span class="toc-text">七、参考链接</span></a></li></ol>
     </div>
     
     <div class="back-top iconfont-archer">&#xe639;</div>
@@ -2090,17 +2115,17 @@ top:40vh;
     
     
         <li class="archive-post-item">
-            <span class="archive-post-date">04/15</span><a class="archive-post-title" href= "/2021/04/15/Ins-SysCall-Kernel-Shell.html" >指令、系统调用、库、Shell、APP的层次关系</a>
+            <span class="archive-post-date">04/13</span><a class="archive-post-title" href= "/2021/04/13/Command-Line.html" >CLI Shell、Terminal、脚本(语言)</a>
         </li>
     
     
         <li class="archive-post-item">
-            <span class="archive-post-date">04/14</span><a class="archive-post-title" href= "/2021/04/14/ISA-Microarch-Soc.html" >指令集、微架构、手机芯片(Soc)及ARM的介绍</a>
+            <span class="archive-post-date">04/10</span><a class="archive-post-title" href= "/2021/04/10/Ins-SysCall-Kernel-Shell.html" >指令、系统调用、库、Shell、APP的层次关系</a>
         </li>
     
     
         <li class="archive-post-item">
-            <span class="archive-post-date">04/13</span><a class="archive-post-title" href= "/2021/04/13/Command-Line.html" >CLI-Shell-Terminal-脚本概念梳理</a>
+            <span class="archive-post-date">04/08</span><a class="archive-post-title" href= "/2021/04/08/ISA-Microarch-Soc.html" >指令集、微架构、手机芯片(Soc)及ARM的介绍</a>
         </li>
     
     
@@ -2135,10 +2160,6 @@ top:40vh;
     
         <span class="sidebar-tag-name" data-tags="Log"><span class="iconfont-archer">&#xe606;</span>Log</span>
     
-        <span class="sidebar-tag-name" data-tags="CLI"><span class="iconfont-archer">&#xe606;</span>CLI</span>
-    
-        <span class="sidebar-tag-name" data-tags="Shell"><span class="iconfont-archer">&#xe606;</span>Shell</span>
-    
         <span class="sidebar-tag-name" data-tags="ISA"><span class="iconfont-archer">&#xe606;</span>ISA</span>
     
         <span class="sidebar-tag-name" data-tags="Microarch"><span class="iconfont-archer">&#xe606;</span>Microarch</span>
@@ -2152,6 +2173,10 @@ top:40vh;
         <span class="sidebar-tag-name" data-tags="dp"><span class="iconfont-archer">&#xe606;</span>dp</span>
     
         <span class="sidebar-tag-name" data-tags="AutoreleasePool"><span class="iconfont-archer">&#xe606;</span>AutoreleasePool</span>
+    
+        <span class="sidebar-tag-name" data-tags="CLI"><span class="iconfont-archer">&#xe606;</span>CLI</span>
+    
+        <span class="sidebar-tag-name" data-tags="Shell"><span class="iconfont-archer">&#xe606;</span>Shell</span>
     
         <span class="sidebar-tag-name" data-tags="ARM64"><span class="iconfont-archer">&#xe606;</span>ARM64</span>
     
