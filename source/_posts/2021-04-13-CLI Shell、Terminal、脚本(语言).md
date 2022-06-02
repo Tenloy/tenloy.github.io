@@ -414,6 +414,8 @@ TTY 是 Teletype 或 Teletypewriter 的缩写，原来是指电传打字机，�
 
 上面已经说过，不管是正流行的bash、zsh本质上都是解释器，它们都服务的是shell语言，因此bash脚本、zsh脚本程序在使用shell commands(类比SDK API)编程时，语法上基本相同，部分兼容性差异可参考：[zsh和bash的兼容性差异](https://segmentfault.com/a/1190000011122024)。（*这个类似JS代码在Chrome、Safari、Edge等浏览器平台的兼容性*）
 
+### 6.1 基本教程
+
 - [Bash 脚本教程 — 阮一峰](https://wangdoc.com/bash/)
   - [ 简介](https://wangdoc.com/bash/intro.html)
   - [ 基本语法](https://wangdoc.com/bash/grammar.html)
@@ -435,7 +437,35 @@ TTY 是 Teletype 或 Teletypewriter 的缩写，原来是指电传打字机，�
   - [ mktemp 命令，trap 命令](https://wangdoc.com/bash/mktemp.html)
   - [ 启动环境](https://wangdoc.com/bash/startup.html)
   - [ 命令提示符](https://wangdoc.com/bash/prompt.html)
-- [curl 的用法指南 — 阮一峰](https://www.ruanyifeng.com/blog/2019/09/curl-reference.html)
+
+### 6.2 网络请求
+
+curl 是常用的命令行工具，用来请求 Web 服务器。它的名字就是客户端（client）的 URL 工具的意思。[curl 的用法指南 by 阮一峰](https://www.ruanyifeng.com/blog/2019/09/curl-reference.html)
+
+curl 与 wget的比较：
+
+- 相似之处：
+  - 都可以向互联网发送请求并返回请求项。这可以是文件、图片或者是其他诸如网站的原始 HTML 之类。
+  - 都可以进行 HTTP POST 请求。
+  - 因为都是命令行工具，所以皆可脚本化，可以写进 [Bash 脚本](https://www.maketecheasier.com/beginners-guide-scripting-linux/)
+
+- wget的优势：
+  - 简单直接。wget 是一个独立的程序，无需额外的资源库，更不会做其范畴之外的事情。
+  - 是专业的直接下载程序，支持递归下载。同时，允许你下载网页中或是 FTP 目录中的任何内容。
+  - 拥有智能的默认设置。它规定了很多在常规浏览器里的事物处理方式，比如 cookies 和重定向，这都不需要额外的配置。可以说，wget 简直就是无需说明，开罐即食！
+- curl的优势：
+  - 是一个多功能工具。当然，它可以下载网络内容，但同时它也能做更多别的事情。
+  - 技术支持库是：libcurl。这就意味着你可以基于 libcurl 库编写图形环境的下载程序，访问它所有的功能。
+  - 宽泛的网络协议支持是其很大的卖点。curl 支持访问 HTTP 和 HTTPS 协议，能够处理 FTP 传输。它支持 LDAP 协议，甚至支持 Samba 分享、收发邮件。
+  - 也有一些简洁的安全特性。curl 支持安装许多 SSL/TLS 库，也支持通过网络代理访问，包括 SOCKS。这意味着，你可以越过 Tor 来使用curl。
+  - curl 同样支持让数据发送变得更容易的 gzip 压缩技术。
+
+- 小结
+  - curl 与 wget 的选择得看实际用途。如果想快速下载并且没有担心参数标识的需求，那应该使用轻便有效的 wget。如果想做一些更复杂的使用，应该选择 curl。
+  - cURL 支持做很多事情。可以把 cURL 想象成一个精简的命令行网页浏览器。它支持几乎所有能想到的协议，可以交互访问几乎所有在线内容。唯一和浏览器不同的是，curl 不会渲染接收到的相应信息。
+
+### 6.3 数据解析
+
 - 使用jq进行json的解析
 
 ## 七、参考链接
