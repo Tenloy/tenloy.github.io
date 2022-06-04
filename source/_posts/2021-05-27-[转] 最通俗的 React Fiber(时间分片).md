@@ -5,7 +5,7 @@ urlname: Fiber.html
 tags:
   - Fiber
 categories:
-  - React
+  - Web
 ---
 
 [原文链接](https://juejin.cn/post/6844903975112671239#heading-13) Fiber 不是一个新的东西，来看一下单处理进程调度

@@ -4,7 +4,7 @@ date: 2022-05-05 11:12:33
 urlname: sqlite.html
 tags:
 categories:
-  - 数据的传输与存储
+  - 数据的存储与传输
 ---
 
 # iOS 数据库方案

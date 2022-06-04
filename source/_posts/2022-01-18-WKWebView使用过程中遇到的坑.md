@@ -4,7 +4,7 @@ date: 2022-01-18 17:39:45
 urlname: wkwebview-buges.html
 tags:
 categories:
-  - Hybid APP
+  - iOS
 ---
 
 # WKWebView API
