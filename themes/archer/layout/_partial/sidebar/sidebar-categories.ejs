@@ -1,5 +1,24 @@
 <div class="sidebar-panel-categories">
     <div class="sidebar-categories-name">
+    <% const order_map = { '数据结构与算法': 1, '计算机组成原理': 2,
+                           '计算机网络': 3, '汇编语言': 4,
+                           '数据的存储与传输': 5, '操作系统': 6,
+                           '互联网标准RFC': 7, '编译链接与装载': 8,
+                           'iOS': 9, '架构与设计模式': 10,
+                           '图形处理与渲染': 11, '软件工程': 12,
+                           '音视频处理': 13, 'DSL': 14,
+                           'Swift': 15, 'Git': 16,
+                           'Web': 17 } %>
+    <% site.categories.data.forEach(function (ele) {
+        ele.orderIndex = (order_map[ele.name] ? order_map[ele.name] : 100);
+    }) %>
+    <% function compare (prop) {
+        return function (obj1, obj2) {
+            var val1 = obj1[prop];
+            var val2 = obj2[prop]; 
+            return (val1 < val2 ? -1 : 1);
+        }} %>
+    <% site.categories.data.sort(compare("orderIndex")); %>
     <% site.categories.each(function (category) { %>
         <span class="sidebar-category-name" data-categories="<%- category.slug %>"><span class="iconfont-archer">&#xe60a;</span><%- category.slug %></span>
     <% }) %>
