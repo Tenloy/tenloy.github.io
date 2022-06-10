@@ -20,27 +20,27 @@
     <meta name="keywords" content="Tenloy,iOS,Swift">
     
     <meta name="description" content="学习 生活 记录 回忆">
-    <meta name="description" content="一、ASLR引入进程在自己私有的虚拟地址空间中启动。按照传统方式，进程每一次启动时采用的都是固定的可预见的方式。然而，这意味着某个给定程序在某个给定架构上的进程初始虚拟内存镜像都是基本一致的。而且更严重的问题在于，即使是在进程正常运行的生命周期中，大部分内存分配的操作都是按照同样的方式进行的，因此使得内存中的地址分布具有非常强的可预测性。 尽管这有助于调试，但是也给黑客提供了更大的施展空间。黑客主">
+    <meta name="description" content="目的：构建自己的一个组件，放在公司的私有pod库中，然后可以通过cocoapod来导入这个pod库。  一、几个概念在构建私有库之前，先了解以下几个基本概念  repo(repository仓库) Pod(代码库)。分为：(Pod译为(宇宙飞船的)分离舱，Pod对于主项目，如iPod之于Mac，AirPods之于iPhone) 公有库：放在外网上，其他开发者是可以访问使用的 私有库：放在本地或者">
 <meta property="og:type" content="article">
-<meta property="og:title" content="(五) Mach-O 文件之进程(虚拟)地址空间、ASLR">
-<meta property="og:url" content="https://tenloy.github.io/2021/09/26/compile-vm-asrl.html">
+<meta property="og:title" content="私有Pod库部署">
+<meta property="og:url" content="https://tenloy.github.io/2021/05/03/iOS-private-pod.html">
 <meta property="og:site_name" content="Tenloy&#39;s Blog">
-<meta property="og:description" content="一、ASLR引入进程在自己私有的虚拟地址空间中启动。按照传统方式，进程每一次启动时采用的都是固定的可预见的方式。然而，这意味着某个给定程序在某个给定架构上的进程初始虚拟内存镜像都是基本一致的。而且更严重的问题在于，即使是在进程正常运行的生命周期中，大部分内存分配的操作都是按照同样的方式进行的，因此使得内存中的地址分布具有非常强的可预测性。 尽管这有助于调试，但是也给黑客提供了更大的施展空间。黑客主">
+<meta property="og:description" content="目的：构建自己的一个组件，放在公司的私有pod库中，然后可以通过cocoapod来导入这个pod库。  一、几个概念在构建私有库之前，先了解以下几个基本概念  repo(repository仓库) Pod(代码库)。分为：(Pod译为(宇宙飞船的)分离舱，Pod对于主项目，如iPod之于Mac，AirPods之于iPhone) 公有库：放在外网上，其他开发者是可以访问使用的 私有库：放在本地或者">
 <meta property="og:locale" content="en_US">
-<meta property="og:image" content="https://tenloy.github.io/images/compilelink/26.png">
-<meta property="og:image" content="https://tenloy.github.io/images/compilelink/27.png">
-<meta property="og:image" content="https://tenloy.github.io/images/compilelink/28.png">
-<meta property="og:image" content="https://tenloy.github.io/images/compilelink/29.png">
-<meta property="article:published_time" content="2021-09-26T14:26:04.000Z">
-<meta property="article:modified_time" content="2022-06-10T07:11:30.903Z">
+<meta property="og:image" content="https://segmentfault.com/img/bVZ8CG">
+<meta property="og:image" content="https://segmentfault.com/img/bV0aBW">
+<meta property="og:image" content="https://segmentfault.com/img/bV0aKX">
+<meta property="og:image" content="https://segmentfault.com/img/bVZ98b">
+<meta property="article:published_time" content="2021-05-03T10:09:20.000Z">
+<meta property="article:modified_time" content="2022-06-10T07:11:30.895Z">
 <meta property="article:author" content="Tenloy">
 <meta property="article:tag" content="Tenloy, iOS, Tenloy Blog, 博客，Swift, 编译, 计算机">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:image" content="https://tenloy.github.io/images/compilelink/26.png">
+<meta name="twitter:image" content="https://segmentfault.com/img/bVZ8CG">
     <meta http-equiv="Cache-control" content="no-cache">
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"/>
     
-    <title>(五) Mach-O 文件之进程(虚拟)地址空间、ASLR · Tenloy&#39;s Blog</title>
+    <title>私有Pod库部署 · Tenloy&#39;s Blog</title>
     <style type="text/css">
     @font-face {
         font-family: 'Oswald-Regular';
@@ -251,7 +251,7 @@
                 <a href="/" >Tenloy&#39;s Blog</a>
             </div>
             <div class="post-title">
-                <a href="#" class="post-name">(五) Mach-O 文件之进程(虚拟)地址空间、ASLR</a>
+                <a href="#" class="post-name">私有Pod库部署</a>
             </div>
     </div>
     
@@ -290,7 +290,7 @@ height:40vh;
         <h1 class="intro-title">
             <!-- 主页  -->
             
-            (五) Mach-O 文件之进程(虚拟)地址空间、ASLR
+            私有Pod库部署
             <!-- 404 -->
             
         </h1>
@@ -314,7 +314,7 @@ height:40vh;
                 
                 <div class="post-intro-meta">
                     <span class="post-intro-calander iconfont-archer">&#xe676;</span>
-                    <span class="post-intro-time">2021/09/26</span>
+                    <span class="post-intro-time">2021/05/03</span>
                     
                     <span id="busuanzi_container_page_pv" class="busuanzi-pv">
                         <span class="iconfont-archer">&#xe602;</span>
@@ -438,100 +438,124 @@ height:40vh;
         <div class="container container-unloaded">
             <main class="main post-page">
     <article class="article-entry">
-        <h2 id="一、ASLR引入"><a href="#一、ASLR引入" class="headerlink" title="一、ASLR引入"></a>一、ASLR引入</h2><p>进程在自己私有的虚拟地址空间中启动。按照传统方式，进程每一次启动时采用的都是固定的可预见的方式。然而，这意味着某个给定程序在某个给定架构上的进程初始虚拟内存镜像都是基本一致的。而且更严重的问题在于，即使是在进程正常运行的生命周期中，大部分内存分配的操作都是按照同样的方式进行的，因此使得内存中的地址分布具有非常强的可预测性。</p>
-<p>尽管这有助于调试，但是也给黑客提供了更大的施展空间。黑客主要采用的方法是代码注入：通过重写内存中的函数指针，黑客就可以将程序的执行路径转到自己的代码，将程序的输入转变为自己的输入。重写内存最常用的方法是采用缓冲区溢出(即利用未经保护的内存复制操作越过上数组的边界)，可参考<a target="_blank" rel="noopener" href="https://www.jianshu.com/p/4703ad3efbb9">缓冲区溢出攻击</a>，将函数的返回地址重写为自己的指针。不仅如此，黑客还有更具创意的技术，例如破坏printf()格式化字符串以及基于堆的缓冲区溢出。此外，任何用户指针甚至结构化的异常处理程序都可以导致代码注入。这里的关键问题在于判断重写哪些指针，也就是说，可靠地判断注入的代码应该在内存中的什么位置。</p>
-<p>不论被破解程序的薄弱环节在哪里：缓冲区溢出、格式化字符串攻击或其他方式，黑客都可以花大力气破解一个不安全的程序，找到这个程序的地址空间布局，然后精心设计一种方法，这种方法可以可靠地重现程序中的薄弱环节，并且可以在类似的系统上暴露出一样的薄弱环节。</p>
-<p>现在大部分操作系统中都采用了一种称为地址空间布局随机化(ASLR) 的技术，这是一种避免攻击的有效保护。进程每一次启动时，地址空间都会被简单地随机化：<strong>只是偏移，而不是搅乱</strong>。基本的布局(程序文本、数据和库)仍然是一样的。然而，这些部分具体的地址都不同了——区别足够大，可以阻挡黑客对地址的猜测。<strong>实现方法是通过内核将Mach-O的段“平移”某个随机系数</strong>。</p>
-<h2 id="二、ASLR"><a href="#二、ASLR" class="headerlink" title="二、ASLR"></a>二、ASLR</h2><p>地址空间布局随机化(Address Space Layout Randomization，ASLR)是一种针对缓冲区溢出的安全保护技术，通过对堆、栈、共享库映射等线性区布局的随机化，通过增加攻击者预测目的地址的难度，防止攻击者直接定位攻击代码位置，达到阻止溢出攻击的目的的一种技术。iOS4.3开始引入了ASLR技术。</p>
-<p>下面分别来看一下，未使用ASLR、使用了ASLR下，进程虚拟地址空间内的分布。下图中左侧是mach-O可执行文件，右侧是链接之后的虚拟地址空间，如果对<code>__TEXT</code>、<code>__DATA</code>等Segment概念不清楚的地方，可以看一些第二篇关于Mach-O文件结构的介绍。</p>
-<h3 id="2-1-未使用ASLR"><a href="#2-1-未使用ASLR" class="headerlink" title="2.1 未使用ASLR"></a>2.1 未使用ASLR</h3><ul>
-<li>函数代码存放在__TEXT段中</li>
-<li>全局变量存放在__DATA段中</li>
-<li>可执行文件的内存地址是0x0</li>
-<li>代码段（__TEXT）的内存地址就是LC_SEGMENT(__TEXT)中的VM Address：arm64设备下，为<code>0x100000000</code>；非arm64下为<code>0x4000</code></li>
-<li>可以使用<code>size -l -m -x</code>来查看Mach-O的内存分布</li>
-</ul>
-<img src="/images/compilelink/26.png" alt="26" style="zoom:55%;" />
-
-<h3 id="2-2-使用了ASLR"><a href="#2-2-使用了ASLR" class="headerlink" title="2.2 使用了ASLR"></a>2.2 使用了ASLR</h3><ul>
-<li>LC_SEGMENT(__TEXT)的VM Address为<code>0x100000000</code></li>
-<li>ASLR随机产生的Offset（偏移）为<code>0x5000</code></li>
-</ul>
-<img src="/images/compilelink/27.png" alt="26" style="zoom:55%;" />
-
-<h3 id="2-3-符号地址计算"><a href="#2-3-符号地址计算" class="headerlink" title="2.3 符号地址计算"></a>2.3 符号地址计算</h3><blockquote>
-<p>函数(变量)符号的内存地址、可执行文件地址计算</p>
+        <blockquote>
+<p>目的：构建自己的一个组件，放在公司的私有pod库中，然后可以通过cocoapod来导入这个pod库。</p>
 </blockquote>
-<h4 id="2-3-1-函数内存地址计算"><a href="#2-3-1-函数内存地址计算" class="headerlink" title="2.3.1 函数内存地址计算"></a>2.3.1 函数内存地址计算</h4><ul>
-<li><strong>File Offset:</strong> 在当前架构(MachO)文件中的偏移量。</li>
-<li> <strong>VM Address:</strong> 编译链接后，射到虚拟地址中的内存起始地址。 <code>VM Address = File Offset + __PAGEZERO Size</code>(__PAGEZERO段在MachO文件中没有实际大小，在VM中展开)</li>
-<li><strong>Load Address:</strong> 在运行时加载到虚拟内存的起始位置。Slide是加载到内存的偏移，这个偏移值是一个随机值，每次运行都不相同。<code>Load Address = VM Address + Slide(ASLR Offset)</code></li>
-</ul>
-<p>由于dsym符号表是编译时生成的地址，crash堆栈的地址是运行时地址，这个时候需要经过转换才能正确的符号化。crash日志里的符号地址被称为Stack Address，而编译后的符号地址被称为Symbol Address，他们之间的关系如下：<code>Stack Address = Symbol Address + Slide</code></p>
-<p>符号化就是通过Stack Address到dsym文件中寻找对应符号信息的过程。</p>
-<p>Hopper、IDA图形化工具中的地址都是未使用ASLR前的VM Address</p>
-<h4 id="2-3-2-ASLR-Offset的获取"><a href="#2-3-2-ASLR-Offset的获取" class="headerlink" title="2.3.2 ASLR Offset的获取"></a>2.3.2 ASLR Offset的获取</h4><p>ASLR Offset有的地方也叫做<code>slide</code>，获取方法：</p>
+<h2 id="一、几个概念"><a href="#一、几个概念" class="headerlink" title="一、几个概念"></a>一、几个概念</h2><p>在构建私有库之前，先了解以下几个基本概念</p>
 <ul>
-<li><p>在运行时由API <code>dyld_get_image_vmaddr_slide()</code>，来获取image虚拟地址的偏移量。</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//函数原型如下：</span></span><br><span class="line"><span class="keyword">extern</span> <span class="keyword">intptr_t</span>   _dyld_get_image_vmaddr_slide(<span class="keyword">uint32_t</span> image_index);</span><br><span class="line"></span><br><span class="line"><span class="comment">//一般使用方法如下：</span></span><br><span class="line"><span class="keyword">uint32_t</span> c = _dyld_image_count();</span><br><span class="line"><span class="keyword">for</span> (<span class="keyword">uint32_t</span> i = <span class="number">0</span>; i &lt; c; i++) &#123;</span><br><span class="line">  <span class="keyword">intptr_t</span> index  = _dyld_get_image_vmaddr_slide(i);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
-<li><p>通过<code>lldb</code>命令<code>image list -o -f</code> 进行获取（本地、远程<code>debugserver</code>调试都可以），如下图：</p>
-<img src="/images/compilelink/28.png" alt="26" style="zoom:80%;" /></li>
-<li><p>根据运行时crash中的 <code>binary image</code>信息 和 ELF 文件的 <code>load command</code> 计算的到。比如下例：</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//下面是crash信息，其中包括了抛出异常的线程的函数调用栈信息，日志下方有binary image信息，都只摘取了部分：</span></span><br><span class="line"><span class="comment">/*</span></span><br><span class="line"><span class="comment"> 第一列，调用顺序</span></span><br><span class="line"><span class="comment"> 第二列，对应函数所属的 binary image</span></span><br><span class="line"><span class="comment"> 第三列，stack address</span></span><br><span class="line"><span class="comment"> 第四列，地址的符号＋偏移的表示法，运算结果等于第三列</span></span><br><span class="line"><span class="comment">*/</span></span><br><span class="line">Last Exception Backtrace:  </span><br><span class="line"><span class="number">0</span>   CoreFoundation                <span class="number">0x189127100</span> __exceptionPreprocess + <span class="number">132</span>  </span><br><span class="line"><span class="number">1</span>   libobjc.A.dylib               <span class="number">0x1959e01fc</span> objc_exception_throw + <span class="number">60</span>  </span><br><span class="line"><span class="number">2</span>   CoreFoundation                <span class="number">0x189127040</span> +[NSException raise:format:] + <span class="number">128</span>  </span><br><span class="line"><span class="number">3</span>   CrashDemo                     <span class="number">0x100a8666c</span> <span class="number">0x10003c000</span> + <span class="number">10790508</span>  </span><br><span class="line"><span class="number">4</span>   libsystem_platform.dylib      <span class="number">0x19614bb0c</span> _sigtramp + <span class="number">56</span>  </span><br><span class="line"><span class="number">5</span>   CrashDemo                     <span class="number">0x1006ef164</span> <span class="number">0x10003c000</span> + <span class="number">7024996</span>  </span><br><span class="line"><span class="number">6</span>   CrashDemo                     <span class="number">0x1006e8580</span> <span class="number">0x10003c000</span> + <span class="number">6997376</span>  </span><br><span class="line"><span class="number">7</span>   CrashDemo                     <span class="number">0x1006e8014</span> <span class="number">0x10003c000</span> + <span class="number">6995988</span>  </span><br><span class="line"><span class="number">8</span>   CrashDemo                     <span class="number">0x1006e7c94</span> <span class="number">0x10003c000</span> + <span class="number">6995092</span>  </span><br><span class="line"><span class="number">9</span>   CrashDemo                     <span class="number">0x1006f2460</span> <span class="number">0x10003c000</span> + <span class="number">7038048</span>  </span><br><span class="line"></span><br><span class="line"><span class="comment">/* </span></span><br><span class="line"><span class="comment"> 第一列，虚拟地址空间区块；</span></span><br><span class="line"><span class="comment"> 第二列，映射文件名；</span></span><br><span class="line"><span class="comment"> 第三列：加载的image的UUID；</span></span><br><span class="line"><span class="comment"> 第四列，映射文件路径 </span></span><br><span class="line"><span class="comment">*/</span></span><br><span class="line">Binary Images:  </span><br><span class="line"><span class="number">0x10003c000</span> - <span class="number">0x100f7bfff</span> CrashDemo arm64  &lt;b5ae3570a013386688c7007ee2e73978&gt; /var/mobile/Applications/<span class="number">05</span>C398CE<span class="number">-21E9</span><span class="number">-43</span>C2<span class="number">-967F</span><span class="number">-26</span>DD0A327932/CrashDemo.app/CrashDemo  </span><br><span class="line"><span class="number">0x12007c000</span> - <span class="number">0x1200a3fff</span> dyld arm64  &lt;<span class="number">628</span>da833271c3f9bb8d44c34060f55e0&gt; /usr/lib/dyld</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment">//下面是使用 otool 工具查看到的 MedicalRecordsFolder（我的程序）的 加载命令 。</span></span><br><span class="line">$otool -l CrashDemo.app/CrashDemo   </span><br><span class="line">CrashDemo.app/CrashDemo:  </span><br><span class="line">Load command <span class="number">0</span>  </span><br><span class="line">      cmd LC_SEGMENT_64  </span><br><span class="line">  cmdsize <span class="number">72</span>  </span><br><span class="line">  segname __PAGEZERO  </span><br><span class="line">   vmaddr <span class="number">0x0000000000000000</span>  </span><br><span class="line">   vmsize <span class="number">0x0000000100000000</span>  </span><br><span class="line">  fileoff <span class="number">0</span>  </span><br><span class="line"> filesize <span class="number">0</span>  </span><br><span class="line">  maxprot <span class="number">0x00000000</span>  </span><br><span class="line"> initprot <span class="number">0x00000000</span>  </span><br><span class="line">   nsects <span class="number">0</span>  </span><br><span class="line">    flags <span class="number">0x0</span>  </span><br><span class="line">Load command <span class="number">1</span>  </span><br><span class="line">      cmd LC_SEGMENT_64  </span><br><span class="line">  cmdsize <span class="number">792</span>  </span><br><span class="line">  segname __TEXT  </span><br><span class="line">   vmaddr <span class="number">0x0000000100000000</span>  </span><br><span class="line">   vmsize <span class="number">0x000000000000c000</span>  </span><br><span class="line">  fileoff <span class="number">0</span>  </span><br><span class="line"> filesize <span class="number">49152</span>  </span><br><span class="line">  maxprot <span class="number">0x00000005</span>  </span><br><span class="line"> initprot <span class="number">0x00000005</span>  </span><br><span class="line">   nsects <span class="number">9</span>  </span><br><span class="line">    flags <span class="number">0x0</span>  </span><br><span class="line">……  </span><br><span class="line">Load command <span class="number">2</span> </span><br><span class="line">……  </span><br></pre></td></tr></table></figure>
-<p>在 binary image 第一行可以看出进程空间的 0x10003c000 - 0x100f7bfff 这个区域在运行时被映射为 CrashDemo 内的内容，也就是我们的 ELF 文件(区域起始地址为0x10003c000)。<br>而在 Load Command 中看到的<code>__TEXT</code>的段起始地址却是 0x0000000100000000。<br>显而易见：slide = 0x10003c000(Load Address) - 0x100000000(VM Address) = 0x3c000；之后，就可以通过公式<code>symbol address = stack address - slide;</code> 来计算stack address 在crash log 中已经找到了。</p>
-</li>
-</ul>
-<h4 id="2-3-3-Symbol-Address符号化"><a href="#2-3-3-Symbol-Address符号化" class="headerlink" title="2.3.3 Symbol Address符号化"></a>2.3.3 Symbol Address符号化</h4><ul>
-<li><p>利用<code>dwarfdump</code>可以从dsym文件中得到symbol Address对应的内容：</p>
-<ul>
-<li>拿到crash日志后，我们要先确定dsym文件是否匹配。可以使用下面命令查看dsym文件所有架构的UUID：<code>dwarfdump --uuid CrashDemo.app.dSYM </code>，然后跟crash日志中Binary Images中的UUID相比对。</li>
-<li>用得到的Symbol Address去 dsym 文件中查询，命令如下：<code>dwarfdump --arch arm64 --lookup [Symbol Address] CrashDemo.app.dSYM</code>，就可以定位下来具体的代码、函数名、所处的文件、行等信息了</li>
+<li><strong>repo</strong>(repository仓库)</li>
+<li><strong>Pod</strong>(代码库)。分为：(<em>Pod译为(宇宙飞船的)分离舱，Pod对于主项目，如iPod之于Mac，AirPods之于iPhone</em>)<ul>
+<li>公有库：放在外网上，其他开发者是可以访问使用的</li>
+<li>私有库：放在本地或者内网上，只有公司内部的人员可以使用</li>
 </ul>
 </li>
-<li><p>如果只是简单的获取符号名，可以用<code>atos</code>来符号化：</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">atos -o [dsym file path] -l [Load Address] -arch [arch <span class="built_in">type</span>] [Stack Address]</span><br></pre></td></tr></table></figure>
+<li><strong>podspec</strong>文件(spec说明书)。创建pod库的时候会用到podspec文件将lib的一些信息，比如：版本号、作者名，链接地址等，以及其中用到的包括资源、源码、需要引用的framework，以及第三库等等组织起来。</li>
+<li><strong>Spec Repo</strong>(存放spec的仓库)。顾名思义，就是存放Spec文件的仓库，就是一个容器，所有公开的Pods都在这个里面，是一个Git仓库remote端。<ul>
+<li>执行 pod setup命令会clone该仓库到本地的~/.cocoapods/repos目录下，可以进入到这个目录看到master文件夹就是这个官方的Spec Repo了。</li>
+<li>Spec Repo仓库保存了依赖库的名称，版本号，以及spec文件。</li>
+<li>因为Spec Repo存放了所有的spec文件，所以很明显它是一种<strong>集中式的依赖库管理工具</strong>。</li>
+</ul>
+</li>
+</ul>
+<p>创建公有Pod库或者私有Pod库，实际上原理是一样的，都是基于git服务和repo协议。</p>
+<p>不一样的是，两者的版本索引查询方式不一样，公有库的podspec由CocoaPods/Specs管理，而内部私有使用的pod库需要自己建立一个仓库(Spec Repo)来管理podspec。</p>
+<p>好了，下面我们正式来构建私有的pod库</p>
+<h2 id="二、构建私有pod库"><a href="#二、构建私有pod库" class="headerlink" title="二、构建私有pod库"></a>二、构建私有pod库</h2><h3 id="2-1-创建组件仓库"><a href="#2-1-创建组件仓库" class="headerlink" title="2.1 创建组件仓库"></a>2.1 创建组件仓库</h3><p>在公司的私有Git服务器上创建git仓库，用来管理我们的组件模块，将仓库<code>Clone</code>下来，把模块代码<code>Push</code>上去。</p>
+<h3 id="2-2-创建组件的-podspec文件"><a href="#2-2-创建组件的-podspec文件" class="headerlink" title="2.2 创建组件的.podspec文件"></a>2.2 创建组件的.podspec文件</h3><p>私有仓库的根目录下，执行下面命令，创建一个新的<code>.podspec</code>文件，在这个文件中来进行私有仓库的一些配置工作。</p>
+<figure class="highlight ruby"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">pod spec create TestModule <span class="comment"># 生成TestModule.podspec</span></span><br></pre></td></tr></table></figure>
 
+<h4 id="2-2-1-编写-podspec-源码或framework"><a href="#2-2-1-编写-podspec-源码或framework" class="headerlink" title="2.2.1 编写.podspec(源码或framework)"></a>2.2.1 编写.podspec(源码或framework)</h4><p>podspec 文件里面的东西，描述了我们代码库的一些特征，例如<code>name</code>、<code>source</code>、<code>version</code>之类的，在进行<code>pod search</code>操作的时候也会显示。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line">Pod::Spec.<span class="keyword">new</span> <span class="keyword">do</span> |s|</span><br><span class="line"> s.name         = <span class="string">&quot;TestModule&quot;</span></span><br><span class="line"> s.version      = <span class="string">&quot;0.0.5&quot;</span>   <span class="comment">// 当前版本号，假如你后续更新了新版本，需要修改此处。与组件中的tag保持一致。</span></span><br><span class="line"> s.summary      = <span class="string">&quot;Test&quot;</span>    <span class="comment">// A short description of TestModule.</span></span><br><span class="line"> s.description  = &lt;&lt;-DESC</span><br><span class="line">		<span class="string">&quot;用于生成tags和改进搜索结果，尽量剪短、切中要点&quot;</span></span><br><span class="line">              DESC</span><br><span class="line"> s.homepage     = <span class="string">&quot;http://gitlab.100credit.cn/xxx/TestModule&quot;</span>  <span class="comment">// 页面链接。可以是个介绍文档</span></span><br><span class="line"> s.license      = <span class="string">&quot;MIT&quot;</span></span><br><span class="line"> s.author       = &#123; <span class="string">&quot;username&quot;</span> =&gt; <span class="string">&quot;yyy@163.com&quot;</span> &#125;</span><br><span class="line"> s.source       = &#123; :git =&gt; <span class="string">&quot;http://gitlab.100credit.cn/xxx/TestModule.git&quot;</span>, :tag =&gt; <span class="string">&quot;#&#123;s.version&#125;&quot;</span> &#125; <span class="comment">// 代码仓库的地址</span></span><br><span class="line"> </span><br><span class="line"> <span class="comment">// **/* 的写法表示Classes所有路径下的所有匹配文件</span></span><br><span class="line"> s.exclude_files = <span class="string">&quot;Classes/Exclude&quot;</span>                     <span class="comment">// 不需要导入的文件路径</span></span><br><span class="line"> s.source_files  = <span class="string">&quot;Classes&quot;</span>, <span class="string">&quot;Classes/**/*.&#123;h,m&#125;&quot;</span>       <span class="comment">// 需要导入到项目中的文件</span></span><br><span class="line"> s.public_header_files = &#x27;Classes/*.h&#x27;, &#x27;Classes/**/*.h&#x27; // 配置公有的头文件（.h文件）</span><br><span class="line"> </span><br><span class="line"> <span class="comment">// 资源文件如.bundle，.png，.txt等，这些会被放到mainBundle中，要注意避免发生命名重复的问题。</span></span><br><span class="line"> s.resources = &#x27;Class/**/*.&#123;png&#125;&#x27;   </span><br><span class="line"> <span class="comment">// 资源文件（配置的文件会放到你自己指定的bundle中，可以解决resources导致的命名冲突问题）</span></span><br><span class="line"> s.resource_bundles = &#123; &#x27;ResourceBundleA&#x27; =&gt; [&#x27;Class/*.jpg&#x27;] &#125;</span><br><span class="line"> </span><br><span class="line"> <span class="comment">// 依赖的系统framework。将您的库与框架或库链接起来。库不包括其名称的lib前缀。</span></span><br><span class="line"> s.frameworks   = &#x27;UIKit&#x27; </span><br><span class="line"> <span class="comment">// s.vendored_frameworks = &#x27;&#x27;       // 依赖的非系统framework。</span></span><br><span class="line"> <span class="comment">// s.libraries = &#x27;&#x27;                 // 依赖的系统库。要忽略lib前缀</span></span><br><span class="line"> <span class="comment">// s.vendored_libraries = &#x27;&#x27;        // 依赖的非系统库。要带lib前缀</span></span><br><span class="line"> <span class="comment">// s.dependency &quot;JSONKit&quot;, &quot;~&gt; 1.4&quot; // 依赖的其他的pod库，或自身的subspec (depend on other Podspecs）</span></span><br><span class="line"> </span><br><span class="line"> <span class="comment">// 如果你的library依赖于编译器标记 compiler flags，可以在xcconfig hash中设置它们</span></span><br><span class="line"> <span class="comment">// s.xcconfig = &#123; &quot;HEADER_SEARCH_PATHS&quot; =&gt; &quot;$(SDKROOT)/usr/include/libxml2&quot; &#125;</span></span><br><span class="line">   </span><br><span class="line"> s.platform     = :ios</span><br><span class="line">end</span><br></pre></td></tr></table></figure>
+
+<p>以上 <code>source</code> 字段表示导入的是源码形式的依赖。也可以是 <code>framework</code> 形式。两种方式，各有利弊。</p>
 <ul>
-<li>不需要指定Symbol Address，只需要Load Address、Stack Address即可。</li>
+<li>直接在主工程中集成代码文件，可以看到其内部实现源码，<strong>方便在主工程中进行调试</strong>。</li>
+<li>集成<code>framework</code>的方式，<strong>可以加快编译速度</strong>，而且<strong>对每个组件的代码有很好的保密性</strong>。如果公司对代码安全比较看重，可以考虑<code>framework</code>的形式。</li>
 </ul>
-</li>
-</ul>
-<h2 id="三、进程地址空间"><a href="#三、进程地址空间" class="headerlink" title="三、进程地址空间"></a>三、进程地址空间</h2><p>由于ASLR的作用，进程的地址空间变得流动性非常大。但是尽管具体的地址会随机“滑动”某个小的偏移量，但整体布局保持不变。</p>
-<p>内存空间分为以下几个段：</p>
-<ul>
-<li><strong>__PAGEZERO</strong>：在32位的系统中，这是内存中单独的一个页面(4KB)，而且这个页面所有的访问权限都被撤消了。在 64 位系统上，这个段对应了一个完整的32位地址空间(即前4GB)。这个段有助于捕捉空指针引用(因为空指针实际上就是 0)，或捕捉将整数当做指针引用(因为32位平台下的 4095 以下的值，以及64位平台下4GB以下的值都在这个范围内)。由于这个范围内所有访问权限(读、写和执行)都被撤消了，所以在这个范围内的任何解引用操作都会引发来自 MMU 的硬件页错误， 进而产生一个内核可以捕捉的陷阱。内核将这个陷阱转换为C++异常或表示总线错误的POSIX信号(SIGBUS) 。</li>
-</ul>
+<p>以友盟的SDK为例，<code>UMCCommon.podspec.json</code>：</p>
+<figure class="highlight ruby"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  <span class="string">&quot;name&quot;</span>: <span class="string">&quot;UMCCommon&quot;</span>,</span><br><span class="line">  <span class="string">&quot;version&quot;</span>: <span class="string">&quot;7.3.5&quot;</span>,</span><br><span class="line">  <span class="string">&quot;summary&quot;</span>: <span class="string">&quot;UMeng+ component SDK&quot;</span>,</span><br><span class="line">  <span class="string">&quot;description&quot;</span>: <span class="string">&quot;友盟+组件化SDK基础库UMCommon&quot;</span>,</span><br><span class="line">  <span class="string">&quot;homepage&quot;</span>: <span class="string">&quot;https://developer.umeng.com/docs/66632/detail/66885&quot;</span>,  <span class="comment"># 文档链接</span></span><br><span class="line">  <span class="string">&quot;license&quot;</span>: &#123;</span><br><span class="line">    <span class="string">&quot;type&quot;</span>: <span class="string">&quot;Copyright&quot;</span>,</span><br><span class="line">    <span class="string">&quot;text&quot;</span>: <span class="string">&quot;Copyright 2011 - 2021 umeng.com. All rights reserved.\n&quot;</span></span><br><span class="line">  &#125;,</span><br><span class="line">  <span class="string">&quot;authors&quot;</span>: &#123; <span class="string">&quot;UMeng&quot;</span>: <span class="string">&quot;support@umeng.com&quot;</span> &#125;,</span><br><span class="line">  <span class="string">&quot;source&quot;</span>: &#123; <span class="string">&quot;http&quot;</span>: <span class="string">&quot;https://umplus-sdk-download.oss-cn-shanghai.aliyuncs.com/iOS/UMCommon/UMCommon_7.3.5.zip&quot;</span> &#125;,</span><br><span class="line">     <span class="comment"># 解压后的目录如下：</span></span><br><span class="line">  	 <span class="comment"># UMCommon_7.3.5</span></span><br><span class="line">     <span class="comment">#  ┗━━━━ UMCommon.framework</span></span><br><span class="line">  <span class="string">&quot;platforms&quot;</span>: &#123; <span class="string">&quot;ios&quot;</span>: <span class="string">&quot;6.0&quot;</span> &#125;,</span><br><span class="line">  <span class="string">&quot;requires_arc&quot;</span>: <span class="literal">true</span>,</span><br><span class="line">  <span class="string">&quot;ios&quot;</span>: &#123; <span class="string">&quot;vendored_frameworks&quot;</span>: <span class="string">&quot;UMCommon_7.3.5/*.framework&quot;</span> &#125;, <span class="comment"># 将上面source解压出的framework导入</span></span><br><span class="line">  <span class="string">&quot;libraries&quot;</span>: [ <span class="string">&quot;sqlite3&quot;</span>, <span class="string">&quot;z&quot;</span>],  <span class="comment"># 系统静态库</span></span><br><span class="line">  <span class="string">&quot;frameworks&quot;</span>: [ <span class="string">&quot;CoreTelephony&quot;</span>, <span class="string">&quot;SystemConfiguration&quot;</span>],  <span class="comment"># 系统framework</span></span><br><span class="line">  <span class="string">&quot;dependencies&quot;</span>: &#123; <span class="string">&quot;UMAPM&quot;</span>: [], <span class="string">&quot;UMDevice&quot;</span>: [] &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<h4 id="2-2-2-使用subspec目录分层"><a href="#2-2-2-使用subspec目录分层" class="headerlink" title="2.2.2 使用subspec目录分层"></a>2.2.2 使用subspec目录分层</h4><p>目录分层的好处：</p>
 <blockquote>
-<p>PAGEZERO不是设计给进程使用的，但是多少成为了恶意代码的温床。想要通过“额外”代码感染Mach-O的攻击者往往发现可以很方便地通过PAGEZERO实现这个目的。PAGEZERO通常不属于目标文件的一部分(其对应的加载指令LC_SEGMENT将filesize指定为0)，但是对此并没有严格的要求.</p>
-</blockquote>
 <ul>
-<li><strong>__TEXT</strong>：这个段存放的是程序代码。和其他所有操作系统一样，文本段被设置为r-x，即只读且可执行。这不仅可以防止二进制代码在内存中被修改，还可以通过共享这个只读段优化内存的使用。通过这种方式，同一个程序的多个实例可以仅使用一份TEXT副本。文本段通常包含多个区，实际的代码在_text区中。文本段还可以包含其他只读数据，例如常量和硬编码的字符串。</li>
-<li><strong>__LINKEDIT</strong>：由dyld使用，这个区包含了字符串表、符号表以及其他数据。</li>
-<li><strong>__IMPORT</strong>：用于 i386 的二进制文件的导入表。</li>
-<li><strong>__DATA</strong>：用于可读/可写的数据。</li>
-<li><strong>__MALLOC_TINY</strong>：用于小于一个页面大小的内存分配。</li>
-<li><strong>__MALLOC_SMALL</strong>：用于几个页面大小的内存分配。</li>
+<li>目录分层，结构清晰；</li>
+<li>使用pod引入一个三方库时，可以只引入一个subspec而不用将整个三方库引入。</li>
 </ul>
-<p>下面是使用<code>vmmap(1)</code>输出的一个实例<code>程序a</code>在<code>32位</code>硬件设备上运行的进程地址空间，显示了区域的名称、地址范围、权限(当前权限和最高权限)以及映射的名称(通常对应的是Mach-O目标文件，如果有的话)。</p>
-<p>32位进程的虚拟地址空间布局：</p>
-<img src="/images/compilelink/29.png" alt="26" style="zoom:90%;" />
+</blockquote>
+<p>例如AFNetworking：</p>
+<img src="https://segmentfault.com/img/bVZ8CG" style="zoom:90%;" />
 
+<p>下面举例说明，如图所示的目录结构：</p>
+<img src="https://segmentfault.com/img/bV0aBW" style="zoom:90%;" />
 
-<h2 id="四、小结"><a href="#四、小结" class="headerlink" title="四、小结"></a>四、小结</h2><p>应该注意的是，尽管ASLR是很显著的改进，但也不是万能药。黑客仍然能找到聪明的方法破解程序。事实上，目前臭名昭著的“Star 3.0”漏洞就攻破了ASLR，这个漏洞越狱了 iPad 2 上的iOS 4.3。这种破解使用了Retum-Oriented Programming(ROP)攻击技术，通过缓冲区溢出破坏栈，以设置完整的栈帧， 模拟对libSystem的调用。同样的技术也用在iOS 5.0.1的“corona”漏洞中，这个漏洞成功地攻入了所有的苹果设备，包括当时最新的iPhone 4S。</p>
-<p>预防攻击的唯一之道就是编写更加安全的代码，并且采用严格的代码审查，既要包含自动的技术，也要有人工的介入。</p>
-<h2 id="五、参考链接"><a href="#五、参考链接" class="headerlink" title="五、参考链接"></a>五、参考链接</h2><ul>
-<li>《深入解析Mac OS X &amp; iOS 操作系统》</li>
-<li><a target="_blank" rel="noopener" href="https://blog.csdn.net/zhongad007/article/details/90022617">动态调试之ASLR</a></li>
-<li><a target="_blank" rel="noopener" href="https://blog.csdn.net/xiaofei125145/article/details/50456614">iOS crash log 解析</a></li>
+<figure class="highlight reasonml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">ZCPKit</span><br><span class="line">┗━━━━Classes</span><br><span class="line">     ┗━━━━<span class="module-access"><span class="module"><span class="identifier">ZCPKit</span>.</span></span>h</span><br><span class="line">     ┗━━━━ZCPRouter</span><br><span class="line">          ┗━━━━<span class="module-access"><span class="module"><span class="identifier">ZCPRouter</span>.</span></span>h</span><br><span class="line">          ┗━━━━<span class="module-access"><span class="module"><span class="identifier">ZCPRouter</span>.</span></span>m</span><br><span class="line">     ┗━━━━ZCPUtil</span><br><span class="line">          ┗━━━━<span class="module-access"><span class="module"><span class="identifier">ZCPUtil</span>.</span></span>h</span><br><span class="line">          ┗━━━━<span class="module-access"><span class="module"><span class="identifier">ZCPUtil</span>.</span></span>m</span><br></pre></td></tr></table></figure>
+
+<p>写法如下：</p>
+<img src="https://segmentfault.com/img/bV0aKX" style="zoom:90%;" />
+
+<p>效果：</p>
+<img src="https://segmentfault.com/img/bVZ98b" style="zoom:90%;" />
+
+<p><strong>如果想有多层的目录结构还可以继续嵌套下去。</strong></p>
+<p><strong>有几个需要注意的地方：</strong></p>
+<ul>
+<li>层级不能出现循环依赖。<ul>
+<li>比如类ZCPUtil.h中 #import “ZCPRouter.h”，同时ZCPRouter.h中 #import “ZCPUtil.h”。这样当写podspec时就需要在Util层级中写dependency ‘ZCPKit/Router’，在Router层级中写dependency ‘ZCPKit/Util’。如此便存在Router与Util层级之间的循环依赖。出现循环依赖时，三方库是无法成功提交到repo上的，会报依赖错误。解决办法是，层级间要尽量解耦。</li>
 </ul>
+</li>
+<li>分层的层级不要太多，层级不要太深。为了避免出现上述的循环依赖错误。</li>
+<li>source_files使用的是真实的物理路径，而dependency依赖其他层级时使用的是层级路径，不是真实的物理路径。<ul>
+<li>例如：ZCPUtil.h文件的真实路径是：ZCPKit/Framework/Util，而Util层级是属于ZCPKit层级下的一个子subspec，所以当写Router层级依赖Util层级时要写：dependency ‘ZCPKit/Util’而不是dependency ‘ZCPKit/Framework/Util’</li>
+</ul>
+</li>
+</ul>
+<h4 id="2-2-3-校验"><a href="#2-2-3-校验" class="headerlink" title="2.2.3 校验"></a>2.2.3 校验</h4><p>改完，可以用<code>pod</code>命令验证一下这个<code>.podspec</code>文件有没有问题。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ pod spec lint <span class="comment"># pod spec: Manage pod specs.  + lint: Validates a spec file</span></span><br><span class="line"><span class="comment"># 如果没问题会提示 passed validation</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="2-3-创建Spec-Repo"><a href="#2-3-创建Spec-Repo" class="headerlink" title="2.3 创建Spec Repo"></a>2.3 创建Spec Repo</h3><p>在公司的私有Git服务器上创建git仓库，用来做内部私有库的Spec Repo，盛放所有功能组件的spec。</p>
+<p>这个Spec Repo必须添加到本地，否则组件clone不下来</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#  执行这个命令的人，必须得有这个库的操作权限</span></span><br><span class="line">$ pod repo add 库的名字 库的地址</span><br><span class="line"></span><br><span class="line"><span class="comment"># 比如：</span></span><br><span class="line">$ pod repo add TestSpecRepo git@git.xxxxx/TestSpecRepo.git  <span class="comment"># 将ymtSpecs添加到本地repo</span></span><br><span class="line">  <span class="comment"># 添加成功后可以在~/.cocoapods/repos/目录下可以看到官方的specs:master和刚刚加入的specs:TestSpecRepo</span></span><br></pre></td></tr></table></figure>
+
+<p>添加完成后，用下面命令检查一下：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">pod repo lint <span class="comment"># pod repo: Manage spec-repositories.  lint: Validates all specs in a repo</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="2-4-将podspec同步到Spec-Repo"><a href="#2-4-将podspec同步到Spec-Repo" class="headerlink" title="2.4 将podspec同步到Spec Repo"></a>2.4 将podspec同步到Spec Repo</h3><p>之后，当我们修改了Pod库源代码后，我们也要更新.podspec文件，并同步到spec 仓库。</p>
+<ol>
+<li>修改podspec中的version</li>
+<li>提交代码，打Tag，注意：这个tag记得要提交到origin，默认是只在工作副本中打Tag，”<strong>tag = podspec中的version</strong>“</li>
+<li><code>pod repo push &lt;Specs库名&gt; &lt;Pod库名&gt;.podspec</code> 将podspec推送到 spec Repo中</li>
+</ol>
+<h3 id="2-5-使用私有Pod库代码"><a href="#2-5-使用私有Pod库代码" class="headerlink" title="2.5 使用私有Pod库代码"></a>2.5 使用私有Pod库代码</h3><p>当<code>Spec</code>私有仓库中有可用的代码后，就可以通过<code>CocoaPods</code>命令来使用组件代码了。在<code>Podfile</code>文件中需要声明私有sepc repo地址，例如下面代码。</p>
+<figure class="highlight ruby"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">source <span class="string">&#x27;https://github.com/CocoaPods/Specs.git&#x27;</span>  <span class="comment"># CocoaPods官方的sepc repo</span></span><br><span class="line">source <span class="string">&#x27;git@git.xxxxx/TestSpecRepo.git&#x27;</span> <span class="comment"># spec repo仓库的git地址</span></span><br><span class="line"></span><br><span class="line">target <span class="string">&#x27;MainProject&#x27;</span> <span class="keyword">do</span></span><br><span class="line">    <span class="comment"># 第三方库</span></span><br><span class="line">    pod <span class="string">&#x27;Masonry&#x27;</span></span><br><span class="line">    pod <span class="string">&#x27;MGJRouter&#x27;</span></span><br><span class="line"></span><br><span class="line">    <span class="comment"># 私有仓库</span></span><br><span class="line">    pod <span class="string">&#x27;TestModule&#x27;</span>,   <span class="string">&#x27;~&gt; 1.1&#x27;</span></span><br><span class="line"><span class="keyword">end</span></span><br></pre></td></tr></table></figure>
+
+<p>版本控制也非常简单，只需要在<code>Podfile</code>中指定某个私有仓库的版本号即可。</p>
+<h2 id="三、遇到的问题"><a href="#三、遇到的问题" class="headerlink" title="三、遇到的问题"></a>三、遇到的问题</h2><p><code>The NAME.podspec specification does not validate</code></p>
+<blockquote>
+<p>用pod spec lint –verbose 验证一下，会打印出很多的详细信息，此时打印：The spec did not pass validation, due to 1 warning (but you can use <code>--allow-warnings</code> to ignore it).</p>
+<p>此时，可重新使用pod repo push Specs xx.podspec –allow-warnings。</p>
+</blockquote>
+<p>更新某个库时，连接超时。<code>fatal: unable to access &#39;...url...&#39;: Failed to connect to ...host... port 443: Operation timed out</code>。解决步骤：</p>
+<ol>
+<li><code>pod repo</code> 列出所有(公有库、私有库的)本地库，查看 cocoapods的本地库路径，一般都是<code>.cocoapods/repos/master</code></li>
+<li>从报错信息中，可以看到操作失败的三方库的名称、版本号，使用shell命令 <code>find</code>进行查找<br><code>find ~/.cocoapods/repos/master -iname 名称</code>，会返回在本地库中的路径。前往该路径</li>
+<li>三方库文件夹下会有多个版本文件夹，找到报错信息中的版本号对应的文件夹，里面会有一个<code>xxx.podspec.json</code>，替换json中source下git地址(可以直接Google，也可以在GitHub上搜索该库名称，看项目介绍，是否是这个库的镜像)。</li>
+</ol>
+<h2 id="四、Local-Pods"><a href="#四、Local-Pods" class="headerlink" title="四、Local Pods"></a>四、Local Pods</h2><p>私有仓库调试比较麻烦，不可能是每修改一些代码，就提交到远端仓库，再拉下来验证代码是否有效。所以，为了提升开发效率，可以通过<code>LocalPods</code>的方式进行调试。或者不想用远端仓库，也可以直接用<code>LocalPods</code>的方案进行本地组件化，但是并不推荐这种方案，因为不能进行物理隔离。</p>
+<p>本地<code>LocalPods</code>仓库不需要单独创建，直接用之前的组件仓库。在<code>pods</code>中使用本地仓库时，需要指定对应路径。指定路径后，执行<code>pod install</code>即可集成本地仓库。为了方便指定本地路径，建议将组件仓库尽量放在一个文件夹下，例如叫做<code>LocalPods</code>。</p>
+<figure class="highlight ruby"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">pod <span class="string">&#x27;Login&#x27;</span>, <span class="symbol">:path</span> =&gt; <span class="string">&#x27;./LocalPods/Login/&#x27;</span></span><br></pre></td></tr></table></figure>
+
+<p>通过上面的命令集成本地仓库后，<code>Pods</code>会生成一个和远程仓库文件夹同级的文件，叫做<code>Development Pods</code>，这个文件夹就是本地仓库所在的位置。</p>
+<p>此时之前<code>Login</code>仓库的产物就被替换为<strong>本地 LocalPods/Login 代码</strong>，后面的修改都会影响这个产物。直到调试完成，将代码提交到组件仓库，将<code>path</code>路径删除重新执行<code>pod install</code>，产物就会被替换为我们的<strong>私有Pod库代码</strong>。</p>
 
     </article>
     <!-- license  -->
     
         <div class="license-wrapper">
             <p>Author：<a href="https://tenloy.github.io">Tenloy</a>
-            <p>原文链接：<a href="https://tenloy.github.io/2021/09/26/compile-vm-asrl.html">https://tenloy.github.io/2021/09/26/compile-vm-asrl.html</a>
-            <p>发表日期：2021.09.26 , 2:26 PM</p>
+            <p>原文链接：<a href="https://tenloy.github.io/2021/05/03/iOS-private-pod.html">https://tenloy.github.io/2021/05/03/iOS-private-pod.html</a>
+            <p>发表日期：2021.05.03 , 10:09 AM</p>
             <p>更新日期：2022.06.10 , 7:11 AM</p>
             <p>版权声明：本文采用<a rel="license noopener" target="_blank" href="http://creativecommons.org/licenses/by-nc/4.0/">Crative Commons 4.0 许可协议</a>进行许可</p>
         </div>
@@ -541,16 +565,16 @@ height:40vh;
         <li class="next">
             
                 <div class="nextSlogan">Next Post</div>
-                <a href= "/2021/09/27/compile-dynamic-link.html" title= "(六) Mach-O 文件的动态链接、库、Dyld(含dlopen)">
-                    <div class="nextTitle">(六) Mach-O 文件的动态链接、库、Dyld(含dlopen)</div>
+                <a href= "/2021/05/19/DSL.html" title= "[转] 谈谈DSL以及DSL的应用（以CocoaPods 为例）">
+                    <div class="nextTitle">[转] 谈谈DSL以及DSL的应用（以CocoaPods 为例）</div>
                 </a>
             
         </li>
         <li class="previous">
             
                 <div class="prevSlogan">Previous Post</div>
-                <a href= "/2021/09/25/compile-load.html" title= "(四) Mach-O 文件的装载">
-                    <div class="prevTitle">(四) Mach-O 文件的装载</div>
+                <a href= "/2021/04/29/iOS-ComRouter.html" title= "iOS的组件化方案">
+                    <div class="prevTitle">iOS的组件化方案</div>
                 </a>
             
         </li>
@@ -674,7 +698,7 @@ top:40vh;
         <div class="toc-catalog">
             <span class="iconfont-archer catalog-icon">&#xe613;</span><span>CATALOG</span>
         </div>
-        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E3%80%81ASLR%E5%BC%95%E5%85%A5"><span class="toc-text">一、ASLR引入</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8C%E3%80%81ASLR"><span class="toc-text">二、ASLR</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#2-1-%E6%9C%AA%E4%BD%BF%E7%94%A8ASLR"><span class="toc-text">2.1 未使用ASLR</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-2-%E4%BD%BF%E7%94%A8%E4%BA%86ASLR"><span class="toc-text">2.2 使用了ASLR</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-3-%E7%AC%A6%E5%8F%B7%E5%9C%B0%E5%9D%80%E8%AE%A1%E7%AE%97"><span class="toc-text">2.3 符号地址计算</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#2-3-1-%E5%87%BD%E6%95%B0%E5%86%85%E5%AD%98%E5%9C%B0%E5%9D%80%E8%AE%A1%E7%AE%97"><span class="toc-text">2.3.1 函数内存地址计算</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2-3-2-ASLR-Offset%E7%9A%84%E8%8E%B7%E5%8F%96"><span class="toc-text">2.3.2 ASLR Offset的获取</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2-3-3-Symbol-Address%E7%AC%A6%E5%8F%B7%E5%8C%96"><span class="toc-text">2.3.3 Symbol Address符号化</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%89%E3%80%81%E8%BF%9B%E7%A8%8B%E5%9C%B0%E5%9D%80%E7%A9%BA%E9%97%B4"><span class="toc-text">三、进程地址空间</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9B%9B%E3%80%81%E5%B0%8F%E7%BB%93"><span class="toc-text">四、小结</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%94%E3%80%81%E5%8F%82%E8%80%83%E9%93%BE%E6%8E%A5"><span class="toc-text">五、参考链接</span></a></li></ol>
+        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E3%80%81%E5%87%A0%E4%B8%AA%E6%A6%82%E5%BF%B5"><span class="toc-text">一、几个概念</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8C%E3%80%81%E6%9E%84%E5%BB%BA%E7%A7%81%E6%9C%89pod%E5%BA%93"><span class="toc-text">二、构建私有pod库</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#2-1-%E5%88%9B%E5%BB%BA%E7%BB%84%E4%BB%B6%E4%BB%93%E5%BA%93"><span class="toc-text">2.1 创建组件仓库</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-2-%E5%88%9B%E5%BB%BA%E7%BB%84%E4%BB%B6%E7%9A%84-podspec%E6%96%87%E4%BB%B6"><span class="toc-text">2.2 创建组件的.podspec文件</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#2-2-1-%E7%BC%96%E5%86%99-podspec-%E6%BA%90%E7%A0%81%E6%88%96framework"><span class="toc-text">2.2.1 编写.podspec(源码或framework)</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2-2-2-%E4%BD%BF%E7%94%A8subspec%E7%9B%AE%E5%BD%95%E5%88%86%E5%B1%82"><span class="toc-text">2.2.2 使用subspec目录分层</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2-2-3-%E6%A0%A1%E9%AA%8C"><span class="toc-text">2.2.3 校验</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-3-%E5%88%9B%E5%BB%BASpec-Repo"><span class="toc-text">2.3 创建Spec Repo</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-4-%E5%B0%86podspec%E5%90%8C%E6%AD%A5%E5%88%B0Spec-Repo"><span class="toc-text">2.4 将podspec同步到Spec Repo</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-5-%E4%BD%BF%E7%94%A8%E7%A7%81%E6%9C%89Pod%E5%BA%93%E4%BB%A3%E7%A0%81"><span class="toc-text">2.5 使用私有Pod库代码</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%89%E3%80%81%E9%81%87%E5%88%B0%E7%9A%84%E9%97%AE%E9%A2%98"><span class="toc-text">三、遇到的问题</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9B%9B%E3%80%81Local-Pods"><span class="toc-text">四、Local Pods</span></a></li></ol>
     </div>
     
     <div class="back-top iconfont-archer">&#xe639;</div>
