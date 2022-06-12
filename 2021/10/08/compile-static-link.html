@@ -23,7 +23,7 @@
     <meta name="description" content="一、链接概述链接通常是一个让人比较费解的过程，为什么汇编器不直接输出可执行文件而是输出一个目标文件呢？链接过程到底包含了什么内容？为什么要链接？ 很久以前，人们编写程序时，将所有源代码都写在同一个文件中，发展到后来一个程序源代码的文件长达数百万行，以至于人们没有能力维护这个程序。 后来，出现了模块化。现代的大型软件往往拥有成千上万个模块，这些模块之间相互依赖又相对独立。这种按照层次化及模块化存储和">
 <meta property="og:type" content="article">
 <meta property="og:title" content="(三) Mach-O 文件的静态链接">
-<meta property="og:url" content="https://tenloy.github.io/2021/09/24/compile-static-link.html">
+<meta property="og:url" content="https://tenloy.github.io/2021/10/08/compile-static-link.html">
 <meta property="og:site_name" content="Tenloy&#39;s Blog">
 <meta property="og:description" content="一、链接概述链接通常是一个让人比较费解的过程，为什么汇编器不直接输出可执行文件而是输出一个目标文件呢？链接过程到底包含了什么内容？为什么要链接？ 很久以前，人们编写程序时，将所有源代码都写在同一个文件中，发展到后来一个程序源代码的文件长达数百万行，以至于人们没有能力维护这个程序。 后来，出现了模块化。现代的大型软件往往拥有成千上万个模块，这些模块之间相互依赖又相对独立。这种按照层次化及模块化存储和">
 <meta property="og:locale" content="en_US">
@@ -35,8 +35,8 @@
 <meta property="og:image" content="https://tenloy.github.io/images/compilelink/22.png">
 <meta property="og:image" content="https://tenloy.github.io/images/compilelink/23.png">
 <meta property="og:image" content="https://tenloy.github.io/images/compilelink/24.png">
-<meta property="article:published_time" content="2021-09-24T14:25:56.000Z">
-<meta property="article:modified_time" content="2022-06-10T07:11:30.903Z">
+<meta property="article:published_time" content="2021-10-08T04:25:56.000Z">
+<meta property="article:modified_time" content="2022-06-12T07:56:18.013Z">
 <meta property="article:author" content="Tenloy">
 <meta property="article:tag" content="Tenloy, iOS, Tenloy Blog, 博客，Swift, 编译, 计算机">
 <meta name="twitter:card" content="summary">
@@ -318,7 +318,7 @@ height:40vh;
                 
                 <div class="post-intro-meta">
                     <span class="post-intro-calander iconfont-archer">&#xe676;</span>
-                    <span class="post-intro-time">2021/09/24</span>
+                    <span class="post-intro-time">2021/10/08</span>
                     
                     <span id="busuanzi_container_page_pv" class="busuanzi-pv">
                         <span class="iconfont-archer">&#xe602;</span>
@@ -623,9 +623,9 @@ height:40vh;
     
         <div class="license-wrapper">
             <p>Author：<a href="https://tenloy.github.io">Tenloy</a>
-            <p>原文链接：<a href="https://tenloy.github.io/2021/09/24/compile-static-link.html">https://tenloy.github.io/2021/09/24/compile-static-link.html</a>
-            <p>发表日期：2021.09.24 , 2:25 PM</p>
-            <p>更新日期：2022.06.10 , 7:11 AM</p>
+            <p>原文链接：<a href="https://tenloy.github.io/2021/10/08/compile-static-link.html">https://tenloy.github.io/2021/10/08/compile-static-link.html</a>
+            <p>发表日期：2021.10.08 , 4:25 AM</p>
+            <p>更新日期：2022.06.12 , 7:56 AM</p>
             <p>版权声明：本文采用<a rel="license noopener" target="_blank" href="http://creativecommons.org/licenses/by-nc/4.0/">Crative Commons 4.0 许可协议</a>进行许可</p>
         </div>
     
@@ -634,7 +634,7 @@ height:40vh;
         <li class="next">
             
                 <div class="nextSlogan">Next Post</div>
-                <a href= "/2021/09/25/compile-load.html" title= "(四) Mach-O 文件的装载">
+                <a href= "/2021/10/10/compile-load.html" title= "(四) Mach-O 文件的装载">
                     <div class="nextTitle">(四) Mach-O 文件的装载</div>
                 </a>
             
@@ -642,7 +642,7 @@ height:40vh;
         <li class="previous">
             
                 <div class="prevSlogan">Previous Post</div>
-                <a href= "/2021/09/23/compile-macho.html" title= "(二) Mach-O 文件结构">
+                <a href= "/2021/10/06/compile-macho.html" title= "(二) Mach-O 文件结构">
                     <div class="prevTitle">(二) Mach-O 文件结构</div>
                 </a>
             
@@ -1664,9 +1664,22 @@ top:40vh;
     
     
     
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
     <div class="total-and-search">
         <div class="total-archive">
-        Total : 59
+        Total : 60
         </div>
         <!-- search  -->
         
@@ -1755,42 +1768,47 @@ top:40vh;
     
     
         <li class="archive-post-item">
-            <span class="archive-post-date">10/11</span><a class="archive-post-title" href= "/2021/10/11/runtime-data-structure.html" >Objc Runtime总结</a>
+            <span class="archive-post-date">10/28</span><a class="archive-post-title" href= "/2021/10/28/runtime-data-structure.html" >Objc Runtime总结</a>
         </li>
     
     
         <li class="archive-post-item">
-            <span class="archive-post-date">09/28</span><a class="archive-post-title" href= "/2021/09/28/dyld-objc.html" >(七) dyld与Objc—_objc_init、map_images、load_images</a>
+            <span class="archive-post-date">10/21</span><a class="archive-post-title" href= "/2021/10/21/dyld-objc.html" >(七) dyld与Objc—_objc_init、map_images、load_images</a>
         </li>
     
     
         <li class="archive-post-item">
-            <span class="archive-post-date">09/27</span><a class="archive-post-title" href= "/2021/09/27/compile-dynamic-link.html" >(六) Mach-O 文件的动态链接、库、Dyld(含dlopen)</a>
+            <span class="archive-post-date">10/18</span><a class="archive-post-title" href= "/2021/10/18/compile-dynamic-link.html" >(六) Mach-O 文件的动态链接、库、Dyld(含dlopen)</a>
         </li>
     
     
         <li class="archive-post-item">
-            <span class="archive-post-date">09/26</span><a class="archive-post-title" href= "/2021/09/26/compile-vm-asrl.html" >(五) Mach-O 文件之进程(虚拟)地址空间、ASLR</a>
+            <span class="archive-post-date">10/14</span><a class="archive-post-title" href= "/2021/10/14/compile-vm-asrl.html" >(五) Mach-O 文件之进程(虚拟)地址空间、ASLR</a>
         </li>
     
     
         <li class="archive-post-item">
-            <span class="archive-post-date">09/25</span><a class="archive-post-title" href= "/2021/09/25/compile-load.html" >(四) Mach-O 文件的装载</a>
+            <span class="archive-post-date">10/10</span><a class="archive-post-title" href= "/2021/10/10/compile-load.html" >(四) Mach-O 文件的装载</a>
         </li>
     
     
         <li class="archive-post-item">
-            <span class="archive-post-date">09/24</span><a class="archive-post-title" href= "/2021/09/24/compile-static-link.html" >(三) Mach-O 文件的静态链接</a>
+            <span class="archive-post-date">10/08</span><a class="archive-post-title" href= "/2021/10/08/compile-static-link.html" >(三) Mach-O 文件的静态链接</a>
         </li>
     
     
         <li class="archive-post-item">
-            <span class="archive-post-date">09/23</span><a class="archive-post-title" href= "/2021/09/23/compile-macho.html" >(二) Mach-O 文件结构</a>
+            <span class="archive-post-date">10/06</span><a class="archive-post-title" href= "/2021/10/06/compile-macho.html" >(二) Mach-O 文件结构</a>
         </li>
     
     
         <li class="archive-post-item">
-            <span class="archive-post-date">09/22</span><a class="archive-post-title" href= "/2021/09/22/compile-clang-llvm.html" >(一) Clang/LLVM 介绍、OC 程序的编译过程</a>
+            <span class="archive-post-date">10/05</span><a class="archive-post-title" href= "/2021/10/05/compile-clang-llvm.html" >(一) Clang/LLVM 介绍、OC 程序的编译过程</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/02</span><a class="archive-post-title" href= "/2021/10/02/makefile.html" >[转] Make 命令的使用与NodeJS案例</a>
         </li>
     
     

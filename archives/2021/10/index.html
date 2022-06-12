@@ -382,7 +382,7 @@
     
     
     <article class="index-post">
-        <a class="abstract-title" href = "/2021/10/11/runtime-data-structure.html" >
+        <a class="abstract-title" href = "/2021/10/28/runtime-data-structure.html" >
             
                 <span>Objc Runtime总结</span>
         </a>
@@ -394,7 +394,207 @@
         <div class="abstract-post-meta">
             <!-- date  -->
             <div class="abstract-date">
-                <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2021/10/11</span>
+                <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2021/10/28</span>
+            </div>
+            <!-- tags  -->
+            
+        </div>
+    </article>
+    
+    
+    
+    
+    
+    
+    <article class="index-post">
+        <a class="abstract-title" href = "/2021/10/21/dyld-objc.html" >
+            
+                <span>(七) dyld与Objc—_objc_init、map_images、load_images</span>
+        </a>
+        <div class="abstract-content">
+            一、前文回顾上一篇(六) Mach-O 文件的动态链接、库、Dyld(含dlopen)，大概梳理了dyld的加载流程，这一次主要展开“第八步 执行初始化方法”，其是我们日常紧密接触的OBJC Runtime初始化启动的上文。
+先简单回...
+        </div>
+        <div class="abstract-post-meta">
+            <!-- date  -->
+            <div class="abstract-date">
+                <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2021/10/21</span>
+            </div>
+            <!-- tags  -->
+            
+        </div>
+    </article>
+    
+    
+    
+    
+    
+    
+    <article class="index-post">
+        <a class="abstract-title" href = "/2021/10/18/compile-dynamic-link.html" >
+            
+                <span>(六) Mach-O 文件的动态链接、库、Dyld(含dlopen)</span>
+        </a>
+        <div class="abstract-content">
+            一、动态链接动态链接的基本思想是把程序按照模块拆分成各个相对独立部分，在程序运行时才将它们链接在一起形成一个完整的程序，而不是像静态链接一样把所有的程序模块都链接成一个个单独的可执行文件。
+动态链接涉及运行时的链接及多个文件的装载，必...
+        </div>
+        <div class="abstract-post-meta">
+            <!-- date  -->
+            <div class="abstract-date">
+                <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2021/10/18</span>
+            </div>
+            <!-- tags  -->
+            
+        </div>
+    </article>
+    
+    
+    
+    
+    
+    
+    <article class="index-post">
+        <a class="abstract-title" href = "/2021/10/14/compile-vm-asrl.html" >
+            
+                <span>(五) Mach-O 文件之进程(虚拟)地址空间、ASLR</span>
+        </a>
+        <div class="abstract-content">
+            一、ASLR引入进程在自己私有的虚拟地址空间中启动。按照传统方式，进程每一次启动时采用的都是固定的可预见的方式。然而，这意味着某个给定程序在某个给定架构上的进程初始虚拟内存镜像都是基本一致的。而且更严重的问题在于，即使是在进程正常运行...
+        </div>
+        <div class="abstract-post-meta">
+            <!-- date  -->
+            <div class="abstract-date">
+                <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2021/10/14</span>
+            </div>
+            <!-- tags  -->
+            
+        </div>
+    </article>
+    
+    
+    
+    
+    
+    
+    <article class="index-post">
+        <a class="abstract-title" href = "/2021/10/10/compile-load.html" >
+            
+                <span>(四) Mach-O 文件的装载</span>
+        </a>
+        <div class="abstract-content">
+            
+
+先附上源码地址：结合 XNU 源码(应该不是最新的，且不怎么全，不过用来分析学习也差不多了)，来看加载器的流程，效果更好。重要的两个类：
+
+bsd/kern/kern_exec.c：进程执行的相关操作：线程创建、数据初始化等。
+b...
+        </div>
+        <div class="abstract-post-meta">
+            <!-- date  -->
+            <div class="abstract-date">
+                <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2021/10/10</span>
+            </div>
+            <!-- tags  -->
+            
+        </div>
+    </article>
+    
+    
+    
+    
+    
+    
+    <article class="index-post">
+        <a class="abstract-title" href = "/2021/10/08/compile-static-link.html" >
+            
+                <span>(三) Mach-O 文件的静态链接</span>
+        </a>
+        <div class="abstract-content">
+            一、链接概述链接通常是一个让人比较费解的过程，为什么汇编器不直接输出可执行文件而是输出一个目标文件呢？链接过程到底包含了什么内容？为什么要链接？
+很久以前，人们编写程序时，将所有源代码都写在同一个文件中，发展到后来一个程序源代码的文件...
+        </div>
+        <div class="abstract-post-meta">
+            <!-- date  -->
+            <div class="abstract-date">
+                <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2021/10/08</span>
+            </div>
+            <!-- tags  -->
+            
+        </div>
+    </article>
+    
+    
+    
+    
+    
+    
+    <article class="index-post">
+        <a class="abstract-title" href = "/2021/10/06/compile-macho.html" >
+            
+                <span>(二) Mach-O 文件结构</span>
+        </a>
+        <div class="abstract-content">
+            上一篇说到源码经过预处理、编译、汇编之后生成目标文件，这一章介绍一下iOS、Mac OS中目标文件的格式Mach-O的结构，方便了解之后的链接生成可执行文件的过程。
+先附上相关源码地址：与Mach-O 文件格式有关的结构体定义都可以从...
+        </div>
+        <div class="abstract-post-meta">
+            <!-- date  -->
+            <div class="abstract-date">
+                <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2021/10/06</span>
+            </div>
+            <!-- tags  -->
+            
+        </div>
+    </article>
+    
+    
+    
+    
+    
+    
+    <article class="index-post">
+        <a class="abstract-title" href = "/2021/10/05/compile-clang-llvm.html" >
+            
+                <span>(一) Clang/LLVM 介绍、OC 程序的编译过程</span>
+        </a>
+        <div class="abstract-content">
+            一、编译、链接工具 — Clang/LLVM
+官网定义：
+
+The LLVM Project is a collection of modular and reusable compiler and toolchain technol...
+        </div>
+        <div class="abstract-post-meta">
+            <!-- date  -->
+            <div class="abstract-date">
+                <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2021/10/05</span>
+            </div>
+            <!-- tags  -->
+            
+        </div>
+    </article>
+    
+    
+    
+    
+    
+    
+    <article class="index-post">
+        <a class="abstract-title" href = "/2021/10/02/makefile.html" >
+            
+                <span>[转] Make 命令的使用与NodeJS案例</span>
+        </a>
+        <div class="abstract-content">
+            
+原文链接：Make 命令教程 — 阮一峰
+
+代码变成可执行文件，叫做编译（compile）；先编译这个，还是先编译那个（即编译的安排），叫做构建（build）。
+Make是最常用的构建工具，诞生于1977年，主要用于C语言的项目。但...
+        </div>
+        <div class="abstract-post-meta">
+            <!-- date  -->
+            <div class="abstract-date">
+                <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2021/10/02</span>
             </div>
             <!-- tags  -->
             
@@ -1383,9 +1583,22 @@
     
     
     
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
     <div class="total-and-search">
         <div class="total-archive">
-        Total : 59
+        Total : 60
         </div>
         <!-- search  -->
         
@@ -1474,42 +1687,47 @@
     
     
         <li class="archive-post-item">
-            <span class="archive-post-date">10/11</span><a class="archive-post-title" href= "/2021/10/11/runtime-data-structure.html" >Objc Runtime总结</a>
+            <span class="archive-post-date">10/28</span><a class="archive-post-title" href= "/2021/10/28/runtime-data-structure.html" >Objc Runtime总结</a>
         </li>
     
     
         <li class="archive-post-item">
-            <span class="archive-post-date">09/28</span><a class="archive-post-title" href= "/2021/09/28/dyld-objc.html" >(七) dyld与Objc—_objc_init、map_images、load_images</a>
+            <span class="archive-post-date">10/21</span><a class="archive-post-title" href= "/2021/10/21/dyld-objc.html" >(七) dyld与Objc—_objc_init、map_images、load_images</a>
         </li>
     
     
         <li class="archive-post-item">
-            <span class="archive-post-date">09/27</span><a class="archive-post-title" href= "/2021/09/27/compile-dynamic-link.html" >(六) Mach-O 文件的动态链接、库、Dyld(含dlopen)</a>
+            <span class="archive-post-date">10/18</span><a class="archive-post-title" href= "/2021/10/18/compile-dynamic-link.html" >(六) Mach-O 文件的动态链接、库、Dyld(含dlopen)</a>
         </li>
     
     
         <li class="archive-post-item">
-            <span class="archive-post-date">09/26</span><a class="archive-post-title" href= "/2021/09/26/compile-vm-asrl.html" >(五) Mach-O 文件之进程(虚拟)地址空间、ASLR</a>
+            <span class="archive-post-date">10/14</span><a class="archive-post-title" href= "/2021/10/14/compile-vm-asrl.html" >(五) Mach-O 文件之进程(虚拟)地址空间、ASLR</a>
         </li>
     
     
         <li class="archive-post-item">
-            <span class="archive-post-date">09/25</span><a class="archive-post-title" href= "/2021/09/25/compile-load.html" >(四) Mach-O 文件的装载</a>
+            <span class="archive-post-date">10/10</span><a class="archive-post-title" href= "/2021/10/10/compile-load.html" >(四) Mach-O 文件的装载</a>
         </li>
     
     
         <li class="archive-post-item">
-            <span class="archive-post-date">09/24</span><a class="archive-post-title" href= "/2021/09/24/compile-static-link.html" >(三) Mach-O 文件的静态链接</a>
+            <span class="archive-post-date">10/08</span><a class="archive-post-title" href= "/2021/10/08/compile-static-link.html" >(三) Mach-O 文件的静态链接</a>
         </li>
     
     
         <li class="archive-post-item">
-            <span class="archive-post-date">09/23</span><a class="archive-post-title" href= "/2021/09/23/compile-macho.html" >(二) Mach-O 文件结构</a>
+            <span class="archive-post-date">10/06</span><a class="archive-post-title" href= "/2021/10/06/compile-macho.html" >(二) Mach-O 文件结构</a>
         </li>
     
     
         <li class="archive-post-item">
-            <span class="archive-post-date">09/22</span><a class="archive-post-title" href= "/2021/09/22/compile-clang-llvm.html" >(一) Clang/LLVM 介绍、OC 程序的编译过程</a>
+            <span class="archive-post-date">10/05</span><a class="archive-post-title" href= "/2021/10/05/compile-clang-llvm.html" >(一) Clang/LLVM 介绍、OC 程序的编译过程</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/02</span><a class="archive-post-title" href= "/2021/10/02/makefile.html" >[转] Make 命令的使用与NodeJS案例</a>
         </li>
     
     
