@@ -2659,7 +2659,9 @@ html::-webkit-scrollbar-track:hover,
     border: 1px solid #ddd;
     margin: 1rem 0;
     border-collapse: collapse;
-    box-shadow: 2px 2px 2px rgba(0, 0, 0, 0.125)
+    box-shadow: 2px 2px 2px rgba(0, 0, 0, 0.125);
+    display: block;
+    overflow: auto;
 }
 
 .abstract-content .table-container table tr,
@@ -2696,7 +2698,7 @@ html::-webkit-scrollbar-track:hover,
 .article-entry>table td,
 .article-entry>table th {
     border: 1px solid #dedede;
-    padding: 0.2rem 1rem 0 1rem
+    padding: 0.5rem 1rem 0。5rem 1rem
 }
 
 .abstract-content a,

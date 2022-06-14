@@ -34,7 +34,7 @@ a.txt: b.txt c.txt
 
 也就是说，make a.txt 这条命令的背后，实际上分成两步：第一步，确认 b.txt 和 c.txt 必须已经存在，第二步使用 cat 命令 将这个两个文件合并，输出为新文件。
 
-像这样的规则，都写在一个叫做Makefile的文件中，Make命令依赖这个文件进行构建。Makefile文件也可以写为makefile， 或者用命令行参数指定为其他文件名。
+**像这样的规则，都写在一个叫做Makefile的文件中，Make命令依赖这个文件进行构建。Makefile文件也可以写为makefile， 或者用命令行参数指定为其他文件名。**
 
 ```bash
 $ make -f rules.txt
@@ -47,6 +47,10 @@ $ make --file=rules.txt
 总之，make只是一个根据指定的Shell命令进行构建的工具。它的规则很简单，你规定要构建哪个文件、它依赖哪些源文件，当那些文件有变动时，如何重新构建它。
 
 # 二、Makefile文件的格式
+
+很多开发者不了解 Makefile 是什么，这个其实很正常，因为很多集成开发环境（IDE）已经内置了 Makefile，或者说会自动生成 Makefile，我们不用去手动编写。
+
+那么，究竟什么是 Makefile 呢？**Makefile 可以简单的认为是一个工程文件的编译规则，描述了整个工程的编译和链接等规则。**其中包含了那些文件需要编译，那些文件不需要编译，那些文件需要先编译，那些文件需要后编译，那些文件需要重建等等。编译整个工程需要涉及到的，在 Makefile 中都可以进行描述。换句话说，Makefile 可以使得我们的项目工程的编译变得自动化，不需要每次都手动输入一堆源文件和参数。
 
 构建规则都写在Makefile文件里面，要学会如何Make命令，就必须学会如何编写Makefile文件。
 
@@ -94,7 +98,7 @@ clean:
 
 声明clean是"伪目标"之后，make就不会去检查是否存在一个叫做clean的文件，而是每次运行都执行对应的命令。像.PHONY这样的内置目标名还有不少，可以查看[手册](https://www.gnu.org/software/make/manual/html_node/Special-Targets.html#Special-Targets)。
 
-如果Make命令运行时没有指定目标，默认会执行Makefile文件的第一个目标。
+**如果Make命令运行时没有指定目标，默认会执行Makefile文件的第一个目标。**
 
 ```bash
 $ make
