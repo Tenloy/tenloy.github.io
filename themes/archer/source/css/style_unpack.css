@@ -1637,8 +1637,8 @@ html::-webkit-scrollbar-track:hover,
     margin: 0.8rem 0;
     padding: 0.7rem 0.7rem;
     overflow: auto;
-    font-size: 0.9rem;
-    line-height: 1.3rem
+    font-size: 13px;
+    line-height: 1.5
 }
 
 .abstract-content .highlight .gutter pre,
@@ -2577,6 +2577,11 @@ html::-webkit-scrollbar-track:hover,
     line-height: 1.5rem
 }
 
+.article-entry ul,
+.article-entry ol {
+    padding-left: 20px;
+}
+
 .abstract-content h1:first-child,
 .article-entry h1:first-child {
     margin-top: 0
@@ -2655,7 +2660,8 @@ html::-webkit-scrollbar-track:hover,
 .abstract-content>table,
 .article-entry .table-container table,
 .article-entry>table {
-    width: 100%;
+    width: fit-content;
+    max-width: 100%;
     border: 1px solid #ddd;
     margin: 1rem 0;
     border-collapse: collapse;
