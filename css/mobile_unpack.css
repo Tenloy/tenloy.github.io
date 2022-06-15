@@ -92,7 +92,10 @@
 
 .about-body .main,
 .post-body .main {
-    width: 86%
+    width: 100%;
+    box-sizing: border-box;
+    padding-left: 16px;
+    padding-right: 16px;
 }
 
 .blog-title {
