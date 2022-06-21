@@ -29,7 +29,7 @@
 <meta property="og:locale" content="en_US">
 <meta property="og:image" content="https://tenloy.github.io/images/net/x509.png">
 <meta property="article:published_time" content="2021-12-09T15:07:02.000Z">
-<meta property="article:modified_time" content="2022-06-21T08:33:13.133Z">
+<meta property="article:modified_time" content="2022-06-21T10:15:46.553Z">
 <meta property="article:author" content="Tenloy">
 <meta property="article:tag" content="Tenloy, iOS, Tenloy Blog, 博客，Swift, 编译, 计算机">
 <meta name="twitter:card" content="summary">
@@ -640,24 +640,29 @@ height:40vh;
 <p>可以看到 <strong>22:d=1 hl=4 l= 608 prim: OCTET STRING</strong> 这一行的输出就是pkcs1.der的内容。而上面的内容就是pkcs8比pkcs1多的内容。其实最主要的就是算法信息，这也是pkcs8能存储各种算法私钥的原因。</p>
 <h4 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h4><p>从时间顺序上可以看出来，PKCS标准也是在不断发展的，PKCS1的标准是先于PKCS8出来的，那时候甚至非对称算法还只有RSA是成熟的，在计算机领域刚刚得到应用，PKCS专门将RSA的算法作为一个标准输出就不难理解了。随着加密算法的发展才有了PKCS8出来专门做存储密钥这样一件事情。</p>
 <h2 id="五、常见的证书后缀"><a href="#五、常见的证书后缀" class="headerlink" title="五、常见的证书后缀"></a>五、常见的证书后缀</h2><p>作为文件形式存在的证书一般有这几种后缀：(证书中包含公钥，以及公钥颁发机构、版本号、算法等信息，可以以X.509为例看一下证书内容)</p>
-<p>1.带有私钥的证书：（一般都有密码保护，使用的是DER编码）</p>
+<p>带有私钥的证书：（一般都有密码保护，使用的是DER编码）</p>
 <ul>
 <li><code>.pfx</code> 常用于Windows上的 IIS服务器</li>
 <li><code>.p12</code> 常用于MAC OS、iOS中(PKCS#12由PFX进化而来的用于交换公共的和私有的对象的标准格式)</li>
 <li><code>.jks</code> Java Key Storage，这是Java的专利，JAVA的专属格式，一般用于 Tomcat 服务器。</li>
 </ul>
-<p>2.不带私钥的证书：</p>
+<p>不带私钥的证书：</p>
 <ul>
 <li><code>.cer/crt</code> 编码方式不一定，可能是DER也可能是PEM</li>
 <li><code>.pem</code> 都是PEM编码格式</li>
 <li><code>.der</code> 都是DER编码格式</li>
 <li><code>.p7b</code> 以树状展示证书链(certificate chain)，同时也支持单个证书，不含私钥</li>
 </ul>
-<p>3.补充</p>
+<p>补充</p>
 <ul>
 <li>.der文件一般只放证书，<code>不含私钥</code></li>
 <li>.pem文件中可以放证书或者私钥，或者两者都有，pem如果只含私钥的话，一般用<code>.key</code>扩展名，而且可以有密码保护</li>
-<li>.csr - Certificate Signing Request，即证书签名请求，这个并不是证书，而是向权威证书颁发机构获得签名证书的申请，其核心内容是一个公钥(当然还附带了一些别的信息)，在生成这个申请的时候，同时也会生成一个私钥key，私钥要自己保管好。做过iOS APP的朋友都应该知道是怎么向苹果申请开发者证书的吧.</li>
+<li>.csr，即证书签名请求(Certificate Signing Request, CSR)，<strong>这个并不是证书</strong>。<ul>
+<li>在创建加解密的公钥私钥对时，我们也可以生成对应的CSR文件。CSR中包含了公钥和标识名称(Distinguished Name)等信息。</li>
+<li>如果想让此公钥变成证书来使用，需要把CSR文件提交给证书颁发机构，机构会使用其根证书私钥签名，就生成了证书文件，然后颁发给申请者。</li>
+<li>做过iOS APP的朋友都应该知道是怎么向苹果申请开发者证书的吧。</li>
+</ul>
+</li>
 </ul>
 <p>可以使用命令行工具、代码、在线网站等实现不同后缀格式、不同证书标准之间的转换，比如这个网站<a target="_blank" rel="noopener" href="http://www.metools.info/">http://www.metools.info/</a></p>
 <h2 id="六、常用的openssl公私钥操作命令"><a href="#六、常用的openssl公私钥操作命令" class="headerlink" title="六、常用的openssl公私钥操作命令"></a>六、常用的openssl公私钥操作命令</h2><h3 id="6-1-Private-Key操作命令"><a href="#6-1-Private-Key操作命令" class="headerlink" title="6.1 Private Key操作命令"></a>6.1 Private Key操作命令</h3><h4 id="6-1-1-私钥创建"><a href="#6-1-1-私钥创建" class="headerlink" title="6.1.1 私钥创建"></a>6.1.1 私钥创建</h4><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 生成PKCS1格式RSA Private Key</span></span><br><span class="line">openssl genrsa -out private-key.p1.pem 2048</span><br></pre></td></tr></table></figure>
@@ -685,7 +690,7 @@ height:40vh;
             <p>Author：<a href="https://tenloy.github.io">Tenloy</a>
             <p>原文链接：<a href="https://tenloy.github.io/2021/12/09/pki.html">https://tenloy.github.io/2021/12/09/pki.html</a>
             <p>发表日期：2021.12.09 , 3:07 PM</p>
-            <p>更新日期：2022.06.21 , 8:33 AM</p>
+            <p>更新日期：2022.06.21 , 10:15 AM</p>
             <p>版权声明：本文采用<a rel="license noopener" target="_blank" href="http://creativecommons.org/licenses/by-nc/4.0/">Crative Commons 4.0 许可协议</a>进行许可</p>
         </div>
     
