@@ -4,7 +4,7 @@ date: 2021-09-04 08:53:12
 urlname: nrl-session.html
 algolia: false
 categories:
-  - iOS
+  - 计算机网络
 ---
 
 ## 一、概述
@@ -36,9 +36,13 @@ NSURLSession API 由三部分构成：
 
 ## 二、NSURLSession
 
-### 2.1 创建方式
+### 2.1 Session的创建
 
-NSURLSession有三种方式创建
+您的应用程序创建一个或多个 NSURLSession 实例，每个实例协调一组相关的数据传输任务。例如，如果您正在创建一个 Web 浏览器，您的应用程序可能会为每个选项卡或窗口创建一个会话，或者一个会话用于交互使用，另一个会话用于后台下载。在每个 session 中，可以添加一系列task，每个 task 都代表对特定 URL 的请求。
+
+因为NSURLSession的TCP连接复用特性，所以尽量共用Session，以提升请求性能。
+
+NSURLSession有三种方式创建。
 
 #### 1. sharedSession
 
@@ -174,7 +178,7 @@ NSURLSessionConfiguration的创建，有三种方式：(注意：前两种方式
 
 macOS 中的默认值为 6，iOS 中的默认值为 4。
 
-### 2.3 连接复用
+### 2.3 特性 — 连接复用
 
 `HTTP`是基于传输层协议`TCP`的，通过`TCP`发送网络请求都需要先进行三次握手，建立网络请求后再发送数据，请求结束时再经历四次挥手。`HTTP1.0`开始支持`keep-alive`，`keep-alive`可以保持已经建立的链接，如果是相同的域名，在请求连接建立后，后面的请求不会立刻断开，而是复用现有的连接。从`HTTP1.1`开始默认开启`keep-alive`。
 
@@ -190,9 +194,9 @@ Connection: Keep-Alive
 Connection: Close
 ```
 
-如果通过`NSURLSession`来进行网络请求的话，需要使用同一个`NSURLSession`对象，如果创建新的`session`对象则不能复用之前的链接。`keep-alive`可以保持请求的连接，苹果允许在`iOS`上最大保持有4个连接，`Mac`则是6个连接。
+如果通过`NSURLSession`来进行网络请求的话，需要**使用同一个 NSURLSession 对象，以复用 TCP 连接**（*很容易地就能通过抓包证明*）。如果创建新的`session`对象则不能复用之前的链接。`keep-alive`可以保持请求的连接，苹果允许在`iOS`上最大保持有4个连接，`Mac`则是6个连接。
 
-### 2.4 pipeline
+### 2.4 特性 — pipeline
 
 <img src="https://segmentfault.com/img/remote/1460000023105321" style="zoom:80%;" />
 

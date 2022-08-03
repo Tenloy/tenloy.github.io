@@ -15,7 +15,9 @@ categories:
 > - Clang is an "LLVM native" C/C++/Objective-C compiler. 
 >
 
-### 1.1 LLVM的诞生
+### 1.1 LLVM是什么
+
+#### 1.1.1 诞生
 
 2000年，伊利诺伊大学厄巴纳－香槟分校（University of Illinois at Urbana-Champaign 简称UIUC）这所享有世界声望的一流公立研究型大学的克里斯·拉特纳(Chris Lattner，twitter为 [clattner_llvm](https://twitter.com/clattner_llvm)） 开发了一个叫作 Low Level Virtual Machine 的编译器开发工具套件，后来涉及范围越来越大，可以用于常规编译器，JIT编译器，汇编器，调试器，静态分析工具等一系列跟编程语言相关的工作，于是就把简称 LLVM 这个简称作为了正式的名字。
 
@@ -28,9 +30,11 @@ categories:
 
 2012年，LLVM 获得美国计算机学会 ACM 的软件系统大奖，和 UNIX，WWW，TCP/IP，Tex，JAVA 等齐名。
 
-### 1.2 LLVM及其子项目
+#### 1.1.2 概述
 
-#### 1.2.1 概述
+llvm有广义和狭义两种定义：
+- 在广义中，llvm特指一整个编译器框架，**是一个模块化和可重用的编译器和工具链技术的集合**，由前端、优化器、后端组成，clang只是用于c/c++的一种前端，llvm针对不同的语言可以设计不同的前端，同样的针对不同的平台架构（amd，arm，misp），也会有不同后端设计
+- 在狭义中 ，特指llvm后端，指优化器（pass）对IR进行一系列优化直到目标代码生成的过程
 
 llvm特点：
 
@@ -38,27 +42,28 @@ llvm特点：
 - 统一的中间代码IR，而前端、后端可以不一样。而GCC的前端、后端耦合在了一起，所以支持一门新语言或者新的平台，非常困难。
 - 功能强大的Pass系统，根据依赖性自动对Pass（包括分析、转换和代码生成Pass）进行排序，管道化以提高效率。
 
-llvm有广义和狭义两种定义：
-- 在广义中，llvm特指一整个编译器框架，**是一个模块化和可重用的编译器和工具链技术的集合**，由前端、优化器、后端组成，clang只是用于c/c++的一种前端，llvm针对不同的语言可以设计不同的前端，同样的针对不同的平台架构（amd，arm，misp），也会有不同后端设计
-- 在狭义中 ，特指llvm后端，指优化器（pass）对IR进行一系列优化直到目标代码生成的过程
+#### 1.1.3 LLVM的子项目
 
 简单罗列LLVM几个主要的子项目，详见[官网](https://llvm.org/)：
+
 - LLVM Core libraries：LLVM核心库提供了一个独立于源和目标架构的现代[优化器optimizer](https://llvm.org/docs/Passes.html)，以及对许多流行cpu(以及一些不太常见的cpu)的[代码生成(code generation)](https://llvm.org/docs/CodeGenerator.html)支持。这些库是围绕一种被称为LLVM中间表示(“LLVM IR”)的良好指定的代码表示构建的。
 
-- Clang：一个 C/C++/Objective-C 编译器，提供高效快速的编译效率，比 GCC 快3倍，其中的 clang static analyzer 主要是进行语法分析，语义分析和生成中间代码，当然这个过程会对代码进行检查，出错的和需要警告的会标注出来。(见下文详述)
+- **Clang**：一个 C/C++/Objective-C 编译器，提供高效快速的编译效率，比 GCC 快3倍，其中的 clang static analyzer 主要是进行语法分析，语义分析和生成中间代码，当然这个过程会对代码进行检查，出错的和需要警告的会标注出来。(见下文详述)
 
 - lld： 是LLVM开发一个内置的，平台独立的链接器，去除对所有第三方链接器的依赖。在2017年5月，lld已经支持ELF、PE/COFF、和Mach-O。在lld支持不完全的情况下，用户可以使用其他项目，如 GNU ld 链接器。 
-lld支持链接时优化。当LLVM链接时优化被启用时，LLVM可以输出bitcode而不是本机代码，而本机代码生成由链接器优化处理。
-
+  
+  lld支持链接时优化。当LLVM链接时优化被启用时，LLVM可以输出bitcode而不是本机代码，而本机代码生成由链接器优化处理。
+  
 - LLDB：基于 LLVM 和 Clang提供的库构建的一个优秀的本地调试器，使用了 Clang ASTs、表达式解析器、LLVM JIT、LLVM 反汇编器等。
 
-#### 1.2.2 Clang
+### 1.2 Clang
 
 从[Clang的源码](http://llvm.org/svn/llvm-project/cfe/trunk/lib/)目录中可以大致看出Clang提供的功能：
 
 <img src="/images/compilelink/01.png" alt="01" style="zoom:80%;" />
 
-##### 1. Clang提供了哪些功能？
+#### 1.2.1 Clang提供了哪些功能？
+
 Clang 为一些需要分析代码语法、语义信息的工具提供了基础设施。分别是：
 - **LibClang**。LibClang提供了一个稳定的高级 C 接口，Xcode 使用的就是 LibClang。LibClang 可以访问 Clang 的上层高级抽象的能力，比如获取所有 Token、遍历语法树、代码补全等。由于 API 很稳定，Clang 版本更新对其 影响不大。但是，LibClang 并不能完全访问到 Clang AST 信息。
 
@@ -69,7 +74,8 @@ Clang 为一些需要分析代码语法、语义信息的工具提供了基础�
 - **LibTooling**。是一个 C++ 接口，所写的工具不依赖于构建系统，可以作为一个命令单独使用。与 Clang Plugins 相比，LibTooling 无法影响编译过程；与 LibClang 相比，LibTooling 的接口没有那么稳定。
 应用：做代码转换，比如把 OC 转 JavaScript 或 Swift；代码检查。
 
-##### 2. Clang的优点
+#### 1.2.2 Clang的优点
+
 Clang 是 C、C++、Objective-C 的编译前端，而 Swift 有自己的编译前端 （也就是 Swift 前端多出的 SIL optimizer）。Clang 有哪些优势？
 - 对于使用者来说，Clang 编译的速度非常快，对内存的使用率非常低，并且兼容 GCC。
 - 对于代码诊断来说， Clang 也非常强大，Xcode 也是用的 Clang。使用 Clang 编译前端，可以精确地显示出问题所在的行和具体位置，并且可以确切地说明出现这个问题的原因，并指出错误的类型是什么，使得我们可以快速掌握问题的细节。这样的话，我们不用看源码，仅通过 Clang 突出标注的问题范围也能够了解到问题的情况。
@@ -79,7 +85,19 @@ Clang 是 C、C++、Objective-C 的编译前端，而 Swift 有自己的编译�
 
 Clang 是基于 C++ 开发的，如果你想要了解 Clang 的话，需要有一定的 C++ 基础。但是，Clang 源码本身质量非常高，有很多值得学习的地方，比如说目录清晰、功能解耦做得很好、分类清晰方便组合和复用、代码风格统一而且规范、注释量大便于阅读等。
 
-### 1.3 Clang-LLVM架构
+### 1.3 LLVM架构(三段式)
+
+传统的编译器的架构如下:
+
+<img src="/images/compilelink/04.png" alt="01" style="zoom:100%;" />
+
+LLVM不同的就是对于不同的语言它都提供了同一种中间表示。LLVM的架构如下，
+
+<img src="/images/compilelink/05.png" alt="01" style="zoom:75%;" />
+
+当编译器需要支持多种源代码和目标架构时，基于LLVM的架构，设计一门新的语言只需要去实现一个新的前端就行了，支持新的后端架构也只需要实现一个新的后端，其它部分完成可以复用，不用重新设计。在基于LLVM进行代码混淆时，只需要关注中间层代码(IR)表示。
+
+### 1.4 Clang-LLVM架构
 
 Clang-LLVM架构，即用Clang作为前端的LLVM(编译工具集)。
 
@@ -92,25 +110,21 @@ iOS 开发完整的编译流程图：
 <img src="/images/compilelink/03.png" alt="01" style="zoom:80%;" />
 
 LLVM架构的主要组成部分：
-- **前端**：前端用来获取源代码然后将它转变为某种中间表示，我们可以选择不同的编译器来作为LLVM的前端，如gcc，clang(Clang-LLVM)。
-LLVM支持三种表达形式：人类可读的汇编(`.ll`后缀，是LLVM IR文件，其有自己的语法)、在C++中对象形式、序列化后的bitcode形式(`.bc`后缀)。
 
-- **Pass**(v.通过/传递/变化 n.经过/通行证/**通道**/**流程**/**阶段**) ：是 LLVM 优化(optimize)工作的一个节点，一个节点做些事，一起加起来就构成了 LLVM 完整的优化和转化。
-Pass用来将程序的中间表示之间相互变换。一般情况下，Pass可以用来优化代码，这部分通常是我们关注的部分。我们可以自己编写Pass，做一些代码混淆优化等操作。
+- **前端**：前端用来获取源代码然后将它转变为某种中间表示，我们可以选择不同的编译器来作为LLVM的前端，如gcc，clang(Clang-LLVM)。[LLVM IR](https://llvm.org/docs/LangRef.html)支持三种表达形式：
+  - 内存中的格式(in-memory compiler IR)
+  - 磁盘上的二进制格式(on-disk bitcode，`.bc`后缀)
+  - 便于阅读的文本格式，类似于汇编语言(`.ll`后缀，其有自己的语法)
+- **优化**(Optimizations)：被实现为遍历程序的某些部分以收集信息或转换程序的passes。[文档链接](https://llvm.org/docs/Passes.html)
+  - pass(v.通过/传递/变化 n.**通道**/**流程**/**阶段**) ：pass就是“遍历一遍IR，同时可以对它做一些操作”的意思。是 LLVM 优化(optimize)工作的一个节点，一个节点做些事，一起加起来就构成了 LLVM 完整的优化和转化。
+  - 文档中将LLVM提供的passe分为三类。
+    - 分析(analysis) passes：计算出一些信息，可以用于调试、程序可视化，也可以被其他passes使用。
+    - 转换(transform) passes：可以使用 analysis passes，也可使其无效。这类passes都会以某种方式改变程序。
+    - 实用(utility) passes：提供了一些实用性的功能，但不适合分类。例如，将函数提取到bitcode或将模块写入bitcode的passes既不是analysis也不是transform。
+  - 一般情况下，Pass可以用来优化代码，这部分通常是我们关注的部分。我们可以自己编写Pass，做一些代码混淆优化等操作。
+- **后端**：后端用来生成实际的机器码。至3.4版本的LLVM已经支持多种后端指令集，比如主流的x86、x86-64、z/Architecture、ARM和PowerPC等。
 
-- **后端**：后端用来生成实际的机器码。至3.4版本的LLVM已经支持多种后端指令集，比如主流的x86、x86-64、z/Architecture、ARM和PowerPC等
-
-虽然如今大多数编译器都采用的是这种架构，但是LLVM不同的就是对于不同的语言它都提供了同一种中间表示。传统的编译器的架构如下:
-
-<img src="/images/compilelink/04.png" alt="01" style="zoom:100%;" />
-
-LLVM的架构如下：
-
-<img src="/images/compilelink/05.png" alt="01" style="zoom:75%;" />
-
-当编译器需要支持多种源代码和目标架构时，基于LLVM的架构，设计一门新的语言只需要去实现一个新的前端就行了，支持新的后端架构也只需要实现一个新的后端，其它部分完成可以复用，不用重新设计。在基于LLVM进行代码混淆时，只需要关注中间层代码(IR)表示。
-
-### 1.4 应用
+### 1.5 应用
 
 - iOS 开发中 Objective-C 是 Clang / LLVM 来编译的。
 - swift 是 Swift / LLVM，其中 Swift 前端会多出 SIL optimizer，它会把 .swift 生成的中间代码 .sil 属于 High-Level IR， 因为 swift 在编译时就完成了方法绑定直接通过地址调用属于强类型语言，方法调用不再是像OC那样的消息发送，这样编译就可以获得更多的信息用在后面的后端优化上。
@@ -245,8 +259,7 @@ int main(){
 
 预处理之后，就是编译。编译过程就是把预处理完的文件进行一系列词法分析、语法分析、语义分析及优化后生产相应的汇编代码文件，这个过程往往是我们所说的整个程序构建的核心部分，也是最复杂的部分之一。
 
-首先，Clang 会对代码进行词法分析，将代码切分成 Token。你可以在[这个链接](https://opensource.apple.com/source/lldb/lldb-69/llvm/tools/clang/include/clang/Basic/TokenKinds.def)
-中，看到 Clang 定义的所有 Token 类型。我们可以把这些 Token 类型，分为下面这 4 类。 
+首先，Clang 会对代码进行词法分析，将代码切分成 Token。你可以在[这个链接](https://opensource.apple.com/source/lldb/lldb-69/llvm/tools/clang/include/clang/Basic/TokenKinds.def)中，看到 Clang 定义的所有 Token 类型。我们可以把这些 Token 类型，分为下面这 4 类。 
   + 关键字：语法中的关键字，比如 if、else、while、for 等;
   + 标识符：变量名;
   + 字面量：值、数字、字符串; 
@@ -306,11 +319,26 @@ AST可以说是Clang的核心，大部分的优化, 判断都在AST处理（例�
 
 > AST Context: 存储所有AST相关资讯, 且提供ASTMatcher等遍历方法
 
-在 Clang的定义中，节点主要分成：Type(类型)，Decl(声明)，Stmt(陈述)，其他的都是这三种的派生。Type具体到某个语言的类型时便可以派生出 PointerType(指针类型)、ObjCObjectType(objc对象类型)、BuiltinType(内置基础数据类型)这些表示。通过这三者的联结、重复或选择（alternative)就能构成一门编程语言。举个例子，下图的一段代码：详细可以看[了解 Clang AST](https://www.stephenw.cc/2018/01/08/clang-ast/)
+在 Clang的定义中，节点主要分成三种，其他的都是这三种的派生。
+
+- **Type**：类型。对应 `clang::Type`
+  - 类型层级中的基类。
+  - Type具体到某个语言的类型时便可以派生出 PointerType(指针类型)、ObjCObjectType(objc对象类型)、BuiltinType(内置基础数据类型)等。
+- **Decl**：*declaration，声明*。对应 `clang::Decl`
+  - 表示一个声明（或定义definition）。比如variable、typedef、function、struct等。
+  - 派生类比如FunctionDecl、ParmVarDecl。
+- **Stmt**：*statement，陈述/语句*。对应 `clang::stmt`。
+  - 派生类比如：
+    - CompoundStmt：一组语句，如 { stmt stmt }。
+    - DeclStmt：用于decl与stmt混合使用的适配器类。
+    - ValueStmt：可能有value和type的语句。
+    - ReturnStmt等...
+  - **Expr**：*expression，表达式*。（`clang::Expr` 继承自上面的 `clang::ValueStmt`）
+  - **Literal**：*字面量*，是一个特殊的 Expr。
+
+通过这三种的联结、重复或选择（alternative)就能构成一门编程语言。举个例子，下图的一段代码：详细可以看[了解 Clang AST](https://www.stephenw.cc/2018/01/08/clang-ast/)
 
 <img src="/images/compilelink/06.png" alt="01" style="zoom:70%;" />
-
-FunctionDecl、ParmVarDecl 都是基于 Decl派生的类，CompoundStmt、ReturnStmt、DeclStmt都是基于 Stmt派生的类。）
 
 从上图中可以看到：
 - 一个FunctionDecl（函数的实现）由一个 ParmVarDecl联结 CompoundStmt组成。
