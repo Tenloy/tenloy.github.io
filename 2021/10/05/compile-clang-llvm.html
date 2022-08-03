@@ -28,10 +28,10 @@
 <meta property="og:description" content="一、编译、链接工具 — Clang&#x2F;LLVM 官网定义：  The LLVM Project is a collection of modular and reusable compiler and toolchain technologies(LLVM项目是一系列分模块、可重用的编译工具链). Despite its name, LLVM has little to do with tradit">
 <meta property="og:locale" content="en_US">
 <meta property="og:image" content="https://tenloy.github.io/images/compilelink/01.png">
-<meta property="og:image" content="https://tenloy.github.io/images/compilelink/02.png">
-<meta property="og:image" content="https://tenloy.github.io/images/compilelink/03.png">
 <meta property="og:image" content="https://tenloy.github.io/images/compilelink/04.png">
 <meta property="og:image" content="https://tenloy.github.io/images/compilelink/05.png">
+<meta property="og:image" content="https://tenloy.github.io/images/compilelink/02.png">
+<meta property="og:image" content="https://tenloy.github.io/images/compilelink/03.png">
 <meta property="og:image" content="https://tenloy.github.io/images/compilelink/06.png">
 <meta property="og:image" content="https://tenloy.github.io/images/compilelink/07.png">
 <meta property="og:image" content="https://tenloy.github.io/images/compilelink/08.png">
@@ -39,7 +39,7 @@
 <meta property="og:image" content="https://tenloy.github.io/images/compilelink/10.png">
 <meta property="og:image" content="https://tenloy.github.io/images/compilelink/11.png">
 <meta property="article:published_time" content="2021-10-05T04:25:45.000Z">
-<meta property="article:modified_time" content="2022-06-21T10:15:46.553Z">
+<meta property="article:modified_time" content="2022-08-03T02:19:35.310Z">
 <meta property="article:author" content="Tenloy">
 <meta property="article:tag" content="Tenloy, iOS, Tenloy Blog, 博客，Swift, 编译, 计算机">
 <meta name="twitter:card" content="summary">
@@ -316,7 +316,7 @@ height:40vh;
                 
                 
                     <div class="post-intro-read">
-                        <span>Word count: <span class="post-count word-count">8.4k</span>Reading time: <span class="post-count reading-time">36 min</span></span>
+                        <span>Word count: <span class="post-count word-count">8.6k</span>Reading time: <span class="post-count reading-time">37 min</span></span>
                     </div>
                 
                 <div class="post-intro-meta">
@@ -452,7 +452,7 @@ height:40vh;
 <li>Clang is an “LLVM native” C/C++/Objective-C compiler. </li>
 </ul>
 </blockquote>
-<h3 id="1-1-LLVM的诞生"><a href="#1-1-LLVM的诞生" class="headerlink" title="1.1 LLVM的诞生"></a>1.1 LLVM的诞生</h3><p>2000年，伊利诺伊大学厄巴纳－香槟分校（University of Illinois at Urbana-Champaign 简称UIUC）这所享有世界声望的一流公立研究型大学的克里斯·拉特纳(Chris Lattner，twitter为 <a target="_blank" rel="noopener" href="https://twitter.com/clattner_llvm">clattner_llvm</a>） 开发了一个叫作 Low Level Virtual Machine 的编译器开发工具套件，后来涉及范围越来越大，可以用于常规编译器，JIT编译器，汇编器，调试器，静态分析工具等一系列跟编程语言相关的工作，于是就把简称 LLVM 这个简称作为了正式的名字。</p>
+<h3 id="1-1-LLVM是什么"><a href="#1-1-LLVM是什么" class="headerlink" title="1.1 LLVM是什么"></a>1.1 LLVM是什么</h3><h4 id="1-1-1-诞生"><a href="#1-1-1-诞生" class="headerlink" title="1.1.1 诞生"></a>1.1.1 诞生</h4><p>2000年，伊利诺伊大学厄巴纳－香槟分校（University of Illinois at Urbana-Champaign 简称UIUC）这所享有世界声望的一流公立研究型大学的克里斯·拉特纳(Chris Lattner，twitter为 <a target="_blank" rel="noopener" href="https://twitter.com/clattner_llvm">clattner_llvm</a>） 开发了一个叫作 Low Level Virtual Machine 的编译器开发工具套件，后来涉及范围越来越大，可以用于常规编译器，JIT编译器，汇编器，调试器，静态分析工具等一系列跟编程语言相关的工作，于是就把简称 LLVM 这个简称作为了正式的名字。</p>
 <p>2005年，由于GCC 对于 Objective-C 的支持比较差，效率和性能都没有办法达到苹果公司的要求，而且它还难以推动 GCC 团队。于是，苹果公司决定自己来掌握编译相关的工具链，于是将Chris Lattner招入麾下，发起了 Clang 软件项目。</p>
 <ul>
 <li>Clang 作为 LLVM 编译器工具集的前端（front-end），目的是输出代码对应的抽象语法树（Abstract Syntax Tree, AST），并将代码编译成LLVM Bitcode。接着在后端（back-end）使用LLVM编译成平台相关的机器语言。Clang支持C、C++、Objective C。</li>
@@ -461,32 +461,33 @@ height:40vh;
 </ul>
 <p>2010年，Chris Lattner开始主导开发 Swift 语言。这也使得 Swift 这门集各种高级语言特性的语言，能够在非常高的起点上，出现在开发者面前。</p>
 <p>2012年，LLVM 获得美国计算机学会 ACM 的软件系统大奖，和 UNIX，WWW，TCP/IP，Tex，JAVA 等齐名。</p>
-<h3 id="1-2-LLVM及其子项目"><a href="#1-2-LLVM及其子项目" class="headerlink" title="1.2 LLVM及其子项目"></a>1.2 LLVM及其子项目</h3><h4 id="1-2-1-概述"><a href="#1-2-1-概述" class="headerlink" title="1.2.1 概述"></a>1.2.1 概述</h4><p>llvm特点：</p>
+<h4 id="1-1-2-概述"><a href="#1-1-2-概述" class="headerlink" title="1.1.2 概述"></a>1.1.2 概述</h4><p>llvm有广义和狭义两种定义：</p>
+<ul>
+<li>在广义中，llvm特指一整个编译器框架，<strong>是一个模块化和可重用的编译器和工具链技术的集合</strong>，由前端、优化器、后端组成，clang只是用于c/c++的一种前端，llvm针对不同的语言可以设计不同的前端，同样的针对不同的平台架构（amd，arm，misp），也会有不同后端设计</li>
+<li>在狭义中 ，特指llvm后端，指优化器（pass）对IR进行一系列优化直到目标代码生成的过程</li>
+</ul>
+<p>llvm特点：</p>
 <ul>
 <li>模块化</li>
 <li>统一的中间代码IR，而前端、后端可以不一样。而GCC的前端、后端耦合在了一起，所以支持一门新语言或者新的平台，非常困难。</li>
 <li>功能强大的Pass系统，根据依赖性自动对Pass（包括分析、转换和代码生成Pass）进行排序，管道化以提高效率。</li>
 </ul>
-<p>llvm有广义和狭义两种定义：</p>
-<ul>
-<li>在广义中，llvm特指一整个编译器框架，<strong>是一个模块化和可重用的编译器和工具链技术的集合</strong>，由前端、优化器、后端组成，clang只是用于c/c++的一种前端，llvm针对不同的语言可以设计不同的前端，同样的针对不同的平台架构（amd，arm，misp），也会有不同后端设计</li>
-<li>在狭义中 ，特指llvm后端，指优化器（pass）对IR进行一系列优化直到目标代码生成的过程</li>
-</ul>
-<p>简单罗列LLVM几个主要的子项目，详见<a target="_blank" rel="noopener" href="https://llvm.org/">官网</a>：</p>
+<h4 id="1-1-3-LLVM的子项目"><a href="#1-1-3-LLVM的子项目" class="headerlink" title="1.1.3 LLVM的子项目"></a>1.1.3 LLVM的子项目</h4><p>简单罗列LLVM几个主要的子项目，详见<a target="_blank" rel="noopener" href="https://llvm.org/">官网</a>：</p>
 <ul>
 <li><p>LLVM Core libraries：LLVM核心库提供了一个独立于源和目标架构的现代<a target="_blank" rel="noopener" href="https://llvm.org/docs/Passes.html">优化器optimizer</a>，以及对许多流行cpu(以及一些不太常见的cpu)的<a target="_blank" rel="noopener" href="https://llvm.org/docs/CodeGenerator.html">代码生成(code generation)</a>支持。这些库是围绕一种被称为LLVM中间表示(“LLVM IR”)的良好指定的代码表示构建的。</p>
 </li>
-<li><p>Clang：一个 C/C++/Objective-C 编译器，提供高效快速的编译效率，比 GCC 快3倍，其中的 clang static analyzer 主要是进行语法分析，语义分析和生成中间代码，当然这个过程会对代码进行检查，出错的和需要警告的会标注出来。(见下文详述)</p>
+<li><p><strong>Clang</strong>：一个 C/C++/Objective-C 编译器，提供高效快速的编译效率，比 GCC 快3倍，其中的 clang static analyzer 主要是进行语法分析，语义分析和生成中间代码，当然这个过程会对代码进行检查，出错的和需要警告的会标注出来。(见下文详述)</p>
 </li>
-<li><p>lld： 是LLVM开发一个内置的，平台独立的链接器，去除对所有第三方链接器的依赖。在2017年5月，lld已经支持ELF、PE/COFF、和Mach-O。在lld支持不完全的情况下，用户可以使用其他项目，如 GNU ld 链接器。<br>lld支持链接时优化。当LLVM链接时优化被启用时，LLVM可以输出bitcode而不是本机代码，而本机代码生成由链接器优化处理。</p>
+<li><p>lld： 是LLVM开发一个内置的，平台独立的链接器，去除对所有第三方链接器的依赖。在2017年5月，lld已经支持ELF、PE/COFF、和Mach-O。在lld支持不完全的情况下，用户可以使用其他项目，如 GNU ld 链接器。 </p>
+<p>lld支持链接时优化。当LLVM链接时优化被启用时，LLVM可以输出bitcode而不是本机代码，而本机代码生成由链接器优化处理。</p>
 </li>
 <li><p>LLDB：基于 LLVM 和 Clang提供的库构建的一个优秀的本地调试器，使用了 Clang ASTs、表达式解析器、LLVM JIT、LLVM 反汇编器等。</p>
 </li>
 </ul>
-<h4 id="1-2-2-Clang"><a href="#1-2-2-Clang" class="headerlink" title="1.2.2 Clang"></a>1.2.2 Clang</h4><p>从<a target="_blank" rel="noopener" href="http://llvm.org/svn/llvm-project/cfe/trunk/lib/">Clang的源码</a>目录中可以大致看出Clang提供的功能：</p>
+<h3 id="1-2-Clang"><a href="#1-2-Clang" class="headerlink" title="1.2 Clang"></a>1.2 Clang</h3><p>从<a target="_blank" rel="noopener" href="http://llvm.org/svn/llvm-project/cfe/trunk/lib/">Clang的源码</a>目录中可以大致看出Clang提供的功能：</p>
 <img src="/images/compilelink/01.png" alt="01" style="zoom:80%;" />
 
-<h5 id="1-Clang提供了哪些功能？"><a href="#1-Clang提供了哪些功能？" class="headerlink" title="1. Clang提供了哪些功能？"></a>1. Clang提供了哪些功能？</h5><p>Clang 为一些需要分析代码语法、语义信息的工具提供了基础设施。分别是：</p>
+<h4 id="1-2-1-Clang提供了哪些功能？"><a href="#1-2-1-Clang提供了哪些功能？" class="headerlink" title="1.2.1 Clang提供了哪些功能？"></a>1.2.1 Clang提供了哪些功能？</h4><p>Clang 为一些需要分析代码语法、语义信息的工具提供了基础设施。分别是：</p>
 <ul>
 <li><p><strong>LibClang</strong>。LibClang提供了一个稳定的高级 C 接口，Xcode 使用的就是 LibClang。LibClang 可以访问 Clang 的上层高级抽象的能力，比如获取所有 Token、遍历语法树、代码补全等。由于 API 很稳定，Clang 版本更新对其 影响不大。但是，LibClang 并不能完全访问到 Clang AST 信息。</p>
 </li>
@@ -495,7 +496,7 @@ height:40vh;
 <li><p><strong>LibTooling</strong>。是一个 C++ 接口，所写的工具不依赖于构建系统，可以作为一个命令单独使用。与 Clang Plugins 相比，LibTooling 无法影响编译过程；与 LibClang 相比，LibTooling 的接口没有那么稳定。<br>应用：做代码转换，比如把 OC 转 JavaScript 或 Swift；代码检查。</p>
 </li>
 </ul>
-<h5 id="2-Clang的优点"><a href="#2-Clang的优点" class="headerlink" title="2. Clang的优点"></a>2. Clang的优点</h5><p>Clang 是 C、C++、Objective-C 的编译前端，而 Swift 有自己的编译前端 （也就是 Swift 前端多出的 SIL optimizer）。Clang 有哪些优势？</p>
+<h4 id="1-2-2-Clang的优点"><a href="#1-2-2-Clang的优点" class="headerlink" title="1.2.2 Clang的优点"></a>1.2.2 Clang的优点</h4><p>Clang 是 C、C++、Objective-C 的编译前端，而 Swift 有自己的编译前端 （也就是 Swift 前端多出的 SIL optimizer）。Clang 有哪些优势？</p>
 <ul>
 <li>对于使用者来说，Clang 编译的速度非常快，对内存的使用率非常低，并且兼容 GCC。</li>
 <li>对于代码诊断来说， Clang 也非常强大，Xcode 也是用的 Clang。使用 Clang 编译前端，可以精确地显示出问题所在的行和具体位置，并且可以确切地说明出现这个问题的原因，并指出错误的类型是什么，使得我们可以快速掌握问题的细节。这样的话，我们不用看源码，仅通过 Clang 突出标注的问题范围也能够了解到问题的情况。</li>
@@ -504,7 +505,14 @@ height:40vh;
 <li>Clang 的架构是模块化的。除了代码静态分析外，利用其输出的接口还可以开发用于代码转义、代码生成、代码重构的工具，方便与 IDE 进行集成。</li>
 </ul>
 <p>Clang 是基于 C++ 开发的，如果你想要了解 Clang 的话，需要有一定的 C++ 基础。但是，Clang 源码本身质量非常高，有很多值得学习的地方，比如说目录清晰、功能解耦做得很好、分类清晰方便组合和复用、代码风格统一而且规范、注释量大便于阅读等。</p>
-<h3 id="1-3-Clang-LLVM架构"><a href="#1-3-Clang-LLVM架构" class="headerlink" title="1.3 Clang-LLVM架构"></a>1.3 Clang-LLVM架构</h3><p>Clang-LLVM架构，即用Clang作为前端的LLVM(编译工具集)。</p>
+<h3 id="1-3-LLVM架构-三段式"><a href="#1-3-LLVM架构-三段式" class="headerlink" title="1.3 LLVM架构(三段式)"></a>1.3 LLVM架构(三段式)</h3><p>传统的编译器的架构如下:</p>
+<img src="/images/compilelink/04.png" alt="01" style="zoom:100%;" />
+
+<p>LLVM不同的就是对于不同的语言它都提供了同一种中间表示。LLVM的架构如下，</p>
+<img src="/images/compilelink/05.png" alt="01" style="zoom:75%;" />
+
+<p>当编译器需要支持多种源代码和目标架构时，基于LLVM的架构，设计一门新的语言只需要去实现一个新的前端就行了，支持新的后端架构也只需要实现一个新的后端，其它部分完成可以复用，不用重新设计。在基于LLVM进行代码混淆时，只需要关注中间层代码(IR)表示。</p>
+<h3 id="1-4-Clang-LLVM架构"><a href="#1-4-Clang-LLVM架构" class="headerlink" title="1.4 Clang-LLVM架构"></a>1.4 Clang-LLVM架构</h3><p>Clang-LLVM架构，即用Clang作为前端的LLVM(编译工具集)。</p>
 <p>Clang-LLVM下，一个源文件的编译过程：</p>
 <img src="/images/compilelink/02.png" alt="01" style="zoom:65%;" />
 
@@ -513,21 +521,26 @@ height:40vh;
 
 <p>LLVM架构的主要组成部分：</p>
 <ul>
-<li><p><strong>前端</strong>：前端用来获取源代码然后将它转变为某种中间表示，我们可以选择不同的编译器来作为LLVM的前端，如gcc，clang(Clang-LLVM)。<br>LLVM支持三种表达形式：人类可读的汇编(<code>.ll</code>后缀，是LLVM IR文件，其有自己的语法)、在C++中对象形式、序列化后的bitcode形式(<code>.bc</code>后缀)。</p>
-</li>
-<li><p><strong>Pass</strong>(v.通过/传递/变化 n.经过/通行证/<strong>通道</strong>/<strong>流程</strong>/<strong>阶段</strong>) ：是 LLVM 优化(optimize)工作的一个节点，一个节点做些事，一起加起来就构成了 LLVM 完整的优化和转化。<br>Pass用来将程序的中间表示之间相互变换。一般情况下，Pass可以用来优化代码，这部分通常是我们关注的部分。我们可以自己编写Pass，做一些代码混淆优化等操作。</p>
-</li>
-<li><p><strong>后端</strong>：后端用来生成实际的机器码。至3.4版本的LLVM已经支持多种后端指令集，比如主流的x86、x86-64、z/Architecture、ARM和PowerPC等</p>
-</li>
+<li><strong>前端</strong>：前端用来获取源代码然后将它转变为某种中间表示，我们可以选择不同的编译器来作为LLVM的前端，如gcc，clang(Clang-LLVM)。<a target="_blank" rel="noopener" href="https://llvm.org/docs/LangRef.html">LLVM IR</a>支持三种表达形式：<ul>
+<li>内存中的格式(in-memory compiler IR)</li>
+<li>磁盘上的二进制格式(on-disk bitcode，<code>.bc</code>后缀)</li>
+<li>便于阅读的文本格式，类似于汇编语言(<code>.ll</code>后缀，其有自己的语法)</li>
 </ul>
-<p>虽然如今大多数编译器都采用的是这种架构，但是LLVM不同的就是对于不同的语言它都提供了同一种中间表示。传统的编译器的架构如下:</p>
-<img src="/images/compilelink/04.png" alt="01" style="zoom:100%;" />
-
-<p>LLVM的架构如下：</p>
-<img src="/images/compilelink/05.png" alt="01" style="zoom:75%;" />
-
-<p>当编译器需要支持多种源代码和目标架构时，基于LLVM的架构，设计一门新的语言只需要去实现一个新的前端就行了，支持新的后端架构也只需要实现一个新的后端，其它部分完成可以复用，不用重新设计。在基于LLVM进行代码混淆时，只需要关注中间层代码(IR)表示。</p>
-<h3 id="1-4-应用"><a href="#1-4-应用" class="headerlink" title="1.4 应用"></a>1.4 应用</h3><ul>
+</li>
+<li><strong>优化</strong>(Optimizations)：被实现为遍历程序的某些部分以收集信息或转换程序的passes。<a target="_blank" rel="noopener" href="https://llvm.org/docs/Passes.html">文档链接</a><ul>
+<li>pass(v.通过/传递/变化 n.<strong>通道</strong>/<strong>流程</strong>/<strong>阶段</strong>) ：pass就是“遍历一遍IR，同时可以对它做一些操作”的意思。是 LLVM 优化(optimize)工作的一个节点，一个节点做些事，一起加起来就构成了 LLVM 完整的优化和转化。</li>
+<li>文档中将LLVM提供的passe分为三类。<ul>
+<li>分析(analysis) passes：计算出一些信息，可以用于调试、程序可视化，也可以被其他passes使用。</li>
+<li>转换(transform) passes：可以使用 analysis passes，也可使其无效。这类passes都会以某种方式改变程序。</li>
+<li>实用(utility) passes：提供了一些实用性的功能，但不适合分类。例如，将函数提取到bitcode或将模块写入bitcode的passes既不是analysis也不是transform。</li>
+</ul>
+</li>
+<li>一般情况下，Pass可以用来优化代码，这部分通常是我们关注的部分。我们可以自己编写Pass，做一些代码混淆优化等操作。</li>
+</ul>
+</li>
+<li><strong>后端</strong>：后端用来生成实际的机器码。至3.4版本的LLVM已经支持多种后端指令集，比如主流的x86、x86-64、z/Architecture、ARM和PowerPC等。</li>
+</ul>
+<h3 id="1-5-应用"><a href="#1-5-应用" class="headerlink" title="1.5 应用"></a>1.5 应用</h3><ul>
 <li>iOS 开发中 Objective-C 是 Clang / LLVM 来编译的。</li>
 <li>swift 是 Swift / LLVM，其中 Swift 前端会多出 SIL optimizer，它会把 .swift 生成的中间代码 .sil 属于 High-Level IR， 因为 swift 在编译时就完成了方法绑定直接通过地址调用属于强类型语言，方法调用不再是像OC那样的消息发送，这样编译就可以获得更多的信息用在后面的后端优化上。</li>
 <li>Gallium3D 中使用 LLVM 进行 JIT 优化</li>
@@ -576,7 +589,7 @@ height:40vh;
 
 <p>可以看到上面的预处理已经把宏替换了，并且导入了头文件。</p>
 <h3 id="2-2-词法分析-Lexical-Analysis"><a href="#2-2-词法分析-Lexical-Analysis" class="headerlink" title="2.2 词法分析 (Lexical Analysis)"></a>2.2 词法分析 (Lexical Analysis)</h3><p>预处理之后，就是编译。编译过程就是把预处理完的文件进行一系列词法分析、语法分析、语义分析及优化后生产相应的汇编代码文件，这个过程往往是我们所说的整个程序构建的核心部分，也是最复杂的部分之一。</p>
-<p>首先，Clang 会对代码进行词法分析，将代码切分成 Token。你可以在<a target="_blank" rel="noopener" href="https://opensource.apple.com/source/lldb/lldb-69/llvm/tools/clang/include/clang/Basic/TokenKinds.def">这个链接</a><br>中，看到 Clang 定义的所有 Token 类型。我们可以把这些 Token 类型，分为下面这 4 类。 </p>
+<p>首先，Clang 会对代码进行词法分析，将代码切分成 Token。你可以在<a target="_blank" rel="noopener" href="https://opensource.apple.com/source/lldb/lldb-69/llvm/tools/clang/include/clang/Basic/TokenKinds.def">这个链接</a>中，看到 Clang 定义的所有 Token 类型。我们可以把这些 Token 类型，分为下面这 4 类。 </p>
 <ul>
 <li>关键字：语法中的关键字，比如 if、else、while、for 等;</li>
 <li>标识符：变量名;</li>
@@ -600,10 +613,34 @@ height:40vh;
 <blockquote>
 <p>AST Context: 存储所有AST相关资讯, 且提供ASTMatcher等遍历方法</p>
 </blockquote>
-<p>在 Clang的定义中，节点主要分成：Type(类型)，Decl(声明)，Stmt(陈述)，其他的都是这三种的派生。Type具体到某个语言的类型时便可以派生出 PointerType(指针类型)、ObjCObjectType(objc对象类型)、BuiltinType(内置基础数据类型)这些表示。通过这三者的联结、重复或选择（alternative)就能构成一门编程语言。举个例子，下图的一段代码：详细可以看<a target="_blank" rel="noopener" href="https://www.stephenw.cc/2018/01/08/clang-ast/">了解 Clang AST</a></p>
+<p>在 Clang的定义中，节点主要分成三种，其他的都是这三种的派生。</p>
+<ul>
+<li><strong>Type</strong>：类型。对应 <code>clang::Type</code><ul>
+<li>类型层级中的基类。</li>
+<li>Type具体到某个语言的类型时便可以派生出 PointerType(指针类型)、ObjCObjectType(objc对象类型)、BuiltinType(内置基础数据类型)等。</li>
+</ul>
+</li>
+<li><strong>Decl</strong>：<em>declaration，声明</em>。对应 <code>clang::Decl</code><ul>
+<li>表示一个声明（或定义definition）。比如variable、typedef、function、struct等。</li>
+<li>派生类比如FunctionDecl、ParmVarDecl。</li>
+</ul>
+</li>
+<li><strong>Stmt</strong>：<em>statement，陈述/语句</em>。对应 <code>clang::stmt</code>。<ul>
+<li>派生类比如：<ul>
+<li>CompoundStmt：一组语句，如 { stmt stmt }。</li>
+<li>DeclStmt：用于decl与stmt混合使用的适配器类。</li>
+<li>ValueStmt：可能有value和type的语句。</li>
+<li>ReturnStmt等…</li>
+</ul>
+</li>
+<li><strong>Expr</strong>：<em>expression，表达式</em>。（<code>clang::Expr</code> 继承自上面的 <code>clang::ValueStmt</code>）</li>
+<li><strong>Literal</strong>：<em>字面量</em>，是一个特殊的 Expr。</li>
+</ul>
+</li>
+</ul>
+<p>通过这三种的联结、重复或选择（alternative)就能构成一门编程语言。举个例子，下图的一段代码：详细可以看<a target="_blank" rel="noopener" href="https://www.stephenw.cc/2018/01/08/clang-ast/">了解 Clang AST</a></p>
 <img src="/images/compilelink/06.png" alt="01" style="zoom:70%;" />
 
-<p>FunctionDecl、ParmVarDecl 都是基于 Decl派生的类，CompoundStmt、ReturnStmt、DeclStmt都是基于 Stmt派生的类。）</p>
 <p>从上图中可以看到：</p>
 <ul>
 <li>一个FunctionDecl（函数的实现）由一个 ParmVarDecl联结 CompoundStmt组成。</li>
@@ -694,7 +731,7 @@ height:40vh;
             <p>Author：<a href="https://tenloy.github.io">Tenloy</a>
             <p>原文链接：<a href="https://tenloy.github.io/2021/10/05/compile-clang-llvm.html">https://tenloy.github.io/2021/10/05/compile-clang-llvm.html</a>
             <p>发表日期：2021.10.05 , 4:25 AM</p>
-            <p>更新日期：2022.06.21 , 10:15 AM</p>
+            <p>更新日期：2022.08.03 , 2:19 AM</p>
             <p>版权声明：本文采用<a rel="license noopener" target="_blank" href="http://creativecommons.org/licenses/by-nc/4.0/">Crative Commons 4.0 许可协议</a>进行许可</p>
         </div>
     
@@ -836,7 +873,7 @@ top:40vh;
         <div class="toc-catalog">
             <span class="iconfont-archer catalog-icon">&#xe613;</span><span>CATALOG</span>
         </div>
-        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E3%80%81%E7%BC%96%E8%AF%91%E3%80%81%E9%93%BE%E6%8E%A5%E5%B7%A5%E5%85%B7-%E2%80%94-Clang-LLVM"><span class="toc-text">一、编译、链接工具 — Clang&#x2F;LLVM</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-1-LLVM%E7%9A%84%E8%AF%9E%E7%94%9F"><span class="toc-text">1.1 LLVM的诞生</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-2-LLVM%E5%8F%8A%E5%85%B6%E5%AD%90%E9%A1%B9%E7%9B%AE"><span class="toc-text">1.2 LLVM及其子项目</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#1-2-1-%E6%A6%82%E8%BF%B0"><span class="toc-text">1.2.1 概述</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#1-2-2-Clang"><span class="toc-text">1.2.2 Clang</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#1-Clang%E6%8F%90%E4%BE%9B%E4%BA%86%E5%93%AA%E4%BA%9B%E5%8A%9F%E8%83%BD%EF%BC%9F"><span class="toc-text">1. Clang提供了哪些功能？</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#2-Clang%E7%9A%84%E4%BC%98%E7%82%B9"><span class="toc-text">2. Clang的优点</span></a></li></ol></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-3-Clang-LLVM%E6%9E%B6%E6%9E%84"><span class="toc-text">1.3 Clang-LLVM架构</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-4-%E5%BA%94%E7%94%A8"><span class="toc-text">1.4 应用</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8C%E3%80%81%E7%BC%96%E8%AF%91%E3%80%81%E9%9D%99%E6%80%81%E9%93%BE%E6%8E%A5%E8%BF%87%E7%A8%8B"><span class="toc-text">二、编译、静态链接过程</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Clang%E5%B8%B8%E7%94%A8%E5%91%BD%E4%BB%A4%E4%B8%8E%E5%8F%82%E6%95%B0"><span class="toc-text">Clang常用命令与参数</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-1-%E9%A2%84%E5%A4%84%E7%90%86%EF%BC%88Preprocess%EF%BC%89"><span class="toc-text">2.1 预处理（Preprocess）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-2-%E8%AF%8D%E6%B3%95%E5%88%86%E6%9E%90-Lexical-Analysis"><span class="toc-text">2.2 词法分析 (Lexical Analysis)</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-3-%E8%AF%AD%E6%B3%95%E3%80%81%E8%AF%AD%E4%B9%89%E5%88%86%E6%9E%90"><span class="toc-text">2.3 语法、语义分析</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#2-3-1-%E9%9D%99%E6%80%81%E5%88%86%E6%9E%90-Static-Analyzer"><span class="toc-text">2.3.1 静态分析 (Static Analyzer)</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-4-IR%E4%BB%A3%E7%A0%81%E7%94%9F%E6%88%90-CodeGen"><span class="toc-text">2.4 IR代码生成 (CodeGen)</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#2-4-1-%E4%B8%AD%E9%97%B4%E4%BB%A3%E7%A0%81%E4%BC%98%E5%8C%96-Optimize"><span class="toc-text">2.4.1 中间代码优化 (Optimize)</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-5-%E7%94%9F%E6%88%90%E5%AD%97%E8%8A%82%E7%A0%81-LLVM-Bitcode"><span class="toc-text">2.5 生成字节码 (LLVM Bitcode)</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-6-%E7%94%9F%E6%88%90%E7%9B%B8%E5%85%B3%E6%B1%87%E7%BC%96"><span class="toc-text">2.6 生成相关汇编</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-7-%E7%94%9F%E6%88%90%E7%9B%AE%E6%A0%87%E6%96%87%E4%BB%B6"><span class="toc-text">2.7 生成目标文件</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-8-%E7%94%9F%E6%88%90%E5%8F%AF%E6%89%A7%E8%A1%8C%E6%96%87%E4%BB%B6"><span class="toc-text">2.8 生成可执行文件</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-9-%E8%AE%B0%E5%BD%95%E4%B8%80%E4%B8%AAClang%E5%91%BD%E4%BB%A4%E6%8A%A5%E9%94%99"><span class="toc-text">2.9 记录一个Clang命令报错</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%89%E3%80%81%E5%B0%8F%E7%BB%93%EF%BC%9AiOS%E4%BB%8E%E7%BC%96%E7%A0%81%E5%88%B0%E6%89%93%E5%8C%85"><span class="toc-text">三、小结：iOS从编码到打包</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9B%9B%E3%80%81%E5%8F%82%E8%80%83%E9%93%BE%E6%8E%A5"><span class="toc-text">四、参考链接</span></a></li></ol>
+        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E3%80%81%E7%BC%96%E8%AF%91%E3%80%81%E9%93%BE%E6%8E%A5%E5%B7%A5%E5%85%B7-%E2%80%94-Clang-LLVM"><span class="toc-text">一、编译、链接工具 — Clang&#x2F;LLVM</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-1-LLVM%E6%98%AF%E4%BB%80%E4%B9%88"><span class="toc-text">1.1 LLVM是什么</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#1-1-1-%E8%AF%9E%E7%94%9F"><span class="toc-text">1.1.1 诞生</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#1-1-2-%E6%A6%82%E8%BF%B0"><span class="toc-text">1.1.2 概述</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#1-1-3-LLVM%E7%9A%84%E5%AD%90%E9%A1%B9%E7%9B%AE"><span class="toc-text">1.1.3 LLVM的子项目</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-2-Clang"><span class="toc-text">1.2 Clang</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#1-2-1-Clang%E6%8F%90%E4%BE%9B%E4%BA%86%E5%93%AA%E4%BA%9B%E5%8A%9F%E8%83%BD%EF%BC%9F"><span class="toc-text">1.2.1 Clang提供了哪些功能？</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#1-2-2-Clang%E7%9A%84%E4%BC%98%E7%82%B9"><span class="toc-text">1.2.2 Clang的优点</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-3-LLVM%E6%9E%B6%E6%9E%84-%E4%B8%89%E6%AE%B5%E5%BC%8F"><span class="toc-text">1.3 LLVM架构(三段式)</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-4-Clang-LLVM%E6%9E%B6%E6%9E%84"><span class="toc-text">1.4 Clang-LLVM架构</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-5-%E5%BA%94%E7%94%A8"><span class="toc-text">1.5 应用</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8C%E3%80%81%E7%BC%96%E8%AF%91%E3%80%81%E9%9D%99%E6%80%81%E9%93%BE%E6%8E%A5%E8%BF%87%E7%A8%8B"><span class="toc-text">二、编译、静态链接过程</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Clang%E5%B8%B8%E7%94%A8%E5%91%BD%E4%BB%A4%E4%B8%8E%E5%8F%82%E6%95%B0"><span class="toc-text">Clang常用命令与参数</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-1-%E9%A2%84%E5%A4%84%E7%90%86%EF%BC%88Preprocess%EF%BC%89"><span class="toc-text">2.1 预处理（Preprocess）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-2-%E8%AF%8D%E6%B3%95%E5%88%86%E6%9E%90-Lexical-Analysis"><span class="toc-text">2.2 词法分析 (Lexical Analysis)</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-3-%E8%AF%AD%E6%B3%95%E3%80%81%E8%AF%AD%E4%B9%89%E5%88%86%E6%9E%90"><span class="toc-text">2.3 语法、语义分析</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#2-3-1-%E9%9D%99%E6%80%81%E5%88%86%E6%9E%90-Static-Analyzer"><span class="toc-text">2.3.1 静态分析 (Static Analyzer)</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-4-IR%E4%BB%A3%E7%A0%81%E7%94%9F%E6%88%90-CodeGen"><span class="toc-text">2.4 IR代码生成 (CodeGen)</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#2-4-1-%E4%B8%AD%E9%97%B4%E4%BB%A3%E7%A0%81%E4%BC%98%E5%8C%96-Optimize"><span class="toc-text">2.4.1 中间代码优化 (Optimize)</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-5-%E7%94%9F%E6%88%90%E5%AD%97%E8%8A%82%E7%A0%81-LLVM-Bitcode"><span class="toc-text">2.5 生成字节码 (LLVM Bitcode)</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-6-%E7%94%9F%E6%88%90%E7%9B%B8%E5%85%B3%E6%B1%87%E7%BC%96"><span class="toc-text">2.6 生成相关汇编</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-7-%E7%94%9F%E6%88%90%E7%9B%AE%E6%A0%87%E6%96%87%E4%BB%B6"><span class="toc-text">2.7 生成目标文件</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-8-%E7%94%9F%E6%88%90%E5%8F%AF%E6%89%A7%E8%A1%8C%E6%96%87%E4%BB%B6"><span class="toc-text">2.8 生成可执行文件</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-9-%E8%AE%B0%E5%BD%95%E4%B8%80%E4%B8%AAClang%E5%91%BD%E4%BB%A4%E6%8A%A5%E9%94%99"><span class="toc-text">2.9 记录一个Clang命令报错</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%89%E3%80%81%E5%B0%8F%E7%BB%93%EF%BC%9AiOS%E4%BB%8E%E7%BC%96%E7%A0%81%E5%88%B0%E6%89%93%E5%8C%85"><span class="toc-text">三、小结：iOS从编码到打包</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9B%9B%E3%80%81%E5%8F%82%E8%80%83%E9%93%BE%E6%8E%A5"><span class="toc-text">四、参考链接</span></a></li></ol>
     </div>
     
     <div class="back-top iconfont-archer">&#xe639;</div>
@@ -1778,9 +1815,102 @@ top:40vh;
     
     
     
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
     <div class="total-and-search">
         <div class="total-archive">
-        Total : 62
+        Total : 69
         </div>
         <!-- search  -->
         
@@ -1836,26 +1966,6 @@ top:40vh;
     
     <div class="archive-year"> 2021 </div>
     <ul class="year-list">
-    
-    
-        <li class="archive-post-item">
-            <span class="archive-post-date">12/22</span><a class="archive-post-title" href= "/2021/12/22/aes.html" >数据加密 — 对称加密(以AES为例)</a>
-        </li>
-    
-    
-        <li class="archive-post-item">
-            <span class="archive-post-date">12/21</span><a class="archive-post-title" href= "/2021/12/21/aes-standard.html" >[转] AES标准及Rijndael算法解析</a>
-        </li>
-    
-    
-        <li class="archive-post-item">
-            <span class="archive-post-date">12/20</span><a class="archive-post-title" href= "/2021/12/20/asymmetric.html" >数据加密 — 非对称加密(加签/加密，以RSA为例)</a>
-        </li>
-    
-    
-        <li class="archive-post-item">
-            <span class="archive-post-date">12/09</span><a class="archive-post-title" href= "/2021/12/09/pki.html" >常见的PKI标准(X.509、PKCS)及证书相关介绍</a>
-        </li>
     
     
         <li class="archive-post-item">
@@ -1979,52 +2089,72 @@ top:40vh;
     
     
         <li class="archive-post-item">
-            <span class="archive-post-date">07/01</span><a class="archive-post-title" href= "/2021/07/01/Crash-Monitor.html" >iOS崩溃监控与分析</a>
+            <span class="archive-post-date">08/01</span><a class="archive-post-title" href= "/2021/08/01/Crash-Monitor.html" >iOS崩溃监控与分析</a>
         </li>
     
     
         <li class="archive-post-item">
-            <span class="archive-post-date">06/30</span><a class="archive-post-title" href= "/2021/06/30/Lag-Monitor.html" >iOS卡顿监控</a>
+            <span class="archive-post-date">07/30</span><a class="archive-post-title" href= "/2021/07/30/Lag-Monitor.html" >iOS卡顿监控</a>
         </li>
     
     
         <li class="archive-post-item">
-            <span class="archive-post-date">06/29</span><a class="archive-post-title" href= "/2021/06/29/SwiftUI.html" >SwiftUI</a>
+            <span class="archive-post-date">07/29</span><a class="archive-post-title" href= "/2021/07/29/SwiftUI.html" >SwiftUI</a>
         </li>
     
     
         <li class="archive-post-item">
-            <span class="archive-post-date">06/29</span><a class="archive-post-title" href= "/2021/06/29/Swift-Version-History.html" >Swift版本更新API介绍</a>
+            <span class="archive-post-date">07/29</span><a class="archive-post-title" href= "/2021/07/29/Swift-Version-History.html" >Swift版本更新API介绍</a>
         </li>
     
     
         <li class="archive-post-item">
-            <span class="archive-post-date">06/28</span><a class="archive-post-title" href= "/2021/06/28/GCD.html" >深入浅出GCD常用API</a>
+            <span class="archive-post-date">07/28</span><a class="archive-post-title" href= "/2021/07/28/GCD.html" >深入浅出GCD常用API</a>
         </li>
     
     
         <li class="archive-post-item">
-            <span class="archive-post-date">06/28</span><a class="archive-post-title" href= "/2021/06/28/AutoreleasePool.html" >AutoreleasePool</a>
+            <span class="archive-post-date">07/28</span><a class="archive-post-title" href= "/2021/07/28/AutoreleasePool.html" >AutoreleasePool</a>
         </li>
     
     
         <li class="archive-post-item">
-            <span class="archive-post-date">06/26</span><a class="archive-post-title" href= "/2021/06/26/RunLoop-Reposted-From-ibireme.html" >[转] 深入理解RunLoop—ibireme</a>
+            <span class="archive-post-date">07/26</span><a class="archive-post-title" href= "/2021/07/26/RunLoop-Reposted-From-ibireme.html" >[转] 深入理解RunLoop—ibireme</a>
         </li>
     
     
         <li class="archive-post-item">
-            <span class="archive-post-date">06/25</span><a class="archive-post-title" href= "/2021/06/25/Protocol-Buffer.html" >Protocol Buffer的基本介绍</a>
+            <span class="archive-post-date">07/25</span><a class="archive-post-title" href= "/2021/07/25/Protocol-Buffer.html" >Protocol Buffer的基本介绍</a>
         </li>
     
     
         <li class="archive-post-item">
-            <span class="archive-post-date">06/24</span><a class="archive-post-title" href= "/2021/06/24/base64.html" >Base64编码及iOS中的Base64</a>
+            <span class="archive-post-date">07/24</span><a class="archive-post-title" href= "/2021/07/24/base64.html" >Base64编码及iOS中的Base64</a>
         </li>
     
     
         <li class="archive-post-item">
-            <span class="archive-post-date">06/23</span><a class="archive-post-title" href= "/2021/06/23/chinese-encode.html" >[转] 彻底弄懂常见的7种中文字符编码</a>
+            <span class="archive-post-date">07/23</span><a class="archive-post-title" href= "/2021/07/23/chinese-encode.html" >[转] 彻底弄懂常见的7种中文字符编码</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/30</span><a class="archive-post-title" href= "/2021/06/30/probability.html" >(六) 概率算法</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/28</span><a class="archive-post-title" href= "/2021/06/28/branch-bound.html" >(五) 分支限界算法</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/26</span><a class="archive-post-title" href= "/2021/06/26/back-track.html" >(四) 回溯法(试探算法)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/24</span><a class="archive-post-title" href= "/2021/06/24/greed.html" >(三) 贪心算法</a>
         </li>
     
     
@@ -2034,7 +2164,22 @@ top:40vh;
     
     
         <li class="archive-post-item">
-            <span class="archive-post-date">06/18</span><a class="archive-post-title" href= "/2021/06/18/Web-Module.html" >前端各种模块化方案总结</a>
+            <span class="archive-post-date">06/20</span><a class="archive-post-title" href= "/2021/06/20/divide-and-conquer.html" >(一) 分治算法及减治、变治算法</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/18</span><a class="archive-post-title" href= "/2021/06/18/several-programming.html" >穷举、递推、迭代(辗转法)、递归算法</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/15</span><a class="archive-post-title" href= "/2021/06/15/datastruction-overview.html" >数据结构与算法概述</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/06</span><a class="archive-post-title" href= "/2021/06/06/Web-Module.html" >前端各种模块化方案总结</a>
         </li>
     
     
@@ -2115,6 +2260,35 @@ top:40vh;
     
         <li class="archive-post-item">
             <span class="archive-post-date">04/01</span><a class="archive-post-title" href= "/2021/04/01/GithubPages-Hexo.html" >使用Hexo+Github Pages搭建个人博客</a>
+        </li>
+    
+    
+    
+    
+    
+        </ul>
+    
+    <div class="archive-year"> 2020 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/22</span><a class="archive-post-title" href= "/2020/12/22/aes.html" >数据加密 — 对称加密(以AES为例)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/21</span><a class="archive-post-title" href= "/2020/12/21/aes-standard.html" >[转] AES标准及Rijndael算法解析</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/20</span><a class="archive-post-title" href= "/2020/12/20/asymmetric.html" >数据加密 — 非对称加密(加签/加密，以RSA为例)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/09</span><a class="archive-post-title" href= "/2020/12/09/pki.html" >常见的PKI标准(X.509、PKCS)及证书相关介绍</a>
         </li>
     
     </div>

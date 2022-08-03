@@ -42,7 +42,7 @@
 <meta property="og:image" content="https://tenloy.github.io/images/git/Snip20200423_10.png">
 <meta property="og:image" content="https://tenloy.github.io/images/git/Snip20200423_11.png">
 <meta property="article:published_time" content="2021-11-10T11:06:05.000Z">
-<meta property="article:modified_time" content="2022-06-21T10:15:46.553Z">
+<meta property="article:modified_time" content="2022-08-03T02:19:35.310Z">
 <meta property="article:author" content="Tenloy">
 <meta property="article:tag" content="Tenloy, iOS, Tenloy Blog, 博客，Swift, 编译, 计算机">
 <meta name="twitter:card" content="summary">
@@ -491,7 +491,7 @@ height:40vh;
 <li>忽略精确的文件名：文件名；</li>
 <li>忽略所有此扩展名的文件：如 *.pbxuser 表示要忽略后缀名为.pbxuser的文件；</li>
 <li>忽略文件夹下面的一切：如 build/ 表示要忽略 build 文件夹下的所有内容；</li>
-<li><code>*</code> 表示通配符：如 fastlane/screenshots/<code>**/*.png</code>；</li>
+<li><code>*</code> 表示通配符：如 <code>fastlane/screenshots/**/*.png</code>；</li>
 <li><code>!</code> 表示取反：如 *.pbxuser 表示忽略所有后缀名为.pbxuser的文件，如果加上!default.pbxuser则表示，除了default.pbxuse忽略其它后缀名为pbxuse的文件。</li>
 </ul>
 <p>忽略文件的原则是：</p>
@@ -512,7 +512,7 @@ height:40vh;
 <ul>
 <li><code>/etc/gitconfig</code>：包含系统上每一个用户及他们仓库的通用配置，使用带有 <code>--system</code> 选项的git config时，会从此文件读写配置变量；</li>
 <li><code>~/.gitconfig</code> 或 <code>~/.config/git/config</code>：只针对当前用户。 可以传递 <code>--global</code> 选项让 Git 读写此文件。 </li>
-<li>仓库目录下 <code>/.git/config</code>：只针对该仓库，在仓库中使用带有 <code>--local(默认)</code> 选项的git config时，会读写该文件；<br>在优先级方面，从上往下依次上升。</li>
+<li>仓库目录下 <code>/.git/config</code>：只针对该仓库，在仓库中使用带有 <code>--local</code>(默认) 选项的git config时，会读写该文件；<br>在优先级方面，从上往下依次上升。</li>
 </ul>
 <p>git config 的配置项有很多，详细可以看 <a target="_blank" rel="noopener" href="https://github.com/git/git/tree/7a2dc95cbc25b4b82cff35931f69f8a5aafeb878/Documentation/config">git文档</a>。下面只是列出常见的几种。</p>
 <h4 id="3-3-2-配置用户信息"><a href="#3-3-2-配置用户信息" class="headerlink" title="3.3.2 配置用户信息"></a>3.3.2 配置用户信息</h4><p>当安装完 Git 应该做的第一件事就是设置你的用户名称与邮件地址。 </p>
@@ -664,24 +664,24 @@ height:40vh;
 </ul>
 </li>
 </ul>
-<h4 id="5-3-1-SSH的处理"><a href="#5-3-1-SSH的处理" class="headerlink" title="5.3.1 SSH的处理"></a>5.3.1 SSH的处理</h4><p>以SSH方式：通过远程仓库的url（clone之后存储在repo/.git/config中）的host </p>
+<h4 id="5-3-1-SSH的处理"><a href="#5-3-1-SSH的处理" class="headerlink" title="5.3.1 SSH的处理"></a>5.3.1 SSH的处理</h4><p>以SSH方式：通过远程仓库的url（clone之后存储在 <code>repo/.git/config</code> 中）的host </p>
 <ul>
-<li>找到host配置的对应SSH-Key(SSH-Key一般都存在~/.ssh文件夹中)<ul>
-<li>当只有一个SSH账号时，/etc/ssh/ssh_config配置文件，默认直接指向~/.ssh/id_rsa</li>
-<li>当有多个SSH账号时，<del>/.ssh/config配置文件中，分别配置每个host对应的</del>/.ssh中的SSH-Key</li>
+<li>找到host配置的对应SSH-Key(SSH-Key一般都存在 <code>~/.ssh</code> 文件夹中)<ul>
+<li>当只有一个SSH账号时，<code>/etc/ssh/ssh_config</code> 配置文件，默认直接指向 <code>~/.ssh/id_rsa</code>。</li>
+<li>当有多个SSH账号时，<code>~/.ssh/config</code> 配置文件中，分别配置每个host对应的 <code>~/.ssh</code> 中的SSH-Key。</li>
 </ul>
 </li>
 <li>通过密钥进行权限校验</li>
 </ul>
 <p>两个文件的影响范围：</p>
 <ul>
-<li>/etc/ssh/ssh_config下的配置是针对当前系统所有用户</li>
-<li>~/.ssh/config(/User/用户名/.ssh/config)只针对当前用户(默认是没有该文件的，只有当有多个用户，需要做映射时，才创建、配置)</li>
+<li><code>/etc/ssh/ssh_config</code> 下的配置是针对当前系统所有用户</li>
+<li><code>~/.ssh/config</code> (/User/用户名/.ssh/config)只针对当前用户(默认是没有该文件的，只有当有多个用户，需要做映射时，才创建、配置)</li>
 </ul>
 <p>如果两个仓库host不相同：</p>
 <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># gitlab</span></span><br><span class="line">Host github.com <span class="comment"># Host可以看作是一个你要识别的模式，对识别的模式，进行配置对应的的主机名和ssh文件</span></span><br><span class="line">    Port 22         <span class="comment"># 端口号（如果不是默认22号端口则需要指定） </span></span><br><span class="line">    HostName github.com  <span class="comment"># 是代码仓库服务器的主机(此处是github)</span></span><br><span class="line">    PreferredAuthentications publickey</span><br><span class="line">    IdentityFile ~/.ssh/id_rsa  <span class="comment"># 指明User对应的identityFile路径，即SSH-Key</span></span><br><span class="line">    User loten   <span class="comment"># 登录名（如gitlab的username） </span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 另一个同上，如 smartgit</span></span><br></pre></td></tr></table></figure>
 
-<p>如果两个仓库host也相同，则需要在Host中进行区分，然后经过 <code>CNAME</code> 映射到 <code>HostName</code>（<code>Host相当于是HostName的别名</code>），然后分别指向不同的SSH-key，即IdentityFile，从而实现了对两个 GitHub 账号的分离。（<code>HostName才是真正指定 GitHub 服务器主机的字段</code>）</p>
+<p>如果两个仓库host也相同，则需要在Host中进行区分，然后经过 <code>CNAME</code> 映射到 <code>HostName</code>（<strong>Host相当于是HostName的别名</strong>），然后分别指向不同的SSH-key，即IdentityFile，从而实现了对两个 GitHub 账号的分离。（<strong>HostName才是真正指定 GitHub 服务器主机的字段</strong>）</p>
 <p>在config文件修改如下：</p>
 <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># debugtalk</span></span><br><span class="line">Host debugtalk</span><br><span class="line">    HostName github.com</span><br><span class="line">    IdentityFile ~/.ssh/id_rsa</span><br><span class="line">    User git</span><br><span class="line"></span><br><span class="line"><span class="comment"># DJI</span></span><br><span class="line">Host djileolee</span><br><span class="line">    HostName github.com</span><br><span class="line">    IdentityFile ~/.ssh/dji_id_rsa</span><br><span class="line">    User git</span><br></pre></td></tr></table></figure>
 
@@ -692,7 +692,7 @@ height:40vh;
 <p>比如：本来的HTTPS URL为 <code>https://github.com/loten/RSAHandle.git</code> 手动改为：<code>https://loten@github.com/loten/RSAHandle.git</code>。</p>
 <p>注意：loten是GitHub的用户名，不能打错。在第一次拉取/推送的时候(钥匙串keychain中还没存储账号、密码)，会要求输入该用户名对应的密码：Password Required For user Roten8 on host github.com. 输入成功后，即可成功拉取/推送。</p>
 <p>配置原理很容易理解，即将 GitHub 用户名添加到仓库的 Git 地址中，这样在执行 git 命令的时候，系统就会采用指定的 GitHub 用户名去<code>Keychain</code> 或 <code>~/.git-credentials</code> 中寻找对应的认证信息，账号使用错乱的问题也就不复存在了。</p>
-<p>然后可以发现使用这种方式修改之后，可以看到keychain中的存储信息的<code>账号</code>：<code>由邮箱号变为了Git用户名</code>。即不再仅仅通过host来寻找账号密码，而是找到keychain中，这个host下指定的用户名对应的密码，来使用。</p>
+<p>然后可以发现使用这种方式修改之后，可以看到keychain中的存储信息的<strong>账号</strong>：<strong>由邮箱号变为了Git用户名</strong>。即不再仅仅通过host来寻找账号密码，而是找到keychain中，这个host下指定的用户名对应的密码，来使用。</p>
 <p>参考链接： <a target="_blank" rel="noopener" href="https://ruby-china.org/topics/30298">Git深入浅出 Git 权限校验 (最熟悉的陌生概念)</a></p>
 <h2 id="六、从仓库目录角度了解Git工作原理"><a href="#六、从仓库目录角度了解Git工作原理" class="headerlink" title="六、从仓库目录角度了解Git工作原理"></a>六、从仓库目录角度了解Git工作原理</h2><h3 id="6-1-目录结构"><a href="#6-1-目录结构" class="headerlink" title="6.1 目录结构"></a>6.1 目录结构</h3><img src="/images/git/dir.png" alt="dir" style="zoom:80%;" />
 
@@ -1086,7 +1086,7 @@ height:40vh;
 <h4 id="5-git-log-查看"><a href="#5-git-log-查看" class="headerlink" title="5. git log 查看"></a>5. git log 查看</h4><p>显示分支合并图</p>
 <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git <span class="built_in">log</span> --graph --pretty=oneline --abbrev-commit</span><br></pre></td></tr></table></figure>
 
-<h4 id="6-git-cherry-pick"><a href="#6-git-cherry-pick" class="headerlink" title="6. git cherry-pick"></a>6. git cherry-pick</h4><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 获得在另一个分支中单个提交中引入的变更，然后尝试将作为一个新的提交引入到你当前分支上。</span></span><br><span class="line">git cherry-pick &lt;commit-id&gt;</span><br><span class="line"></span><br><span class="line"><span class="comment"># 转移多个提交</span></span><br><span class="line">git cherry-pick &lt;HashA&gt; &lt;HashB&gt; <span class="comment"># 将 A 和 B 两个提交应用到当前分支</span></span><br><span class="line">git cherry-pick A..B  <span class="comment"># 转移从 A 到 B 的所有提交</span></span><br><span class="line">											<span class="comment"># 提交 A 必须早于提交 B，否则命令将失败，但不会报错。</span></span><br><span class="line">											<span class="comment"># 提交 A 将不会包含在 Cherry pick 中，即(A, B]</span></span><br><span class="line">git cherry-pick A^..B <span class="comment"># 包含A，即[A, B]</span></span><br></pre></td></tr></table></figure>
+<h4 id="6-git-cherry-pick"><a href="#6-git-cherry-pick" class="headerlink" title="6. git cherry-pick"></a>6. git cherry-pick</h4><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 获得在另一个分支中单个提交中引入的变更，然后尝试将作为一个新的提交引入到你当前分支上。</span></span><br><span class="line">git cherry-pick &lt;commit-id&gt;</span><br><span class="line"></span><br><span class="line"><span class="comment"># 转移多个提交</span></span><br><span class="line">git cherry-pick &lt;HashA&gt; &lt;HashB&gt; <span class="comment"># 将 A 和 B 两个提交应用到当前分支</span></span><br><span class="line">git cherry-pick A..B  <span class="comment"># 转移从 A 到 B 的所有提交</span></span><br><span class="line">                      <span class="comment"># 提交 A 必须早于提交 B，否则命令将失败，但不会报错。</span></span><br><span class="line">                      <span class="comment"># 提交 A 将不会包含在 Cherry pick 中，即(A, B]</span></span><br><span class="line">git cherry-pick A^..B <span class="comment"># 包含A，即[A, B]</span></span><br></pre></td></tr></table></figure>
 
 <p>如果操作过程中发生代码冲突，Cherry pick 会停下来，让用户决定如何继续操作。</p>
 <ul>
@@ -1238,7 +1238,7 @@ height:40vh;
             <p>Author：<a href="https://tenloy.github.io">Tenloy</a>
             <p>原文链接：<a href="https://tenloy.github.io/2021/11/10/git-use.html">https://tenloy.github.io/2021/11/10/git-use.html</a>
             <p>发表日期：2021.11.10 , 11:06 AM</p>
-            <p>更新日期：2022.06.21 , 10:15 AM</p>
+            <p>更新日期：2022.08.03 , 2:19 AM</p>
             <p>版权声明：本文采用<a rel="license noopener" target="_blank" href="http://creativecommons.org/licenses/by-nc/4.0/">Crative Commons 4.0 许可协议</a>进行许可</p>
         </div>
     
@@ -2322,9 +2322,102 @@ top:40vh;
     
     
     
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
     <div class="total-and-search">
         <div class="total-archive">
-        Total : 62
+        Total : 69
         </div>
         <!-- search  -->
         
@@ -2380,26 +2473,6 @@ top:40vh;
     
     <div class="archive-year"> 2021 </div>
     <ul class="year-list">
-    
-    
-        <li class="archive-post-item">
-            <span class="archive-post-date">12/22</span><a class="archive-post-title" href= "/2021/12/22/aes.html" >数据加密 — 对称加密(以AES为例)</a>
-        </li>
-    
-    
-        <li class="archive-post-item">
-            <span class="archive-post-date">12/21</span><a class="archive-post-title" href= "/2021/12/21/aes-standard.html" >[转] AES标准及Rijndael算法解析</a>
-        </li>
-    
-    
-        <li class="archive-post-item">
-            <span class="archive-post-date">12/20</span><a class="archive-post-title" href= "/2021/12/20/asymmetric.html" >数据加密 — 非对称加密(加签/加密，以RSA为例)</a>
-        </li>
-    
-    
-        <li class="archive-post-item">
-            <span class="archive-post-date">12/09</span><a class="archive-post-title" href= "/2021/12/09/pki.html" >常见的PKI标准(X.509、PKCS)及证书相关介绍</a>
-        </li>
     
     
         <li class="archive-post-item">
@@ -2523,52 +2596,72 @@ top:40vh;
     
     
         <li class="archive-post-item">
-            <span class="archive-post-date">07/01</span><a class="archive-post-title" href= "/2021/07/01/Crash-Monitor.html" >iOS崩溃监控与分析</a>
+            <span class="archive-post-date">08/01</span><a class="archive-post-title" href= "/2021/08/01/Crash-Monitor.html" >iOS崩溃监控与分析</a>
         </li>
     
     
         <li class="archive-post-item">
-            <span class="archive-post-date">06/30</span><a class="archive-post-title" href= "/2021/06/30/Lag-Monitor.html" >iOS卡顿监控</a>
+            <span class="archive-post-date">07/30</span><a class="archive-post-title" href= "/2021/07/30/Lag-Monitor.html" >iOS卡顿监控</a>
         </li>
     
     
         <li class="archive-post-item">
-            <span class="archive-post-date">06/29</span><a class="archive-post-title" href= "/2021/06/29/SwiftUI.html" >SwiftUI</a>
+            <span class="archive-post-date">07/29</span><a class="archive-post-title" href= "/2021/07/29/SwiftUI.html" >SwiftUI</a>
         </li>
     
     
         <li class="archive-post-item">
-            <span class="archive-post-date">06/29</span><a class="archive-post-title" href= "/2021/06/29/Swift-Version-History.html" >Swift版本更新API介绍</a>
+            <span class="archive-post-date">07/29</span><a class="archive-post-title" href= "/2021/07/29/Swift-Version-History.html" >Swift版本更新API介绍</a>
         </li>
     
     
         <li class="archive-post-item">
-            <span class="archive-post-date">06/28</span><a class="archive-post-title" href= "/2021/06/28/GCD.html" >深入浅出GCD常用API</a>
+            <span class="archive-post-date">07/28</span><a class="archive-post-title" href= "/2021/07/28/GCD.html" >深入浅出GCD常用API</a>
         </li>
     
     
         <li class="archive-post-item">
-            <span class="archive-post-date">06/28</span><a class="archive-post-title" href= "/2021/06/28/AutoreleasePool.html" >AutoreleasePool</a>
+            <span class="archive-post-date">07/28</span><a class="archive-post-title" href= "/2021/07/28/AutoreleasePool.html" >AutoreleasePool</a>
         </li>
     
     
         <li class="archive-post-item">
-            <span class="archive-post-date">06/26</span><a class="archive-post-title" href= "/2021/06/26/RunLoop-Reposted-From-ibireme.html" >[转] 深入理解RunLoop—ibireme</a>
+            <span class="archive-post-date">07/26</span><a class="archive-post-title" href= "/2021/07/26/RunLoop-Reposted-From-ibireme.html" >[转] 深入理解RunLoop—ibireme</a>
         </li>
     
     
         <li class="archive-post-item">
-            <span class="archive-post-date">06/25</span><a class="archive-post-title" href= "/2021/06/25/Protocol-Buffer.html" >Protocol Buffer的基本介绍</a>
+            <span class="archive-post-date">07/25</span><a class="archive-post-title" href= "/2021/07/25/Protocol-Buffer.html" >Protocol Buffer的基本介绍</a>
         </li>
     
     
         <li class="archive-post-item">
-            <span class="archive-post-date">06/24</span><a class="archive-post-title" href= "/2021/06/24/base64.html" >Base64编码及iOS中的Base64</a>
+            <span class="archive-post-date">07/24</span><a class="archive-post-title" href= "/2021/07/24/base64.html" >Base64编码及iOS中的Base64</a>
         </li>
     
     
         <li class="archive-post-item">
-            <span class="archive-post-date">06/23</span><a class="archive-post-title" href= "/2021/06/23/chinese-encode.html" >[转] 彻底弄懂常见的7种中文字符编码</a>
+            <span class="archive-post-date">07/23</span><a class="archive-post-title" href= "/2021/07/23/chinese-encode.html" >[转] 彻底弄懂常见的7种中文字符编码</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/30</span><a class="archive-post-title" href= "/2021/06/30/probability.html" >(六) 概率算法</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/28</span><a class="archive-post-title" href= "/2021/06/28/branch-bound.html" >(五) 分支限界算法</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/26</span><a class="archive-post-title" href= "/2021/06/26/back-track.html" >(四) 回溯法(试探算法)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/24</span><a class="archive-post-title" href= "/2021/06/24/greed.html" >(三) 贪心算法</a>
         </li>
     
     
@@ -2578,7 +2671,22 @@ top:40vh;
     
     
         <li class="archive-post-item">
-            <span class="archive-post-date">06/18</span><a class="archive-post-title" href= "/2021/06/18/Web-Module.html" >前端各种模块化方案总结</a>
+            <span class="archive-post-date">06/20</span><a class="archive-post-title" href= "/2021/06/20/divide-and-conquer.html" >(一) 分治算法及减治、变治算法</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/18</span><a class="archive-post-title" href= "/2021/06/18/several-programming.html" >穷举、递推、迭代(辗转法)、递归算法</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/15</span><a class="archive-post-title" href= "/2021/06/15/datastruction-overview.html" >数据结构与算法概述</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/06</span><a class="archive-post-title" href= "/2021/06/06/Web-Module.html" >前端各种模块化方案总结</a>
         </li>
     
     
@@ -2659,6 +2767,35 @@ top:40vh;
     
         <li class="archive-post-item">
             <span class="archive-post-date">04/01</span><a class="archive-post-title" href= "/2021/04/01/GithubPages-Hexo.html" >使用Hexo+Github Pages搭建个人博客</a>
+        </li>
+    
+    
+    
+    
+    
+        </ul>
+    
+    <div class="archive-year"> 2020 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/22</span><a class="archive-post-title" href= "/2020/12/22/aes.html" >数据加密 — 对称加密(以AES为例)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/21</span><a class="archive-post-title" href= "/2020/12/21/aes-standard.html" >[转] AES标准及Rijndael算法解析</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/20</span><a class="archive-post-title" href= "/2020/12/20/asymmetric.html" >数据加密 — 非对称加密(加签/加密，以RSA为例)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/09</span><a class="archive-post-title" href= "/2020/12/09/pki.html" >常见的PKI标准(X.509、PKCS)及证书相关介绍</a>
         </li>
     
     </div>

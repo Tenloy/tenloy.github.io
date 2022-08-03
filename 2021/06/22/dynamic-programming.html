@@ -35,7 +35,7 @@
 <meta property="og:image" content="https://tenloy.github.io/images/algorithm/dp-5.png">
 <meta property="og:image" content="https://tenloy.github.io/images/algorithm/dp-6.png">
 <meta property="article:published_time" content="2021-06-22T14:40:13.000Z">
-<meta property="article:modified_time" content="2022-06-21T10:15:46.545Z">
+<meta property="article:modified_time" content="2022-08-03T02:19:35.302Z">
 <meta property="article:author" content="Tenloy">
 <meta property="article:tag" content="dp">
 <meta name="twitter:card" content="summary">
@@ -318,7 +318,7 @@ height:40vh;
                 
                 
                     <div class="post-intro-read">
-                        <span>Word count: <span class="post-count word-count">6k</span>Reading time: <span class="post-count reading-time">21 min</span></span>
+                        <span>Word count: <span class="post-count word-count">6.1k</span>Reading time: <span class="post-count reading-time">21 min</span></span>
                     </div>
                 
                 <div class="post-intro-meta">
@@ -458,21 +458,21 @@ height:40vh;
 <p><strong>在前面的图中，第一个阶段就是点A到点B，第二个阶段是点B到点C，而第三个阶段是点C到点D。</strong></p>
 <h3 id="1-2-状态"><a href="#1-2-状态" class="headerlink" title="1.2 状态"></a>1.2 状态</h3><p>状态表示每个阶段开始面临的自然状况或客观条件，它不以人们的主观意志为转移，也称为不可控因素。在上面的例子中状态就是某阶段的出发位置，它<strong>既是该阶段某路的起点，同时又是前一阶段某支路的终点。</strong></p>
 <p><strong>前面的例子(图)中，初始状态即A，而第一个阶段有两个状态B1和B2，第二个阶段是三个状态C1，C2和C3，而第三个阶段是状态D1和D2。</strong></p>
-<p>过程的状态通常可以用一个或一组数来描述，称为<code>状态变量</code>，用<code>x(k)</code>表示。一般，状态是离散的，但有时为了方便也将状态取成连续的。</p>
-<p>而且在每个阶段的状态维数可以不同。状态变量当过程按所有可能不同的方式发展时，过程各段的状态变量将在某一确定的范围内取值。状态变量取值的集合称为<code>状态集合</code>。</p>
+<p>过程的状态通常可以用一个或一组数来描述，称为<strong>状态变量</strong>，用<code>x(k)</code>表示。一般，状态是离散的，但有时为了方便也将状态取成连续的。</p>
+<p>而且在每个阶段的状态维数可以不同。状态变量当过程按所有可能不同的方式发展时，过程各段的状态变量将在某一确定的范围内取值。状态变量取值的集合称为<strong>状态集合</strong>。</p>
 <h3 id="1-3-无后效性"><a href="#1-3-无后效性" class="headerlink" title="1.3 无后效性"></a>1.3 无后效性</h3><p>我们要求状态具有下面的性质：如果某阶段的状态一旦确定，则在这一阶段以后过程的发展变化仅与此阶段的状态有关，不受这阶段以前各段状态的影响，所有各阶段都确定时，整个过程也就确定了。</p>
 <p>换句话说，过程的每一次实现可以用一个状态序列表示。<strong>在前面的例子中每阶段的状态是该线路的始点，确定了这些点的序列，整个线路也就完全确定。从某一阶段以后的线路开始，当这段的始点给定时，不受以前线路（所通过的点）的影响。</strong></p>
-<p>也就是说，<code>未来与过去无关</code>，当前的状态是此前历史（以往决策）的一个完整总结，过程的历史只能通过当前的状态去影响它的未来的发展，这个性质称为无后效性。（简单点说：过去只能通过影响现在，进而影响未来）</p>
+<p>也就是说，<strong>未来与过去无关</strong>，当前的状态是此前历史（以往决策）的一个完整总结，过程的历史只能通过当前的状态去影响它的未来的发展，这个性质称为无后效性。（简单点说：过去只能通过影响现在，进而影响未来）</p>
 <h3 id="1-4-决策"><a href="#1-4-决策" class="headerlink" title="1.4 决策"></a>1.4 决策</h3><ul>
-<li>一个阶段的状态给定以后，从该状态演变到下一阶段某个状态的一种选择（行动）称为<code>决策</code>。在最优控制中，也称为控制。</li>
+<li>一个阶段的状态给定以后，从该状态演变到下一阶段某个状态的一种选择（行动）称为<strong>决策</strong>。在最优控制中，也称为控制。</li>
 <li><strong>每一个阶段都有若干个决策可供选择。</strong></li>
 <li>在许多问题中，决策可以自然而然地表示为一个数或一组数。不同的决策对应着不同的数值。</li>
-<li>描述决策的变量称<code>决策变量</code>，因状态满足无后效性，故在每个阶段选择决策时只需考虑当前的状态而无须考虑过程的历史。</li>
+<li>描述决策的变量称<strong>决策变量</strong>，因状态满足无后效性，故在每个阶段选择决策时只需考虑当前的状态而无须考虑过程的历史。</li>
 </ul>
-<p>决策变量的范围称为<code>允许决策集合</code>。</p>
+<p>决策变量的范围称为<strong>允许决策集合</strong>。</p>
 <img src="/images/algorithm/dp-3.png" style="zoom:70%">
 
-<h3 id="1-5-多阶段决策问题与策略"><a href="#1-5-多阶段决策问题与策略" class="headerlink" title="1.5 多阶段决策问题与策略"></a>1.5 多阶段决策问题与策略</h3><p>如果一类活动过程可以分为若干个互相联系的阶段，在每一个阶段都需作出决策(采取措施)，一个阶段的决策确定以后，常常影响到下一个阶段的决策，从而就完全确定了一个过程的活动路线，则称它为<code>多阶段决策问题</code>。</p>
+<h3 id="1-5-多阶段决策问题与策略"><a href="#1-5-多阶段决策问题与策略" class="headerlink" title="1.5 多阶段决策问题与策略"></a>1.5 多阶段决策问题与策略</h3><p>如果一类活动过程可以分为若干个互相联系的阶段，在每一个阶段都需作出决策(采取措施)，一个阶段的决策确定以后，常常影响到下一个阶段的决策，从而就完全确定了一个过程的活动路线，则称它为<strong>多阶段决策问题</strong>。</p>
 <ul>
 <li><strong>策略</strong>：由每个阶段的决策组成的一个决策序列称为<strong>策略</strong>。<ul>
 <li>每一个阶段都有若干个决策可供选择，因而就有许多策略供我们选取。</li>
@@ -487,42 +487,44 @@ height:40vh;
 <h3 id="1-6-状态转移方程"><a href="#1-6-状态转移方程" class="headerlink" title="1.6 状态转移方程"></a>1.6 状态转移方程</h3><p>给定k阶段状态变量 <code>x(k)</code> 的值后，如果这一阶段的决策变量一经确定，第 <code>k+1</code> 阶段的状态变量 <code>x(k+1)</code> 也就完全确定，即 <code>x(k+1)</code> 的值随 <code>x(k)</code> 和第 <code>k</code> 阶段的决策 <code>u(k)</code> 的值变化而变化。</p>
 <p>那么可以把这一关系看成 <code>(x(k),u(k))</code> 与 <code>x(k+1)</code> 确定的对应关系，用 <code>x(k+1) = Tk(x(k),u(k))</code> 表示。这是从 <code>k</code> 阶段到 <code>k+1</code> 阶段状态转移方程的状态转移规律，称为状态转移方程。</p>
 <h3 id="1-7-最优化原理-最优子结构性质"><a href="#1-7-最优化原理-最优子结构性质" class="headerlink" title="1.7 最优化原理/最优子结构性质"></a>1.7 最优化原理/最优子结构性质</h3><ul>
-<li>最优性原理：要求问题的<code>最优策略的子策略也是最优</code>。可以通俗地理解为子问题的局部最优将导致整个问题的全局最优，即<code>一个问题的最优解只取决于其子问题的最优解</code>，子问题的非最优解对问题的求解没有影响。</li>
+<li>最优性原理：要求问题的<strong>最优策略的子策略也是最优</strong>。可以通俗地理解为子问题的局部最优将导致整个问题的全局最优，即<strong>一个问题的最优解只取决于其子问题的最优解</strong>，子问题的非最优解对问题的求解没有影响。</li>
 <li>最优子结构性质：当一个问题的最优解包含着它的子问题的最优解时，就称此问题具有最优子结构性质。</li>
 </ul>
-<p>一个问题 <code>满足最优化原理</code>也称其 <code>拥有最优子结构性质</code>。</p>
+<p>一个问题 <strong>满足最优化原理</strong>也称其 <strong>拥有最优子结构性质</strong>。</p>
 <p>动态规划引出：</p>
-<p><strong>多阶段决策问题中，各个阶段采取的决策，一般来说是与时间有关的，决策依赖于当前状态，又随即引起状态的转移，一个决策序列就是在变化的状态中产生出来的，故有“动态”的含义，称这种解决<code>多阶段决策最优化问题</code>的方法为动态规划方法。</strong></p>
+<p><strong>多阶段决策问题中，各个阶段采取的决策，一般来说是与时间有关的，决策依赖于当前状态，又随即引起状态的转移，一个决策序列就是在变化的状态中产生出来的，故有“动态”的含义，称这种解决 多阶段决策最优化问题 的方法为动态规划方法。</strong></p>
 <h2 id="二、基本思想"><a href="#二、基本思想" class="headerlink" title="二、基本思想"></a>二、基本思想</h2><blockquote>
-<p>动态规划算法通常用于<code>求解最优性问题</code>：在这类问题中，可能会有许多可行解，每一个解都对应于一个值，我们希望找到具有最优值的解。  </p>
+<p>动态规划算法通常用于<strong>求解最优性问题</strong>：在这类问题中，可能会有许多可行解，每一个解都对应于一个值，我们希望找到具有最优值的解。  </p>
 </blockquote>
 <p><strong>动态规划</strong>(DP：Dynamic Programming)是一种重要的程序设计手段，其基本思想是在对一个<strong>多阶段决策</strong>的问题，按照某一顺序，根据每一步所选决策的不同会引起状态的转移，最后会在变化的状态中获取到一个决策序列。</p>
 <p><strong>动态规划</strong>是一种把多阶段过程转化为一系列单阶段问题，逐个求解的方法泛应用于生产调度、工程技术和最优控制等领域。</p>
 <p>动态规划与分治法的异同：</p>
 <ul>
 <li>相同点：都是将待求解问题分解成若干个子问题，先求解子问题，然后从这些子问题的解得到原问题的解。</li>
-<li>不同点：分治法是将问题划分成相互独立的子问题，因此部分子问题会被重复计算；动态规划方法分解得到的<code>子问题往往不互相独立</code>，而是相互重叠的，从而避免了大量重复计算。</li>
+<li>不同点：分治法是将问题划分成相互独立的子问题，因此部分子问题会被重复计算；动态规划方法分解得到的<strong>子问题往往不互相独立</strong>，而是相互重叠的，从而避免了大量重复计算。</li>
 </ul>
 <p>动态规划的实质是分治思想和解决冗余的结合：</p>
 <ul>
-<li><p>将问题实例分解为更小的、相似的子问题</p>
-</li>
-<li><p>存储子问题的解，在需要时再找出已求得的答案，来避免计算重复的子问题，从而得到多项式时间算法。</p>
-<p>用一个表来记录所有已解的子问题的答案。不管该子问题以后是否被用到，只要它被计算过，就将其结果填入表中。这就是动态规划法的基本思路。具体的动态规划算法多种多样，但它们具有相同的<code>填表格式</code>。</p>
+<li>将问题实例分解为更小的、相似的子问题</li>
+<li>存储子问题的解，在需要时再找出已求得的答案，来避免计算重复的子问题，从而得到多项式时间算法。<ul>
+<li>用一个表来记录所有已解的子问题的答案。不管该子问题以后是否被用到，只要它被计算过，就将其结果填入表中。这就是动态规划法的基本思路。具体的动态规划算法多种多样，但它们具有相同的<strong>填表格式</strong>。</li>
+</ul>
 </li>
 </ul>
 <p>一般来说，只要该问题可以划分成规模更小的子问题，并且原问题的最优解中包含了子问题的最优解(即满足最优化原理)，则可以考虑用动态规划解决。</p>
 <p>动态规划算法的难点在于怎么将问题转化为能够利用动态规划算法来解决。当重复子问题的数目比较小时，动态规划的效果也会很差。</p>
 <h2 id="三、适用情况"><a href="#三、适用情况" class="headerlink" title="三、适用情况"></a>三、适用情况</h2><p>一般具有以下3个特征：</p>
 <ul>
-<li><p>满足最优化原理(或称：问题具有最优子结构的性质。<code>是动态规划的基础</code>)</p>
-<p>怎么分析问题是否满足？反证法</p>
-<p><strong>先假设由问题的最优解导出的子问题的解不是最优的 → 然后证明在这个假设下可构造出比原问题最优解更好的解 → 从而导致矛盾，证明最优化原理</strong></p>
+<li><p>满足最优化原理(或称：问题具有最优子结构的性质。<strong>是动态规划的基础</strong>)</p>
+<ul>
+<li>怎么分析问题是否满足？反证法</li>
+<li><strong>先假设由问题的最优解导出的子问题的解不是最优的 → 然后证明在这个假设下可构造出比原问题最优解更好的解 → 从而导致矛盾，证明最优化原理</strong></li>
+</ul>
 </li>
 <li><p>无后效性</p>
 </li>
 <li><p>有重叠子问题：递归地分解问题时，产生的子问题并不总是独立的（很多子问题重复），一个子问题在下一阶段中可能被多次使用到。<strong>该性质并不是动态规划适用的必要条件，但是如果没有这条性质，动态规划算法同其他算法相比就不具备优势</strong></p>
-<p>动态规划将原来具有指数级时间复杂度的搜索算法改进成了具有多项式时间复杂度的算法。<code>其中的关键在于解决冗余</code>，这是动态规划算法的根本目的。动态规划实质上是一种 <code>以空间换时间</code>的技术，它在实现的过程中，不得不存储产生过程中的各种状态，所以它的空间复杂度要大于其它的算法。</p>
+<p>动态规划将原来具有指数级时间复杂度的搜索算法改进成了具有多项式时间复杂度的算法。<strong>其中的关键在于解决冗余</strong>，这是动态规划算法的根本目的。动态规划实质上是一种 <strong>以空间换时间</strong>的技术，它在实现的过程中，不得不存储产生过程中的各种状态，所以它的空间复杂度要大于其它的算法。</p>
 </li>
 </ul>
 <h2 id="四、基本步骤"><a href="#四、基本步骤" class="headerlink" title="四、基本步骤"></a>四、基本步骤</h2><h3 id="4-1-书面版"><a href="#4-1-书面版" class="headerlink" title="4.1 书面版"></a>4.1 书面版</h3><p>1、分析最优解的性质，并刻画其结构特征。(确定满足最优化原理、划分阶段、确定状态)</p>
@@ -544,7 +546,7 @@ height:40vh;
 </ul>
 <p><strong>第二步：确定状态 — 确定状态、状态空间</strong></p>
 <ul>
-<li>在用动态规划解题时，我们往往将和子问题相关的各个变量的一组取值，称之为一个“状态”。一个“状态”对应于一个或多个子问题，所谓某个“状态”下的“值”，就是这个“状态”所对应的子问题的解。当然，状态的选择要<code>满足无后效性</code>。</li>
+<li>在用动态规划解题时，我们往往将和子问题相关的各个变量的一组取值，称之为一个“状态”。一个“状态”对应于一个或多个子问题，所谓某个“状态”下的“值”，就是这个“状态”所对应的子问题的解。当然，状态的选择要<strong>满足无后效性</strong>。</li>
 <li>所有“状态”的集合，构成问题的“状态空间”。“状态空间”的大小，与用动态规划解决问题的时间复杂度直接相关。整个问题的时间复杂度是状态数目乘以计算每个状态所需时间。</li>
 <li><em>比如：求课件中的最大子段和。有n个状态，即状态空间大小为n，每个“状态”只需要经过一次，且在每个状态上作计算所花的时间都是和N无关的常数。因此，用动态规划算法通常只需要多项式时间。</em></li>
 </ul>
@@ -559,7 +561,7 @@ height:40vh;
 </ul>
 <p><strong>第五步：开始计算</strong></p>
 <ul>
-<li>以 <code>自底向上</code> 或 <code>自顶向下的记忆化方式（备忘录法</code> 计算出最优值，根据计算最优值时得到的信息，构造问题的最优解。</li>
+<li>以 <strong>自底向上</strong> 或 <strong>自顶向下的记忆化方式(备忘录法)</strong> 计算出最优值，根据计算最优值时得到的信息，构造问题的最优解。</li>
 </ul>
 <img src="/images/algorithm/dp-2.png" style="zoom:70%">
 
@@ -568,17 +570,16 @@ height:40vh;
 <li>分治法：先一分为二…然后合二为一… </li>
 <li>贪心法：也算是多阶段决策问题。找出子问题分解思路、确定状态空间、初始状态值。确定状态转移方程这一步有差异，贪心法是自顶向下一层一层分解，遵守贪心选择原则，得出一系列子问题的局部最优解，直到最小子问题，即可组合出原问题的解。</li>
 </ul>
-<h3 id="4-4-备忘录算法"><a href="#4-4-备忘录算法" class="headerlink" title="4.4 备忘录算法"></a>4.4 备忘录算法</h3><p>备忘录方法是动态规划算法的变形，它通过分治思想对原问题进行分解，以<code>存储子问题的解</code>的方式解决冗余计算，并采用自顶向下的递归方式获取问题的最终解。</p>
+<h3 id="4-4-备忘录算法"><a href="#4-4-备忘录算法" class="headerlink" title="4.4 备忘录算法"></a>4.4 备忘录算法</h3><p>备忘录方法是动态规划算法的变形，它通过分治思想对原问题进行分解，以<strong>存储子问题的解</strong>的方式解决冗余计算，并采用自顶向下的递归方式获取问题的最终解。</p>
 <p><strong>备忘录算法与动态规划算法</strong></p>
 <ul>
-<li><p>相同之处：都会对子问题的计算结果进行存储，解决冗余计算</p>
-</li>
-<li><p>不同之处：动态规划算法是<code>自底向上递推</code>求解，而备忘录方法是<code>自顶向下递归</code>求解。</p>
-</li>
-<li><p>当子问题空间中的大量子问题无需求解时，使用备忘录方法较省时。</p>
-</li>
-<li><p>但当无需计算的子问题只有少部分或全部都要计算时，使用动态规划算法，节省递归带来的额外消耗。</p>
-</li>
+<li>相同之处：都会对子问题的计算结果进行存储，解决冗余计算</li>
+<li>不同之处：动态规划算法是<strong>自底向上递推</strong>求解，而备忘录方法是<strong>自顶向下递归</strong>求解。</li>
+</ul>
+<p>选择：</p>
+<ul>
+<li>当子问题空间中的大量子问题无需求解时，使用备忘录方法较省时。</li>
+<li>但当无需计算的子问题只有少部分或全部都要计算时，使用动态规划算法，节省递归带来的额外消耗。</li>
 </ul>
 <p>比如：求LCS(最长公共子序列)问题中：</p>
 <ul>
@@ -597,7 +598,7 @@ height:40vh;
 <li>每个阶段的状态</li>
 <li>从前一个阶段转化到后一个阶段之间的递推关系</li>
 </ul>
-<p>递推关系必须是从次小的问题开始到较大的问题之间的转化，从这个角度来说，动态规划往往可以用递归程序来实现，不过因为<code>递推可以充分利用前面保存的子问题的解来减少重复计算</code>，所以对于大规模问题来说，有递归不可比拟的优势，这也是动态规划算法的核心之处。</p>
+<p>递推关系必须是从次小的问题开始到较大的问题之间的转化，从这个角度来说，动态规划往往可以用递归程序来实现，不过因为<strong>递推可以充分利用前面保存的子问题的解来减少重复计算</strong>，所以对于大规模问题来说，有递归不可比拟的优势，这也是动态规划算法的核心之处。</p>
 <h3 id="5-2-确定状态转移方程"><a href="#5-2-确定状态转移方程" class="headerlink" title="5.2 确定状态转移方程"></a>5.2 确定状态转移方程</h3><p><img src="/images/algorithm/dp-1.jpg" alt="仍以该图为例"></p>
 <ul>
 <li><strong>阶段</strong>：描述阶段的变量称为阶段变量。在多数情况下，阶段变量是离散的，用k表示。<ul>
@@ -613,14 +614,10 @@ height:40vh;
 </ul>
 <p>以凑零钱问题为例，<strong>如何列出正确的状态转移方程</strong>？(<a target="_blank" rel="noopener" href="https://labuladong.gitee.io/algo/1/3/">动态规划详解 — labuladong</a>)</p>
 <ol>
-<li><p><strong>确定</strong> <strong>base case</strong>，这个很简单，显然目标金额 amount 为 0 时算法返回 0，因为不需要任何硬币就已经凑出目标金额了。</p>
-</li>
-<li><p><strong>确定「状态」，也就是原问题和子问题中会变化的变量</strong>。由于硬币数量无限，硬币的面额也是题目给定的，只有目标金额会不断地向 base case 靠近，所以唯一的「状态」就是目标金额 amount。</p>
-</li>
-<li><p><strong>确定「选择」，也就是导致「状态」产生变化的行为</strong>。目标金额为什么变化呢，因为你在选择硬币，你每选择一枚硬币，就相当于减少了目标金额。所以说所有硬币的面值，就是你的「选择」。</p>
-</li>
-<li><p><strong>明确 dp 函数/数组的定义</strong>。我们这里讲的是自顶向下的解法，所以会有一个递归的 dp 函数，一般来说函数的参数就是状态转移中会变化的量，也就是上面说到的「状态」；函数的返回值就是题目要求我们计算的量。</p>
-</li>
+<li><strong>确定</strong> <strong>base case</strong>，这个很简单，显然目标金额 amount 为 0 时算法返回 0，因为不需要任何硬币就已经凑出目标金额了。</li>
+<li><strong>确定「状态」，也就是原问题和子问题中会变化的变量</strong>。由于硬币数量无限，硬币的面额也是题目给定的，只有目标金额会不断地向 base case 靠近，所以唯一的「状态」就是目标金额 amount。</li>
+<li><strong>确定「选择」，也就是导致「状态」产生变化的行为</strong>。目标金额为什么变化呢，因为你在选择硬币，你每选择一枚硬币，就相当于减少了目标金额。所以说所有硬币的面值，就是你的「选择」。</li>
+<li><strong>明确 dp 函数/数组的定义</strong>。我们这里讲的是自顶向下的解法，所以会有一个递归的 dp 函数，一般来说函数的参数就是状态转移中会变化的量，也就是上面说到的「状态」；函数的返回值就是题目要求我们计算的量。</li>
 </ol>
 <p>就本题来说，状态只有一个，即「目标金额」，题目要求我们计算凑出目标金额所需的最少硬币数量。所以我们可以这样定义 dp 函数：输入一个目标金额 n，返回凑出目标金额 n 的最少硬币数量。</p>
 <img src="/images/algorithm/dp-4.png" style="zoom:100%">
@@ -632,11 +629,11 @@ height:40vh;
 <img src="/images/algorithm/dp-6.png" style="zoom:100%">
 
 <ul>
-<li>已知：$f_k(x)$为投资项目k x元钱，所得到的收益</li>
-<li>$F_k(x)$：x元钱投给前k个项目最大效益</li>
-<li>$x_k$：投给项目k的钱数</li>
+<li>已知：<code>f_k(x)</code> 为投资项目k x元钱，所得到的收益</li>
+<li><code>F_k(x)</code>：x元钱投给前k个项目最大效益</li>
+<li><code>x_k</code>：投给项目k的钱数</li>
 </ul>
-<h3 id="5-3-最优决策表"><a href="#5-3-最优决策表" class="headerlink" title="5.3 最优决策表"></a>5.3 最优决策表</h3><p>确定了动态规划的这三要素，整个求解过程就可以用一个<code>最优决策表来描述，最优决策表是一个二维表，其中行表示决策的阶段，列表示问题状态</code>，表格需要填写的数据一般对应此问题的在某个阶段某个状态下的<code>最优值</code>（如最短路径，最长公共子序列，最大价值等），填表的过程就是根据递推关系，从1行1列开始，以行或者列优先的顺序，依次填写表格，最后根据整个表格的数据通过简单的取舍或者运算求得问题的最优解。</p>
+<h3 id="5-3-最优决策表"><a href="#5-3-最优决策表" class="headerlink" title="5.3 最优决策表"></a>5.3 最优决策表</h3><p>确定了动态规划的这三要素，整个求解过程就可以用一个<strong>最优决策表来描述，最优决策表是一个二维表，其中行表示决策的阶段，列表示问题状态</strong>，表格需要填写的数据一般对应此问题的在某个阶段某个状态下的<strong>最优值</strong>（如最短路径，最长公共子序列，最大价值等），填表的过程就是根据递推关系，从1行1列开始，以行或者列优先的顺序，依次填写表格，最后根据整个表格的数据通过简单的取舍或者运算求得问题的最优解。</p>
 <figure class="highlight mathematica"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">f</span><span class="punctuation">(</span><span class="variable">n</span><span class="operator">,</span><span class="variable">m</span><span class="punctuation">)</span><span class="operator">=</span><span class="variable">max</span><span class="punctuation">&#123;</span><span class="variable">f</span><span class="punctuation">(</span><span class="variable">n</span><span class="operator">-</span><span class="number">1</span><span class="operator">,</span><span class="variable">m</span><span class="punctuation">)</span><span class="operator">,</span> <span class="variable">f</span><span class="punctuation">(</span><span class="variable">n</span><span class="operator">-</span><span class="number">1</span><span class="operator">,</span><span class="variable">m</span><span class="operator">-</span><span class="variable">w</span><span class="punctuation">[</span><span class="variable">n</span><span class="punctuation">]</span><span class="punctuation">)</span><span class="operator">+</span><span class="variable">P</span><span class="punctuation">(</span><span class="variable">n</span><span class="operator">,</span><span class="variable">m</span><span class="punctuation">)</span><span class="punctuation">&#125;</span></span><br></pre></td></tr></table></figure>
 
 <h3 id="5-4-一般的算法设计模式如下"><a href="#5-4-一般的算法设计模式如下" class="headerlink" title="5.4 一般的算法设计模式如下"></a>5.4 一般的算法设计模式如下</h3><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">for</span>(j=<span class="number">1</span>; j&lt;=m; j=j+<span class="number">1</span>) <span class="comment">// 第一个阶段</span></span><br><span class="line">   xn[j] = 初始值;</span><br><span class="line"></span><br><span class="line"> <span class="keyword">for</span>(i=n<span class="number">-1</span>; i&gt;=<span class="number">1</span>; i=i<span class="number">-1</span>)<span class="comment">// 其他n-1个阶段</span></span><br><span class="line">   <span class="keyword">for</span>(j=<span class="number">1</span>; j&gt;=f(i); j=j+<span class="number">1</span>)<span class="comment">//f(i)与i有关的表达式</span></span><br><span class="line">     xi[j]=j=max（或min）&#123;g(xi<span class="number">-1</span>[j1:j2]), ......, g(xi<span class="number">-1</span>[jk:jk+<span class="number">1</span>])&#125;;</span><br><span class="line"></span><br><span class="line">t = g(x1[j1:j2]); <span class="comment">// 由子问题的最优解求解整个问题的最优解的方案</span></span><br><span class="line"></span><br><span class="line">print(x1[j1]);</span><br><span class="line"></span><br><span class="line"><span class="keyword">for</span>(i=<span class="number">2</span>; i&lt;=n<span class="number">-1</span>; i=i+<span class="number">1</span>）</span><br><span class="line">&#123;  </span><br><span class="line">     t = t-xi<span class="number">-1</span>[ji];</span><br><span class="line"></span><br><span class="line">     <span class="keyword">for</span>(j=<span class="number">1</span>; j&gt;=f(i); j=j+<span class="number">1</span>)</span><br><span class="line">        <span class="keyword">if</span>(t=xi[ji])</span><br><span class="line">             <span class="keyword">break</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
@@ -654,15 +651,12 @@ height:40vh;
 </ul>
 <h3 id="6-1-0-1背包问题"><a href="#6-1-0-1背包问题" class="headerlink" title="6.1 0-1背包问题"></a>6.1 0-1背包问题</h3><p>【问题描述】<br>给定n种物品和一背包。物品i的重量是wi，其价值为vi，背包的容量为C。问应如何选择装入背包的物品，使得装入背包中物品的总价值最大?</p>
 <p>对于一种物品，要么装入背包，要么不装。所以对于一种物品的装入状态可以取0和1.我们设物品i的装入状态为xi,xi∈ (0,1)，此问题称为0-11背包问题。</p>
-<p>【数据】<br>物品个数n=5，物品重量$w[n] = {0,2,2,6,5,4}$，物品价值$V[n] = {0,6,3,5,4,6}$（第0位，置为0，不参与计算，只是便于与后面的下标进行统一，无特别用处，也可不这么处理）。总重量$c=10$。背包的最大容量为10，那么在设置数组m大小时，可以设行列值为6和11，那么，对于$m(i,j)$就表示可选物品为$i…n$背包容量为j(总重量)时背包中所放物品的最大价值。</p>
-<h2 id="七、参考链接"><a href="#七、参考链接" class="headerlink" title="七、参考链接"></a>七、参考链接</h2><ol>
-<li><p>看了好多，<a target="_blank" rel="noopener" href="https://blog.csdn.net/baidu_28312631/article/details/47418773">这一篇博客</a>尤为通俗易懂</p>
-</li>
-<li><p>如果要看备忘录算法、动态规划算法之间的差异，可以看<a target="_blank" rel="noopener" href="https://blog.csdn.net/u013309870/article/details/75193592">这篇博客</a>，并做一下<a target="_blank" rel="noopener" href="https://leetcode-cn.com/problems/longest-common-subsequence/">求LCS</a>这道题，搜一下它的两种解法</p>
-</li>
-<li><p><a target="_blank" rel="noopener" href="https://baike.baidu.com/item/%E5%8A%A8%E6%80%81%E8%A7%84%E5%88%92/529408?fr=aladdin">动态规划 — 百度百科</a></p>
-</li>
-</ol>
+<p>【数据】<br>物品个数n=5，物品重量 <code>w[n] = &#123;0,2,2,6,5,4&#125;</code>，物品价值 <code>V[n] = &#123;0,6,3,5,4,6&#125;</code>（第0位，置为0，不参与计算，只是便于与后面的下标进行统一，无特别用处，也可不这么处理）。总重量 <code>c = 10</code>。背包的最大容量为10，那么在设置数组m大小时，可以设行列值为6和11，那么，对于 <code>m(i, j)</code> 就表示可选物品为 <code>i…n</code> 背包容量为j(总重量)时背包中所放物品的最大价值。</p>
+<h2 id="七、参考链接"><a href="#七、参考链接" class="headerlink" title="七、参考链接"></a>七、参考链接</h2><ul>
+<li>看了好多，<a target="_blank" rel="noopener" href="https://blog.csdn.net/baidu_28312631/article/details/47418773">教你彻底学会动态规划——入门篇</a>尤为通俗易懂</li>
+<li>如果要看备忘录算法、动态规划算法之间的差异，可以看<a target="_blank" rel="noopener" href="https://blog.csdn.net/u013309870/article/details/75193592">算法-动态规划 Dynamic Programming–从菜鸟到老鸟</a>，并做一下<a target="_blank" rel="noopener" href="https://leetcode-cn.com/problems/longest-common-subsequence/">求LCS</a>这道题，搜一下它的两种解法</li>
+<li><a target="_blank" rel="noopener" href="https://baike.baidu.com/item/%E5%8A%A8%E6%80%81%E8%A7%84%E5%88%92/529408?fr=aladdin">动态规划 — 百度百科</a></li>
+</ul>
 
     </article>
     <!-- license  -->
@@ -671,7 +665,7 @@ height:40vh;
             <p>Author：<a href="https://tenloy.github.io">Tenloy</a>
             <p>原文链接：<a href="https://tenloy.github.io/2021/06/22/dynamic-programming.html">https://tenloy.github.io/2021/06/22/dynamic-programming.html</a>
             <p>发表日期：2021.06.22 , 2:40 PM</p>
-            <p>更新日期：2022.06.21 , 10:15 AM</p>
+            <p>更新日期：2022.08.03 , 2:19 AM</p>
             <p>版权声明：本文采用<a rel="license noopener" target="_blank" href="http://creativecommons.org/licenses/by-nc/4.0/">Crative Commons 4.0 许可协议</a>进行许可</p>
         </div>
     
@@ -680,16 +674,16 @@ height:40vh;
         <li class="next">
             
                 <div class="nextSlogan">Next Post</div>
-                <a href= "/2021/06/23/chinese-encode.html" title= "[转] 彻底弄懂常见的7种中文字符编码">
-                    <div class="nextTitle">[转] 彻底弄懂常见的7种中文字符编码</div>
+                <a href= "/2021/06/24/greed.html" title= "(三) 贪心算法">
+                    <div class="nextTitle">(三) 贪心算法</div>
                 </a>
             
         </li>
         <li class="previous">
             
                 <div class="prevSlogan">Previous Post</div>
-                <a href= "/2021/06/18/Web-Module.html" title= "前端各种模块化方案总结">
-                    <div class="prevTitle">前端各种模块化方案总结</div>
+                <a href= "/2021/06/20/divide-and-conquer.html" title= "(一) 分治算法及减治、变治算法">
+                    <div class="prevTitle">(一) 分治算法及减治、变治算法</div>
                 </a>
             
         </li>
@@ -1755,9 +1749,102 @@ top:40vh;
     
     
     
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
     <div class="total-and-search">
         <div class="total-archive">
-        Total : 62
+        Total : 69
         </div>
         <!-- search  -->
         
@@ -1813,26 +1900,6 @@ top:40vh;
     
     <div class="archive-year"> 2021 </div>
     <ul class="year-list">
-    
-    
-        <li class="archive-post-item">
-            <span class="archive-post-date">12/22</span><a class="archive-post-title" href= "/2021/12/22/aes.html" >数据加密 — 对称加密(以AES为例)</a>
-        </li>
-    
-    
-        <li class="archive-post-item">
-            <span class="archive-post-date">12/21</span><a class="archive-post-title" href= "/2021/12/21/aes-standard.html" >[转] AES标准及Rijndael算法解析</a>
-        </li>
-    
-    
-        <li class="archive-post-item">
-            <span class="archive-post-date">12/20</span><a class="archive-post-title" href= "/2021/12/20/asymmetric.html" >数据加密 — 非对称加密(加签/加密，以RSA为例)</a>
-        </li>
-    
-    
-        <li class="archive-post-item">
-            <span class="archive-post-date">12/09</span><a class="archive-post-title" href= "/2021/12/09/pki.html" >常见的PKI标准(X.509、PKCS)及证书相关介绍</a>
-        </li>
     
     
         <li class="archive-post-item">
@@ -1956,52 +2023,72 @@ top:40vh;
     
     
         <li class="archive-post-item">
-            <span class="archive-post-date">07/01</span><a class="archive-post-title" href= "/2021/07/01/Crash-Monitor.html" >iOS崩溃监控与分析</a>
+            <span class="archive-post-date">08/01</span><a class="archive-post-title" href= "/2021/08/01/Crash-Monitor.html" >iOS崩溃监控与分析</a>
         </li>
     
     
         <li class="archive-post-item">
-            <span class="archive-post-date">06/30</span><a class="archive-post-title" href= "/2021/06/30/Lag-Monitor.html" >iOS卡顿监控</a>
+            <span class="archive-post-date">07/30</span><a class="archive-post-title" href= "/2021/07/30/Lag-Monitor.html" >iOS卡顿监控</a>
         </li>
     
     
         <li class="archive-post-item">
-            <span class="archive-post-date">06/29</span><a class="archive-post-title" href= "/2021/06/29/SwiftUI.html" >SwiftUI</a>
+            <span class="archive-post-date">07/29</span><a class="archive-post-title" href= "/2021/07/29/SwiftUI.html" >SwiftUI</a>
         </li>
     
     
         <li class="archive-post-item">
-            <span class="archive-post-date">06/29</span><a class="archive-post-title" href= "/2021/06/29/Swift-Version-History.html" >Swift版本更新API介绍</a>
+            <span class="archive-post-date">07/29</span><a class="archive-post-title" href= "/2021/07/29/Swift-Version-History.html" >Swift版本更新API介绍</a>
         </li>
     
     
         <li class="archive-post-item">
-            <span class="archive-post-date">06/28</span><a class="archive-post-title" href= "/2021/06/28/GCD.html" >深入浅出GCD常用API</a>
+            <span class="archive-post-date">07/28</span><a class="archive-post-title" href= "/2021/07/28/GCD.html" >深入浅出GCD常用API</a>
         </li>
     
     
         <li class="archive-post-item">
-            <span class="archive-post-date">06/28</span><a class="archive-post-title" href= "/2021/06/28/AutoreleasePool.html" >AutoreleasePool</a>
+            <span class="archive-post-date">07/28</span><a class="archive-post-title" href= "/2021/07/28/AutoreleasePool.html" >AutoreleasePool</a>
         </li>
     
     
         <li class="archive-post-item">
-            <span class="archive-post-date">06/26</span><a class="archive-post-title" href= "/2021/06/26/RunLoop-Reposted-From-ibireme.html" >[转] 深入理解RunLoop—ibireme</a>
+            <span class="archive-post-date">07/26</span><a class="archive-post-title" href= "/2021/07/26/RunLoop-Reposted-From-ibireme.html" >[转] 深入理解RunLoop—ibireme</a>
         </li>
     
     
         <li class="archive-post-item">
-            <span class="archive-post-date">06/25</span><a class="archive-post-title" href= "/2021/06/25/Protocol-Buffer.html" >Protocol Buffer的基本介绍</a>
+            <span class="archive-post-date">07/25</span><a class="archive-post-title" href= "/2021/07/25/Protocol-Buffer.html" >Protocol Buffer的基本介绍</a>
         </li>
     
     
         <li class="archive-post-item">
-            <span class="archive-post-date">06/24</span><a class="archive-post-title" href= "/2021/06/24/base64.html" >Base64编码及iOS中的Base64</a>
+            <span class="archive-post-date">07/24</span><a class="archive-post-title" href= "/2021/07/24/base64.html" >Base64编码及iOS中的Base64</a>
         </li>
     
     
         <li class="archive-post-item">
-            <span class="archive-post-date">06/23</span><a class="archive-post-title" href= "/2021/06/23/chinese-encode.html" >[转] 彻底弄懂常见的7种中文字符编码</a>
+            <span class="archive-post-date">07/23</span><a class="archive-post-title" href= "/2021/07/23/chinese-encode.html" >[转] 彻底弄懂常见的7种中文字符编码</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/30</span><a class="archive-post-title" href= "/2021/06/30/probability.html" >(六) 概率算法</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/28</span><a class="archive-post-title" href= "/2021/06/28/branch-bound.html" >(五) 分支限界算法</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/26</span><a class="archive-post-title" href= "/2021/06/26/back-track.html" >(四) 回溯法(试探算法)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/24</span><a class="archive-post-title" href= "/2021/06/24/greed.html" >(三) 贪心算法</a>
         </li>
     
     
@@ -2011,7 +2098,22 @@ top:40vh;
     
     
         <li class="archive-post-item">
-            <span class="archive-post-date">06/18</span><a class="archive-post-title" href= "/2021/06/18/Web-Module.html" >前端各种模块化方案总结</a>
+            <span class="archive-post-date">06/20</span><a class="archive-post-title" href= "/2021/06/20/divide-and-conquer.html" >(一) 分治算法及减治、变治算法</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/18</span><a class="archive-post-title" href= "/2021/06/18/several-programming.html" >穷举、递推、迭代(辗转法)、递归算法</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/15</span><a class="archive-post-title" href= "/2021/06/15/datastruction-overview.html" >数据结构与算法概述</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/06</span><a class="archive-post-title" href= "/2021/06/06/Web-Module.html" >前端各种模块化方案总结</a>
         </li>
     
     
@@ -2092,6 +2194,35 @@ top:40vh;
     
         <li class="archive-post-item">
             <span class="archive-post-date">04/01</span><a class="archive-post-title" href= "/2021/04/01/GithubPages-Hexo.html" >使用Hexo+Github Pages搭建个人博客</a>
+        </li>
+    
+    
+    
+    
+    
+        </ul>
+    
+    <div class="archive-year"> 2020 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/22</span><a class="archive-post-title" href= "/2020/12/22/aes.html" >数据加密 — 对称加密(以AES为例)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/21</span><a class="archive-post-title" href= "/2020/12/21/aes-standard.html" >[转] AES标准及Rijndael算法解析</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/20</span><a class="archive-post-title" href= "/2020/12/20/asymmetric.html" >数据加密 — 非对称加密(加签/加密，以RSA为例)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/09</span><a class="archive-post-title" href= "/2020/12/09/pki.html" >常见的PKI标准(X.509、PKCS)及证书相关介绍</a>
         </li>
     
     </div>

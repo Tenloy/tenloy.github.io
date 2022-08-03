@@ -40,7 +40,7 @@
 <meta property="og:image" content="https://tenloy.github.io/images/AFN/AFN-11.jpg">
 <meta property="og:image" content="https://tenloy.github.io/images/AFN/AFN-12.jpg">
 <meta property="article:published_time" content="2021-09-05T08:53:12.000Z">
-<meta property="article:modified_time" content="2022-06-21T10:15:46.549Z">
+<meta property="article:modified_time" content="2022-08-03T02:19:35.306Z">
 <meta property="article:author" content="Tenloy">
 <meta property="article:tag" content="AFN">
 <meta name="twitter:card" content="summary">
@@ -485,14 +485,14 @@ height:40vh;
 <figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">AFHTTPSessionManager *manager = [[AFHTTPSessionManager alloc]init];</span><br><span class="line"></span><br><span class="line">[manager GET:<span class="string">@&quot;http://localhost&quot;</span> parameters:<span class="literal">nil</span> progress:<span class="literal">nil</span> success:^(<span class="built_in">NSURLSessionDataTask</span> * _Nonnull task, <span class="keyword">id</span>  _Nullable responseObject) &#123;</span><br><span class="line"> </span><br><span class="line">&#125; failure:^(<span class="built_in">NSURLSessionDataTask</span> * _Nullable task, <span class="built_in">NSError</span> * _Nonnull error) &#123;</span><br><span class="line">    </span><br><span class="line">&#125;];</span><br></pre></td></tr></table></figure>
 
 <h4 id="1-AFHTTPSessionManager"><a href="#1-AFHTTPSessionManager" class="headerlink" title="1. AFHTTPSessionManager"></a>1. AFHTTPSessionManager</h4><p>首先我们我们调用了初始化方法生成了一个manager，我们点进去看看初始化做了什么:</p>
-<figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line">- (<span class="keyword">instancetype</span>)init &#123;</span><br><span class="line">    <span class="keyword">return</span> [<span class="keyword">self</span> initWithBaseURL:<span class="literal">nil</span>];</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">- (<span class="keyword">instancetype</span>)initWithBaseURL:(<span class="built_in">NSURL</span> *)url &#123;</span><br><span class="line">    <span class="keyword">return</span> [<span class="keyword">self</span> initWithBaseURL:url sessionConfiguration:<span class="literal">nil</span>];</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">- (<span class="keyword">instancetype</span>)initWithSessionConfiguration:(<span class="built_in">NSURLSessionConfiguration</span> *)configuration &#123;</span><br><span class="line">    <span class="keyword">return</span> [<span class="keyword">self</span> initWithBaseURL:<span class="literal">nil</span> sessionConfiguration:configuration];</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 初始化都调用到这个方法中来了</span></span><br><span class="line">- (<span class="keyword">instancetype</span>)initWithBaseURL:(<span class="built_in">NSURL</span> *)url</span><br><span class="line">           sessionConfiguration:(<span class="built_in">NSURLSessionConfiguration</span> *)configuration</span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">self</span> = [<span class="keyword">super</span> initWithSessionConfiguration:configuration];</span><br><span class="line">    <span class="keyword">if</span> (!<span class="keyword">self</span>) &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">nil</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">//对传过来的BaseUrl进行处理，如果有值且最后不包含/，url加上&quot;/&quot;</span></span><br><span class="line">    <span class="keyword">if</span> ([[url path] length] &gt; <span class="number">0</span> &amp;&amp; ![[url absoluteString] hasSuffix:<span class="string">@&quot;/&quot;</span>]) &#123;</span><br><span class="line">        url = [url URLByAppendingPathComponent:<span class="string">@&quot;&quot;</span>];</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">self</span>.baseURL = url;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">self</span>.requestSerializer = [AFHTTPRequestSerializer serializer];</span><br><span class="line">    <span class="keyword">self</span>.responseSerializer = [AFJSONResponseSerializer serializer];</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">self</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><span class="line">+ (<span class="keyword">instancetype</span>)manager &#123;</span><br><span class="line">    <span class="keyword">return</span> [[[<span class="keyword">self</span> <span class="keyword">class</span>] alloc] initWithBaseURL:<span class="literal">nil</span>];</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">- (<span class="keyword">instancetype</span>)init &#123;</span><br><span class="line">    <span class="keyword">return</span> [<span class="keyword">self</span> initWithBaseURL:<span class="literal">nil</span>];</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">- (<span class="keyword">instancetype</span>)initWithBaseURL:(<span class="built_in">NSURL</span> *)url &#123;</span><br><span class="line">    <span class="keyword">return</span> [<span class="keyword">self</span> initWithBaseURL:url sessionConfiguration:<span class="literal">nil</span>];</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">- (<span class="keyword">instancetype</span>)initWithSessionConfiguration:(<span class="built_in">NSURLSessionConfiguration</span> *)configuration &#123;</span><br><span class="line">    <span class="keyword">return</span> [<span class="keyword">self</span> initWithBaseURL:<span class="literal">nil</span> sessionConfiguration:configuration];</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 初始化都调用到这个方法中来了</span></span><br><span class="line">- (<span class="keyword">instancetype</span>)initWithBaseURL:(<span class="built_in">NSURL</span> *)url</span><br><span class="line">           sessionConfiguration:(<span class="built_in">NSURLSessionConfiguration</span> *)configuration</span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">self</span> = [<span class="keyword">super</span> initWithSessionConfiguration:configuration];</span><br><span class="line">    <span class="keyword">if</span> (!<span class="keyword">self</span>) &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">nil</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">//对传过来的BaseUrl进行处理，如果有值且最后不包含/，url加上&quot;/&quot;</span></span><br><span class="line">    <span class="keyword">if</span> ([[url path] length] &gt; <span class="number">0</span> &amp;&amp; ![[url absoluteString] hasSuffix:<span class="string">@&quot;/&quot;</span>]) &#123;</span><br><span class="line">        url = [url URLByAppendingPathComponent:<span class="string">@&quot;&quot;</span>];</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">self</span>.baseURL = url;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">self</span>.requestSerializer = [AFHTTPRequestSerializer serializer];</span><br><span class="line">    <span class="keyword">self</span>.responseSerializer = [AFJSONResponseSerializer serializer];</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">self</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
 <ul>
 <li><strong>其实初始化方法都调用父类的初始化方法。</strong>父类也就是AF3.x<strong>最最核心的类AFURLSessionManager</strong>。几乎所有的类都是围绕着这个类在处理业务逻辑。</li>
 <li>除此之外，方法中把baseURL存了起来，还生成了一个请求序列对象和一个响应序列对象。后面再细说这两个类是干什么用的。</li>
 </ul>
 <h4 id="2-AFURLSessionManager"><a href="#2-AFURLSessionManager" class="headerlink" title="2. AFURLSessionManager"></a>2. AFURLSessionManager</h4><p>直接来到父类AFURLSessionManager的初始化方法：</p>
-<figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br></pre></td><td class="code"><pre><span class="line">- (<span class="keyword">instancetype</span>)init &#123;</span><br><span class="line">  <span class="keyword">return</span> [<span class="keyword">self</span> initWithSessionConfiguration:<span class="literal">nil</span>];</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">- (<span class="keyword">instancetype</span>)initWithSessionConfiguration:(<span class="built_in">NSURLSessionConfiguration</span> *)configuration &#123;</span><br><span class="line">  <span class="keyword">self</span> = [<span class="keyword">super</span> init];</span><br><span class="line">  <span class="keyword">if</span> (!<span class="keyword">self</span>) &#123;</span><br><span class="line">      <span class="keyword">return</span> <span class="literal">nil</span>;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">if</span> (!configuration) &#123;</span><br><span class="line">      configuration = [<span class="built_in">NSURLSessionConfiguration</span> defaultSessionConfiguration];</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">self</span>.sessionConfiguration = configuration;</span><br><span class="line">  <span class="keyword">self</span>.operationQueue = [[<span class="built_in">NSOperationQueue</span> alloc] init];</span><br><span class="line">  <span class="comment">// 重点：这个operationQueue就是我们代理回调的queue。这里把代理回调的线程并发数设置为1了。至于这里为什么要这么做，见2.1.3节。</span></span><br><span class="line">  <span class="keyword">self</span>.operationQueue.maxConcurrentOperationCount = <span class="number">1</span>;</span><br><span class="line"></span><br><span class="line">  <span class="comment">//注意代理，代理的继承，实际上NSURLSession去判断了，你实现了哪个方法会去调用，包括子代理的方法！</span></span><br><span class="line">  <span class="keyword">self</span>.session = [<span class="built_in">NSURLSession</span> sessionWithConfiguration:<span class="keyword">self</span>.sessionConfiguration delegate:<span class="keyword">self</span> delegateQueue:<span class="keyword">self</span>.operationQueue];</span><br><span class="line"></span><br><span class="line">  <span class="comment">//各种响应转码</span></span><br><span class="line">  <span class="keyword">self</span>.responseSerializer = [AFJSONResponseSerializer serializer];</span><br><span class="line"></span><br><span class="line">  <span class="comment">//设置默认安全策略</span></span><br><span class="line">  <span class="keyword">self</span>.securityPolicy = [AFSecurityPolicy defaultPolicy];</span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="meta-keyword">if</span> !TARGET_OS_WATCH</span></span><br><span class="line">  <span class="keyword">self</span>.reachabilityManager = [AFNetworkReachabilityManager sharedManager];</span><br><span class="line"><span class="meta">#<span class="meta-keyword">endif</span></span></span><br><span class="line">  </span><br><span class="line">  <span class="comment">// 重点2：这个字典是用来让每一个请求task和我们自定义的AF代理来建立映射用的。</span></span><br><span class="line">    <span class="comment">// 在AFNet中，每一个task都会被匹配一个AFURLSessionManagerTaskDelegate 来做task的delegate事件处理</span></span><br><span class="line">    <span class="comment">// 其实AF对task的代理进行了一个封装，并且转发代理到AF自定义的代理，这是AF比较重要的一部分，接下来我们会具体讲这一块。</span></span><br><span class="line">  <span class="keyword">self</span>.mutableTaskDelegatesKeyedByTaskIdentifier = [[<span class="built_in">NSMutableDictionary</span> alloc] init];</span><br><span class="line"></span><br><span class="line">  <span class="comment">//  设置AFURLSessionManagerTaskDelegate 词典的锁，确保词典在多线程访问时的线程安全</span></span><br><span class="line">  <span class="keyword">self</span>.lock = [[<span class="built_in">NSLock</span> alloc] init];</span><br><span class="line">  <span class="keyword">self</span>.lock.name = AFURLSessionManagerLockName;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 重点3：置空task关联的代理。</span></span><br><span class="line">    <span class="comment">// 作用：这个方法用来异步的获取当前session的所有未完成的task。其实讲道理来说在初始化中调用这个方法应该里面一个task都不会有。我们打断点去看，也确实如此，里面的数组都是空的。</span></span><br><span class="line">    <span class="comment">// 但是想想也知道，AF大神不会把一段没用的代码放在这吧。辗转多处，终于从AF的issue中找到了结论：https://github.com/AFNetworking/AFNetworking/issues/3499。原来这是为了防止后台回来，重新初始化这个session，一些之前的后台请求任务，导致程序的crash。</span></span><br><span class="line">  [<span class="keyword">self</span>.session getTasksWithCompletionHandler:^(<span class="built_in">NSArray</span> *dataTasks, <span class="built_in">NSArray</span> *uploadTasks, <span class="built_in">NSArray</span> *downloadTasks) &#123;        </span><br><span class="line">     <span class="keyword">for</span> (<span class="built_in">NSURLSessionDataTask</span> *task <span class="keyword">in</span> dataTasks) &#123;</span><br><span class="line">        [<span class="keyword">self</span> addDelegateForDataTask:task uploadProgress:<span class="literal">nil</span> downloadProgress:<span class="literal">nil</span> completionHandler:<span class="literal">nil</span>];</span><br><span class="line">     &#125;</span><br><span class="line">     <span class="keyword">for</span> (<span class="built_in">NSURLSessionUploadTask</span> *uploadTask <span class="keyword">in</span> uploadTasks) &#123;</span><br><span class="line">        [<span class="keyword">self</span> addDelegateForUploadTask:uploadTask progress:<span class="literal">nil</span> completionHandler:<span class="literal">nil</span>];</span><br><span class="line">     &#125;</span><br><span class="line">     <span class="keyword">for</span> (<span class="built_in">NSURLSessionDownloadTask</span> *downloadTask <span class="keyword">in</span> downloadTasks) &#123;</span><br><span class="line">        [<span class="keyword">self</span> addDelegateForDownloadTask:downloadTask progress:<span class="literal">nil</span> destination:<span class="literal">nil</span> completionHandler:<span class="literal">nil</span>];</span><br><span class="line">     &#125;</span><br><span class="line">  &#125;];</span><br><span class="line">  <span class="keyword">return</span> <span class="keyword">self</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br></pre></td><td class="code"><pre><span class="line">- (<span class="keyword">instancetype</span>)init &#123;</span><br><span class="line">  <span class="keyword">return</span> [<span class="keyword">self</span> initWithSessionConfiguration:<span class="literal">nil</span>];</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">- (<span class="keyword">instancetype</span>)initWithSessionConfiguration:(<span class="built_in">NSURLSessionConfiguration</span> *)configuration &#123;</span><br><span class="line">  <span class="keyword">self</span> = [<span class="keyword">super</span> init];</span><br><span class="line">  <span class="keyword">if</span> (!<span class="keyword">self</span>) &#123;</span><br><span class="line">      <span class="keyword">return</span> <span class="literal">nil</span>;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">if</span> (!configuration) &#123;</span><br><span class="line">      configuration = [<span class="built_in">NSURLSessionConfiguration</span> defaultSessionConfiguration];</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">self</span>.sessionConfiguration = configuration;</span><br><span class="line">  <span class="keyword">self</span>.operationQueue = [[<span class="built_in">NSOperationQueue</span> alloc] init];</span><br><span class="line">  <span class="comment">// 重点：这个operationQueue就是我们代理回调的queue。这里把代理回调的线程并发数设置为1了。至于这里为什么要这么做，见2.1.2节。</span></span><br><span class="line">  <span class="keyword">self</span>.operationQueue.maxConcurrentOperationCount = <span class="number">1</span>;</span><br><span class="line"></span><br><span class="line">  <span class="comment">//注意代理，代理的继承，实际上NSURLSession去判断了，你实现了哪个方法会去调用，包括子代理的方法！</span></span><br><span class="line">  <span class="keyword">self</span>.session = [<span class="built_in">NSURLSession</span> sessionWithConfiguration:<span class="keyword">self</span>.sessionConfiguration delegate:<span class="keyword">self</span> delegateQueue:<span class="keyword">self</span>.operationQueue];</span><br><span class="line"></span><br><span class="line">  <span class="comment">//各种响应转码</span></span><br><span class="line">  <span class="keyword">self</span>.responseSerializer = [AFJSONResponseSerializer serializer];</span><br><span class="line"></span><br><span class="line">  <span class="comment">//设置默认安全策略</span></span><br><span class="line">  <span class="keyword">self</span>.securityPolicy = [AFSecurityPolicy defaultPolicy];</span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="meta-keyword">if</span> !TARGET_OS_WATCH</span></span><br><span class="line">  <span class="keyword">self</span>.reachabilityManager = [AFNetworkReachabilityManager sharedManager];</span><br><span class="line"><span class="meta">#<span class="meta-keyword">endif</span></span></span><br><span class="line">  </span><br><span class="line">  <span class="comment">// 重点2：这个字典是用来让每一个请求task和我们自定义的AF代理来建立映射用的。</span></span><br><span class="line">    <span class="comment">// 在AFNet中，每一个task都会被匹配一个AFURLSessionManagerTaskDelegate 来做task的delegate事件处理</span></span><br><span class="line">    <span class="comment">// 其实AF对task的代理进行了一个封装，并且转发代理到AF自定义的代理，这是AF比较重要的一部分，接下来我们会具体讲这一块。</span></span><br><span class="line">  <span class="keyword">self</span>.mutableTaskDelegatesKeyedByTaskIdentifier = [[<span class="built_in">NSMutableDictionary</span> alloc] init];</span><br><span class="line"></span><br><span class="line">  <span class="comment">//  设置AFURLSessionManagerTaskDelegate 词典的锁，确保词典在多线程访问时的线程安全</span></span><br><span class="line">  <span class="keyword">self</span>.lock = [[<span class="built_in">NSLock</span> alloc] init];</span><br><span class="line">  <span class="keyword">self</span>.lock.name = AFURLSessionManagerLockName;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 重点3：置空task关联的代理。</span></span><br><span class="line">    <span class="comment">// 作用：这个方法用来异步的获取当前session的所有未完成的task。其实讲道理来说在初始化中调用这个方法应该里面一个task都不会有。我们打断点去看，也确实如此，里面的数组都是空的。</span></span><br><span class="line">    <span class="comment">// 但是想想也知道，AF大神不会把一段没用的代码放在这吧。辗转多处，终于从AF的issue中找到了结论：https://github.com/AFNetworking/AFNetworking/issues/3499。原来这是为了防止后台回来，重新初始化这个session，一些之前的后台请求任务，导致程序的crash。</span></span><br><span class="line">  [<span class="keyword">self</span>.session getTasksWithCompletionHandler:^(<span class="built_in">NSArray</span> *dataTasks, <span class="built_in">NSArray</span> *uploadTasks, <span class="built_in">NSArray</span> *downloadTasks) &#123;        </span><br><span class="line">     <span class="keyword">for</span> (<span class="built_in">NSURLSessionDataTask</span> *task <span class="keyword">in</span> dataTasks) &#123;</span><br><span class="line">        [<span class="keyword">self</span> addDelegateForDataTask:task uploadProgress:<span class="literal">nil</span> downloadProgress:<span class="literal">nil</span> completionHandler:<span class="literal">nil</span>];</span><br><span class="line">     &#125;</span><br><span class="line">     <span class="keyword">for</span> (<span class="built_in">NSURLSessionUploadTask</span> *uploadTask <span class="keyword">in</span> uploadTasks) &#123;</span><br><span class="line">        [<span class="keyword">self</span> addDelegateForUploadTask:uploadTask progress:<span class="literal">nil</span> completionHandler:<span class="literal">nil</span>];</span><br><span class="line">     &#125;</span><br><span class="line">     <span class="keyword">for</span> (<span class="built_in">NSURLSessionDownloadTask</span> *downloadTask <span class="keyword">in</span> downloadTasks) &#123;</span><br><span class="line">        [<span class="keyword">self</span> addDelegateForDownloadTask:downloadTask progress:<span class="literal">nil</span> destination:<span class="literal">nil</span> completionHandler:<span class="literal">nil</span>];</span><br><span class="line">     &#125;</span><br><span class="line">  &#125;];</span><br><span class="line">  <span class="keyword">return</span> <span class="keyword">self</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
 <h3 id="2-1-2-AF-maxConcurrentOperationCount设置"><a href="#2-1-2-AF-maxConcurrentOperationCount设置" class="headerlink" title="2.1.2 AF maxConcurrentOperationCount设置"></a>2.1.2 AF maxConcurrentOperationCount设置</h3><p>回到初始化的这行代码上：</p>
 <figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">self</span>.operationQueue.maxConcurrentOperationCount = <span class="number">1</span>;</span><br></pre></td></tr></table></figure>
@@ -818,7 +818,7 @@ height:40vh;
 </li>
 <li><p>如果成功则在一个AF的并行queue中，去做数据解析等后续操作：</p>
 <figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">static</span> <span class="built_in">dispatch_queue_t</span> url_session_manager_processing_queue() &#123;</span><br><span class="line">  <span class="keyword">static</span> <span class="built_in">dispatch_queue_t</span> af_url_session_manager_processing_queue;</span><br><span class="line">  <span class="keyword">static</span> <span class="built_in">dispatch_once_t</span> onceToken;</span><br><span class="line">  <span class="built_in">dispatch_once</span>(&amp;onceToken, ^&#123;</span><br><span class="line">      af_url_session_manager_processing_queue = dispatch_queue_create(<span class="string">&quot;com.alamofire.networking.session.manager.processing&quot;</span>, DISPATCH_QUEUE_CONCURRENT);</span><br><span class="line">  &#125;);</span><br><span class="line"></span><br><span class="line">  <span class="keyword">return</span> af_url_session_manager_processing_queue;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>注意AF的优化的点：<font color='red'>虽然代理回调是串行的(参考2.1.3小节 maxConcurrentOperationCount属性)。但是数据解析这种费时操作，确是用并行线程来做的。</font></p>
+<p>注意AF的优化的点：<font color='red'>虽然代理回调是串行的(参考2.1.2小节 maxConcurrentOperationCount属性)。但是数据解析这种费时操作，确是用并行线程来做的。</font></p>
 </li>
 <li><p>然后根据我们一开始设置的responseSerializer来解析data。如果解析成功，调用成功的回调，否则调用失败的回调。我们重点来看看返回数据解析这行：</p>
 <figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">responseObject = [manager.responseSerializer responseObjectForResponse:task.response data:data error:&amp;serializationError];</span><br></pre></td></tr></table></figure>
@@ -1504,7 +1504,7 @@ height:40vh;
             <p>Author：<a href="https://tenloy.github.io">Tenloy</a>
             <p>原文链接：<a href="https://tenloy.github.io/2021/09/05/AFN-Analyse.html">https://tenloy.github.io/2021/09/05/AFN-Analyse.html</a>
             <p>发表日期：2021.09.05 , 8:53 AM</p>
-            <p>更新日期：2022.06.21 , 10:15 AM</p>
+            <p>更新日期：2022.08.03 , 2:19 AM</p>
             <p>版权声明：本文采用<a rel="license noopener" target="_blank" href="http://creativecommons.org/licenses/by-nc/4.0/">Crative Commons 4.0 许可协议</a>进行许可</p>
         </div>
     
@@ -2588,9 +2588,102 @@ top:40vh;
     
     
     
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
     <div class="total-and-search">
         <div class="total-archive">
-        Total : 62
+        Total : 69
         </div>
         <!-- search  -->
         
@@ -2646,26 +2739,6 @@ top:40vh;
     
     <div class="archive-year"> 2021 </div>
     <ul class="year-list">
-    
-    
-        <li class="archive-post-item">
-            <span class="archive-post-date">12/22</span><a class="archive-post-title" href= "/2021/12/22/aes.html" >数据加密 — 对称加密(以AES为例)</a>
-        </li>
-    
-    
-        <li class="archive-post-item">
-            <span class="archive-post-date">12/21</span><a class="archive-post-title" href= "/2021/12/21/aes-standard.html" >[转] AES标准及Rijndael算法解析</a>
-        </li>
-    
-    
-        <li class="archive-post-item">
-            <span class="archive-post-date">12/20</span><a class="archive-post-title" href= "/2021/12/20/asymmetric.html" >数据加密 — 非对称加密(加签/加密，以RSA为例)</a>
-        </li>
-    
-    
-        <li class="archive-post-item">
-            <span class="archive-post-date">12/09</span><a class="archive-post-title" href= "/2021/12/09/pki.html" >常见的PKI标准(X.509、PKCS)及证书相关介绍</a>
-        </li>
     
     
         <li class="archive-post-item">
@@ -2789,52 +2862,72 @@ top:40vh;
     
     
         <li class="archive-post-item">
-            <span class="archive-post-date">07/01</span><a class="archive-post-title" href= "/2021/07/01/Crash-Monitor.html" >iOS崩溃监控与分析</a>
+            <span class="archive-post-date">08/01</span><a class="archive-post-title" href= "/2021/08/01/Crash-Monitor.html" >iOS崩溃监控与分析</a>
         </li>
     
     
         <li class="archive-post-item">
-            <span class="archive-post-date">06/30</span><a class="archive-post-title" href= "/2021/06/30/Lag-Monitor.html" >iOS卡顿监控</a>
+            <span class="archive-post-date">07/30</span><a class="archive-post-title" href= "/2021/07/30/Lag-Monitor.html" >iOS卡顿监控</a>
         </li>
     
     
         <li class="archive-post-item">
-            <span class="archive-post-date">06/29</span><a class="archive-post-title" href= "/2021/06/29/SwiftUI.html" >SwiftUI</a>
+            <span class="archive-post-date">07/29</span><a class="archive-post-title" href= "/2021/07/29/SwiftUI.html" >SwiftUI</a>
         </li>
     
     
         <li class="archive-post-item">
-            <span class="archive-post-date">06/29</span><a class="archive-post-title" href= "/2021/06/29/Swift-Version-History.html" >Swift版本更新API介绍</a>
+            <span class="archive-post-date">07/29</span><a class="archive-post-title" href= "/2021/07/29/Swift-Version-History.html" >Swift版本更新API介绍</a>
         </li>
     
     
         <li class="archive-post-item">
-            <span class="archive-post-date">06/28</span><a class="archive-post-title" href= "/2021/06/28/GCD.html" >深入浅出GCD常用API</a>
+            <span class="archive-post-date">07/28</span><a class="archive-post-title" href= "/2021/07/28/GCD.html" >深入浅出GCD常用API</a>
         </li>
     
     
         <li class="archive-post-item">
-            <span class="archive-post-date">06/28</span><a class="archive-post-title" href= "/2021/06/28/AutoreleasePool.html" >AutoreleasePool</a>
+            <span class="archive-post-date">07/28</span><a class="archive-post-title" href= "/2021/07/28/AutoreleasePool.html" >AutoreleasePool</a>
         </li>
     
     
         <li class="archive-post-item">
-            <span class="archive-post-date">06/26</span><a class="archive-post-title" href= "/2021/06/26/RunLoop-Reposted-From-ibireme.html" >[转] 深入理解RunLoop—ibireme</a>
+            <span class="archive-post-date">07/26</span><a class="archive-post-title" href= "/2021/07/26/RunLoop-Reposted-From-ibireme.html" >[转] 深入理解RunLoop—ibireme</a>
         </li>
     
     
         <li class="archive-post-item">
-            <span class="archive-post-date">06/25</span><a class="archive-post-title" href= "/2021/06/25/Protocol-Buffer.html" >Protocol Buffer的基本介绍</a>
+            <span class="archive-post-date">07/25</span><a class="archive-post-title" href= "/2021/07/25/Protocol-Buffer.html" >Protocol Buffer的基本介绍</a>
         </li>
     
     
         <li class="archive-post-item">
-            <span class="archive-post-date">06/24</span><a class="archive-post-title" href= "/2021/06/24/base64.html" >Base64编码及iOS中的Base64</a>
+            <span class="archive-post-date">07/24</span><a class="archive-post-title" href= "/2021/07/24/base64.html" >Base64编码及iOS中的Base64</a>
         </li>
     
     
         <li class="archive-post-item">
-            <span class="archive-post-date">06/23</span><a class="archive-post-title" href= "/2021/06/23/chinese-encode.html" >[转] 彻底弄懂常见的7种中文字符编码</a>
+            <span class="archive-post-date">07/23</span><a class="archive-post-title" href= "/2021/07/23/chinese-encode.html" >[转] 彻底弄懂常见的7种中文字符编码</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/30</span><a class="archive-post-title" href= "/2021/06/30/probability.html" >(六) 概率算法</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/28</span><a class="archive-post-title" href= "/2021/06/28/branch-bound.html" >(五) 分支限界算法</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/26</span><a class="archive-post-title" href= "/2021/06/26/back-track.html" >(四) 回溯法(试探算法)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/24</span><a class="archive-post-title" href= "/2021/06/24/greed.html" >(三) 贪心算法</a>
         </li>
     
     
@@ -2844,7 +2937,22 @@ top:40vh;
     
     
         <li class="archive-post-item">
-            <span class="archive-post-date">06/18</span><a class="archive-post-title" href= "/2021/06/18/Web-Module.html" >前端各种模块化方案总结</a>
+            <span class="archive-post-date">06/20</span><a class="archive-post-title" href= "/2021/06/20/divide-and-conquer.html" >(一) 分治算法及减治、变治算法</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/18</span><a class="archive-post-title" href= "/2021/06/18/several-programming.html" >穷举、递推、迭代(辗转法)、递归算法</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/15</span><a class="archive-post-title" href= "/2021/06/15/datastruction-overview.html" >数据结构与算法概述</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/06</span><a class="archive-post-title" href= "/2021/06/06/Web-Module.html" >前端各种模块化方案总结</a>
         </li>
     
     
@@ -2925,6 +3033,35 @@ top:40vh;
     
         <li class="archive-post-item">
             <span class="archive-post-date">04/01</span><a class="archive-post-title" href= "/2021/04/01/GithubPages-Hexo.html" >使用Hexo+Github Pages搭建个人博客</a>
+        </li>
+    
+    
+    
+    
+    
+        </ul>
+    
+    <div class="archive-year"> 2020 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/22</span><a class="archive-post-title" href= "/2020/12/22/aes.html" >数据加密 — 对称加密(以AES为例)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/21</span><a class="archive-post-title" href= "/2020/12/21/aes-standard.html" >[转] AES标准及Rijndael算法解析</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/20</span><a class="archive-post-title" href= "/2020/12/20/asymmetric.html" >数据加密 — 非对称加密(加签/加密，以RSA为例)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/09</span><a class="archive-post-title" href= "/2020/12/09/pki.html" >常见的PKI标准(X.509、PKCS)及证书相关介绍</a>
         </li>
     
     </div>
