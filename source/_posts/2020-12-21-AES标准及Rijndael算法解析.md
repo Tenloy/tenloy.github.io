@@ -10,7 +10,7 @@ categories:
 > [原文链接](https://blog.dynox.cn/?p=1562)，一字不差转载(防丢失)
 ## 一、AES简介
 
-**AES即高级加密标准**(Advanced Encryption Standard)，其实是一套标准。美国国家标准与技术研究院**NIST**(National INstitute of Standards and Technology) 在1997年9月12日公开征集更高效更安全的替代DES加密算法，第一轮共有15种算法入选，其中5种算法入围了决赛，分别是MARS，RC6，Rijndael，Serpent和Twofish。又经过3年的验证、评测及公众讨论之后Rijndael算法最终入选。所以，我们所说的AES算法其实是`Rijndael算法`。
+**AES即高级加密标准**(Advanced Encryption Standard)，其实是一套标准。美国国家标准与技术研究院**NIST**(National INstitute of Standards and Technology) 在1997年9月12日公开征集更高效更安全的**替代DES加密算法**，第一轮共有15种算法入选，其中5种算法入围了决赛，分别是MARS，RC6，Rijndael，Serpent和Twofish。又经过3年的验证、评测及公众讨论之后Rijndael算法最终入选。所以，我们所说的AES算法其实是`Rijndael算法`。
 
 **高级加密标准** 由 **NIST** 于2001年11月26日发布于[FIPS PUB 197](http://csrc.nist.gov/publications/fips/fips197/fips-197.pdf)，并在2002年5月26日成为有效的标准。2006年，高级加密标准已然成为对称密钥加密中最流行的算法之一。
 

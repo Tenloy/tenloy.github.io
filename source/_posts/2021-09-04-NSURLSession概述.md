@@ -11,9 +11,12 @@ categories:
 
 NSURLSession 在iOS7中推出，旨在替换之前的NSURLConnection
 
-- NSURLSession的使用相对于之前的NSURLConnection更简单，而且不用处理Runloop相关的东西。
-- 支持后台运行的网络任务
-- 暂停、停止、重启网络任务，不再需要 `NSOperation` 封装
+- NSURLSession的使用相对于之前的NSURLConnection更简单，而且不用处理Runloop相关的东西；
+- 暂停、停止、重启网络任务，不再需要 `NSOperation` 封装；
+- 支持后台运行的网络任务；
+- NSURLSession支持http2.0协议；
+- 提供了全局的session并且可以统一配置，使用更加方便；
+- 同一个session发送多次请求，只需要建立一次连接(复用了TCP)。
 
 2015年 RFC 7540标准发布了http 2.0版本，http 2.0 版本中包含很多新的特性，在传输速度上也有很明显的提升。NSURLSession 从 iOS9.0 开始，对 http 2.0 提供了支持。
 
