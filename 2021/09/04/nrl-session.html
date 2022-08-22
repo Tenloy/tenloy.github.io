@@ -20,12 +20,12 @@
     <meta name="keywords" content="Tenloy,iOS,Swift">
     
     <meta name="description" content="学习 生活 记录 回忆">
-    <meta name="description" content="一、概述NSURLSession 在iOS7中推出，旨在替换之前的NSURLConnection  NSURLSession的使用相对于之前的NSURLConnection更简单，而且不用处理Runloop相关的东西。 支持后台运行的网络任务 暂停、停止、重启网络任务，不再需要 NSOperation 封装  2015年 RFC 7540标准发布了http 2.0版本，http 2.0 版本中包含">
+    <meta name="description" content="一、概述NSURLSession 在iOS7中推出，旨在替换之前的NSURLConnection  NSURLSession的使用相对于之前的NSURLConnection更简单，而且不用处理Runloop相关的东西； 暂停、停止、重启网络任务，不再需要 NSOperation 封装； 支持后台运行的网络任务； NSURLSession支持http2.0协议； 提供了全局的session并且可以统">
 <meta property="og:type" content="article">
 <meta property="og:title" content="NSURLSession概述">
 <meta property="og:url" content="https://tenloy.github.io/2021/09/04/nrl-session.html">
 <meta property="og:site_name" content="Tenloy&#39;s Blog">
-<meta property="og:description" content="一、概述NSURLSession 在iOS7中推出，旨在替换之前的NSURLConnection  NSURLSession的使用相对于之前的NSURLConnection更简单，而且不用处理Runloop相关的东西。 支持后台运行的网络任务 暂停、停止、重启网络任务，不再需要 NSOperation 封装  2015年 RFC 7540标准发布了http 2.0版本，http 2.0 版本中包含">
+<meta property="og:description" content="一、概述NSURLSession 在iOS7中推出，旨在替换之前的NSURLConnection  NSURLSession的使用相对于之前的NSURLConnection更简单，而且不用处理Runloop相关的东西； 暂停、停止、重启网络任务，不再需要 NSOperation 封装； 支持后台运行的网络任务； NSURLSession支持http2.0协议； 提供了全局的session并且可以统">
 <meta property="og:locale" content="en_US">
 <meta property="og:image" content="https://segmentfault.com/img/remote/1460000023105321">
 <meta property="og:image" content="https://segmentfault.com/img/remote/1460000023105318">
@@ -33,7 +33,7 @@
 <meta property="og:image" content="https://tenloy.github.io/images/net/urlsession/form-data.png">
 <meta property="og:image" content="https://segmentfault.com/img/remote/1460000023105323">
 <meta property="article:published_time" content="2021-09-04T08:53:12.000Z">
-<meta property="article:modified_time" content="2022-08-03T02:19:35.306Z">
+<meta property="article:modified_time" content="2022-08-22T08:49:06.001Z">
 <meta property="article:author" content="Tenloy">
 <meta property="article:tag" content="Tenloy, iOS, Tenloy Blog, 博客，Swift, 编译, 计算机">
 <meta name="twitter:card" content="summary">
@@ -441,9 +441,12 @@ height:40vh;
     <article class="article-entry">
         <h2 id="一、概述"><a href="#一、概述" class="headerlink" title="一、概述"></a>一、概述</h2><p>NSURLSession 在iOS7中推出，旨在替换之前的NSURLConnection</p>
 <ul>
-<li>NSURLSession的使用相对于之前的NSURLConnection更简单，而且不用处理Runloop相关的东西。</li>
-<li>支持后台运行的网络任务</li>
-<li>暂停、停止、重启网络任务，不再需要 <code>NSOperation</code> 封装</li>
+<li>NSURLSession的使用相对于之前的NSURLConnection更简单，而且不用处理Runloop相关的东西；</li>
+<li>暂停、停止、重启网络任务，不再需要 <code>NSOperation</code> 封装；</li>
+<li>支持后台运行的网络任务；</li>
+<li>NSURLSession支持http2.0协议；</li>
+<li>提供了全局的session并且可以统一配置，使用更加方便；</li>
+<li>同一个session发送多次请求，只需要建立一次连接(复用了TCP)。</li>
 </ul>
 <p>2015年 RFC 7540标准发布了http 2.0版本，http 2.0 版本中包含很多新的特性，在传输速度上也有很明显的提升。NSURLSession 从 iOS9.0 开始，对 http 2.0 提供了支持。</p>
 <p>NSURLSession API 由三部分构成：</p>
@@ -779,7 +782,7 @@ height:40vh;
             <p>Author：<a href="https://tenloy.github.io">Tenloy</a>
             <p>原文链接：<a href="https://tenloy.github.io/2021/09/04/nrl-session.html">https://tenloy.github.io/2021/09/04/nrl-session.html</a>
             <p>发表日期：2021.09.04 , 8:53 AM</p>
-            <p>更新日期：2022.08.03 , 2:19 AM</p>
+            <p>更新日期：2022.08.22 , 8:49 AM</p>
             <p>版权声明：本文采用<a rel="license noopener" target="_blank" href="http://creativecommons.org/licenses/by-nc/4.0/">Crative Commons 4.0 许可协议</a>进行许可</p>
         </div>
     
@@ -979,6 +982,10 @@ top:40vh;
 </div>
           <div class="sidebar-panel-archives">
     <!-- 在ejs中将archive按照时间排序 -->
+    
+    
+    
+    
     
     
     
