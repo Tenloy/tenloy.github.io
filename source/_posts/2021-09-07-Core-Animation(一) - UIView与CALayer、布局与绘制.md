@@ -33,7 +33,6 @@ UIKit 中的每个视图都有自己的 CALayer 。 这个图层通常有一个�
 为什么iOS要基于`UIView`和`CALayer`提供两个平行的层级关系呢？为什么不用一个简单的层级来处理所有事情呢？原因在于要做职责分离，这样也能避免很多重复代码。
 
 - 在iOS和Mac OS两个平台上，事件和用户交互有很多地方的不同，基于多点触控的用户界面和基于鼠标键盘有着本质的区别，这就是为什么iOS有UIKit和`UIView`，但是Mac OS有AppKit和`NSView`的原因。他们功能上很相似，但是在实现上有着显著的区别。
-
 - 绘图，布局和动画，相比之下就是类似Mac笔记本和桌面系列一样应用于iPhone和iPad触屏的概念。把这种功能的逻辑分开并应用到独立的Core Animation框架，苹果就能够在iOS和Mac OS之间共享代码，使得对苹果自己的OS开发团队和第三方开发者去开发两个平台的应用更加便捷。
 
 ## 1.2 四个层级关系
@@ -255,7 +254,6 @@ CALayer有一个可选的`delegate`属性，实现了`CALayerDelegate`协议，�
 
 - 修改 view 的大小
   - 设置/修改view的frame.size、bounds.size、bounds.origin都会触发superView和自己view的layoutSubviews方法(父类在前)。当然前提是设置前后值发生了变化。修改frame.origin不会触发。
-
 - 新增 subview
 - 用户在 `UIScrollView` 上滚动（`layoutSubviews` 会在 `UIScrollView` 和它的父 view 上被调用）
 - 用户旋转设备
@@ -344,7 +342,7 @@ CALayer有一个可选的`delegate`属性，实现了`CALayerDelegate`协议，�
 
 一个视图的显示包含了颜色、文本、图片和 Core Graphics 绘制等视图属性，不包括其本身和子视图的大小和位置。和<font color='red'>布局</font>的方法类似，<font color='red'>显示</font>也有触发更新的方法，它们由系统在检测到更新时被自动调用，或者我们可以手动调用直接刷新。
 
-### 3.2.1 UIView方法 (UIViewRendering分类)
+### 3.4.1 UIView方法 (UIViewRendering分类)
 
 #### 1. drawRect:
 
@@ -367,11 +365,8 @@ CALayer有一个可选的`delegate`属性，实现了`CALayerDelegate`协议，�
 在以下情况下会被调用：
 
 1. 如果在UIView初始化时没有设置rect大小，将直接导致drawRect不被自动调用。drawRect 调用是在Controller->loadView, Controller->viewDidLoad 两方法之后调用的。所以不用担心在控制器中，这些View的drawRect就开始画了。这样可以在控制器中设置一些值给View(如果这些View draw的时候需要用到某些变量值)。
-
 2. 该方法在调用sizeToFit后被调用，所以可以先调用sizeToFit计算出size。然后系统自动调用drawRect:方法。
-
 3. 通过设置contentMode属性值为UIViewContentModeRedraw。那么将在每次设置或更改frame的时候自动调用drawRect:。
-
 4. 直接调用setNeedsDisplay，或者setNeedsDisplayInRect:触发drawRect:，但是有个前提条件是rect不能为0。
 
 **以上1,2推荐；而3,4不提倡。**
@@ -441,7 +436,7 @@ class MyView: UIView {
 
 视图的显示方法里没有类似布局中的 `layoutIfNeeded` 这样可以触发立即更新的方法。通常情况下等到下一个更新周期再重新绘制视图也无所谓。
 
-### 3.2.2 CALayer方法
+### 3.4.2 CALayer方法
 
 #### 1. -display
 
@@ -480,7 +475,7 @@ class MyView: UIView {
 - (void)setNeedsDisplayInRect:(CGRect)rect;
 ```
 
-### 3.3.3 CALayerDelegate方法
+### 3.4.3 CALayerDelegate方法
 
 ```objectivec
 @protocol CALayerDelegate <NSObject>
