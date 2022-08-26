@@ -444,6 +444,8 @@ static struct __main_block_desc_0{
 
 使用附有 `__block` 说明符的自动变量可在Block中修改、赋值，此类变量称为 `__block变量`。
 
+**`__block`修饰的变量，在block定义后，还可以修改，之后的block调用时，是变量的最新赋值。**(因为此时Block捕获的都是地址。)
+
 #### 5.2.1 存储域类说明符
 
 C语言有以下存储域类说明符：
@@ -550,9 +552,9 @@ __Block_byref_obj_0 obj = {
     __Block_byref_id_object_dispose_131,
     [[NSObject alloc] init];
 }
- void (*blk)(void) = (void(*)(void)) &__main_block_impl_0((void *)__main_block_func_0, &__main_block_desc_0_DATA, &val, 0x22000000);  
+void (*blk)(void) = (void(*)(void)) &__main_block_impl_0((void *)__main_block_func_0, &__main_block_desc_0_DATA, &val, 0x22000000);  
 //调用
-（ (void (*)(struct __block_impl *)) ((struct __block_impl *)blk)->FuncPtr )((struct __block_impl *)blk);
+((void (*)(struct __block_impl *)) ((struct __block_impl *)blk)->FuncPtr )((struct __block_impl *)blk);
 ```
 
 由此可见，block对 `__block` 修饰的OC对象，与未用 `__block` 修饰的，在内存管理上几乎是一致的，`_Block_object_assign` 持有，`_Block_object_disposes` 释放。 `__block` 修饰的OC对象，只要 `__block` 变量还在堆上存在，就不会释放。只不过，`__block` 修饰的OC对象，不增加引用计数，block不retain变量。
