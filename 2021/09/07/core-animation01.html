@@ -37,7 +37,7 @@
 <meta property="og:image" content="https://tenloy.github.io/images/caa/layoutdraw2.png">
 <meta property="og:image" content="https://static001.geekbang.org/resource/image/7c/1c/7ca0e14ef02231c9aba7cb49c7e9271c.png">
 <meta property="article:published_time" content="2021-09-07T14:50:38.000Z">
-<meta property="article:modified_time" content="2022-08-22T08:49:06.005Z">
+<meta property="article:modified_time" content="2022-08-26T15:28:36.639Z">
 <meta property="article:author" content="Tenloy">
 <meta property="article:tag" content="Tenloy, iOS, Tenloy Blog, 博客，Swift, 编译, 计算机">
 <meta name="twitter:card" content="summary">
@@ -464,10 +464,8 @@ height:40vh;
 </blockquote>
 <p>为什么iOS要基于<code>UIView</code>和<code>CALayer</code>提供两个平行的层级关系呢？为什么不用一个简单的层级来处理所有事情呢？原因在于要做职责分离，这样也能避免很多重复代码。</p>
 <ul>
-<li><p>在iOS和Mac OS两个平台上，事件和用户交互有很多地方的不同，基于多点触控的用户界面和基于鼠标键盘有着本质的区别，这就是为什么iOS有UIKit和<code>UIView</code>，但是Mac OS有AppKit和<code>NSView</code>的原因。他们功能上很相似，但是在实现上有着显著的区别。</p>
-</li>
-<li><p>绘图，布局和动画，相比之下就是类似Mac笔记本和桌面系列一样应用于iPhone和iPad触屏的概念。把这种功能的逻辑分开并应用到独立的Core Animation框架，苹果就能够在iOS和Mac OS之间共享代码，使得对苹果自己的OS开发团队和第三方开发者去开发两个平台的应用更加便捷。</p>
-</li>
+<li>在iOS和Mac OS两个平台上，事件和用户交互有很多地方的不同，基于多点触控的用户界面和基于鼠标键盘有着本质的区别，这就是为什么iOS有UIKit和<code>UIView</code>，但是Mac OS有AppKit和<code>NSView</code>的原因。他们功能上很相似，但是在实现上有着显著的区别。</li>
+<li>绘图，布局和动画，相比之下就是类似Mac笔记本和桌面系列一样应用于iPhone和iPad触屏的概念。把这种功能的逻辑分开并应用到独立的Core Animation框架，苹果就能够在iOS和Mac OS之间共享代码，使得对苹果自己的OS开发团队和第三方开发者去开发两个平台的应用更加便捷。</li>
 </ul>
 <h2 id="1-2-四个层级关系"><a href="#1-2-四个层级关系" class="headerlink" title="1.2 四个层级关系"></a>1.2 四个层级关系</h2><p>在整个Core Animation机制中，存在4个层级关系：</p>
 <h3 id="1-2-1-视图层级"><a href="#1-2-1-视图层级" class="headerlink" title="1.2.1 视图层级"></a>1.2.1 视图层级</h3><p>视图在层级关系中可以互相嵌套，一个视图可以管理它的所有子视图的位置。</p>
@@ -579,19 +577,14 @@ height:40vh;
 <p><strong>更新布局总会重新触发<code>layoutSubviews</code>方法</strong>。</p>
 <p>有许多事件会<strong>自动给视图打上 “update layout” 标记</strong>，因此 <code>layoutSubviews</code> 会在下一个周期中被调用，而不需要开发者手动操作。这些自动通知系统 view 的布局发生变化的方式有：</p>
 <ul>
-<li><p>修改 view 的大小</p>
-<ul>
+<li>修改 view 的大小<ul>
 <li>设置/修改view的frame.size、bounds.size、bounds.origin都会触发superView和自己view的layoutSubviews方法(父类在前)。当然前提是设置前后值发生了变化。修改frame.origin不会触发。</li>
 </ul>
 </li>
-<li><p>新增 subview</p>
-</li>
-<li><p>用户在 <code>UIScrollView</code> 上滚动（<code>layoutSubviews</code> 会在 <code>UIScrollView</code> 和它的父 view 上被调用）</p>
-</li>
-<li><p>用户旋转设备</p>
-</li>
-<li><p>更新视图的 constraints</p>
-</li>
+<li>新增 subview</li>
+<li>用户在 <code>UIScrollView</code> 上滚动（<code>layoutSubviews</code> 会在 <code>UIScrollView</code> 和它的父 view 上被调用）</li>
+<li>用户旋转设备</li>
+<li>更新视图的 constraints</li>
 </ul>
 <p>注意：</p>
 <ul>
@@ -638,7 +631,7 @@ height:40vh;
 <h4 id="3-layoutIfNeeded-立即-1"><a href="#3-layoutIfNeeded-立即-1" class="headerlink" title="3. -layoutIfNeeded(立即)"></a>3. -layoutIfNeeded(立即)</h4><p> 如果需要，立即重新计算图层的布局。</p>
 <p> 收到此消息后，将遍历该图层的父图层，直到找到不需要布局的祖先图层。然后在该祖先下的整个层树上执行布局。</p>
 <h2 id="3-4-内容绘制-—-draw-display"><a href="#3-4-内容绘制-—-draw-display" class="headerlink" title="3.4 内容绘制 — draw | display"></a>3.4 内容绘制 — draw | display</h2><p>一个视图的显示包含了颜色、文本、图片和 Core Graphics 绘制等视图属性，不包括其本身和子视图的大小和位置。和<font color='red'>布局</font>的方法类似，<font color='red'>显示</font>也有触发更新的方法，它们由系统在检测到更新时被自动调用，或者我们可以手动调用直接刷新。</p>
-<h3 id="3-2-1-UIView方法-UIViewRendering分类"><a href="#3-2-1-UIView方法-UIViewRendering分类" class="headerlink" title="3.2.1 UIView方法 (UIViewRendering分类)"></a>3.2.1 UIView方法 (UIViewRendering分类)</h3><h4 id="1-drawRect"><a href="#1-drawRect" class="headerlink" title="1. drawRect:"></a>1. drawRect:</h4><h5 id="1-概述-1"><a href="#1-概述-1" class="headerlink" title="1) 概述"></a>1) 概述</h5><p>在传入的矩形内绘制接收者的图像。</p>
+<h3 id="3-4-1-UIView方法-UIViewRendering分类"><a href="#3-4-1-UIView方法-UIViewRendering分类" class="headerlink" title="3.4.1 UIView方法 (UIViewRendering分类)"></a>3.4.1 UIView方法 (UIViewRendering分类)</h3><h4 id="1-drawRect"><a href="#1-drawRect" class="headerlink" title="1. drawRect:"></a>1. drawRect:</h4><h5 id="1-概述-1"><a href="#1-概述-1" class="headerlink" title="1) 概述"></a>1) 概述</h5><p>在传入的矩形内绘制接收者的图像。</p>
 <p>当这个方法被调用时，UIKit 已经为你的视图配置了合适的绘图环境，你可以简单地调用任何你需要的绘图方法和函数来渲染你的内容。具体来说，UIKit 创建和配置一个用于绘制的图形上下文，并调整该上下文的变换，使其原点与视图边界矩形的原点相匹配。您可以使用 UIGraphicsGetCurrentContext 函数获取对图形上下文的引用，但不要建立对图形上下文的强引用，因为它可以在对 drawRect: 方法的调用之间发生变化。</p>
 <p>当第一次显示视图或发生使视图的可见部分无效的事件时，将调用此方法。你永远不应该自己直接调用这个方法。要使视图的一部分无效，从而导致该部分被重绘，请调用 setNeedsDisplay 或 setNeedsDisplayInRect: 方法。</p>
 <figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">- (<span class="keyword">void</span>)drawRect:(<span class="built_in">CGRect</span>)rect;</span><br></pre></td></tr></table></figure>
@@ -646,14 +639,10 @@ height:40vh;
 <p><code>UIView</code> 的 <code>drawRect</code>方法对视图内容显示的操作，类似于视图布局的 <code>layoutSubviews</code> ，但是不同于 <code>layoutSubviews</code>，<code>drawRect</code> 方法不会触发后续对视图的子视图方法的调用。同样，和 <code>layoutSubviews</code> 一样，你不应该直接调用 <code>drawRect</code> 方法，而应该通过调用触发方法，让系统在 run loop 中的不同结点自动调用。</p>
 <h5 id="2-自动触发"><a href="#2-自动触发" class="headerlink" title="2) 自动触发"></a>2) 自动触发</h5><p>在以下情况下会被调用：</p>
 <ol>
-<li><p>如果在UIView初始化时没有设置rect大小，将直接导致drawRect不被自动调用。drawRect 调用是在Controller-&gt;loadView, Controller-&gt;viewDidLoad 两方法之后调用的。所以不用担心在控制器中，这些View的drawRect就开始画了。这样可以在控制器中设置一些值给View(如果这些View draw的时候需要用到某些变量值)。</p>
-</li>
-<li><p>该方法在调用sizeToFit后被调用，所以可以先调用sizeToFit计算出size。然后系统自动调用drawRect:方法。</p>
-</li>
-<li><p>通过设置contentMode属性值为UIViewContentModeRedraw。那么将在每次设置或更改frame的时候自动调用drawRect:。</p>
-</li>
-<li><p>直接调用setNeedsDisplay，或者setNeedsDisplayInRect:触发drawRect:，但是有个前提条件是rect不能为0。</p>
-</li>
+<li>如果在UIView初始化时没有设置rect大小，将直接导致drawRect不被自动调用。drawRect 调用是在Controller-&gt;loadView, Controller-&gt;viewDidLoad 两方法之后调用的。所以不用担心在控制器中，这些View的drawRect就开始画了。这样可以在控制器中设置一些值给View(如果这些View draw的时候需要用到某些变量值)。</li>
+<li>该方法在调用sizeToFit后被调用，所以可以先调用sizeToFit计算出size。然后系统自动调用drawRect:方法。</li>
+<li>通过设置contentMode属性值为UIViewContentModeRedraw。那么将在每次设置或更改frame的时候自动调用drawRect:。</li>
+<li>直接调用setNeedsDisplay，或者setNeedsDisplayInRect:触发drawRect:，但是有个前提条件是rect不能为0。</li>
 </ol>
 <p><strong>以上1,2推荐；而3,4不提倡。</strong></p>
 <p>drawRect方法使用注意点：</p>
@@ -682,7 +671,7 @@ height:40vh;
 <figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">MyView</span>: <span class="title">UIView</span> </span>&#123;</span><br><span class="line">    <span class="keyword">var</span> numberOfPoints <span class="operator">=</span> <span class="number">0</span> &#123;</span><br><span class="line">        <span class="keyword">didSet</span> &#123;</span><br><span class="line">            setNeedsDisplay()</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">override</span> <span class="function"><span class="keyword">func</span> <span class="title">draw</span>(<span class="keyword">_</span> <span class="params">rect</span>: <span class="type">CGRect</span>)</span> &#123;</span><br><span class="line">        <span class="keyword">switch</span> numberOfPoints &#123;</span><br><span class="line">        <span class="keyword">case</span> <span class="number">0</span>:</span><br><span class="line">            <span class="keyword">return</span></span><br><span class="line">        <span class="keyword">case</span> <span class="number">1</span>:</span><br><span class="line">            drawPoint(rect)</span><br><span class="line">        <span class="keyword">case</span> <span class="number">2</span>:</span><br><span class="line">            drawLine(rect)</span><br><span class="line">        <span class="keyword">case</span> <span class="number">3</span>:</span><br><span class="line">            drawTriangle(rect)</span><br><span class="line">        <span class="keyword">case</span> <span class="number">4</span>:</span><br><span class="line">            drawRectangle(rect)</span><br><span class="line">        <span class="keyword">case</span> <span class="number">5</span>:</span><br><span class="line">            drawPentagon(rect)</span><br><span class="line">        <span class="keyword">default</span>:</span><br><span class="line">            drawEllipse(rect)</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
 <p>视图的显示方法里没有类似布局中的 <code>layoutIfNeeded</code> 这样可以触发立即更新的方法。通常情况下等到下一个更新周期再重新绘制视图也无所谓。</p>
-<h3 id="3-2-2-CALayer方法"><a href="#3-2-2-CALayer方法" class="headerlink" title="3.2.2 CALayer方法"></a>3.2.2 CALayer方法</h3><h4 id="1-display"><a href="#1-display" class="headerlink" title="1. -display"></a>1. -display</h4><blockquote>
+<h3 id="3-4-2-CALayer方法"><a href="#3-4-2-CALayer方法" class="headerlink" title="3.4.2 CALayer方法"></a>3.4.2 CALayer方法</h3><h4 id="1-display"><a href="#1-display" class="headerlink" title="1. -display"></a>1. -display</h4><blockquote>
 <p>Reload the content of this layer. 调用-drawInContext:方法，然后更新layer的’contents’属性。</p>
 </blockquote>
 <p>通常不要直接调用此方法。图层在适当的时候调用这个方法来更新图层的内容。</p>
@@ -698,7 +687,7 @@ height:40vh;
 <p>调用此方法会导致图层重新缓存其内容。 这导致图层可能调用其委托的 displayLayer: 或 drawLayer:inContext: 方法。 删除图层 contents 属性中的现有内容，为新内容让路。</p>
 <figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 重绘范围是整个边界矩形</span></span><br><span class="line">- (<span class="keyword">void</span>)setNeedsDisplay;</span><br><span class="line"><span class="comment">// 重绘范围是参数指定的矩形(应在接收器的坐标系中指定, 且只对该图层有效)</span></span><br><span class="line">- (<span class="keyword">void</span>)setNeedsDisplayInRect:(<span class="built_in">CGRect</span>)rect;</span><br></pre></td></tr></table></figure>
 
-<h3 id="3-3-3-CALayerDelegate方法"><a href="#3-3-3-CALayerDelegate方法" class="headerlink" title="3.3.3 CALayerDelegate方法"></a>3.3.3 CALayerDelegate方法</h3><figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">@protocol</span> <span class="title">CALayerDelegate</span> &lt;<span class="title">NSObject</span>&gt;</span></span><br><span class="line"><span class="keyword">@optional</span></span><br><span class="line"><span class="comment">/* Tells the delegate to implement the display process(实现显示过程)</span></span><br><span class="line"><span class="comment">   如果实现了，则由layer的-display方法的默认实现调用，在这种情况下，它应该实现整个display过程(通常是通过设置&#x27;contents&#x27;属性)。*/</span></span><br><span class="line">- (<span class="keyword">void</span>)displayLayer:(<span class="built_in">CALayer</span> *)layer;</span><br><span class="line"></span><br><span class="line"><span class="comment">/* Tells the delegate to implement the display process using the layer&#x27;s CGContextRef.</span></span><br><span class="line"><span class="comment">   This method is not called if the delegate implements displayLayer:</span></span><br><span class="line"><span class="comment">   如果定义了，则由layer的-drawInContext的默认实现调用 */</span></span><br><span class="line">- (<span class="keyword">void</span>)drawLayer:(<span class="built_in">CALayer</span> *)layer inContext:(<span class="built_in">CGContextRef</span>)ctx;</span><br><span class="line"></span><br><span class="line"><span class="comment">/* 如果定义了，则由layer的-display方法的默认实现调用。</span></span><br><span class="line"><span class="comment">	 允许delegate在-drawLayer:InContext之前配置任何影响内容的图层状态，如&#x27;contentsFormat&#x27;和&#x27; opaque&#x27;。如果委托实现了-displayLayer，它将不会被调用。*/</span></span><br><span class="line">- (<span class="keyword">void</span>)layerWillDraw:(<span class="built_in">CALayer</span> *)layer</span><br><span class="line">  API_AVAILABLE(macos(<span class="number">10.12</span>), ios(<span class="number">10.0</span>), watchos(<span class="number">3.0</span>), tvos(<span class="number">10.0</span>));</span><br><span class="line"></span><br><span class="line"><span class="comment">/* 如果实现了，则由layer的-layoutSublayers方法的默认实现调用(在检查layoutManager之前)。</span></span><br><span class="line"><span class="comment">   注意，如果调用委托方法，布局管理器将被忽略。*/</span></span><br><span class="line">- (<span class="keyword">void</span>)layoutSublayersOfLayer:(<span class="built_in">CALayer</span> *)layer;</span><br><span class="line"></span><br><span class="line"><span class="comment">/* 隐式动画中用到的 */</span></span><br><span class="line">- (<span class="keyword">nullable</span> <span class="keyword">id</span>&lt;<span class="built_in">CAAction</span>&gt;)actionForLayer:(<span class="built_in">CALayer</span> *)layer forKey:(<span class="built_in">NSString</span> *)event;</span><br><span class="line"><span class="keyword">@end</span></span><br></pre></td></tr></table></figure>
+<h3 id="3-4-3-CALayerDelegate方法"><a href="#3-4-3-CALayerDelegate方法" class="headerlink" title="3.4.3 CALayerDelegate方法"></a>3.4.3 CALayerDelegate方法</h3><figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">@protocol</span> <span class="title">CALayerDelegate</span> &lt;<span class="title">NSObject</span>&gt;</span></span><br><span class="line"><span class="keyword">@optional</span></span><br><span class="line"><span class="comment">/* Tells the delegate to implement the display process(实现显示过程)</span></span><br><span class="line"><span class="comment">   如果实现了，则由layer的-display方法的默认实现调用，在这种情况下，它应该实现整个display过程(通常是通过设置&#x27;contents&#x27;属性)。*/</span></span><br><span class="line">- (<span class="keyword">void</span>)displayLayer:(<span class="built_in">CALayer</span> *)layer;</span><br><span class="line"></span><br><span class="line"><span class="comment">/* Tells the delegate to implement the display process using the layer&#x27;s CGContextRef.</span></span><br><span class="line"><span class="comment">   This method is not called if the delegate implements displayLayer:</span></span><br><span class="line"><span class="comment">   如果定义了，则由layer的-drawInContext的默认实现调用 */</span></span><br><span class="line">- (<span class="keyword">void</span>)drawLayer:(<span class="built_in">CALayer</span> *)layer inContext:(<span class="built_in">CGContextRef</span>)ctx;</span><br><span class="line"></span><br><span class="line"><span class="comment">/* 如果定义了，则由layer的-display方法的默认实现调用。</span></span><br><span class="line"><span class="comment">	 允许delegate在-drawLayer:InContext之前配置任何影响内容的图层状态，如&#x27;contentsFormat&#x27;和&#x27; opaque&#x27;。如果委托实现了-displayLayer，它将不会被调用。*/</span></span><br><span class="line">- (<span class="keyword">void</span>)layerWillDraw:(<span class="built_in">CALayer</span> *)layer</span><br><span class="line">  API_AVAILABLE(macos(<span class="number">10.12</span>), ios(<span class="number">10.0</span>), watchos(<span class="number">3.0</span>), tvos(<span class="number">10.0</span>));</span><br><span class="line"></span><br><span class="line"><span class="comment">/* 如果实现了，则由layer的-layoutSublayers方法的默认实现调用(在检查layoutManager之前)。</span></span><br><span class="line"><span class="comment">   注意，如果调用委托方法，布局管理器将被忽略。*/</span></span><br><span class="line">- (<span class="keyword">void</span>)layoutSublayersOfLayer:(<span class="built_in">CALayer</span> *)layer;</span><br><span class="line"></span><br><span class="line"><span class="comment">/* 隐式动画中用到的 */</span></span><br><span class="line">- (<span class="keyword">nullable</span> <span class="keyword">id</span>&lt;<span class="built_in">CAAction</span>&gt;)actionForLayer:(<span class="built_in">CALayer</span> *)layer forKey:(<span class="built_in">NSString</span> *)event;</span><br><span class="line"><span class="keyword">@end</span></span><br></pre></td></tr></table></figure>
 
 <h1 id="四、自动布局"><a href="#四、自动布局" class="headerlink" title="四、自动布局"></a>四、自动布局</h1><p>自动布局包含三步来布局和重绘视图。</p>
 <ul>
@@ -792,7 +781,7 @@ height:40vh;
             <p>Author：<a href="https://tenloy.github.io">Tenloy</a>
             <p>原文链接：<a href="https://tenloy.github.io/2021/09/07/core-animation01.html">https://tenloy.github.io/2021/09/07/core-animation01.html</a>
             <p>发表日期：2021.09.07 , 2:50 PM</p>
-            <p>更新日期：2022.08.22 , 8:49 AM</p>
+            <p>更新日期：2022.08.26 , 3:28 PM</p>
             <p>版权声明：本文采用<a rel="license noopener" target="_blank" href="http://creativecommons.org/licenses/by-nc/4.0/">Crative Commons 4.0 许可协议</a>进行许可</p>
         </div>
     
@@ -934,7 +923,7 @@ top:40vh;
         <div class="toc-catalog">
             <span class="iconfont-archer catalog-icon">&#xe613;</span><span>CATALOG</span>
         </div>
-        <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%B8%80%E3%80%81View%E4%B8%8ELayer"><span class="toc-text">一、View与Layer</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-1-CALayer%E5%9B%BE%E5%B1%82"><span class="toc-text">1.1 CALayer图层</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#1-2-%E5%9B%9B%E4%B8%AA%E5%B1%82%E7%BA%A7%E5%85%B3%E7%B3%BB"><span class="toc-text">1.2 四个层级关系</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-2-1-%E8%A7%86%E5%9B%BE%E5%B1%82%E7%BA%A7"><span class="toc-text">1.2.1 视图层级</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-2-2-%E5%9B%BE%E5%B1%82%E6%A0%91"><span class="toc-text">1.2.2 图层树</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-2-3-%E5%91%88%E7%8E%B0%E6%A0%91"><span class="toc-text">1.2.3 呈现树</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-2-4-%E6%B8%B2%E6%9F%93%E6%A0%91"><span class="toc-text">1.2.4 渲染树</span></a></li></ol></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%BA%8C%E3%80%81View%E7%9A%84%E7%BB%98%E5%88%B6"><span class="toc-text">二、View的绘制</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#2-1-%E7%BB%98%E5%88%B6%E6%9C%BA%E5%88%B6"><span class="toc-text">2.1 绘制机制</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-2-%E7%BB%98%E5%88%B6%E5%91%A8%E6%9C%9F-%E5%BD%93%E5%89%8Drunloop%E7%BB%93%E6%9D%9F"><span class="toc-text">2.2 绘制周期(当前runloop结束)</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-3-Custom-Drawing"><span class="toc-text">2.3 Custom Drawing</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#2-3-1-contents%E5%B1%9E%E6%80%A7"><span class="toc-text">2.3.1 contents属性</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-3-2-drawRect"><span class="toc-text">2.3.2 drawRect</span></a></li></ol></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%B8%89%E3%80%81%E5%B8%83%E5%B1%80-%E7%BB%98%E5%88%B6%E6%B5%81%E7%A8%8B"><span class="toc-text">三、布局-绘制流程</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#3-1-%E7%BB%98%E5%88%B6-%E6%98%BE%E7%A4%BA%E6%B5%81%E7%A8%8B%E5%9B%BE"><span class="toc-text">3.1 绘制&#x2F;显示流程图</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-2-%E5%BC%82%E6%AD%A5%E7%BB%98%E5%88%B6"><span class="toc-text">3.2 异步绘制</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-3-%E5%B8%83%E5%B1%80%E8%AE%A1%E7%AE%97-%E2%80%94-layoutSubxxxs"><span class="toc-text">3.3 布局计算 — layoutSubxxxs</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#3-3-1-UIView%E6%96%B9%E6%B3%95"><span class="toc-text">3.3.1 UIView方法</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#1-layoutSubviews"><span class="toc-text">1. -layoutSubviews</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#1-%E6%A6%82%E8%BF%B0"><span class="toc-text">1) 概述</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#2-layoutSubviews%E7%9A%84%E8%87%AA%E5%8A%A8%E8%A7%A6%E5%8F%91"><span class="toc-text">2) layoutSubviews的自动触发</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#3-layoutSubviews%E7%9A%84%E6%89%8B%E5%8A%A8%E8%A7%A6%E5%8F%91"><span class="toc-text">3) layoutSubviews的手动触发</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#4-viewDidLayoutSubviews"><span class="toc-text">4) viewDidLayoutSubviews</span></a></li></ol></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2-setNeedsLayout-%E5%81%9A%E6%A0%87%E8%AE%B0"><span class="toc-text">2. -setNeedsLayout(做标记)</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3-layoutIfNeeded-%E7%AB%8B%E5%8D%B3"><span class="toc-text">3. -layoutIfNeeded(立即)</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-3-2-CALayer%E6%96%B9%E6%B3%95"><span class="toc-text">3.3.2 CALayer方法</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#1-layoutSublayers"><span class="toc-text">1. -layoutSublayers</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2-setNeedsLayout-%E5%81%9A%E6%A0%87%E8%AE%B0-1"><span class="toc-text">2. -setNeedsLayout(做标记)</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3-layoutIfNeeded-%E7%AB%8B%E5%8D%B3-1"><span class="toc-text">3. -layoutIfNeeded(立即)</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-4-%E5%86%85%E5%AE%B9%E7%BB%98%E5%88%B6-%E2%80%94-draw-display"><span class="toc-text">3.4 内容绘制 — draw | display</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#3-2-1-UIView%E6%96%B9%E6%B3%95-UIViewRendering%E5%88%86%E7%B1%BB"><span class="toc-text">3.2.1 UIView方法 (UIViewRendering分类)</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#1-drawRect"><span class="toc-text">1. drawRect:</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#1-%E6%A6%82%E8%BF%B0-1"><span class="toc-text">1) 概述</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#2-%E8%87%AA%E5%8A%A8%E8%A7%A6%E5%8F%91"><span class="toc-text">2) 自动触发</span></a></li></ol></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2-setNeedsDisplay"><span class="toc-text">2. -setNeedsDisplay</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-2-2-CALayer%E6%96%B9%E6%B3%95"><span class="toc-text">3.2.2 CALayer方法</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#1-display"><span class="toc-text">1. -display</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2-drawInContext"><span class="toc-text">2. -drawInContext:</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3-setNeedsDisplay"><span class="toc-text">3. -setNeedsDisplay</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-3-3-CALayerDelegate%E6%96%B9%E6%B3%95"><span class="toc-text">3.3.3 CALayerDelegate方法</span></a></li></ol></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%9B%9B%E3%80%81%E8%87%AA%E5%8A%A8%E5%B8%83%E5%B1%80"><span class="toc-text">四、自动布局</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#4-1-%E7%BA%A6%E6%9D%9F%E6%9B%B4%E6%96%B0%E7%9A%84%E5%87%A0%E4%B8%AA%E6%96%B9%E6%B3%95"><span class="toc-text">4.1 约束更新的几个方法</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#4-1-1-updateConstraints"><span class="toc-text">4.1.1 updateConstraints()</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-1-2-setNeedsUpdateConstraints"><span class="toc-text">4.1.2 setNeedsUpdateConstraints()</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-1-3-updateConstraintsIfNeeded"><span class="toc-text">4.1.3 updateConstraintsIfNeeded()</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-1-4-invalidateIntrinsicContentSize"><span class="toc-text">4.1.4 invalidateIntrinsicContentSize()</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-2-%E7%BA%A6%E6%9D%9F%E2%80%94%E5%B8%83%E5%B1%80%E2%80%94%E6%98%BE%E7%A4%BA%E7%9A%84%E6%B5%81%E7%A8%8B"><span class="toc-text">4.2 约束—布局—显示的流程</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-3-%E7%BA%A6%E6%9D%9F%E7%9A%84%E5%AE%9E%E7%8E%B0%E5%8E%9F%E7%90%86"><span class="toc-text">4.3 约束的实现原理</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-4-%E8%87%AA%E5%8A%A8%E5%B8%83%E5%B1%80%E7%9A%84%E6%80%A7%E8%83%BD"><span class="toc-text">4.4 自动布局的性能</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-5-autolayout%E4%B8%A4%E4%B8%AA%E4%BC%98%E5%85%88%E7%BA%A7"><span class="toc-text">4.5 autolayout两个优先级</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-6-%E8%87%AA%E5%8A%A8%E3%80%81%E6%89%8B%E5%8A%A8%E5%B8%83%E5%B1%80%E9%80%89%E5%9E%8B"><span class="toc-text">4.6 自动、手动布局选型</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-7-%E7%A4%BA%E4%BE%8B-cell-%E9%87%8C%E9%9D%A2-label%E7%9A%84%E9%AB%98%E5%BA%A6%E8%87%AA%E9%80%82%E5%BA%94%E9%97%AE%E9%A2%98"><span class="toc-text">4.7 示例: cell 里面 label的高度自适应问题</span></a></li></ol></li></ol>
+        <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%B8%80%E3%80%81View%E4%B8%8ELayer"><span class="toc-text">一、View与Layer</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-1-CALayer%E5%9B%BE%E5%B1%82"><span class="toc-text">1.1 CALayer图层</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#1-2-%E5%9B%9B%E4%B8%AA%E5%B1%82%E7%BA%A7%E5%85%B3%E7%B3%BB"><span class="toc-text">1.2 四个层级关系</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-2-1-%E8%A7%86%E5%9B%BE%E5%B1%82%E7%BA%A7"><span class="toc-text">1.2.1 视图层级</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-2-2-%E5%9B%BE%E5%B1%82%E6%A0%91"><span class="toc-text">1.2.2 图层树</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-2-3-%E5%91%88%E7%8E%B0%E6%A0%91"><span class="toc-text">1.2.3 呈现树</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-2-4-%E6%B8%B2%E6%9F%93%E6%A0%91"><span class="toc-text">1.2.4 渲染树</span></a></li></ol></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%BA%8C%E3%80%81View%E7%9A%84%E7%BB%98%E5%88%B6"><span class="toc-text">二、View的绘制</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#2-1-%E7%BB%98%E5%88%B6%E6%9C%BA%E5%88%B6"><span class="toc-text">2.1 绘制机制</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-2-%E7%BB%98%E5%88%B6%E5%91%A8%E6%9C%9F-%E5%BD%93%E5%89%8Drunloop%E7%BB%93%E6%9D%9F"><span class="toc-text">2.2 绘制周期(当前runloop结束)</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-3-Custom-Drawing"><span class="toc-text">2.3 Custom Drawing</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#2-3-1-contents%E5%B1%9E%E6%80%A7"><span class="toc-text">2.3.1 contents属性</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-3-2-drawRect"><span class="toc-text">2.3.2 drawRect</span></a></li></ol></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%B8%89%E3%80%81%E5%B8%83%E5%B1%80-%E7%BB%98%E5%88%B6%E6%B5%81%E7%A8%8B"><span class="toc-text">三、布局-绘制流程</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#3-1-%E7%BB%98%E5%88%B6-%E6%98%BE%E7%A4%BA%E6%B5%81%E7%A8%8B%E5%9B%BE"><span class="toc-text">3.1 绘制&#x2F;显示流程图</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-2-%E5%BC%82%E6%AD%A5%E7%BB%98%E5%88%B6"><span class="toc-text">3.2 异步绘制</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-3-%E5%B8%83%E5%B1%80%E8%AE%A1%E7%AE%97-%E2%80%94-layoutSubxxxs"><span class="toc-text">3.3 布局计算 — layoutSubxxxs</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#3-3-1-UIView%E6%96%B9%E6%B3%95"><span class="toc-text">3.3.1 UIView方法</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#1-layoutSubviews"><span class="toc-text">1. -layoutSubviews</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#1-%E6%A6%82%E8%BF%B0"><span class="toc-text">1) 概述</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#2-layoutSubviews%E7%9A%84%E8%87%AA%E5%8A%A8%E8%A7%A6%E5%8F%91"><span class="toc-text">2) layoutSubviews的自动触发</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#3-layoutSubviews%E7%9A%84%E6%89%8B%E5%8A%A8%E8%A7%A6%E5%8F%91"><span class="toc-text">3) layoutSubviews的手动触发</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#4-viewDidLayoutSubviews"><span class="toc-text">4) viewDidLayoutSubviews</span></a></li></ol></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2-setNeedsLayout-%E5%81%9A%E6%A0%87%E8%AE%B0"><span class="toc-text">2. -setNeedsLayout(做标记)</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3-layoutIfNeeded-%E7%AB%8B%E5%8D%B3"><span class="toc-text">3. -layoutIfNeeded(立即)</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-3-2-CALayer%E6%96%B9%E6%B3%95"><span class="toc-text">3.3.2 CALayer方法</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#1-layoutSublayers"><span class="toc-text">1. -layoutSublayers</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2-setNeedsLayout-%E5%81%9A%E6%A0%87%E8%AE%B0-1"><span class="toc-text">2. -setNeedsLayout(做标记)</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3-layoutIfNeeded-%E7%AB%8B%E5%8D%B3-1"><span class="toc-text">3. -layoutIfNeeded(立即)</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-4-%E5%86%85%E5%AE%B9%E7%BB%98%E5%88%B6-%E2%80%94-draw-display"><span class="toc-text">3.4 内容绘制 — draw | display</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#3-4-1-UIView%E6%96%B9%E6%B3%95-UIViewRendering%E5%88%86%E7%B1%BB"><span class="toc-text">3.4.1 UIView方法 (UIViewRendering分类)</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#1-drawRect"><span class="toc-text">1. drawRect:</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#1-%E6%A6%82%E8%BF%B0-1"><span class="toc-text">1) 概述</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#2-%E8%87%AA%E5%8A%A8%E8%A7%A6%E5%8F%91"><span class="toc-text">2) 自动触发</span></a></li></ol></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2-setNeedsDisplay"><span class="toc-text">2. -setNeedsDisplay</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-4-2-CALayer%E6%96%B9%E6%B3%95"><span class="toc-text">3.4.2 CALayer方法</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#1-display"><span class="toc-text">1. -display</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2-drawInContext"><span class="toc-text">2. -drawInContext:</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3-setNeedsDisplay"><span class="toc-text">3. -setNeedsDisplay</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-4-3-CALayerDelegate%E6%96%B9%E6%B3%95"><span class="toc-text">3.4.3 CALayerDelegate方法</span></a></li></ol></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%9B%9B%E3%80%81%E8%87%AA%E5%8A%A8%E5%B8%83%E5%B1%80"><span class="toc-text">四、自动布局</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#4-1-%E7%BA%A6%E6%9D%9F%E6%9B%B4%E6%96%B0%E7%9A%84%E5%87%A0%E4%B8%AA%E6%96%B9%E6%B3%95"><span class="toc-text">4.1 约束更新的几个方法</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#4-1-1-updateConstraints"><span class="toc-text">4.1.1 updateConstraints()</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-1-2-setNeedsUpdateConstraints"><span class="toc-text">4.1.2 setNeedsUpdateConstraints()</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-1-3-updateConstraintsIfNeeded"><span class="toc-text">4.1.3 updateConstraintsIfNeeded()</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-1-4-invalidateIntrinsicContentSize"><span class="toc-text">4.1.4 invalidateIntrinsicContentSize()</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-2-%E7%BA%A6%E6%9D%9F%E2%80%94%E5%B8%83%E5%B1%80%E2%80%94%E6%98%BE%E7%A4%BA%E7%9A%84%E6%B5%81%E7%A8%8B"><span class="toc-text">4.2 约束—布局—显示的流程</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-3-%E7%BA%A6%E6%9D%9F%E7%9A%84%E5%AE%9E%E7%8E%B0%E5%8E%9F%E7%90%86"><span class="toc-text">4.3 约束的实现原理</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-4-%E8%87%AA%E5%8A%A8%E5%B8%83%E5%B1%80%E7%9A%84%E6%80%A7%E8%83%BD"><span class="toc-text">4.4 自动布局的性能</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-5-autolayout%E4%B8%A4%E4%B8%AA%E4%BC%98%E5%85%88%E7%BA%A7"><span class="toc-text">4.5 autolayout两个优先级</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-6-%E8%87%AA%E5%8A%A8%E3%80%81%E6%89%8B%E5%8A%A8%E5%B8%83%E5%B1%80%E9%80%89%E5%9E%8B"><span class="toc-text">4.6 自动、手动布局选型</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-7-%E7%A4%BA%E4%BE%8B-cell-%E9%87%8C%E9%9D%A2-label%E7%9A%84%E9%AB%98%E5%BA%A6%E8%87%AA%E9%80%82%E5%BA%94%E9%97%AE%E9%A2%98"><span class="toc-text">4.7 示例: cell 里面 label的高度自适应问题</span></a></li></ol></li></ol>
     </div>
     
     <div class="back-top iconfont-archer">&#xe639;</div>
@@ -1973,9 +1962,41 @@ top:40vh;
     
     
     
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
     <div class="total-and-search">
         <div class="total-archive">
-        Total : 69
+        Total : 71
         </div>
         <!-- search  -->
         
@@ -2040,11 +2061,6 @@ top:40vh;
     
         <li class="archive-post-item">
             <span class="archive-post-date">11/10</span><a class="archive-post-title" href= "/2021/11/10/git-use.html" >Git的使用总结</a>
-        </li>
-    
-    
-        <li class="archive-post-item">
-            <span class="archive-post-date">10/28</span><a class="archive-post-title" href= "/2021/10/28/runtime-data-structure.html" >Objc Runtime总结</a>
         </li>
     
     
@@ -2170,16 +2186,6 @@ top:40vh;
     
         <li class="archive-post-item">
             <span class="archive-post-date">07/29</span><a class="archive-post-title" href= "/2021/07/29/Swift-Version-History.html" >Swift版本更新API介绍</a>
-        </li>
-    
-    
-        <li class="archive-post-item">
-            <span class="archive-post-date">07/28</span><a class="archive-post-title" href= "/2021/07/28/GCD.html" >深入浅出GCD常用API</a>
-        </li>
-    
-    
-        <li class="archive-post-item">
-            <span class="archive-post-date">07/28</span><a class="archive-post-title" href= "/2021/07/28/AutoreleasePool.html" >AutoreleasePool</a>
         </li>
     
     
@@ -2356,6 +2362,31 @@ top:40vh;
             <span class="archive-post-date">12/09</span><a class="archive-post-title" href= "/2020/12/09/pki.html" >常见的PKI标准(X.509、PKCS)及证书相关介绍</a>
         </li>
     
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/28</span><a class="archive-post-title" href= "/2020/10/28/runtime-data-structure.html" >Objc Runtime总结</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/11</span><a class="archive-post-title" href= "/2020/09/11/GCD.html" >Objective-C — 深入浅出GCD常用API</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/06</span><a class="archive-post-title" href= "/2020/09/06/oc-block.html" >Objective-C — Block</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/26</span><a class="archive-post-title" href= "/2020/08/26/AutoreleasePool.html" >AutoreleasePool</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/24</span><a class="archive-post-title" href= "/2020/08/24/oc-memory-manage.html" >Objective-C — 内存管理</a>
+        </li>
+    
     </div>
   </div>
         <div class="sidebar-panel-tags">
@@ -2373,6 +2404,8 @@ top:40vh;
     
         <span class="sidebar-tag-name" data-tags="Log"><span class="iconfont-archer">&#xe606;</span>Log</span>
     
+        <span class="sidebar-tag-name" data-tags="AutoreleasePool"><span class="iconfont-archer">&#xe606;</span>AutoreleasePool</span>
+    
         <span class="sidebar-tag-name" data-tags="ISA"><span class="iconfont-archer">&#xe606;</span>ISA</span>
     
         <span class="sidebar-tag-name" data-tags="Microarch"><span class="iconfont-archer">&#xe606;</span>Microarch</span>
@@ -2384,8 +2417,6 @@ top:40vh;
         <span class="sidebar-tag-name" data-tags="DSL"><span class="iconfont-archer">&#xe606;</span>DSL</span>
     
         <span class="sidebar-tag-name" data-tags="dp"><span class="iconfont-archer">&#xe606;</span>dp</span>
-    
-        <span class="sidebar-tag-name" data-tags="AutoreleasePool"><span class="iconfont-archer">&#xe606;</span>AutoreleasePool</span>
     
         <span class="sidebar-tag-name" data-tags="CLI"><span class="iconfont-archer">&#xe606;</span>CLI</span>
     
