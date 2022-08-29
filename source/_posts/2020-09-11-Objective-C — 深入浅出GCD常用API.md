@@ -440,8 +440,7 @@ dispatch_queue_t dispatch_get_global_queue(long priority, unsigned long flags)
         return NULL;
     }
     //封装调用_dispatch_get_root_queue函数
-    return _dispatch_get_root_queue(priority,
-            flags & DISPATCH_QUEUE_OVERCOMMIT);
+    return _dispatch_get_root_queue(priority, flags & DISPATCH_QUEUE_OVERCOMMIT);
 }
 ```
 
@@ -449,33 +448,28 @@ dispatch_queue_t dispatch_get_global_queue(long priority, unsigned long flags)
 static inline dispatch_queue_t _dispatch_get_root_queue(long priority, bool overcommit)
 {
     if (overcommit) switch (priority) {
-    case DISPATCH_QUEUE_PRIORITY_BACKGROUND:
-        return &_dispatch_root_queues[
-                DISPATCH_ROOT_QUEUE_IDX_BACKGROUND_OVERCOMMIT_PRIORITY];
-    case DISPATCH_QUEUE_PRIORITY_LOW:
-    case DISPATCH_QUEUE_PRIORITY_NON_INTERACTIVE:
-        return &_dispatch_root_queues[
-                DISPATCH_ROOT_QUEUE_IDX_LOW_OVERCOMMIT_PRIORITY];
-    case DISPATCH_QUEUE_PRIORITY_DEFAULT:
-        return &_dispatch_root_queues[
-                DISPATCH_ROOT_QUEUE_IDX_DEFAULT_OVERCOMMIT_PRIORITY];
-    case DISPATCH_QUEUE_PRIORITY_HIGH:
-        return &_dispatch_root_queues[
-                DISPATCH_ROOT_QUEUE_IDX_HIGH_OVERCOMMIT_PRIORITY];
+        case DISPATCH_QUEUE_PRIORITY_BACKGROUND:
+            return &_dispatch_root_queues[DISPATCH_ROOT_QUEUE_IDX_BACKGROUND_OVERCOMMIT_PRIORITY];
+        case DISPATCH_QUEUE_PRIORITY_LOW:
+        case DISPATCH_QUEUE_PRIORITY_NON_INTERACTIVE:
+            return &_dispatch_root_queues[DISPATCH_ROOT_QUEUE_IDX_LOW_OVERCOMMIT_PRIORITY];
+        case DISPATCH_QUEUE_PRIORITY_DEFAULT:
+            return &_dispatch_root_queues[DISPATCH_ROOT_QUEUE_IDX_DEFAULT_OVERCOMMIT_PRIORITY];
+        case DISPATCH_QUEUE_PRIORITY_HIGH:
+            return &_dispatch_root_queues[DISPATCH_ROOT_QUEUE_IDX_HIGH_OVERCOMMIT_PRIORITY];
     }
     switch (priority) {
-    case DISPATCH_QUEUE_PRIORITY_BACKGROUND:
-        return &_dispatch_root_queues[
-                DISPATCH_ROOT_QUEUE_IDX_BACKGROUND_PRIORITY];
-    case DISPATCH_QUEUE_PRIORITY_LOW:
-    case DISPATCH_QUEUE_PRIORITY_NON_INTERACTIVE:
-        return &_dispatch_root_queues[DISPATCH_ROOT_QUEUE_IDX_LOW_PRIORITY];
-    case DISPATCH_QUEUE_PRIORITY_DEFAULT:
-        return &_dispatch_root_queues[DISPATCH_ROOT_QUEUE_IDX_DEFAULT_PRIORITY];
-    case DISPATCH_QUEUE_PRIORITY_HIGH:
-        return &_dispatch_root_queues[DISPATCH_ROOT_QUEUE_IDX_HIGH_PRIORITY];
-    default:
-        return NULL;
+        case DISPATCH_QUEUE_PRIORITY_BACKGROUND:
+            return &_dispatch_root_queues[DISPATCH_ROOT_QUEUE_IDX_BACKGROUND_PRIORITY];
+        case DISPATCH_QUEUE_PRIORITY_LOW:
+        case DISPATCH_QUEUE_PRIORITY_NON_INTERACTIVE:
+            return &_dispatch_root_queues[DISPATCH_ROOT_QUEUE_IDX_LOW_PRIORITY];
+        case DISPATCH_QUEUE_PRIORITY_DEFAULT:
+            return &_dispatch_root_queues[DISPATCH_ROOT_QUEUE_IDX_DEFAULT_PRIORITY];
+        case DISPATCH_QUEUE_PRIORITY_HIGH:
+            return &_dispatch_root_queues[DISPATCH_ROOT_QUEUE_IDX_HIGH_PRIORITY];
+        default:
+            return NULL;
     }
 }
 ```
@@ -524,8 +518,7 @@ DISPATCH_VTABLE_SUBCLASS_INSTANCE(queue_root, queue,
 //main_queue结构体定义
 struct dispatch_queue_s _dispatch_main_q = {
     .do_vtable = DISPATCH_VTABLE(queue),
-    .do_targetq = &_dispatch_root_queues[
-            DISPATCH_ROOT_QUEUE_IDX_DEFAULT_OVERCOMMIT_PRIORITY],  //目标队列
+    .do_targetq = &_dispatch_root_queues[DISPATCH_ROOT_QUEUE_IDX_DEFAULT_OVERCOMMIT_PRIORITY],  //目标队列
     .do_ref_cnt = DISPATCH_OBJECT_GLOBAL_REFCNT,   
     .do_xref_cnt = DISPATCH_OBJECT_GLOBAL_REFCNT,  
     .do_suspend_cnt = DISPATCH_OBJECT_SUSPEND_LOCK,
@@ -537,7 +530,7 @@ struct dispatch_queue_s _dispatch_main_q = {
 };
 ```
 
-main queue设置了并发数为1，即串行队列,并且将targetq指向com.apple.root.default-overcommit-priority队列。
+main queue设置了并发数为1，即串行队列，并且将targetq指向com.apple.root.default-overcommit-priority队列。
 
 #### 3. dispatch_queue_create
 
@@ -548,17 +541,17 @@ main queue设置了并发数为1，即串行队列,并且将targetq指向com.app
 ```c++
 dispatch_queue_t dispatch_queue_create(const char *label, dispatch_queue_attr_t attr) {
   //调用dispatch_queue_create_with_target
-    return dispatch_queue_create_with_target(label, attr,
-            DISPATCH_TARGET_QUEUE_DEFAULT);
+    return dispatch_queue_create_with_target(label, attr, DISPATCH_TARGET_QUEUE_DEFAULT);
 }
 
 //dispatch_queue_create具体实现函数
 dispatch_queue_t dispatch_queue_create_with_target(const char *label,
-        dispatch_queue_attr_t attr, dispatch_queue_t tq) {
+                                                   dispatch_queue_attr_t attr, 
+                                                   dispatch_queue_t tq) {
     dispatch_queue_t dq;
    //申请内存空间
     dq = _dispatch_alloc(DISPATCH_VTABLE(queue),
-            sizeof(struct dispatch_queue_s) - DISPATCH_QUEUE_CACHELINE_PAD);
+                         sizeof(struct dispatch_queue_s) - DISPATCH_QUEUE_CACHELINE_PAD);
   //初始化，设置自定义队列的基本属性，方法实现见下面
     _dispatch_queue_init(dq);
     if (label) {
@@ -590,8 +583,7 @@ static inline void _dispatch_queue_init(dispatch_queue_t dq)
     dq->do_next = (struct dispatch_queue_s *)DISPATCH_OBJECT_LISTLESS;
     dq->dq_running = 0;      //队列当前运行时初始为0
     dq->dq_width = 1;        //队列并发数默认为1，串行队列
-    dq->dq_serialnum = dispatch_atomic_inc_orig(&_dispatch_queue_serial_numbers,
-            relaxed);          //序列号,在_dispatch_queue_serial_numbers基础上原子性加1
+    dq->dq_serialnum = dispatch_atomic_inc_orig(&_dispatch_queue_serial_numbers, relaxed);   //序列号,在_dispatch_queue_serial_numbers基础上原子性加1
 }
 ```
 
@@ -623,8 +615,7 @@ unsigned long volatile _dispatch_queue_serial_numbers = 12;
 
 ```c++
 void dispatch_async(dispatch_queue_t dq, void (^work)(void)) {
-    dispatch_async_f(dq, _dispatch_Block_copy(work),
-            _dispatch_call_block_and_release);
+    dispatch_async_f(dq, _dispatch_Block_copy(work), _dispatch_call_block_and_release);
 }
 ```
 
@@ -675,8 +666,9 @@ static inline void _dispatch_queue_push(dispatch_queue_t dq, dispatch_object_t _
     }
 }
 //判断链表中是否已经存在节点
-static inline bool _dispatch_queue_push_list2(dispatch_queue_t dq, struct dispatch_object_s *head,
-        struct dispatch_object_s *tail) {
+static inline bool _dispatch_queue_push_list2(dispatch_queue_t dq, 
+                                              struct dispatch_object_s *head,
+                                              struct dispatch_object_s *tail) {
     struct dispatch_object_s *prev;
     tail->do_next = NULL;
     //将tail原子性赋值给dq->dq_items_tail，同时返回之前的值并赋给prev
@@ -690,7 +682,7 @@ static inline bool _dispatch_queue_push_list2(dispatch_queue_t dq, struct dispat
 }
 //将节点放到链表开头
 void _dispatch_queue_push_slow(dispatch_queue_t dq,
-        struct dispatch_object_s *obj)
+                               struct dispatch_object_s *obj)
 {
     if (dx_type(dq) == DISPATCH_QUEUE_ROOT_TYPE && !dq->dq_is_thread_bound) {
        //原子性的将head存储到链表头部
@@ -729,8 +721,7 @@ dispatch_queue_t _dispatch_wakeup(dispatch_object_t dou) {
     }
     //如果dou._do->do_suspend_cnt==0，返回YES,否则返回NO；
     //同时将DISPATCH_OBJECT_SUSPEND_LOCK赋值给dou._do->do_suspend_cnt
-    if (!dispatch_atomic_cmpxchg2o(dou._do, do_suspend_cnt, 0,
-            DISPATCH_OBJECT_SUSPEND_LOCK, release)) {
+    if (!dispatch_atomic_cmpxchg2o(dou._do, do_suspend_cnt, 0, DISPATCH_OBJECT_SUSPEND_LOCK, release)) {
             //因为主线程do_suspend_cnt非0，所以主线程if分支判断成功
 #if DISPATCH_COCOA_COMPAT
         if (dou._dq == &_dispatch_main_q) {
@@ -754,8 +745,7 @@ static dispatch_queue_t _dispatch_main_queue_wakeup(void) {
         return NULL;
     }
     //只初始化一次mach_port_t
-    dispatch_once_f(&_dispatch_main_q_port_pred, dq,
-            _dispatch_runloop_queue_port_init);
+    dispatch_once_f(&_dispatch_main_q_port_pred, dq, _dispatch_runloop_queue_port_init);
     _dispatch_runloop_queue_wakeup_thread(dq);
     return NULL;
 }
@@ -823,8 +813,7 @@ static void _dispatch_queue_wakeup_global_slow(dispatch_queue_t dq, unsigned int
             return;
         }
         j = i > t_count ? t_count : i;
-    } while (!dispatch_atomic_cmpxchgvw2o(qc, dgq_thread_pool_size, t_count,
-            t_count - j, &t_count, relaxed));
+    } while (!dispatch_atomic_cmpxchgvw2o(qc, dgq_thread_pool_size, t_count, t_count - j, &t_count, relaxed));
    //创建新的线程，入口函数是_dispatch_worker_thread
     do {
         _dispatch_retain(dq);
@@ -853,8 +842,7 @@ static void * _dispatch_worker_thread(void *context) {
     do {
        //取出一个任务并执行
         _dispatch_root_queue_drain(dq);
-    } while (dispatch_semaphore_wait(qc->dgq_thread_mediator,
-            dispatch_time(0, timeout)) == 0);
+    } while (dispatch_semaphore_wait(qc->dgq_thread_mediator, dispatch_time(0, timeout)) == 0);
     //将线程池加一
     (void)dispatch_atomic_inc2o(qc, dgq_thread_pool_size, relaxed);
     _dispatch_queue_wakeup_global(dq);
@@ -976,8 +964,7 @@ void dispatch_sync_f(dispatch_queue_t dq, void *ctxt, dispatch_function_t func) 
 1、向串行队列提交同步任务，执行dispatch_barrier_sync_f函数：
 
 ```c++
-void dispatch_barrier_sync_f(dispatch_queue_t dq, void *ctxt,
-        dispatch_function_t func) {
+void dispatch_barrier_sync_f(dispatch_queue_t dq, void *ctxt, dispatch_function_t func) {
     if (slowpath(dq->dq_items_tail) || slowpath(DISPATCH_OBJECT_SUSPENDED(dq))){
         return _dispatch_barrier_sync_f_slow(dq, ctxt, func);
     }
@@ -994,8 +981,7 @@ void dispatch_barrier_sync_f(dispatch_queue_t dq, void *ctxt,
 如果队列无任务执行，调用_dispatch_barrier_sync_f_invoke执行任务。`_dispatch_barrier_sync_f_invoke`代码逻辑展开后如下：
 
 ```c++
-static void _dispatch_barrier_sync_f_invoke(dispatch_queue_t dq, void *ctxt,
-        dispatch_function_t func) {
+static void _dispatch_barrier_sync_f_invoke(dispatch_queue_t dq, void *ctxt, dispatch_function_t func) {
     //任务执行核心逻辑，将当前线程的dispatch_queue_key设置为dq，然后执行block，
     //执行完之后再恢复到之前的old_dq
     dispatch_queue_t old_dq = _dispatch_thread_getspecific(dispatch_queue_key);
@@ -1017,8 +1003,7 @@ static void _dispatch_barrier_sync_f_invoke(dispatch_queue_t dq, void *ctxt,
 如果队列存在其他任务或者被挂起，调用`_dispatch_barrier_sync_f_slow`函数，等待该队列的任务执行完之后用信号量通知队列继续执行任务。代码如下：
 
 ```c++
-static void _dispatch_barrier_sync_f_slow(dispatch_queue_t dq, void *ctxt,
-        dispatch_function_t func) {
+static void _dispatch_barrier_sync_f_slow(dispatch_queue_t dq, void *ctxt, dispatch_function_t func) {
     _dispatch_thread_semaphore_t sema = _dispatch_get_thread_semaphore();
     struct dispatch_continuation_s dc = {
         .dc_data = dq,
@@ -1027,8 +1012,7 @@ static void _dispatch_barrier_sync_f_slow(dispatch_queue_t dq, void *ctxt,
         .dc_other = (void*)sema,
     };
     struct dispatch_continuation_s dbss = {
-        .do_vtable = (void *)(DISPATCH_OBJ_BARRIER_BIT |
-                DISPATCH_OBJ_SYNC_SLOW_BIT),
+        .do_vtable = (void *)(DISPATCH_OBJ_BARRIER_BIT | DISPATCH_OBJ_SYNC_SLOW_BIT),
         .dc_func = _dispatch_barrier_sync_f_slow_invoke,
         .dc_ctxt = &dc,
 #if DISPATCH_INTROSPECTION
@@ -1067,8 +1051,7 @@ static inline void _dispatch_sync_f2(dispatch_queue_t dq, void *ctxt, dispatch_f
     _dispatch_sync_f_invoke(dq, ctxt, func);
 }
 //队列存在其他任务|队列被挂起|有正在执行的任务，信号等待
-static void _dispatch_sync_f_slow(dispatch_queue_t dq, void *ctxt, dispatch_function_t func,
-        bool wakeup) {
+static void _dispatch_sync_f_slow(dispatch_queue_t dq, void *ctxt, dispatch_function_t func, bool wakeup) {
     _dispatch_thread_semaphore_t sema = _dispatch_get_thread_semaphore();
     struct dispatch_continuation_s dss = {
         .do_vtable = (void*)DISPATCH_OBJ_SYNC_SLOW_BIT,
@@ -1171,9 +1154,7 @@ dispatch_semaphore_t dispatch_semaphore_create(long value) {
     }
   //申请dispatch_semaphore_t的内存
     dsema = (dispatch_semaphore_t)_dispatch_alloc(DISPATCH_VTABLE(semaphore),
-            sizeof(struct dispatch_semaphore_s) -
-            sizeof(dsema->dsema_notify_head) -
-            sizeof(dsema->dsema_notify_tail));
+                                                  sizeof(struct dispatch_semaphore_s) - sizeof(dsema->dsema_notify_head) - sizeof(dsema->dsema_notify_tail));
     //调用初始化函数
     _dispatch_semaphore_init(value, dsema);
     return dsema;
@@ -1182,8 +1163,7 @@ dispatch_semaphore_t dispatch_semaphore_create(long value) {
 static void _dispatch_semaphore_init(long value, dispatch_object_t dou) {
     dispatch_semaphore_t dsema = dou._dsema;
     dsema->do_next = (dispatch_semaphore_t)DISPATCH_OBJECT_LISTLESS;
-    dsema->do_targetq = dispatch_get_global_queue(
-            DISPATCH_QUEUE_PRIORITY_DEFAULT, 0);
+    dsema->do_targetq = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0);
     dsema->dsema_value = value; //设置信号量的当前value值
     dsema->dsema_orig = value;  //设置信号量的初始value值
 }
@@ -1210,8 +1190,7 @@ void _dispatch_semaphore_dispose(dispatch_object_t dou) {
 
     if (dsema->dsema_value < dsema->dsema_orig) {
        //Warning:信号量还在使用的时候销毁会造成崩溃
-        DISPATCH_CLIENT_CRASH(
-                "Semaphore/group object deallocated while in use");
+        DISPATCH_CLIENT_CRASH("Semaphore/group object deallocated while in use");
     }
     kern_return_t kr;
     if (dsema->dsema_port) {
@@ -1245,16 +1224,14 @@ long dispatch_semaphore_wait(dispatch_semaphore_t dsema, dispatch_time_t timeout
 `dispatch_semaphore_wait`先将信号量的dsema值原子性减一，并将新值赋给value。如果value大于等于0就立即返回，否则调用`_dispatch_semaphore_wait_slow`函数，等待信号量唤醒或者timeout超时。`_dispatch_semaphore_wait_slow`函数定义如下：
 
 ```c
-static long _dispatch_semaphore_wait_slow(dispatch_semaphore_t dsema,
-        dispatch_time_t timeout) {
+static long _dispatch_semaphore_wait_slow(dispatch_semaphore_t dsema, dispatch_time_t timeout) {
     long orig;
     mach_timespec_t _timeout;
     kern_return_t kr;
 again:
     orig = dsema->dsema_sent_ksignals;
     while (orig) {
-        if (dispatch_atomic_cmpxchgvw2o(dsema, dsema_sent_ksignals, orig,
-                orig - 1, &orig, relaxed)) {
+        if (dispatch_atomic_cmpxchgvw2o(dsema, dsema_sent_ksignals, orig, orig - 1, &orig, relaxed)) {
             return 0;
         }
     }
@@ -1262,7 +1239,7 @@ again:
     _dispatch_semaphore_create_port(&dsema->dsema_port);
     switch (timeout) {
     default:
-    do {
+        do {
             uint64_t nsec = _dispatch_timeout(timeout);
             _timeout.tv_sec = (typeof(_timeout.tv_sec))(nsec / NSEC_PER_SEC);
             _timeout.tv_nsec = (typeof(_timeout.tv_nsec))(nsec % NSEC_PER_SEC);
@@ -1276,13 +1253,12 @@ again:
     case DISPATCH_TIME_NOW:
         orig = dsema->dsema_value;
         while (orig < 0) {
-            if (dispatch_atomic_cmpxchgvw2o(dsema, dsema_value, orig, orig + 1,
-                    &orig, relaxed)) {
+            if (dispatch_atomic_cmpxchgvw2o(dsema, dsema_value, orig, orig + 1, &orig, relaxed)) {
                 return KERN_OPERATION_TIMED_OUT;
             }
         }
     case DISPATCH_TIME_FOREVER:
-    do {
+        do {
             kr = semaphore_wait(dsema->dsema_port);
         } while (kr == KERN_ABORTED);
         DISPATCH_SEMAPHORE_VERIFY_KR(kr);
