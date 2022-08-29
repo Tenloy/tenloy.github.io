@@ -79,20 +79,20 @@ categories:
 
 **GCD大大简化了偏于复杂的多线程编程的源代码，与Block结合使用，只需要将要执行的任务并追加到适当的Dispatch Queue**。
 
-# 二、GCD基础篇
+# 二、GCD的概述及基础知识
 
 Grand Central Dispatch(GCD)
 
 - 是Apple推出的一套多线程解决方案，它拥有系统级的线程管理机制，开发者不需要再管理线程的生命周期，只需要关注于要执行的任务即可。
 - 是异步执行任务的技术之一，用非常简洁的技术方法，实现了极为复杂繁琐的多线程编程。
 
-GCD的源码libdispatch版本很多，源代码风格各版本都有不同，但大体逻辑没有太大变化。libdispatch的源码下载地址[在这里](https://opensource.apple.com/tarballs/libdispatch/)。
+**GCD 是在系统级即iOS和OS X的核心XNU内核级上实现，所以开发者无论如何努力编写线程关系代码，`性能`都不可能胜过XNU内核级所实现的GCD。**开发者应该尽量多使用GCD或者使用了Cocoa框架GCD的NSOperationQueue类等API。
 
-## 2.1 基础知识
+GCD的源码libdispatch版本很多，源代码风格各版本都有不同，但大体逻辑没有太大变化。libdispatch的源码下载地址[在这里](https://opensource.apple.com/tarballs/libdispatch/)。
 
 阅读GCD的源码之前，先了解一些相关知识，方便后面的理解。
 
-### 2.1.1 DISPATCH_DECL
+## 2.1 DISPATCH_DECL
 
 ```c++
 #define DISPATCH_DECL(name) typedef struct name##_s *name##_t
@@ -106,7 +106,7 @@ typedef struct dispatch_queue_s *dispatch_queue_t；
 
 它的意思是定义一个`dispatch_queue_t`类型的指针，指向了一个`dispatch_queue_s`类型的结构体。
 
-### 2.1.2 fastpath vs slowpath
+## 2.2 fastpath vs slowpath
 
 ```c++
 #define fastpath(x) ((typeof(x))__builtin_expect((long)(x), ~0l))
@@ -115,7 +115,7 @@ typedef struct dispatch_queue_s *dispatch_queue_t；
 
 `__builtin_expect`是编译器用来优化执行速度的函数，fastpath表示条件更可能成立，slowpath表示条件更不可能成立。我们在阅读源码的时候可以做忽略处理。
 
-### 2.1.3 TSD
+## 2.3 TSD
 
 Thread Specific Data(TSD)是指线程私有数据。在多线程中，会用全局变量来实现多个函数间的数据共享，局部变量来实现内部的单独访问。TSD则是能够在同一个线程的不同函数中被访问，在不同线程时，相同的键值获取的数据随线程不同而不同。可以通过pthread的相关api来实现TSD:
 
@@ -128,9 +128,9 @@ void* _Nullable pthread_getspecific(pthread_key_t);
 int pthread_setspecific(pthread_key_t , const void * _Nullable);
 ```
 
-## 2.2 常用数据结构
+# 三、GCD的常用数据结构
 
-### 2.2.1 dispatch_object_s结构体
+## 3.1 dispatch_object_s结构体
 
 dispatch_object_s是GCD最基础的结构体，定义如下：
 
@@ -159,7 +159,7 @@ struct dispatch_object_s {
     unsigned int do_suspend_cnt;                   //suspend计数，用作暂停标志
 ```
 
-### 2.2.2 dispatch_continuation_s结构体
+## 3.2 dispatch_continuation_s结构体
 
 dispatch_continuation_s结构体主要封装block和function，`dispatch_async`中的block最终都会封装成这个数据类型，定义如下：
 
@@ -180,7 +180,7 @@ struct dispatch_continuation_s {
     void *dc_other;                                 //其他
 ```
 
-### 2.2.3 dispatch_object_t联合体
+## 3.3 dispatch_object_t联合体
 
 dispatch_object_t是个union的联合体，可以用dispatch_object_t代表这个联合体里的所有数据结构。
 
@@ -205,7 +205,7 @@ typedef union {
 } dispatch_object_t __attribute__((__transparent_union__));
 ```
 
-### 2.2.4 DISPATCH_VTABLE_HEADER宏
+## 3.4 DISPATCH_VTABLE_HEADER宏
 
 GCD中常见结构体（比如queue、semaphore等）的vtable字段中定义了很多函数回调，在后续代码分析中会经常看到，定义如下所示：
 
@@ -229,7 +229,7 @@ GCD中常见结构体（比如queue、semaphore等）的vtable字段中定义了
 #define dx_probe(x) (x)->do_vtable->do_probe(x)
 ```
 
-### 2.2.5 dispatch_queue_s(队列结构)
+## 3.5 dispatch_queue_s(队列结构)
 
 dispatch_queue_s是队列的结构体，也是GCD中开发者接触最多的结构体了，定义如下：
 
@@ -274,11 +274,11 @@ DISPATCH_VTABLE_SUBCLASS_INSTANCE(queue_root, queue,
 );
 ```
 
-# 三、GCD的API
+# 四、GCD的API
 
-## 3.1 Dispatch Queue(调度队列)
+## 4.1 Dispatch Queue(调度队列)
 
-### 3.1.1 概述
+### 4.1.1 概述
 
 `dispatch_queue`可以说是GCD编程中使用频率最高的API，这一节主要讲一下queue的相关用法和原理，关于queue的数据结构和常用定义见上节。
 
@@ -290,45 +290,12 @@ DISPATCH_VTABLE_SUBCLASS_INSTANCE(queue_root, queue,
   - 库内置了两个队列：
     - Main Dispatch Queue(串行队列)：追加到Main Dispatch Queue中的处理在主线程的RunLoop中执行
     - Global Dispatch Queue(并行队列)
+    - 对这两种队列执行 dispatch_retain 函数和 dispatch_release 函数无效，开发者无需关心这两者的保留、释放。
   - 也可以用 dispatch_queue_create 来创建串行、并行队列
 
-### 3.1.2 使用
+### 4.1.2 使用
 
-#### 1. Global Dispatch Queue(并行队列)
-
-Global Dispatch Queue有4个执行优先级
-
-- 最高优先级（High Priority）
-- 默认优先级（Default Priority）
-- 低优先级（Low Priority）
-- 后台优先级（Background Priority）
-
-```php
-#define DISPATCH_QUEUE_PRIORITY_HIGH 2
-#define DISPATCH_QUEUE_PRIORITY_DEFAULT 0
-#define DISPATCH_QUEUE_PRIORITY_LOW (-2)
-#define DISPATCH_QUEUE_PRIORITY_BACKGROUND INT16_MIN
-
-dispatch_get_global_queue(优先级变量, unsigned long flags)
-
-Global Dispatch Quene有如下8种:
- Global Dispatch Quene(High Priority)
- Global Dispatch Quene(Default Priority)
- Global Dispatch Quene(Low Priority)
- Global Dispatch Quene(Background Priority)
- Global Dispatch Quene(High Overcommit Priority)
- Global Dispatch Quene(Default Overcommit Priority)
- Global Dispatch Quene(Low Overcommit Priority)
- Global Dispatch Quene(Background Overcommit Priority)
-```
-
-- 优先级中附有 Overcommit 的 Global Dispatch Quene 使用在 Serial Dispatch Quene中。
-  - 不管系统状态如何，都会强制生成线程的 Dispatch Quene。所以这也是不要大量生成串行队列的原因。对于并行队列，不管生成多少，由于XNU内核**只使用有效管理的线程**，不会出现大量创建线程的状况。
-- 同XNU内核用于 Global Dispatch Queue 的线程并**不能保证实时性**，所以优先级只是个大致判断。
-- **XNU内核管理，会将各自使用的队列的执行优先级，作为线程的执行优先级使用，所以添加任务时，需要选择与处理的任务对应优先级的队列。**
-- 对上面两种队列执行 dispatch_retain 函数和 dispatch_release 函数无效，开发者无需关心这两者的保留、释放。
-
-#### 2. dispatch_queue_create(创建队列)
+#### 1. dispatch_queue_create(创建队列)
 
 - 1个并行队列 + 多个异步任务(dispatch_async) = 会开启多线程
 - 多个【1个串行队列+1个同步/异步任务】 = 多线程
@@ -366,13 +333,34 @@ dispatch_release(mySerialDispatchQueue)
 **释放时机：**
 
 - 在 dispatch_async 函数中追加 Block 到 Dispatch Queue 后，即是立刻释放 Dispatch Queue，该 Dispatch Queue 由于被 Block 持有也不会废弃，因而 Block 能够执行，Block 执行结束后释放该 Block 持有的 Dispatch Queue，这时谁都不持有 Dispatch Queue，因此它被废弃。
-
 - 在通过函数或方法名获取 Dispatch Queue 以及其他名称中包含 `creat` 的API生成的对象时，有必要通过 dispatch_retain 函数持有，并在不需要时通过 dispatch_release 函数释放。
 
 
 系统对于一个串行队列，就只生成并使用一个线程，所以串行队列的生成个数应当仅限所必需的数量，不能大量生成。
 
 对于并行队列，不管生成多少，由于XNU内核**只使用有效管理的线程**，不会出现串行队列那种问题。
+
+#### 2. GCD/NSOperation设置优先级
+
+GCD 和 NSOperation 的优先级设置：
+
+- NSThread 可以指定线程的优先级：iOS8之前是threadPriority，之后是qualityOfService。较高优先级不保证你的线程具体执行的时间，只是相比较低优先级的线程，它更有可能被调度器选择执⾏而已。 （*read-only after the thread is started*）
+
+- GCD 可以指定队列优先级：（以下两者指定优先级时，使用的值不一样，有映射关系）。
+
+  - `dispatch_queue_create` 创建队列时，指定优先级。
+  - `dispatch_get_global_queue` 获取全局并行队列时，指定优先级。
+
+- NSOperation 可以设置 operation 的 qualityOfService 属性；
+
+- NSOperationQueue 可以设置 队列 的 qualityOfService 属性。指定了添加到该队列的 operation 对象的服务质量级别。如果 operation 显式设置过自身的 qualityOfService，则优先使用后者。
+
+
+*（个人认为：队列、任务、线程的优先级可以理解为一个东西，都是在控制线程的优先级）*
+
+通过XNU内核用于 global_queue 的线程并**不能保证实时性**，所以优先级只是个大致判断。
+
+**XNU内核管理，会将各自使用的队列的执行优先级，作为线程的执行优先级使用，所以添加任务时，需要选择与处理的任务对应优先级的队列。**
 
 #### 3. dispatch_set_target_queue
 
@@ -427,73 +415,234 @@ dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
 });
 ```
 
-### 3.1.3 原理
+### 4.1.3 实现 — Root Queue 与 线程池
 
-#### 1. dispatch_get_global_queue
+#### 1. 概述
+
+在GCD和NSOperationQueue之前，iOS使用线程一般是用NSThread，而NSThread是对[POSIX thread](http://en.wikipedia.org/wiki/POSIX_Threads)的封装，也就是pthread，本文最后会面附上一段使用pthread下图片的代码，现在我们还是继续上面的讨论。使用NSThread的一个最大的问题是：直接操纵线程，线程的生命周期完全交给developer控制，在大的工程中，模块间相互独立，假如A模块并发了8条线程，B模块需要并发6条线程，以此类推，线程数量会持续增长，最终会导致难以控制的结果。
+
+GCD和NSOperationQueue出来以后，可以很方便地实现多线程，而不需要过多地关注线程的实现和创建等。GCD内部维护了一个线程池，由系统根据任务的数量和优先级动态地创建和分配线程执行。线程池会有效管理线程的并发，控制线程的生命周期。
+
+developer可以不直接操纵线程，而是将所要执行的任务封装成一个unit丢给线程池去处理。
+
+GCD是一种轻量的基于block的线程模型，使用GCD一般要注意两点：一是线程的priority，二是对象间的循环引用问题。
+
+NSOperationQueue是对GCD更上一层的封装，它对线程的控制更好一些，但是用起来也麻烦一些。关于这两个孰优熟劣，需要根据具体应用场景进行讨论：[stackoverflow:GCD vs NSopeartionQueue](http://stackoverflow.com/questions/10373331/nsoperation-vs-grand-central-dispatch)。
+
+下面是 objc.io上的一幅图，直观地描述GCD队列和线程的关系：
+
+> Thread Pool 具体细节，可以看GCD的源码，开源的嘛
+
+<img src="/images/GCD/dispatch_queue-2.png" alt="img" style="zoom:80%;" />
+
+#### 2. GCD的16个root queue
+
+首先，根据优先级、overcommit定义了12个：
+
+```c++
+/*
+ * 从_dispatch_root_queues数组中获取对应优先级的队列。
+ * _dispatch_root_queues数组中总共存放了12个root队列，优先级6种 × overcommit(过载)2种
+ * 支持overcommit的队列在创建队列时无论系统是否有足够的资源都会重新开一个线程，非overcommit队列创建队列则未必创建线程。
+ * 
+   #define DISPATCH_QOS_MAINTENANCE        ((dispatch_qos_t)1) //优先级最低(维护线程)
+   #define DISPATCH_QOS_BACKGROUND         ((dispatch_qos_t)2) //     后台
+   #define DISPATCH_QOS_UTILITY            ((dispatch_qos_t)3) //     实用/多功能的
+   #define DISPATCH_QOS_DEFAULT            ((dispatch_qos_t)4) //     默认
+   #define DISPATCH_QOS_USER_INITIATED     ((dispatch_qos_t)5) //     用户发起
+   #define DISPATCH_QOS_USER_INTERACTIVE   ((dispatch_qos_t)6) //优先级最高(用户交互)
+   #define DISPATCH_QOS_MIN                DISPATCH_QOS_MAINTENANCE
+   #define DISPATCH_QOS_MAX                DISPATCH_QOS_USER_INTERACTIVE
+ * 
+ */
+typedef struct dispatch_queue_global_s *dispatch_queue_global_t;
+
+static inline dispatch_queue_global_t _dispatch_get_root_queue(dispatch_qos_t qos, bool overcommit)
+{
+	if (unlikely(qos < DISPATCH_QOS_MIN || qos > DISPATCH_QOS_MAX)) {
+		DISPATCH_CLIENT_CRASH(qos, "Corrupted priority");
+	}
+	return &_dispatch_root_queues[2 * (qos - 1) + overcommit];
+}
+
+struct dispatch_queue_global_s _dispatch_root_queues[] = {
+	_DISPATCH_ROOT_QUEUE_ENTRY(MAINTENANCE, 0,
+		.dq_label = "com.apple.root.maintenance-qos",
+		.dq_serialnum = 4,
+	),
+	_DISPATCH_ROOT_QUEUE_ENTRY(MAINTENANCE, DISPATCH_PRIORITY_FLAG_OVERCOMMIT,
+		.dq_label = "com.apple.root.maintenance-qos.overcommit",
+		.dq_serialnum = 5,
+	),
+	_DISPATCH_ROOT_QUEUE_ENTRY(BACKGROUND, 0,
+		.dq_label = "com.apple.root.background-qos",
+		.dq_serialnum = 6,
+	),
+	_DISPATCH_ROOT_QUEUE_ENTRY(BACKGROUND, DISPATCH_PRIORITY_FLAG_OVERCOMMIT,
+		.dq_label = "com.apple.root.background-qos.overcommit",
+		.dq_serialnum = 7,
+	),
+	_DISPATCH_ROOT_QUEUE_ENTRY(UTILITY, 0,
+		.dq_label = "com.apple.root.utility-qos",
+		.dq_serialnum = 8,
+	),
+	_DISPATCH_ROOT_QUEUE_ENTRY(UTILITY, DISPATCH_PRIORITY_FLAG_OVERCOMMIT,
+		.dq_label = "com.apple.root.utility-qos.overcommit",
+		.dq_serialnum = 9,
+	),
+	_DISPATCH_ROOT_QUEUE_ENTRY(DEFAULT, DISPATCH_PRIORITY_FLAG_FALLBACK,
+		.dq_label = "com.apple.root.default-qos",
+		.dq_serialnum = 10,
+	),
+	_DISPATCH_ROOT_QUEUE_ENTRY(DEFAULT,
+			DISPATCH_PRIORITY_FLAG_FALLBACK | DISPATCH_PRIORITY_FLAG_OVERCOMMIT,
+		.dq_label = "com.apple.root.default-qos.overcommit",
+		.dq_serialnum = 11,
+	),
+	_DISPATCH_ROOT_QUEUE_ENTRY(USER_INITIATED, 0,
+		.dq_label = "com.apple.root.user-initiated-qos",
+		.dq_serialnum = 12,
+	),
+	_DISPATCH_ROOT_QUEUE_ENTRY(USER_INITIATED, DISPATCH_PRIORITY_FLAG_OVERCOMMIT,
+		.dq_label = "com.apple.root.user-initiated-qos.overcommit",
+		.dq_serialnum = 13,
+	),
+	_DISPATCH_ROOT_QUEUE_ENTRY(USER_INTERACTIVE, 0,
+		.dq_label = "com.apple.root.user-interactive-qos",
+		.dq_serialnum = 14,
+	),
+	_DISPATCH_ROOT_QUEUE_ENTRY(USER_INTERACTIVE, DISPATCH_PRIORITY_FLAG_OVERCOMMIT,
+		.dq_label = "com.apple.root.user-interactive-qos.overcommit",
+		.dq_serialnum = 15,
+	),
+};
+```
+
+此外，还有三个特殊的队列：
+
+```objc
+struct dispatch_queue_static_s _dispatch_main_q = {
+	.dq_label = "com.apple.main-thread",
+	.dq_serialnum = 1,
+};
+
+struct dispatch_queue_global_s _dispatch_mgr_root_queue = {
+	.dq_label = "com.apple.root.libdispatch-manager",
+	.dq_serialnum = 3,
+};
+
+struct dispatch_queue_static_s _dispatch_mgr_q = {
+	.dq_label = "com.apple.libdispatch-manager",
+	.dq_serialnum = 2,
+};
+```
+
+我们平时用到的全局队列也是其中一个root队列。见下面的`dispatch_get_global_queue` 源码。
+
+**不管是自定义队列、全局队列还是主队列最终都直接或者间接的依赖12个root队列来执行任务调度**。如果按照label算，应该有16个：
+
+- `_dispatch_root_queues` 数组初始化中的12个label；
+- 主队列有自己的label `com.apple.main-thread`；
+- 两个内部管理队列 `com.apple.libdispatch-manager` 和 `com.apple.root.libdispatch-manager`；
+- runloop的运行队列。
+
+#### 3. Queue设定的线程池的数量
+
+`_dispatch_root_queues `取出的 `dispatch_queue_global_s` 队列的 `dgq_thread_pool_size` 字段表示queue的线程池，每个线程池的最大线程数限制是255。
+
+```objc
+#define DISPATCH_WORKQ_MAX_PTHREAD_COUNT 255
+```
+
+最大线程数设置255，但实际程序中开辟的线程数，不一定能达到这个最大值。
+
+官方文档 [Thread Management](https://developer.apple.com/library/archive/documentation/Cocoa/Conceptual/Multithreading/CreatingThreads/CreatingThreads.html#//apple_ref/doc/uid/10000057i-CH15-SW7) 中，辅助线程为512KB，辅助线程允许的最小堆栈大小为16KB，并且堆栈大小必须是4KB的倍数。
+
+针对一个`4GB`内存的`iOS`真机来说，内存分为内核态和用户态。程序启动，系统给出的虚拟内存4GB，用户态占3GB，内核态占1GB。但内核态的1GB并不能全部用来开辟线程，所以最大线程数是未知的。如果内核态全部用于创建线程，也就是`1GB`的空间，也就是说最多能开辟 `1024MB / 16KB`个线程。当然这也只是一个理论值。
+
+*测试了一下：好像是64个*
+
+```c++
+/**
+ 串行队列只有一个线程，线程num > 2
+ **/
+- (void)test1 {
+    dispatch_queue_t serialQueue = dispatch_queue_create("com.cmjstudio.dispatch", DISPATCH_QUEUE_SERIAL);
+    for (int i=0; i<1000; ++i) {
+        dispatch_async(serialQueue, ^{
+            NSLog(@"%@，%i",[NSThread currentThread],i); // only one thread（number = 3~66）
+        });
+    }
+}
+
+- (void)test2 {
+    dispatch_queue_attr_t attr = dispatch_queue_attr_make_with_qos_class(DISPATCH_QUEUE_SERIAL, QOS_CLASS_USER_INITIATED, -1);
+    dispatch_queue_t serialQueue = dispatch_queue_create("com.cmjstudio.dispatch", attr);
+    for (int i=0; i<1000; ++i) {
+        dispatch_async(serialQueue, ^{
+            NSLog(@"%@，%i",[NSThread currentThread],i); // only one thread
+        });
+    }
+}
+
+/**
+ 不管优先级多高并行队列有最多有64个线程，线程num在3~66，在一次轮询中遇到高优先级的会先执行
+ **/
+- (void)test3 {
+    dispatch_queue_t concurrentQueue = dispatch_queue_create("com.cmjstudio.dispatch", DISPATCH_QUEUE_CONCURRENT);
+    for (int i=0; i<1000; ++i) {
+        dispatch_async(concurrentQueue, ^{
+            NSLog(@"%@，%i",[NSThread currentThread],i); // 64 thread (num = 3~66)
+        });
+    }
+}
+```
+
+GCD线程池中，线程数是64个。但有时候会超出64，[StackOverflow](https://stackoverflow.com/questions/7213845/number-of-threads-created-by-gcd)上的解释是实际线程数 = 64（最大 GCD 线程池大小）+ 主线程 + 一些其他随机非 GCD 线程。
+
+- 参考链接：[iOS刨根问底-深入理解GCD](https://www.cnblogs.com/kenshincui/p/13272517.html)
+
+### 4.1.4 实现 — 相关API的源码逻辑
+
+#### 1. dispatch_get_global_queue(8种类型)
 
 dispatch_get_global_queue用于获取一个全局队列，先看一下它的源码：
 
 ```c++
-dispatch_queue_t dispatch_get_global_queue(long priority, unsigned long flags)
+/*
+ * 常见的全局队列类型有8种：下面四种优先级以及对应的是否overcommit.
+ * The global concurrent queues may still be identified by their priority,
+ * which map to the following QOS classes:
+                                            QOS_CLASS_USER_INTERACTIVE
+ *  - DISPATCH_QUEUE_PRIORITY_HIGH:         QOS_CLASS_USER_INITIATED
+ *  - DISPATCH_QUEUE_PRIORITY_DEFAULT:      QOS_CLASS_DEFAULT
+ *  - DISPATCH_QUEUE_PRIORITY_LOW:          QOS_CLASS_UTILITY
+ *  - DISPATCH_QUEUE_PRIORITY_BACKGROUND:   QOS_CLASS_BACKGROUND
+ */
+dispatch_queue_global_t dispatch_get_global_queue(intptr_t priority, uintptr_t flags)
 {
+    dispatch_assert(countof(_dispatch_root_queues) == DISPATCH_ROOT_QUEUE_COUNT);
+
     if (flags & ~(unsigned long)DISPATCH_QUEUE_OVERCOMMIT) {
-        return NULL;
+      return DISPATCH_BAD_INPUT;
+    }
+    dispatch_qos_t qos = _dispatch_qos_from_queue_priority(priority);
+  #if !HAVE_PTHREAD_WORKQUEUE_QOS
+    if (qos == QOS_CLASS_MAINTENANCE) {
+      qos = DISPATCH_QOS_BACKGROUND;
+    } else if (qos == QOS_CLASS_USER_INTERACTIVE) {
+      qos = DISPATCH_QOS_USER_INITIATED;
+    }
+  #endif
+    if (qos == DISPATCH_QOS_UNSPECIFIED) {
+      return DISPATCH_BAD_INPUT;
     }
     //封装调用_dispatch_get_root_queue函数
-    return _dispatch_get_root_queue(priority, flags & DISPATCH_QUEUE_OVERCOMMIT);
+    return _dispatch_get_root_queue(qos, flags & DISPATCH_QUEUE_OVERCOMMIT);
 }
 ```
 
-```c++
-static inline dispatch_queue_t _dispatch_get_root_queue(long priority, bool overcommit)
-{
-    if (overcommit) switch (priority) {
-        case DISPATCH_QUEUE_PRIORITY_BACKGROUND:
-            return &_dispatch_root_queues[DISPATCH_ROOT_QUEUE_IDX_BACKGROUND_OVERCOMMIT_PRIORITY];
-        case DISPATCH_QUEUE_PRIORITY_LOW:
-        case DISPATCH_QUEUE_PRIORITY_NON_INTERACTIVE:
-            return &_dispatch_root_queues[DISPATCH_ROOT_QUEUE_IDX_LOW_OVERCOMMIT_PRIORITY];
-        case DISPATCH_QUEUE_PRIORITY_DEFAULT:
-            return &_dispatch_root_queues[DISPATCH_ROOT_QUEUE_IDX_DEFAULT_OVERCOMMIT_PRIORITY];
-        case DISPATCH_QUEUE_PRIORITY_HIGH:
-            return &_dispatch_root_queues[DISPATCH_ROOT_QUEUE_IDX_HIGH_OVERCOMMIT_PRIORITY];
-    }
-    switch (priority) {
-        case DISPATCH_QUEUE_PRIORITY_BACKGROUND:
-            return &_dispatch_root_queues[DISPATCH_ROOT_QUEUE_IDX_BACKGROUND_PRIORITY];
-        case DISPATCH_QUEUE_PRIORITY_LOW:
-        case DISPATCH_QUEUE_PRIORITY_NON_INTERACTIVE:
-            return &_dispatch_root_queues[DISPATCH_ROOT_QUEUE_IDX_LOW_PRIORITY];
-        case DISPATCH_QUEUE_PRIORITY_DEFAULT:
-            return &_dispatch_root_queues[DISPATCH_ROOT_QUEUE_IDX_DEFAULT_PRIORITY];
-        case DISPATCH_QUEUE_PRIORITY_HIGH:
-            return &_dispatch_root_queues[DISPATCH_ROOT_QUEUE_IDX_HIGH_PRIORITY];
-        default:
-            return NULL;
-    }
-}
-```
-
-队列优先级有八个，分别为低、默认、高、后台以及对应的overcommit。枚举定义如下：
-
-```c++
-enum {
-    DISPATCH_ROOT_QUEUE_IDX_LOW_PRIORITY = 0,                //低优先级
-    DISPATCH_ROOT_QUEUE_IDX_LOW_OVERCOMMIT_PRIORITY,         //低优先级+overcommit
-    DISPATCH_ROOT_QUEUE_IDX_DEFAULT_PRIORITY,                //默认优先级
-    DISPATCH_ROOT_QUEUE_IDX_DEFAULT_OVERCOMMIT_PRIORITY,     //默认优先级+overcommit
-    DISPATCH_ROOT_QUEUE_IDX_HIGH_PRIORITY,                   //高优先级
-    DISPATCH_ROOT_QUEUE_IDX_HIGH_OVERCOMMIT_PRIORITY,        //高优先级+overcommit
-    DISPATCH_ROOT_QUEUE_IDX_BACKGROUND_PRIORITY,             //后台
-    DISPATCH_ROOT_QUEUE_IDX_BACKGROUND_OVERCOMMIT_PRIORITY,  //后台+overcomit
-};
-```
-
-`_dispatch_get_root_queue`从_dispatch_root_queues结构体中获取对应优先级的队列。最后1bit为1的代表overcommit，带有overcommit标记的队列会在任务提交时新创建一个线程处理它。
-
-`_dispatch_root_queues`取出的`dispatch_queue_s`队列的do_ctxt字段表示queue的线程池，定义于`_dispatch_root_queue_contexts`结构体中，每个线程池的最大线程数限制是255。
-
-下面看一下global queue的do_vtable结构体，它比较重要的是do_probe的调用函数`_dispatch_root_queue_probe`,这个函数在后续的分析中会用到。结构体定义如下:
+下面看一下global queue的do_vtable结构体，它比较重要的是do_probe的调用函数`_dispatch_root_queue_probe`，这个函数在后续的分析中会用到。结构体定义如下:
 
 ```c++
 //global queue的vtable定义
@@ -539,6 +688,19 @@ main queue设置了并发数为1，即串行队列，并且将targetq指向com.a
 <img src="/images/GCD/dispatch_queue-1.png" alt="img" style="zoom:80%;" />
 
 ```c++
+/*
+ * @param attr 除了预定义的DISPATCH_QUEUE_SERIAL、DISPATCH_QUEUE_CONCURRENT。也可以自定义 dispatch_queue_attr_t 变量传入。
+    dispatch_queue_attr_make_initially_inactive  队列配置为最初不活动，直到调用其dispatch_activate方法时才执行任务。
+    dispatch_queue_attr_make_with_autorelease_frequency 指定队列如何为其执行的blocks管理自动释放池。
+    dispatch_queue_attr_make_with_qos_class 指定quality-of-service服务质量(优先级)
+ * 
+ * 使用示例：
+ *     dispatch_queue_attr_t serialAttr = dispatch_queue_attr_make_with_qos_class(
+                                              DISPATCH_QUEUE_SERIAL,       // DISPATCH_QUEUE_SERIAL(串行)或DISPATCH_QUEUE_CONCURRENT(并行)
+                                              QOS_CLASS_USER_INTERACTIVE,  // 服务质量有助于确定给予队列执行的任务的优先级。(见下面的QOS类)
+                                              -1);                         // 相对优先级，值为[-15,0), 同一个服务质量的队列们中，也得有个相对的优先级
+ *     dispatch_queue_t userInteractiveQueue = dispatch_queue_create("com.xy.interactive.serialQueue", serialAttr);
+ */
 dispatch_queue_t dispatch_queue_create(const char *label, dispatch_queue_attr_t attr) {
   //调用dispatch_queue_create_with_target
     return dispatch_queue_create_with_target(label, attr, DISPATCH_TARGET_QUEUE_DEFAULT);
@@ -601,11 +763,7 @@ static inline void _dispatch_queue_init(dispatch_queue_t dq)
 unsigned long volatile _dispatch_queue_serial_numbers = 12;
 ```
 
-同时还会设置队列的target_queue，向队列提交的任务，都会被放到它的目标队列来执行。串行队列的target_queue是一个支持overcommit的全局队列，而全局队列的底层则是一个线程池。
-
-借用一张队列的图片：
-
-<img src="/images/GCD/dispatch_queue-2.png" alt="img" style="zoom:80%;" />
+同时还会设置队列的target_queue，向队列提交的任务，都会被放到它的目标队列来执行。串行队列的target_queue是一个支持overcommit的root队列。
 
 #### 4. dispatch_async
 
@@ -1080,15 +1238,64 @@ static void _dispatch_sync_f_slow(dispatch_queue_t dq, void *ctxt, dispatch_func
 
 <img src="/images/GCD/dispatch_queue-7.png" alt="img" style="zoom:80%;" />
 
-### 3.1.4 总结
+### 4.1.5 Dispatch Quene机制的底层实现
+
+#### 1. Dispatch Quene实现所需
+
+GCD的Dispatch Queue非常方便，其实现会使用下面这些工具，但不仅仅只有这些：
+
+- 用于管理追加的Block的C语言实现的FIFO队列；
+- Atomic函数中实现的用于排他控制的轻量级信号；
+- 用于管理线程的C语言实现的一些容器。
+
+用于实现Dispatch Queue的几个软件组件框架：
+
+- 组件libdispatch提供Dispatch Quene技术；
+- 组件Libc(pthreads)提供pthread_workquene技术；
+- 组件XNU内核提供workquene技术。
+
+#### 2. 执行上下文
+
+Dispatch Quene通过结构体和链表，被实现为FIFO队列。
+
+Block并不是直接加入FIFO队列，而是先加入 `Dispatch Continuation` 这一 `dispatch_continuation_t类型` 结构体中，然后再加入 FIFO 队列。该 Dispatch Continuation 用于记忆 Block 所属的 Dispatch Group 和其他一些信息，相当于一般常说的**`执行上下文`**。
+
+上面在讲 `Global Dispatch Queue` 的时候，我们介绍过8种类型，这8种 Global Dispatch Quene 各使用一个pthread_workquene。GCD初始化时，使用 `pthread_workquene_creat_np` 函数生成 pthread_workquene。
+
+pthread_workquene包含在Libc提供的pthreads API 中。其使用bsdthread_register和workq_open系统调用，**在初始化XNU内核的workquene之后获取workquene信息**。
+
+XNU内核持有4种workquene：
+
+- WORKQUENE_HIGH_PRIOQUENE
+- WORKQUENE_Default_PRIOQUENE
+- WORKQUENE_Low_PRIOQUENE
+- WORKQUENE_BG_PRIOQUENE
+
+以上4种执行优先级的workqueue，其执行优先级与Global Dispatch Quene的四种执行优先级相同。
+
+**Global Dispatch Queue → Libc pthread_wordqueue → XNU workqueue**
+
+<img src="/images/GCD/gcd-imp-1.jpg" style="zoom:80%">
+
+#### 3. Dispatch Queue执行Block的过程
+
+1. 在Global Dispatch Queue 中执行Block时，libdispatch 从Global Dispatch Queue自身的FIFO队列取出`Dispatch Continuation`
+2. 调用`pthread_workqueue_additem_np`函数将该Global Dispatch Queue 本身、符合其优先级的workqueue信息以及执行Dispatch Continuation的回调函数等传递给参数。
+3. pthread_workqueue_additem_np函数使用`workq_kernreturn系统调用`，通知workqueue增加应当执行的项目。
+   1. 根据该通知，XNU内核基于系统状态判断是否要生成线程。如果是`Overcommit优先级`的Global Dispatch Queue ，workqueue则始终生成线程(该线程虽然与iOS和OS X中通常使用的线程大致相同，但是有一部分pthread API不能使用)。
+   2. 因为workqueue生成的线程在实现用于workqueue的线程计划表中运行，他的`上下文切换(shift context)`与普通的线程有很大的不同。这也是隐藏着使用GCD的原因。
+4. workqueue的线程 --> 执行pthread_workqueue函数 --> 该函数调用libdispatch的回调函数。在该回调函数中执行加入到Global Dispatch Queue中的下一个Block。
+5. Block执行结束后，进行通知Dispatch Group结束、释放Dispatch Continuation等处理，开始准备执行加入到Global Dispatch Queue中的下一个Block。
+
+### 4.1.6 总结
 
 dispatch_async将任务添加到队列的链表中并唤醒队列，全局队列唤醒时中会从线程池里取出可用线程，如果没有则会新建线程，然后在线程中执行队列取出的任务;主队列会唤醒主线程的Runloop，然后在Runloop循环中通知GCD执行主队列提交的任务。
 
 dispatch_sync一般都在当前线程执行,如果是主队列的任务还是会切换到主线程执行。它使用线程信号量来实现串行执行的功能。
 
-## 3.2 Dispatch Semaphore
+## 4.2 Dispatch Semaphore
 
-### 3.2.1 API介绍
+### 4.2.1 API介绍
 
 Dispatch Semaphore是持有计数的信号，该信号是多线程编程中的计数类型信号。所谓信号，类似过马路时常用的手旗，可以通过时举起手旗，不可以通过时放下手旗。
 
@@ -1120,7 +1327,7 @@ intptr_t dispatch_semaphore_signal(dispatch_semaphore_t dsema);
 dispatch_release(semaphore);
 ```
 
-### 3.2.2 原理
+### 4.2.2 原理
 
 #### 1.dispatch_semaphore_t
 
@@ -1328,7 +1535,7 @@ Dispatch Semaphore信号量主要是`dispatch_semaphore_wait`和`dispatch_semaph
 
 需要注意的是信号量在销毁或重新创建的时候如果还在使用则会引起崩溃，详见上面的分析。
 
-### 3.2.3 应用
+### 4.2.3 应用
 
 1、信号量常用于对资源进行加锁操作，防止多线程访问修改数据出现结果不一致甚至崩溃的问题，代码示例如下:
 
@@ -1367,13 +1574,13 @@ dispatch_semaphore_signal(_lock);
 }
 ```
 
-## 3.3 Dispatch Group
+## 4.3 Dispatch Group
 
 dispatch_group可以将GCD的任务合并到一个组里来管理。可以**指定当追加到Dispatch Queue中的多个处理全部结束时，执行某种操作。**
 
 无论是串行还是并行队列，Dispatch Group都可监视这些处理执行的结束。一旦检测到所有的处理执行结束，就可将结束的处理追加到Dispatch Queue中。
 
-### 3.3.1 dispatch_group_create
+### 4.3.1 dispatch_group_create
 
 ```c
 /// 创建与block相关联的新group。 因为函数名中含有create，所以在使用结束后需要过"dispatch_release"函数释放。
@@ -1395,7 +1602,7 @@ dispatch_group_t dispatch_group_create(void) {
 
 **当value等于LONG_MAX时表示所有任务已完成。**
 
-### 3.3.2 dispatch_group_enter
+### 4.3.2 dispatch_group_enter
 
 ```c
 /// 手动指示一个block已进入group
@@ -1416,7 +1623,7 @@ void dispatch_group_enter(dispatch_group_t dg) {
 }
 ```
 
-### 3.3.3 dispatch_group_leave
+### 4.3.3 dispatch_group_leave
 
 ```c
 /// 手动指示group中的某个block已完成
@@ -1445,7 +1652,7 @@ void dispatch_group_leave(dispatch_group_t dg) {
 
 - 当`dispatch_group_leave`比`dispatch_group_enter`多调用了一次时，dispatch_semaphore_t的value会等于LONGMAX+1（2147483647+1），即long的负数最小值 LONG_MIN(–2147483648)。因为此时value小于0，所以会出现"Unbalanced call to dispatch_group_leave()"的崩溃，这是一个特别需要注意的地方。
 
-### 3.3.4 dispatch_group_async
+### 4.3.4 dispatch_group_async
 
 ```c
 /// 将block提交到调度队列，并将block与给定的调度group关联。相比dispatch_async函数不同的是通过第一个参数，指定Block属于指定的Dispatch Group
@@ -1518,7 +1725,7 @@ static inline void _dispatch_continuation_pop(dispatch_object_t dou) {
 }
 ```
 
-### 3.3.5 dispatch_group_wait
+### 4.3.5 dispatch_group_wait
 
 ```c
 /*!
@@ -1596,7 +1803,7 @@ again:
 
 可以看到跟dispatch_semaphore的`_dispatch_semaphore_wait_slow`方法很类似，不同点在于等待完之后调用的again函数会调用`_dispatch_group_wake`唤醒当前group。
 
-### 3.3.6 dispatch_group_notify
+### 4.3.6 dispatch_group_notify
 
 ```c
 /*!
@@ -1651,7 +1858,7 @@ void dispatch_group_notify_f(dispatch_group_t dg, dispatch_queue_t dq, void *ctx
 
 dispatch_group_notify的具体实现在dispatch_group_notify_f函数里，逻辑就是将block和queue封装到dispatch_continuation_t里，并将它加到链表的尾部，如果链表为空同时还会设置链表的头部节点。如果dsema_value的值等于初始值，则调用_dispatch_group_wake执行唤醒逻辑。
 
-### 3.3.7 dispatch_group_wake(内部API)
+### 4.3.7 dispatch_group_wake(内部API)
 
 ```c
 static long _dispatch_group_wake(dispatch_semaphore_t dsema) {
@@ -1698,13 +1905,13 @@ static long _dispatch_group_wake(dispatch_semaphore_t dsema) {
 
 `dispatch_group_wake`首先会循环调用`semaphore_signal`唤醒等待group的信号量，使`dispatch_group_wait`函数中等待的线程得以唤醒；然后依次获取链表中的元素并调用`dispatch_async_f`异步执行`dispatch_group_notify`函数中注册的回调，使得notify中的block得以执行。
 
-### 3.3.8 dispatch_release
+### 4.3.8 dispatch_release
 
 与追加 Block 到 Dispatch Queue 时同样，Block 通过 dispatch_retain 函数持有 Dispatch Group，从而使得该 Block 属于 Dispatch Group，这样如果 Block 执行结束，该 Block 就通过 dispatch_release 函数释放持有的Dispatch Group。
 
 一旦Dispatch Group使用结束，不用考虑属于该Dispatch Group的Block，立即通过dispatch_release函数释放即可。
 
-### 3.3.9 原理小结
+### 4.3.9 原理小结
 
 dispatch_group本质是个初始值为LONG_MAX的信号量，等待group中的任务完成其实是等待value恢复初始值。
  `dispatch_group_enter ` 和 `dispatch_group_leave` 必须成对出现：
@@ -1712,9 +1919,9 @@ dispatch_group本质是个初始值为LONG_MAX的信号量，等待group中的�
 - 如果前者比后者多一次，则wait函数等待的线程不会被唤醒和注册notify的回调block不会执行；
 - 如果后者比前者多一次，则会引起崩溃。
 
-## 3.4 dispatch_barrier_async(变无序为有序)
+## 4.4 dispatch_barrier_async(变无序为有序)
 
-### 3.4.1 使用
+### 4.4.1 使用
 
 当多线程并发读写同一个资源时，为了保证资源读写的正确性，可以用Barrier Block解决该问题。
 
@@ -1748,7 +1955,7 @@ dispatch_async(queue, ^{ // 第三步：队列恢复为一般的动作，追加�
 
 **只有将 Barrier blocks 提交到使用 DISPATCH_QUEUE_CONCURRENT 属性创建的并行queue时它才会表现的如同预期。**
 
-### 3.4.2 原理
+### 4.4.2 原理
 
 `dispatch_barrier_async`是开发中解决多线程读写同一个资源比较好的方案，接下来看一下它的实现。
 该函数封装调用了`dispatch_barrier_async_f`，它和dispatch_async_f类似，不同点在于vtable多了DISPATCH_OBJ_BARRIER_BIT标志位。
@@ -1838,7 +2045,7 @@ out:
 
 <img src="/images/GCD/dispatch_queue-8.png" alt="img" style="zoom:80%;" />
 
-## 3.5 dispatch_apply
+## 4.5 dispatch_apply
 
 dispatch_apply 函数是 dispatch_sync 函数和 Dispatch Group 的关联 API。该函数 **按指定的次数** 将指定的Block追加到指定的队列中，并等待全部处理执行结束。
 
@@ -1883,7 +2090,7 @@ dispatch_async(queue, ^{
 });
 ```
 
-## 3.6 dispatch_suspend/dispatch_resume
+## 4.6 dispatch_suspend/dispatch_resume
 
 队列的挂起与恢复
 
@@ -1899,13 +2106,13 @@ dispatch_resume(queue)
 - 挂起后，追加到Dispatch Queue中但尚未执行的处理，在此之后停止执行
 - 恢复后使得这些处理能继续执行
 
-## 3.7 dispatch_once
+## 4.7 dispatch_once
 
 dispatch_once函数时保证在应用程序执行中只执行一次指定处理的API，即使同时多线程调用也是**线程安全**的。
 
 常用于创建单例、swizzeld method等功能。
 
-### 3.7.1 API介绍
+### 4.7.1 API介绍
 
 ```c++
 static dispatch_once_t onceToken;
@@ -1914,7 +2121,7 @@ dispatch_once(&onceToken, ^{
 });
 ```
 
-### 3.7.2 原理
+### 4.7.2 原理
 
 ```c++
 //调用dispatch_once_f来处理
@@ -1986,13 +2193,13 @@ void dispatch_once_f(dispatch_once_t *val, void *ctxt, dispatch_function_t func)
 
 当其他线程同时也调用`dispatch_once`时，因为if判断是原子性操作，故只有一个线程进入到if分支中，其他线程会进入else分支。在else分支中会判断block是否已完成，如果已完成则跳出循环；否则就是更新链表并调用`_dispatch_thread_semaphore_wait`阻塞线程，等待if分支中的block完成后再唤醒当前等待的线程。
 
-### 3.7.3 总结
+### 4.7.3 总结
 
 `dispatch_once`用原子性操作block执行完成标记位，同时用信号量确保只有一个线程执行block，等block执行完再唤醒所有等待中的线程。
 
 `dispatch_once`常被用于创建单例、swizzeld method等功能。
 
-## 3.8 Dispatch I/O与Dispatch Data对象
+## 4.8 Dispatch I/O与Dispatch Data对象
 
 通过 Dispatch I/O 读写文件，使用 Global Dispatch Queue 将一个文件按大小 read/write。提升读取、写入速度
 
@@ -2042,7 +2249,7 @@ dispatch_io_read(pipe_channel,0,SIZE_MAX,pipe_q, ^(bool done,dispatch_data_t pip
 });
 ```
 
-## 3.9 dispatch_source
+## 4.9 dispatch_source
 
 GCD中除了主要的Dispatch Queue外，还有不太引人注目的Dispatch Source。它是BSD系内核惯有功能**kqueue的包装**。
 
@@ -2092,7 +2299,7 @@ dispatch_resume(source);
 
 一旦将任务追加到Dispatch Queue中，就没有办法将任务取消，也没有办法在执行中取消任务。Dispatch Source是可以取消的，而且取消时的处理可以block的形式作为参数配置。**在必须使用kqueue的情况下，推荐大家使用Dispatch Source，比较简单**。
 
-### 3.9.1 kqueue
+### 4.9.1 kqueue
 
 kqueue是IO多路复用在BSD系统中的一种实现，它的接口主要包括 kqueue()、kevent() 两个系统调用和 struct kevent 结构：
 
@@ -2145,7 +2352,7 @@ struct kevent {
   #define EV_DISABLE          0x0008      /* disable event (not reported) */
   ```
 
-### 3.9.2 使用示例：定时器
+### 4.9.2 使用示例：定时器
 
 在使用定时器时，NSTimer是首先被想到的，但是由于NSTimer会受RunLoop影响，当RunLoop处理的任务很多时，就会导致NSTimer的精度降低，所以在一些对定时器精度要求很高的情况下，我们会考虑CADisplaylink，但是实际上也可以考虑使用GCD定时器。
 
@@ -2164,7 +2371,7 @@ dispatch_resume(source);
 
 `Dispatch Source`定时器的代码看似很简单，但其实是GCD中坑最多的API了，如果处理不好很容易引起Crash。关于`Dispatch Source`定时器需要注意的知识点请参考文章最后的总结篇。
 
-### 3.9.3 常用API
+### 4.9.3 常用API
 
 #### 1. dispatch_source_create
 
@@ -2379,7 +2586,7 @@ void dispatch_suspend(dispatch_object_t dou) {
         ((x)->do_suspend_cnt >= DISPATCH_OBJECT_SUSPEND_INTERVAL)
 ```
 
-### 3.9.4 总结
+### 4.9.4 总结
 
 Dispatch Source使用最多的就是用来实现定时器，source创建后默认是暂停状态，需要手动调用`dispatch_resume`启动定时器。`dispatch_after`只是封装调用了dispatch source定时器，然后在回调函数中执行定义的block。
 
@@ -2389,9 +2596,9 @@ Dispatch Source定时器使用时也有一些需要注意的地方，不然很�
 2. `dispatch_resume`和`dispatch_suspend`调用次数需要平衡，如果重复调用dispatch_resume则会崩溃,因为重复调用会让`dispatch_resume`代码里if分支不成立，从而执行了DISPATCH_CLIENT_CRASH("Over-resume of an object")导致崩溃。
 3. source在suspend状态下，如果直接设置source = nil或者重新创建source都会造成crash。正确的方式是在resume状态下调用dispatch_source_cancel(source)后再重新创建。
 
-## 3.10 dispatch_after(延迟执行)
+## 4.10 dispatch_after(延迟执行)
 
-### 3.10.1 使用
+### 4.10.1 使用
 
 ```objectivec
 /*
@@ -2425,7 +2632,7 @@ dispatch_after(time , dispatch_get_main_queue(), ^{
 
 `dispatch_walltime` 函数用于计算绝对时间，需要指定精确时间参数，可作为粗略的闹钟功能使用。
 
-### 3.10.2 原理
+### 4.10.2 原理
 
 `dispatch_after`是基于Dispatch Source的定时器实现的，函数内部直接调用`dispatch_after_f`，代码如下：
 
@@ -2486,65 +2693,6 @@ void _dispatch_after_timer_callback(void *ctxt) {
     }
 }
 ```
-
-# 四、GCD的实现补充
-
-## 4.1 Dispatch Quene
-
-### 4.1.1 Dispatch Quene实现所需
-
-GCD的实现会使用下面这些工具，但不仅仅只有这些：
-
-- 用于管理追加的Block的C语言实现的FIFO队列；
-- Atomic函数中实现的用于排他控制的轻量级信号；
-- 用于管理线程的C语言实现的一些容器。
-
-**GCD 是在系统级即iOS和OS X的核心XNU内核级上实现，所以开发者无论如何努力编写线程关系代码，`性能`都不可能胜过XNU内核级所实现的GCD。**
-
-用于实现Dispatch Queue的几个软件组件框架：
-
-- 组件libdispatch提供Dispatch Quene技术；
-- 组件Libc(pthreads)提供pthread_workquene技术；
-- 组件XNU内核提供workquene技术。
-
-### 4.1.2  执行上下文
-
-Dispatch Quene通过结构体和链表，被实现为FIFO队列。
-
-Block并不是直接加入FIFO队列，而是先加入 `Dispatch Continuation` 这一 `dispatch_continuation_t类型` 结构体中，然后再加入 FIFO 队列。该 Dispatch Continuation 用于记忆 Block 所属的 Dispatch Group 和其他一些信息，相当于一般常说的**`执行上下文`**。
-
-上一节在讲 `Global Dispatch Queue` 的时候，我们介绍过8种类型，这8种 Global Dispatch Quene 各使用一个pthread_workquene。GCD初始化时，使用 `pthread_workquene_creat_np` 函数生成 pthread_workquene。
-
-pthread_workquene包含在Libc提供的pthreads API 中。其使用bsdthread_register和workq_open系统调用，**在初始化XNU内核的workquene之后获取workquene信息**。
-
-XNU内核持有4种workquene：
-
-- WORKQUENE_HIGH_PRIOQUENE
-- WORKQUENE_Default_PRIOQUENE
-- WORKQUENE_Low_PRIOQUENE
-- WORKQUENE_BG_PRIOQUENE
-
-以上4种执行优先级的workqueue，其执行优先级与Global Dispatch Quene的四种执行优先级相同。
-
-**Global Dispatch Queue → Libc pthread_wordqueue → XNU workqueue**
-
-<img src="/images/GCD/gcd-imp-1.jpg" style="zoom:80%">
-
-### 4.1.3  Dispatch Queue执行Block的过程
-
-1. 在Global Dispatch Queue 中执行Block时，libdispatch 从Global Dispatch Queue自身的FIFO队列取出`Dispatch Continuation`
-
-2. 调用`pthread_workqueue_additem_np`函数将该Global Dispatch Queue 本身、符合其优先级的workqueue信息以及执行Dispatch Continuation的回调函数等传递给参数。
-
-3. pthread_workqueue_additem_np函数使用`workq_kernreturn系统调用`，通知workqueue增加应当执行的项目。
-
-   根据该通知，XNU内核基于系统状态判断是否要生成线程。如果是`Overcommit优先级`的Global Dispatch Queue ，workqueue则始终生成线程(该线程虽然与iOS和OS X中通常使用的线程大致相同，但是有一部分pthread API不能使用)。
-
-   因为workqueue生成的线程在实现用于workqueue的线程计划表中运行，他的`上下文切换(shift context)`与普通的线程有很大的不同。这也是我们使用GCD的原因。
-
-4. workqueue的线程 --> 执行pthread_workqueue函数 --> 该函数调用libdispatch的回调函数。在该回调函数中执行加入到Global Dispatch Queue中的下一个Block。
-
-5. Block执行结束后，进行通知Dispatch Group结束、释放Dispatch Continuation等处理，开始准备执行加入到Global Dispatch Queue中的下一个Block
 
 # 五、参考链接
 
