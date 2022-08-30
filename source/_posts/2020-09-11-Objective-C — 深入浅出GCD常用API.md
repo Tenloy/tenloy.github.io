@@ -1258,7 +1258,7 @@ GCD的Dispatch Queue非常方便，其实现会使用下面这些工具，但不
 
 Dispatch Quene通过结构体和链表，被实现为FIFO队列。
 
-Block并不是直接加入FIFO队列，而是先加入 `Dispatch Continuation` 这一 `dispatch_continuation_t类型` 结构体中，然后再加入 FIFO 队列。该 Dispatch Continuation 用于记忆 Block 所属的 Dispatch Group 和其他一些信息，相当于一般常说的**`执行上下文`**。
+Block并不是直接加入FIFO队列，而是先加入 `Dispatch Continuation` 这一 `dispatch_continuation_t类型` 结构体中，然后再加入 FIFO 队列。该 Dispatch Continuation 用于记忆 Block 所属的 Dispatch Group 和其他一些信息，相当于一般常说的**执行上下文**。
 
 上面在讲 `Global Dispatch Queue` 的时候，我们介绍过8种类型，这8种 Global Dispatch Quene 各使用一个pthread_workquene。GCD初始化时，使用 `pthread_workquene_creat_np` 函数生成 pthread_workquene。
 
