@@ -201,7 +201,7 @@ Connection: Close
 
 ### 2.4 特性 — pipeline
 
-<img src="https://segmentfault.com/img/remote/1460000023105321" style="zoom:80%;" />
+<img src="/images/net/urlsession/pipeline.jpg" style="zoom:80%;" />
 
 在`HTTP1.1`中，基于`keep-alive`，还可以将请求进行管线化。和相同后端服务，`TCP`层建立的链接，一般都需要前一个请求返回后，后面的请求再发出。但`pipeline`就可以不依赖之前请求的响应，而发出后面的请求。
 
@@ -362,7 +362,7 @@ NSURLSessionDataTask *task = [session dataTaskWithURL:[NSURL URLWithString:@"htt
 - 执行普通`Post`、上传(`upload`)请求，则遵守`NSURLSessionDataDelegate`；
 - 执行下载任务则遵循`NSURLSessionDownloadDelegate`
 
-<img src="https://segmentfault.com/img/remote/1460000023105318" style="zoom:90%;" />
+<img src="/images/net/urlsession/delegate.png" style="zoom:90%;" />
 
 ```objc
 @protocol NSURLSessionDelegate <NSObject>
@@ -391,7 +391,7 @@ NSURLSessionDataTask *task = [session dataTaskWithURL:[NSURL URLWithString:@"htt
 @optional
 // 任务已完成数据传输
 - (void)URLSession: task: didCompleteWithError: 
-// 远程服务器请求了HTTP重定向
+// 远程服务器请求了HTTP重定向。将request(可以修改)传入completionHandler完成重定向，或者传nil取消重定向。默认是遵循重定向。
 - (void)URLSession: task: willPerformHTTPRedirection: newRequest: completionHandler: 
 // 定期通知delegate：向服务器发送正文内容的进度。(比如文件上传时监听进度)
 - (void)URLSession: task: didSendBodyData: totalBytesSent: totalBytesExpectedToSend: 
@@ -512,7 +512,7 @@ didFinishCollectingMetrics:(NSURLSessionTaskMetrics *)metrics;
 
 下面这张网图，标示了`NSURLSessionTaskTransactionMetrics`的属性在请求过程中处于什么位置。
 
-![请求耗时细节](https://segmentfault.com/img/remote/1460000023105320)
+![请求耗时细节](/images/net/urlsession/metrics.jpg)
 
 ```objectivec
 // 请求对象
@@ -992,7 +992,7 @@ func urlSessionDidFinishEvents(forBackgroundURLSession session: URLSession) {
 
 后台下载过程中会设计到一系列的代理方法调用，下面是时序图。
 
-![后台下载时序图](https://segmentfault.com/img/remote/1460000023105323)
+![后台下载时序图](/images/net/urlsession/bg-download.png)
 
 #### 7.3.4 下载错误时
 
