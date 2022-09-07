@@ -295,18 +295,17 @@ DISPATCH_VTABLE_SUBCLASS_INSTANCE(queue_root, queue,
 
 ### 4.1.2 使用
 
-#### 1. dispatch_queue_create(创建队列)
-
-- 1个并行队列 + 多个异步任务(dispatch_async) = 会开启多线程
-- 多个【1个串行队列+1个同步/异步任务】 = 多线程
-  - 【串行队列 + 同步task】：不开启新线程，去可调度线程池中，去找已存的、闲着的线程去执行。
-  - 【串行队列 + 异步task】：开启新的线程，直接执行该任务。
-
+#### 1. dispatch_queue_create(串行与并行)
 
 `dispatch_queue_create` 方法的文档注释：
 
-- 提交到串行队列的block按FIFO顺序一次执行一个。但是请注意，**提交到不同的、独立队列的block可以相对于彼此同时执行**。
+- 提交到串行队列的block按FIFO顺序一次执行一个。上一个block执行完开始取出下一个执行。
 - 提交到并发队列的block按FIFO顺序出列，但如果资源可用，则可以同时运行。
+- 但是请注意，**提交到不同的、独立队列的block可以相对于彼此同时执行**。
+  - 【两个block通过dispatch_async提交到一个并行队列 基本等价于 两个block通过dispatch_sync提交到两个串行队列】（都是两个线程）
+  - 1个并行队列 + 多个异步任务(dispatch_async) = 会开启多线程
+  - 多个【1个串行队列+1个同步/异步任务】 = 多线程
+
 
 ```php
 /**
@@ -340,7 +339,60 @@ dispatch_release(mySerialDispatchQueue)
 
 对于并行队列，不管生成多少，由于XNU内核**只使用有效管理的线程**，不会出现串行队列那种问题。
 
-#### 2. GCD/NSOperation设置优先级
+#### 2. dispatch_async与dispatch_sync(同步与异步)
+
+并发和串行作为队列的属性，主要影响：任务的执行方式。
+
+- 并发：多个任务并发(同时)执行
+- 串行：一个任务执行完毕后，再执行下一个任务。
+
+同步和异步作为任务的属性，主要影响：是否阻塞当前线程下面代码的执行。 
+
+- 同步：将block提交到队列，并执行完毕后，继续往下执行。
+- 异步：将block提交到队列后，立即返回。执行下面的代码。
+
+ 有的文章中说 `dispatch_sync` 与 `dispatch_async` 的区别在于会不会开辟新的线程，个人感觉是有些问题的。
+
+- 前者的文档中只说**尽可能**在当前线程中执行。
+- 后者与并行队列组合时，如果线程数已经超过64，也是不会继续创建新线程的，而是会等待线程资源的释放。
+- 见下面[4.1.3-4小节]()。
+
+当我们处理耗时操作时，比如读取数据库、请求网络数据，为了避免这些耗时操作卡住UI，可将耗时任务放到子线程中，执行完成后再通知主线程更新UI。
+
+```c++
+/**
+  Submits a block for asynchronous execution on a dispatch queue and returns immediately.
+  在分派队列上提交一个用于异步执行的块，然后立即返回。如果不是主队列就会开启新的线程，但不管开启不开启，都是马上返回的，不会阻塞！
+*/
+void dispatch_async(dispatch_queue_t queue, dispatch_block_t block);
+
+/**
+  dispatch_sync：Submits a block object for execution and returns after that block finishes executing.
+  将一个block提交到指定的调度队列以同步执行。block执行完毕，dispatch_sync函数才return。
+     与dispatch_async不同：
+       1. 此函数在block完成之前不会返回。【阻塞在此，block执行完才能再往下走】
+       2. 目标队列不执行retain。因为对该函数的调用是同步的，所以它“借用”了调用者的引用。此外，不会对block执行 Block_copy。
+  */
+void dispatch_sync(dispatch_queue_t queue, DISPATCH_NOESCAPE dispatch_block_t block);
+```
+
+`dispatch_sync` 函数：
+
+- 调用此函数时，如果以当前所在的**串行队列**为目标会**【导致死锁】**！！
+- 作为性能优化，此函数**【尽可能在当前线程上】**执行块。但有一个例外：提交到主调度队列的块总是在主线程上运行。
+
+代码示例如下：
+
+```c++
+dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+    //耗时操作
+    dispatch_async(dispatch_get_main_queue(), ^{
+         //更新UI
+    }); 
+});
+```
+
+#### 3. GCD/NSOperation设置优先级
 
 GCD 和 NSOperation 的优先级设置：
 
@@ -362,7 +414,7 @@ GCD 和 NSOperation 的优先级设置：
 
 **XNU内核管理，会将各自使用的队列的执行优先级，作为线程的执行优先级使用，所以添加任务时，需要选择与处理的任务对应优先级的队列。**
 
-#### 3. dispatch_set_target_queue
+#### 4. dispatch_set_target_queue
 
 dispatch_queue_create函数生成的队列，生成的线程优先级为 Global Dispatch Queue 的默认优先级。
 
@@ -385,35 +437,6 @@ dispatch_set_target_queue(mySerialDispatchQueue, globalDispatchQueueBackground);
 - 目标队列会变成第一个参数队列中任务的执行阶层
   - 多个 Serial Dispatch Queue 中用 dispatch_set_target_queue 函数指定目标为某一个 Serial Dispatch Queue，那么原先本应并行执行的多个 Serial Dispatch Queue，在目标 Serial Dispatch Queue 上只能同时执行一个处理（可防止 Serial Dispatch Queue 处理并行执行）
   - 使多个serial队列变并行为串行
-
-#### 4. dispatch_async与dispatch_sync
-
-当我们处理耗时操作时，比如读取数据库、请求网络数据，为了避免这些耗时操作卡住UI,可将耗时任务放到子线程中，执行完成后再通知主线程更新UI。
-
-```c++
-/**
-  Submits a block for asynchronous execution on a dispatch queue and returns immediately.
-  在分派队列上提交一个用于异步执行的块，然后立即返回。如果不是主队列就会开启新的线程，但不管开启不开启，都是马上返回的，不会阻塞！
-*/
-void dispatch_async(dispatch_queue_t queue, dispatch_block_t block);
-
-/**
-  dispatch_sync：Submits a block object for execution and returns after that block finishes executing.
-  即在当前线程同步执行任务，执行完毕才能继续往下执行。
-  */
-void dispatch_sync(dispatch_queue_t queue, DISPATCH_NOESCAPE dispatch_block_t block);
-```
-
-代码示例如下：
-
-```c++
-dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-    //耗时操作
-    dispatch_async(dispatch_get_main_queue(), ^{
-         //更新UI
-    }); 
-});
-```
 
 ### 4.1.3 实现 — Root Queue 与 线程池
 
@@ -560,21 +583,45 @@ struct dispatch_queue_static_s _dispatch_mgr_q = {
 
 针对一个`4GB`内存的`iOS`真机来说，内存分为内核态和用户态。程序启动，系统给出的虚拟内存4GB，用户态占3GB，内核态占1GB。但内核态的1GB并不能全部用来开辟线程，所以最大线程数是未知的。如果内核态全部用于创建线程，也就是`1GB`的空间，也就是说最多能开辟 `1024MB / 16KB`个线程。当然这也只是一个理论值。
 
-*测试了一下：好像是64个*
+#### 4. 队列与线程之间的关系
+
+再次重申：
+
+- overcommit的队列在队列创建时会新建一个线程，非overcommit队列创建队列则未必创建线程。
+
+- 另外，width=1意味着是串行队列，只有一个线程可用，width=0xffe则意味着并行队列，线程则是从线程池获取。
+
+*测试现象：*
+
+- 全局队列是非overcommit的。
+- 主队列是overcommit的com.apple.root.default-qos.overcommit，不过它是串行队列，width=1，并且运行的这个线程只能是主线程。
+- 自定义串行队列是overcommit的，默认优先级则是 com.apple.root.default-qos.overcommit。**创建串行队列肯定会创建1个新的线程**。
+  - 最多可以创建512个，明显已经是灾难性的了，所以，**串行队列是开发中应该注意的**。【测试代码1，线程号是3-514】
+
+- 自定义并行队列则是非overcommit的。
+  - **创建并行队列不一定会新建线程，会从线程池中的64个线程中获取并使用。** 【测试代码2，线程号是3-66】
+  - 如果64个线程都在使用中，那么如果再调用需要【申请新的子线程资源】的API，那么会**进行等待状态，直到有可用子线程**。【测试代码3，注意如果64个线程一直得不到释放，那么会发生死等】
+
 
 ```c++
 /**
- 串行队列只有一个线程，线程num > 2
+ 测试1：串行队列肯定会创建新的线程
  **/
 - (void)test1 {
-    dispatch_queue_t serialQueue = dispatch_queue_create("com.cmjstudio.dispatch", DISPATCH_QUEUE_SERIAL);
-    for (int i=0; i<1000; ++i) {
+    for (int i=1; i<=1000; ++i) {
+        dispatch_queue_t serialQueue = dispatch_queue_create("com.cmjstudio.dispatch-%d", DISPATCH_QUEUE_SERIAL);
         dispatch_async(serialQueue, ^{
-            NSLog(@"%@，%i",[NSThread currentThread],i); // only one thread（number = 3~66）
+            NSLog(@"%d, %@", i, [NSThread currentThread]);
+            [NSThread sleepForTimeInterval:30];
         });
     }
 }
+// 15:30:12.822417: LOG: 3, <NSThread: 0x282ce6240>{number = 3, name = (null)}
+// 15:30:12.858744: LOG: 641, <NSThread: 0x282cd85c0>{number = 514, name = (null)}
 
+/**
+ 测试2
+ **/
 - (void)test2 {
     dispatch_queue_attr_t attr = dispatch_queue_attr_make_with_qos_class(DISPATCH_QUEUE_SERIAL, QOS_CLASS_USER_INITIATED, -1);
     dispatch_queue_t serialQueue = dispatch_queue_create("com.cmjstudio.dispatch", attr);
@@ -586,7 +633,7 @@ struct dispatch_queue_static_s _dispatch_mgr_q = {
 }
 
 /**
- 不管优先级多高并行队列有最多有64个线程，线程num在3~66，在一次轮询中遇到高优先级的会先执行
+ 测试3：不管优先级多高并行队列有最多有64个线程，线程num在3~66，在一次轮询中遇到高优先级的会先执行
  **/
 - (void)test3 {
     dispatch_queue_t concurrentQueue = dispatch_queue_create("com.cmjstudio.dispatch", DISPATCH_QUEUE_CONCURRENT);
@@ -596,6 +643,27 @@ struct dispatch_queue_static_s _dispatch_mgr_q = {
         });
     }
 }
+
+/**
+ 测试4：如果64个线程都在使用中，那再次调用申请新线程的API，会进入等待。如果64个线程一直不释放，就会死等。
+ **/
+- (void)test4 {
+    dispatch_queue_t concurrentQueue = dispatch_queue_create("com.cmjstudio.dispatch", DISPATCH_QUEUE_CONCURRENT);
+    for (int i=1; i<65; ++i) {
+        dispatch_async(concurrentQueue, ^{
+            NSLog(@"%d, %@", i, [NSThread currentThread]);
+            [NSThread sleepForTimeInterval:3];
+        });
+    }
+}
+
+// 15:14:33.153114: LOG: 60, <NSThread: 0x282a733c0>{number = 62, name = (null)}
+// 15:14:33.153165: LOG: 61, <NSThread: 0x282a74100>{number = 63, name = (null)}
+// 15:14:33.153190: LOG: 62, <NSThread: 0x282a73780>{number = 64, name = (null)}
+// 15:14:33.153266: LOG: 63, <NSThread: 0x282a75e80>{number = 65, name = (null)}
+// 15:14:33.153311: LOG: 64, <NSThread: 0x282a73c00>{number = 66, name = (null)}
+// 等待了3秒
+// 15:14:36.154120: LOG: 65, <NSThread: 0x282a06e00>{number = 5, name = (null)}
 ```
 
 GCD线程池中，线程数是64个。但有时候会超出64，[StackOverflow](https://stackoverflow.com/questions/7213845/number-of-threads-created-by-gcd)上的解释是实际线程数 = 64（最大 GCD 线程池大小）+ 主线程 + 一些其他随机非 GCD 线程。

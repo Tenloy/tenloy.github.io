@@ -21,7 +21,10 @@ categories:
 地址空间布局随机化(Address Space Layout Randomization，ASLR)是一种针对缓冲区溢出的安全保护技术，通过对堆、栈、共享库映射等线性区布局的随机化，通过增加攻击者预测目的地址的难度，防止攻击者直接定位攻击代码位置，达到阻止溢出攻击的目的的一种技术。iOS4.3开始引入了ASLR技术。
 
 下面分别来看一下，未使用ASLR、使用了ASLR下，进程虚拟地址空间内的分布。下图中左侧是mach-O可执行文件，右侧是链接之后的虚拟地址空间，如果对`__TEXT`、`__DATA`等Segment概念不清楚的地方，可以看一些第二篇关于Mach-O文件结构的介绍。
-### 2.1 未使用ASLR
+
+<img src="/images/compilelink/46.jpg" alt="26" style="zoom:55%;" />
+
+### 2.1 未使用ASLR的虚拟地址空间
 
 - 函数代码存放在__TEXT段中
 - 全局变量存放在__DATA段中
@@ -31,7 +34,7 @@ categories:
 
 <img src="/images/compilelink/26.png" alt="26" style="zoom:55%;" />
 
-### 2.2 使用了ASLR
+### 2.2 使用了ASLR的虚拟地址空间
 - LC_SEGMENT(__TEXT)的VM Address为`0x100000000`
 - ASLR随机产生的Offset（偏移）为`0x5000`
 
@@ -43,14 +46,16 @@ categories:
 
 #### 2.3.1 函数内存地址计算
 - **File Offset:** 在当前架构(MachO)文件中的偏移量。
--  **VM Address:** 编译链接后，射到虚拟地址中的内存起始地址。 `VM Address = File Offset + __PAGEZERO Size`(__PAGEZERO段在MachO文件中没有实际大小，在VM中展开)
-- **Load Address:** 在运行时加载到虚拟内存的起始位置。Slide是加载到内存的偏移，这个偏移值是一个随机值，每次运行都不相同。`Load Address = VM Address + Slide(ASLR Offset)`
+-  **VM Address【未偏移/ASLR偏移前】:** 编译链接后，映射到虚拟地址中的内存起始地址。 `VM Address = File Offset + __PAGEZERO Size`(__PAGEZERO段在MachO文件中没有实际大小，在VM中展开)
+- **Load Address【ASLR偏移后的VM Address】:** 在运行时加载到虚拟内存的起始位置。Slide是加载到内存的偏移，这个偏移值是一个随机值，每次运行都不相同。`Load Address = VM Address + Slide(ASLR Offset)`
+  - 真正的运行时地址。本质也是虚拟地址空间中的地址，当未开启ASLR时，Load Address(运行时VM Address) ＝ 上面的静态VM Address
 
-由于dsym符号表是编译时生成的地址，crash堆栈的地址是运行时地址，这个时候需要经过转换才能正确的符号化。crash日志里的符号地址被称为Stack Address，而编译后的符号地址被称为Symbol Address，他们之间的关系如下：`Stack Address = Symbol Address + Slide`
+
+由于dsym符号表是编译时生成的地址，crash堆栈的地址是运行时地址，这个时候需要经过转换才能正确的符号化。crash日志里的符号地址被称为Stack Address，而编译后的符号地址被称为Symbol Address，他们之间的关系如下：`Stack Address = Symbol Address + Slide`。
 
 符号化就是通过Stack Address到dsym文件中寻找对应符号信息的过程。
 
-Hopper、IDA图形化工具中的地址都是未使用ASLR前的VM Address
+**Hopper、IDA图形化工具中的地址都是未使用ASLR前的VM Address**。
 
 #### 2.3.2 ASLR Offset的获取
 ASLR Offset有的地方也叫做`slide`，获取方法：
