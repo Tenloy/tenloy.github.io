@@ -28,7 +28,7 @@
 <meta property="og:description" content="一、术语1.1 模式与模型模式：模式（Pattern）是解决某一类问题的方法论，把解决某类问题的方法总结归纳到理论高度，就是模式。 模型：模型可以指实物。也可以是概念的模型，模型是由元素、关系、操作以及控制其相互作用的规则组成的概念系统。 既然模型是系统，那么它也应该满足系统的三要件：组成要素、连接方式、功能或目标。 1.2 思想-范式-语言 编程思想(仅仅是思想层面) →  编程范式(已经形成一">
 <meta property="og:locale" content="en_US">
 <meta property="article:published_time" content="2021-09-20T09:37:12.000Z">
-<meta property="article:modified_time" content="2022-09-07T02:38:36.221Z">
+<meta property="article:modified_time" content="2022-09-15T08:14:12.269Z">
 <meta property="article:author" content="Tenloy">
 <meta property="article:tag" content="Tenloy, iOS, Tenloy Blog, 博客，Swift, 编译, 计算机">
 <meta name="twitter:card" content="summary">
@@ -304,7 +304,7 @@ height:40vh;
                 
                 
                     <div class="post-intro-read">
-                        <span>Word count: <span class="post-count word-count">2k</span>Reading time: <span class="post-count reading-time">6 min</span></span>
+                        <span>Word count: <span class="post-count word-count">3.7k</span>Reading time: <span class="post-count reading-time">12 min</span></span>
                     </div>
                 
                 <div class="post-intro-meta">
@@ -485,7 +485,31 @@ height:40vh;
 </ul>
 </li>
 </ul>
-<h2 id="三、声明式编程"><a href="#三、声明式编程" class="headerlink" title="三、声明式编程"></a>三、声明式编程</h2><p>声明式编程(Declarative programming)或译为宣告式编程，是一种编程范式，通常被定义为除命令式以外的编程范式。它<strong>描述目标的性质，让电脑明白目标，而非流程</strong>。</p>
+<h2 id="三、结构化编程"><a href="#三、结构化编程" class="headerlink" title="三、结构化编程"></a>三、结构化编程</h2><h3 id="3-1-结构化"><a href="#3-1-结构化" class="headerlink" title="3.1 结构化"></a>3.1 结构化</h3><blockquote>
+<p>结构：各个组成部分的搭配和排列。</p>
+<p>结构化，是指将逐渐积累起来的数据加以归纳和整理，使之条理化、纲领化，做到纲举目张。</p>
+</blockquote>
+<p>多说一句：知识是逐渐积累的，但在头脑中不应该是堆积的。心理学研究发现：优生头脑中的知识是有组织、有系统的，知识点按层次排列，而且知识点之间有内在联系，具有结构层次性。</p>
+<p>结构化对知识学习具有重要作用，因为当知识以一种层次网络结构的方式进行储存时，可以大大提高知识应用时的检索效率。</p>
+<h3 id="3-2-结构化编程"><a href="#3-2-结构化编程" class="headerlink" title="3.2 结构化编程"></a>3.2 结构化编程</h3><blockquote>
+<p>一种编程典范(编程范式)。它采用子程序、块结构、for循环以及while循环等结构，来取代传统的 goto。希望借此来改善计算机程序的明晰性、质量以及开发时间，并且避免写出面条式代码。</p>
+</blockquote>
+<ul>
+<li>“面向结构”的程序设计方法即结构化程序设计方法，是“面向过程”方法的改进，结构上将软件系统划分为若干功能模块，各模块按要求单独编程，再由各模块连接，组合构成相应的软件系统。</li>
+<li>结构化程序设计采用自顶向下、逐步求精的设计方法，各个模块通过“顺序、选择、循环”的控制结构进行连接，并且只有一个入口、一个出口。</li>
+</ul>
+<h3 id="3-3-补充：结构化数据"><a href="#3-3-补充：结构化数据" class="headerlink" title="3.3 补充：结构化数据"></a>3.3 补充：结构化数据</h3><p>结构化数据也称作行数据，是由二维表结构来逻辑表达和实现的数据，严格地遵循数据格式与长度规范，主要通过<a target="_blank" rel="noopener" href="https://baike.baidu.com/item/%E5%85%B3%E7%B3%BB%E5%9E%8B%E6%95%B0%E6%8D%AE%E5%BA%93/8999831">关系型数据库</a>进行存储和管理。</p>
+<ul>
+<li>表现为二维形式的数据。一般特点是：数据以行为单位，一行数据表示一个实体的信息，每一行数据的属性是相同的。</li>
+<li>json可以拆分成多个二维表，所以也算是结构化数据。</li>
+</ul>
+<p>与结构化数据相对的是非结构化数据。</p>
+<ul>
+<li>非结构化数据的数据结构不规则或不完整，没有预定义的数据模型，不方便用数据库二维逻辑表来表现的数据。</li>
+<li>包括所有格式的办公文档、XML、HTML、各类报表、图片和音频、视频信息等。</li>
+</ul>
+<p>支持非结构化数据的数据库采用多值字段、了字段和变长字段机制进行数据项的创建和管理，广泛应用于全文检索和各种多媒体信息处理领域。</p>
+<h2 id="四、声明式编程"><a href="#四、声明式编程" class="headerlink" title="四、声明式编程"></a>四、声明式编程</h2><h3 id="4-1-概述"><a href="#4-1-概述" class="headerlink" title="4.1 概述"></a>4.1 概述</h3><p>声明式编程(Declarative programming)或译为宣告式编程，是一种编程范式，通常被定义为除命令式以外的编程范式。它<strong>描述目标的性质，让电脑明白目标，而非流程</strong>。</p>
 <ul>
 <li>声明式编程不用告诉电脑问题领域，从而避免随之而来的副作用。而<strong>命令式编程则需要用算法来明确的指出每一步该怎么做。</strong></li>
 <li>声明式编程通过函数、推理规则或重写规则，来描述变量之间的关系(如React.js  UI = f(state))。它的语言运行器（编译器或解释器）采用了一个固定的算法，以从这些关系产生结果。</li>
@@ -493,7 +517,35 @@ height:40vh;
 <p>声明式语言包包括数据库查询语言(SQL，XQuery)，正则表达式，逻辑编程，函数式编程和组态管理系统。</p>
 <p>声明式编程语言通常用作解决人工智能和约束满足问题。</p>
 <p><strong>React是一个声明式编程框架，使得使用者只需要描述目标/状态，怎么实现交给我(框架底层)。</strong></p>
-<h2 id="四、面向切面编程-AOP"><a href="#四、面向切面编程-AOP" class="headerlink" title="四、面向切面编程(AOP)"></a>四、面向切面编程(AOP)</h2><p>面向方面编程 (Aspect-oriented programming，AOP) 是一种编程范式，旨在通过允许分离横切关注点(<a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Cross-cutting_concern">cross-cutting</a>)来增加模块化。AOP会将横切关注点封装到<em>切面</em>(<em>aspects</em>)模块中。这允许对处理封装横切关注点的代码进行干净的隔离和重用。</p>
+<h3 id="4-2-React与SwiftUI"><a href="#4-2-React与SwiftUI" class="headerlink" title="4.2 React与SwiftUI"></a>4.2 React与SwiftUI</h3><p>近年来，随着编程技术和思想的进步，使用声明式或者函数式的方式来进行界面开发，已经越来越被接受并逐渐成为主流。最早的思想大概是来源于 <a target="_blank" rel="noopener" href="https://elm-lang.org/">Elm</a>，之后这套方式被 <a target="_blank" rel="noopener" href="https://reactjs.org/">React</a> 和 <a target="_blank" rel="noopener" href="https://flutter.dev/">Flutter</a> 采用，这一点上 SwiftUI 也几乎与它们一致。总结起来，这些 UI 框架都遵循以下步骤和原则：</p>
+<ol>
+<li><p>使用各自的 DSL 来描述「UI 应该是什么样子」，而不是用一句句的代码来指导「要怎样构建 UI」。</p>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/* 传统的 UIKit，我们会使用这样的代码来添加一个 “Hello World” 的标签，它负责: </span></span><br><span class="line"><span class="comment">			“创建 label”，</span></span><br><span class="line"><span class="comment">			“设置文字”，</span></span><br><span class="line"><span class="comment">			“将其添加到 view 上”</span></span><br><span class="line"><span class="comment">*/</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">viewDidLoad</span>()</span> &#123;</span><br><span class="line">   <span class="keyword">super</span>.viewDidLoad()</span><br><span class="line">   <span class="keyword">let</span> label <span class="operator">=</span> <span class="type">UILabel</span>()</span><br><span class="line">   label.text <span class="operator">=</span> <span class="string">&quot;Hello World&quot;</span></span><br><span class="line">   view.addSubview(label)</span><br><span class="line">   <span class="comment">// 省略了布局的代码</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 相对起来，使用 SwiftUI 我们只需要告诉 SDK 我们需要一个文字标签：</span></span><br><span class="line"><span class="keyword">var</span> body: <span class="keyword">some</span> <span class="type">View</span> &#123;</span><br><span class="line">   <span class="type">Text</span>(<span class="string">&quot;Hello World&quot;</span>)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+<li><p>接下来，框架内部读取这些 view 的声明，负责将它们以合适的方式绘制渲染。</p>
+<p>注意，这些 view 的声明只是纯数据结构的描述，而不是实际显示出来的视图，因此这些结构的创建和差分对比并不会带来太多性能损耗。相对来说，将描述性的语言进行渲染绘制的部分是最慢的，这部分工作将交由框架以黑盒的方式为我们完成。</p>
+</li>
+<li><p>如果 <code>View</code> 需要根据某个状态 (state) 进行改变，那我们将这个状态存储在变量中，并在声明 view 时使用它：</p>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@State</span> <span class="keyword">var</span> name: <span class="type">String</span> <span class="operator">=</span> <span class="string">&quot;Tom&quot;</span> </span><br><span class="line"><span class="keyword">var</span> body: <span class="keyword">some</span> <span class="type">View</span> &#123;     </span><br><span class="line">	<span class="type">Text</span>(<span class="string">&quot;Hello <span class="subst">\(name)</span>&quot;</span>) </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+<li><p>状态发生改变时，框架重新调用声明部分的代码，计算出新的 view 声明，并和原来的 view 进行差分，之后框架负责对变更的部分进行高效的重新绘制。</p>
+</li>
+</ol>
+<p>SwiftUI 的思想也完全一样，而且实际处理也不外乎这几个步骤。使用描述方式开发，大幅减少了在 app 开发者层面上出现问题的机率。</p>
+<p>声明式编程是一个大的概念，除了一些特定的领域专属语言之外，一些有名的编程范型也被归类为其子范型。常见的如：</p>
+<ul>
+<li>函数式：函数式编程，特别是纯函数式编程，尝试最小化状态带来的副作用，因此被认为是声明式的。</li>
+<li>响应式</li>
+</ul>
+<h3 id="4-3-响应式编程"><a href="#4-3-响应式编程" class="headerlink" title="4.3 响应式编程"></a>4.3 响应式编程</h3><p><strong>响应式编程</strong>或<strong>反应式编程</strong>（Reactive programming）是一种面向数据流和变化传播的声明式编程范式。这意味着可以在编程语言中很方便地表达静态或动态的数据流，而相关的计算模型会自动将变化的值通过数据流进行传播。</p>
+<p>不需要考虑调用顺序，只需要知道考虑结果，类似于蝴蝶效应，产生一个事件，会影响很多东西，这些事件像流一样的传播出去，然后影响结果，借用面向对象的一句话，万物皆是流。</p>
+<p>例如：对于 a=b+c 这个表达式的处理，在命令式编程中，会先计算 b+c 的结果，再把此结果赋值给 变量a，因此 b，c 两值的变化不会对 变量a 产生影响。但在响应式编程中，变量a 的值会随时跟随 b，c 的变化而变化。</p>
+<p>使用场景：</p>
+<ul>
+<li>电子表格程序就是响应式编程的一个例子。单元格可以包含字面值或类似”=B1+C1”的公式，而包含公式的单元格的值会依据其他单元格的值的变化而变化。</li>
+<li>在MVC软件架构中，响应式编程允许将相关模型的变化自动反映到视图上，反之亦然。</li>
+<li>iOS中常用的ReactiveCocoa被描述为 <strong>函数响应式编程（FRP）</strong>框架。 </li>
+</ul>
+<p>响应式编程最初是为了简化交互式用户界面的创建和实时系统动画的绘制而提出来的一种方法，但它本质上是一种通用的编程范式。</p>
+<h2 id="五、面向切面编程-AOP"><a href="#五、面向切面编程-AOP" class="headerlink" title="五、面向切面编程(AOP)"></a>五、面向切面编程(AOP)</h2><p>面向方面编程 (Aspect-oriented programming，AOP) 是一种编程范式，旨在通过允许分离横切关注点(<a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Cross-cutting_concern">cross-cutting</a>)来增加模块化。AOP会将横切关注点封装到<em>切面</em>(<em>aspects</em>)模块中。这允许对处理封装横切关注点的代码进行干净的隔离和重用。</p>
 <p>它可以实现在不修改代码本身的情况下，向现有代码添加行为(又称是一个advice)。通过“切入点(point-cut)”规范指定要修改哪些代码，例如：如果函数名称以’set’开头，记录这些函数的调用。</p>
 <p>这允许将不属于业务逻辑核心的行为（例如日志记录）添加到程序中，而不会使功能的代码核心混乱。</p>
 <p>概念：</p>
@@ -519,7 +571,7 @@ height:40vh;
             <p>Author：<a href="https://tenloy.github.io">Tenloy</a>
             <p>原文链接：<a href="https://tenloy.github.io/2021/09/20/program-thought.html">https://tenloy.github.io/2021/09/20/program-thought.html</a>
             <p>发表日期：2021.09.20 , 9:37 AM</p>
-            <p>更新日期：2022.09.07 , 2:38 AM</p>
+            <p>更新日期：2022.09.15 , 8:14 AM</p>
             <p>版权声明：本文采用<a rel="license noopener" target="_blank" href="http://creativecommons.org/licenses/by-nc/4.0/">Crative Commons 4.0 许可协议</a>进行许可</p>
         </div>
     
@@ -661,7 +713,7 @@ top:40vh;
         <div class="toc-catalog">
             <span class="iconfont-archer catalog-icon">&#xe613;</span><span>CATALOG</span>
         </div>
-        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E3%80%81%E6%9C%AF%E8%AF%AD"><span class="toc-text">一、术语</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-1-%E6%A8%A1%E5%BC%8F%E4%B8%8E%E6%A8%A1%E5%9E%8B"><span class="toc-text">1.1 模式与模型</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-2-%E6%80%9D%E6%83%B3-%E8%8C%83%E5%BC%8F-%E8%AF%AD%E8%A8%80"><span class="toc-text">1.2 思想-范式-语言</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8C%E3%80%81%E7%BC%96%E7%A8%8B%E8%8C%83%E5%BC%8F"><span class="toc-text">二、编程范式</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#2-1-%E7%BC%96%E7%A8%8B%E8%8C%83%E5%BC%8F%E5%92%8C%E7%BC%96%E7%A8%8B%E8%AF%AD%E8%A8%80"><span class="toc-text">2.1 编程范式和编程语言</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-2-%E5%B8%B8%E8%A7%81%E7%9A%84%E7%BC%96%E7%A8%8B%E8%8C%83%E5%BC%8F"><span class="toc-text">2.2 常见的编程范式</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%89%E3%80%81%E5%A3%B0%E6%98%8E%E5%BC%8F%E7%BC%96%E7%A8%8B"><span class="toc-text">三、声明式编程</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9B%9B%E3%80%81%E9%9D%A2%E5%90%91%E5%88%87%E9%9D%A2%E7%BC%96%E7%A8%8B-AOP"><span class="toc-text">四、面向切面编程(AOP)</span></a></li></ol>
+        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E3%80%81%E6%9C%AF%E8%AF%AD"><span class="toc-text">一、术语</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-1-%E6%A8%A1%E5%BC%8F%E4%B8%8E%E6%A8%A1%E5%9E%8B"><span class="toc-text">1.1 模式与模型</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-2-%E6%80%9D%E6%83%B3-%E8%8C%83%E5%BC%8F-%E8%AF%AD%E8%A8%80"><span class="toc-text">1.2 思想-范式-语言</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8C%E3%80%81%E7%BC%96%E7%A8%8B%E8%8C%83%E5%BC%8F"><span class="toc-text">二、编程范式</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#2-1-%E7%BC%96%E7%A8%8B%E8%8C%83%E5%BC%8F%E5%92%8C%E7%BC%96%E7%A8%8B%E8%AF%AD%E8%A8%80"><span class="toc-text">2.1 编程范式和编程语言</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-2-%E5%B8%B8%E8%A7%81%E7%9A%84%E7%BC%96%E7%A8%8B%E8%8C%83%E5%BC%8F"><span class="toc-text">2.2 常见的编程范式</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%89%E3%80%81%E7%BB%93%E6%9E%84%E5%8C%96%E7%BC%96%E7%A8%8B"><span class="toc-text">三、结构化编程</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#3-1-%E7%BB%93%E6%9E%84%E5%8C%96"><span class="toc-text">3.1 结构化</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-2-%E7%BB%93%E6%9E%84%E5%8C%96%E7%BC%96%E7%A8%8B"><span class="toc-text">3.2 结构化编程</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-3-%E8%A1%A5%E5%85%85%EF%BC%9A%E7%BB%93%E6%9E%84%E5%8C%96%E6%95%B0%E6%8D%AE"><span class="toc-text">3.3 补充：结构化数据</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9B%9B%E3%80%81%E5%A3%B0%E6%98%8E%E5%BC%8F%E7%BC%96%E7%A8%8B"><span class="toc-text">四、声明式编程</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#4-1-%E6%A6%82%E8%BF%B0"><span class="toc-text">4.1 概述</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-2-React%E4%B8%8ESwiftUI"><span class="toc-text">4.2 React与SwiftUI</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-3-%E5%93%8D%E5%BA%94%E5%BC%8F%E7%BC%96%E7%A8%8B"><span class="toc-text">4.3 响应式编程</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%94%E3%80%81%E9%9D%A2%E5%90%91%E5%88%87%E9%9D%A2%E7%BC%96%E7%A8%8B-AOP"><span class="toc-text">五、面向切面编程(AOP)</span></a></li></ol>
     </div>
     
     <div class="back-top iconfont-archer">&#xe639;</div>
