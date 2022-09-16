@@ -296,6 +296,8 @@ Supervising Controller variant of the MVP：
 
 那么问题来了，在iOS中ViewModel实际上代表什么？它基本上就是UIKit下的每个控件以及控件的状态。ViewModel调用会改变Model同时会将Model的改变更新到自身，并且因为我们绑定了View和ViewModel，第一步就是相应的更新状态。
 
+**MVVM中，View与ViewModel之间的【数据绑定】，是区分于MVC的C、MVP的P的一个重要方面。** 尤其是ReactiveCocoa这个库成熟之后，ViewModel和View的信号机制在iOS下终于有了一个相对优雅的实现。
+
 ### 6.2 绑定
 
 我在MVP部分已经提到这点了，但是该部分我们仍会继续讨论。

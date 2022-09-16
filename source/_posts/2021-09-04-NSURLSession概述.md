@@ -375,6 +375,14 @@ NSURLSessionDataTask *task = [session dataTaskWithURL:[NSURL URLWithString:@"htt
  *   当远程服务器请求客户端证书或 Windows NT LAN Manager (NTLM) 身份验证时，以允许您的应用程序提供适当的凭据
  *   当会话首次与使用 SSL 或 TLS 的远程服务器建立连接时，以允许您的应用程序验证服务器的证书链
  * 如果您不实现此方法，会话将调用其委托的 URLSession:task:didReceiveChallenge:completionHandler: 方法。
+ *
+ * Session级别的didReceiveChallenge 与 Task级别的didReceiveChallenge 调用取决于身份认证挑战authentication challenge的类型：(值为challenge.protectionSpace.authenticationMethod)
+ *  - 如果是会话级别的挑战(如下)，那么默认会调用session协议方法，如果其未实现，则调用task的didReceiveChallenge.
+        NSURLAuthenticationMethodNTLM, 
+        NSURLAuthenticationMethodNegotiate, 
+        NSURLAuthenticationMethodClientCertificate,
+        NSURLAuthenticationMethodServerTrust
+ *  - 如果是非会话级别的挑战（所有其他），那么只会调用task的didReceiveChallenge。
  */
 - (void)URLSession: didReceiveChallenge: completionHandler:
 /*
