@@ -90,7 +90,7 @@
 <meta property="og:image" content="https://tenloy.github.io/images/pattern/72.png">
 <meta property="og:image" content="https://tenloy.github.io/images/pattern/74.png">
 <meta property="article:published_time" content="2021-09-25T09:37:12.000Z">
-<meta property="article:modified_time" content="2022-09-16T08:06:28.279Z">
+<meta property="article:modified_time" content="2022-09-22T03:46:37.378Z">
 <meta property="article:author" content="Tenloy">
 <meta property="article:tag" content="Tenloy, iOS, Tenloy Blog, 博客，Swift, 编译, 计算机">
 <meta name="twitter:card" content="summary">
@@ -367,7 +367,7 @@ height:40vh;
                 
                 
                     <div class="post-intro-read">
-                        <span>Word count: <span class="post-count word-count">54.6k</span>Reading time: <span class="post-count reading-time">193 min</span></span>
+                        <span>Word count: <span class="post-count word-count">54.6k</span>Reading time: <span class="post-count reading-time">194 min</span></span>
                     </div>
                 
                 <div class="post-intro-meta">
@@ -654,14 +654,14 @@ height:40vh;
 <h1 id="二、设计模式中对象之间的关系"><a href="#二、设计模式中对象之间的关系" class="headerlink" title="二、设计模式中对象之间的关系"></a>二、设计模式中对象之间的关系</h1><p>在面向对象设计模式中，类与类之间主要有6种关系，他们分别是：依赖、关联、聚合、组合、泛化、实现。</p>
 <p>它们的耦合度依次增强。</p>
 <h2 id="2-1-依赖-dependency"><a href="#2-1-依赖-dependency" class="headerlink" title="2.1 依赖(dependency)"></a>2.1 依赖(dependency)</h2><blockquote>
-<p>依赖关系的定义为：对于两个相对独立的对象，当一个对象负责构造另一个对象的实例，或者依赖另一个对象的服务时，这两个对象之间主要体现为依赖关系。</p>
+<p>依赖关系的定义为：对于两个相对独立的对象，当一个对象负责构造另一个对象的实例，或者依赖另一个对象的服务时，这两个对象之间主要体现为依赖关系。【use-a】</p>
 </blockquote>
 <p>依赖(Dependency)关系是类与类之间的联接，表示一个类依赖于另一个类的定义。<strong>一般而言，依赖关系在Java语言中体现为局域变量、方法的形参，或者对静态方法的调用。</strong></p>
 <p>依赖关系用一条带箭头的虚线表示（A依赖于B）。</p>
 <img src="/images/pattern/17.jpg" alt="21" style="zoom:100%;" />
 
 <h2 id="2-2-关联-association"><a href="#2-2-关联-association" class="headerlink" title="2.2 关联(association)"></a>2.2 关联(association)</h2><blockquote>
-<p>对于两个相对独立的对象，当一个对象的实例与另一个对象的一些特定实例存在固定的对应关系时，这两个对象之间为关联关系。</p>
+<p>对于两个相对独立的对象，当一个对象的实例与另一个对象的一些特定实例存在固定的对应关系时，这两个对象之间为关联关系。【has-a】</p>
 </blockquote>
 <p><strong>关联关系分为单向关联和双向关联。</strong></p>
 <ul>
@@ -1269,14 +1269,10 @@ height:40vh;
 <p>建造者模式属于对象创建型模式。根据中文翻译的不同，建造者模式又可以称为生成器模式。</p>
 <h3 id="结构-3"><a href="#结构-3" class="headerlink" title="结构"></a>结构</h3><h4 id="标准结构-1"><a href="#标准结构-1" class="headerlink" title="标准结构"></a>标准结构</h4><p>建造者模式包含如下角色：</p>
 <ul>
-<li><p>指挥者(Director)：它调用建造者对象中的部件构造与装配方法完成复杂对象的创建，在指挥者中不涉及具体产品的信息。</p>
-</li>
-<li><p>抽象建造者(Builder)：它是一个包含创建产品各个子部件的抽象方法的接口，通常还包含一个返回复杂产品的方法 getResult()。</p>
-</li>
-<li><p>具体建造者(Concrete Builder）：实现 Builder 接口，完成复杂产品的各个部件的具体创建方法。<strong>一个具体建造者会创建一种不同的产品对象(组成部分相同，数据不同)。</strong></p>
-</li>
-<li><p>产品角色（Product）：它是包含多个组成部件的复杂对象，由具体建造者来创建其各个零部件。</p>
-</li>
+<li>指挥者(Director)：它调用建造者对象中的部件构造与装配方法完成复杂对象的创建，在指挥者中不涉及具体产品的信息。</li>
+<li>抽象建造者(Builder)：它是一个包含创建产品各个子部件的抽象方法的接口，通常还包含一个返回复杂产品的方法 getResult()。</li>
+<li>具体建造者(Concrete Builder）：实现 Builder 接口，完成复杂产品的各个部件的具体创建方法。<strong>一个具体建造者会创建一种不同的产品对象(组成部分相同，数据不同)。</strong></li>
+<li>产品角色（Product）：它是包含多个组成部件的复杂对象，由具体建造者来创建其各个零部件。</li>
 </ul>
 <p><strong>具体建造者同具体产品之间是多对一的关系（一个具体产品有多种建造方式）</strong>。</p>
 <img src="/images/pattern/29.jpg" alt="29" style="zoom:100%;" />
@@ -2169,13 +2165,13 @@ height:40vh;
 <p>GUI 层可以直接访问业务逻辑层：</p>
 <img src="/images/pattern/63.jpg" alt="63" style="zoom:100%;" />
 
-<p>命令模式建议 GUI 对象不直接提交这些请求。 你应该将请求的所有细节 （例如调用的对象、 方法名称和参数列表） 抽取出来组成<em>命令</em>类， 该类中仅包含一个用于触发请求的方法。</p>
+<p>命令模式建议 GUI 对象不直接提交这些请求。 你应该将请求的所有细节（例如调用的对象、方法名称和参数列表） 抽取出来组成<em>命令</em>类， 该类中仅包含一个用于触发请求的方法。</p>
 <p>命令对象负责连接不同的 GUI 和业务逻辑对象。 此后， GUI 对象无需了解业务逻辑对象是否获得了请求， 也无需了解其对请求进行处理的方式。 GUI 对象触发命令即可， 命令对象会自行处理所有细节工作。</p>
 <img src="/images/pattern/64.jpg" alt="64" style="zoom:100%;" />
 
 <p>此外，当我们订餐时，服务员记下你点的食物， 写在一张纸上。然后来到厨房，把订单贴在墙上。过了一段时间，厨师拿到了订单，他根据订单来准备食物。厨师将做好的食物和订单一起放在托盘上。服务员看到托盘后对订单进行检查，确保所有食物都是你要的，然后将食物放到了你的桌上。</p>
 <p>那张纸就是一个命令，它在厨师开始烹饪前一直位于队列中。命令中包含与烹饪这些食物相关的所有信息，厨师能够根据它马上开始烹饪。</p>
-<h4 id="正式定义"><a href="#正式定义" class="headerlink" title="正式定义"></a>正式定义</h4><p>命令模式(Command Pattern)：将一个请求封装为一个对象，从而使我们可用不同的请求对客户进行参数化；对请求排队或者记录请求日志，以及支持可撤销的操作。命令模式是一种对象行为型模式，其别名为动作(Action)模式或事务(Transaction)模式。</p>
+<h4 id="正式定义"><a href="#正式定义" class="headerlink" title="正式定义"></a>正式定义</h4><p>命令模式(Command Pattern)：将一个请求（的所有细节，例如调用的对象、方法名称和参数列表等）封装为一个对象，从而使我们可用不同的请求对客户进行参数化；对请求排队或者记录请求日志，以及支持可撤销的操作。命令模式是一种对象行为型模式，其别名为动作(Action)模式或事务(Transaction)模式。</p>
 <p>命令模式将请求调用者和请求接收者解耦，使得两者不直接交互。</p>
 <h3 id="结构-19"><a href="#结构-19" class="headerlink" title="结构"></a>结构</h3><h4 id="标准结构-7"><a href="#标准结构-7" class="headerlink" title="标准结构"></a>标准结构</h4><p>命令模式包含如下角色：</p>
 <ul>
@@ -2494,7 +2490,7 @@ height:40vh;
             <p>Author：<a href="https://tenloy.github.io">Tenloy</a>
             <p>原文链接：<a href="https://tenloy.github.io/2021/09/25/design-pattern.html">https://tenloy.github.io/2021/09/25/design-pattern.html</a>
             <p>发表日期：2021.09.25 , 9:37 AM</p>
-            <p>更新日期：2022.09.16 , 8:06 AM</p>
+            <p>更新日期：2022.09.22 , 3:46 AM</p>
             <p>版权声明：本文采用<a rel="license noopener" target="_blank" href="http://creativecommons.org/licenses/by-nc/4.0/">Crative Commons 4.0 许可协议</a>进行许可</p>
         </div>
     
