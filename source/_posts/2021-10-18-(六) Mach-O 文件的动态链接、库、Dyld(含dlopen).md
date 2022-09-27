@@ -12,7 +12,13 @@ categories:
 
 动态链接涉及运行时的链接及多个文件的装载，必需要有操作系统的支持，因为动态链接的情况下，进程的虚拟地址空间的分布会比静态链接情况下更为复杂，还有一些存储管理、内存共享、进程线程等机制在动态链接下也会有一些微妙的变化。目前主流的操作系统几乎都支持动态链接这种方式。
 
-link 这个过程就是将加载进来的二进制变为可用状态的过程。简单来说就是：`rebase => binding`。先来介绍动态链接中的几个概念：
+link 这个过程就是将加载进来的二进制变为可用状态的过程。简单来说就是：`rebase => binding`。
+
+- 由于ASLR(address space layout randomization)的存在，可执行文件和动态链接库在虚拟内存中的加载地址每次启动都不固定，所以需要这2步来修复镜像中的资源指针，来指向正确的地址。
+- rebase修复的是**指向当前镜像内部资源的指针**。rebase步骤先进行，需要把镜像读入内存，并以page为单位进行加密验证，保证不会被篡改，所以这一步的瓶颈在IO。
+- bind修复的是**指向镜像外部资源的指针**。bind步骤在其后进行，由于要查询符号表，来指向跨镜像的资源，加上在rebase阶段，镜像已被读入和加密验证，所以这一步的瓶颈在于CPU计算。
+
+下面来介绍动态链接中的这几个概念：
 
 ### 1.1 rebase
 
@@ -1045,38 +1051,38 @@ enum dyld_image_states
   ▼ __dyld_start   // 源码在dyldStartup.s这个文件，用汇编实现
     ▼ dyldbootstrap::start()   //dyldInitialization.cpp，负责dyld的引导工作
       ▼ dyld::_main()   // dyld.cpp
-	    ▶︎ // 第一步，设置运行环境
-	    ▶︎ // 第二步，加载共享缓存
-	    ▶︎ // 第三步 实例化主程序，会实例化一个主程序ImageLoader
-	    ▼ instantiateFromLoadedImage()  
-  	      ▶︎ isCompatibleMachO()  // 检查mach-o的subtype是否是当前cpu可以支持；
-  	      ▶︎ instantiateMainExecutable()  // 实例化可执行文件，这个期间会解析LoadCommand，这个之后会发送 dyld_image_state_mapped 通知；
-  	      ▶︎ addImage()  // 将可执行文件这个image，添加到 allImages中
-	    ▶︎ // 第四步，循环调用该函数，加载插入的动态库
-	    ▶︎ loadInsertedDylib()  
-	    ▶︎ // 第五步，调用link()函数，链接主程序
-	    ▼ link()  
-		  ▼ ImageLoader::link() //启动主程序的连接进程   —— ImageLoader.cpp，ImageLoader类中可以发现很多由dyld调用来实现二进制加载逻辑的函数。
-			▼ recursiveLoadLibraries() //进行所有需求动态库的加载
-			  ▶︎ //确定所有需要的库
-			  ▼ context.loadLibrary() //来逐个加载。context对象是一个简单的结构体，包含了在方法和函数之间传递的函数指针。这个结构体的loadLibrary成员在libraryLocator()函数（dyld.cpp）中初始化，它完成的功能也只是简单的调用load()函数。
-			    ▼ load() // 源码在dyld.cpp，会调用各种帮助函数。
-			      ▶︎ loadPhase0() → loadPhase1() → ... → loadPhase5() → loadPhase5load() → loadPhase5open() → loadPhase6() 递归调用  //每一个函数都负责加载进程工作的一个具体任务。比如，解析路径或者处理会影响加载进程的环境变量。
-			      ▼ loadPhase6() // 该函数从文件系统加载需求的dylib到内存中。然后调用一个ImageLoaderMachO类的实例对象。来完成每个dylib对象Mach-O文件具体的加载和连接逻辑。
-	    ▶︎ // 第六步，调用link()函数，链接插入的动态库
-	    ▶︎ // 第七步，对主程序进行弱符号绑定weakBind
-	    ▶︎ sMainExecutable->weakBind(gLinkContext);
-	    ▶︎ // 第八步，执行初始化方法 initialize。attribute((constructor)) 修饰的函数就是在这一步执行的, 即在主程序的main()函数之前。__DATA中有个Section __mod_init_func就是记录这些函数的。
-	    ▼ initializeMainExecutable()  // dyld会优先初始化动态库，然后初始化主程序。
+        ▶︎ // 第一步，设置运行环境
+        ▶︎ // 第二步，加载共享缓存
+        ▶︎ // 第三步 实例化主程序，会实例化一个主程序ImageLoader
+        ▼ instantiateFromLoadedImage()  
+          ▶︎ isCompatibleMachO()  // 检查mach-o的subtype是否是当前cpu可以支持；
+          ▶︎ instantiateMainExecutable()  // 实例化可执行文件，这个期间会解析LoadCommand，这个之后会发送 dyld_image_state_mapped 通知；
+          ▶︎ addImage()  // 将可执行文件这个image，添加到 allImages中
+        ▶︎ // 第四步，循环调用该函数，加载插入的动态库
+        ▶︎ loadInsertedDylib()  
+        ▶︎ // 第五步，调用link()函数，链接主程序
+        ▼ link()  
+          ▼ ImageLoader::link() //启动主程序的连接进程   —— ImageLoader.cpp，ImageLoader类中可以发现很多由dyld调用来实现二进制加载逻辑的函数。
+            ▼ recursiveLoadLibraries() //进行所有需求动态库的加载
+              ▶︎ //确定所有需要的库
+              ▼ context.loadLibrary() //来逐个加载。context对象是一个简单的结构体，包含了在方法和函数之间传递的函数指针。这个结构体的loadLibrary成员在libraryLocator()函数（dyld.cpp）中初始化，它完成的功能也只是简单的调用load()函数。
+                ▼ load() // 源码在dyld.cpp，会调用各种帮助函数。
+                  ▶︎ loadPhase0() → loadPhase1() → ... → loadPhase5() → loadPhase5load() → loadPhase5open() → loadPhase6() 递归调用  //每一个函数都负责加载进程工作的一个具体任务。比如，解析路径或者处理会影响加载进程的环境变量。
+                  ▼ loadPhase6() // 该函数从文件系统加载需求的dylib到内存中。然后调用一个ImageLoaderMachO类的实例对象。来完成每个dylib对象Mach-O文件具体的加载和连接逻辑。
+        ▶︎ // 第六步，调用link()函数，链接插入的动态库
+        ▶︎ // 第七步，对主程序进行弱符号绑定weakBind
+        ▶︎ sMainExecutable->weakBind(gLinkContext);
+        ▶︎ // 第八步，执行初始化方法 initialize。attribute((constructor)) 修饰的函数就是在这一步执行的, 即在主程序的main()函数之前。__DATA中有个Section __mod_init_func就是记录这些函数的。
+        ▼ initializeMainExecutable()  // dyld会优先初始化动态库，然后初始化主程序。
           ▼ sMainExecutable->runInitializersrunInitializers()  // run initializers for main executable and everything it brings up 
             ▼ ImageLoader::processInitializers()
               ▼ ImageLoader::recursiveInitialization()  // 循环遍历images list中所有的imageloader，recursive(递归)初始化。Calling recursive init on all images in images list
                 ▼ ImageLoaderMachO::doInitialization()  // 初始化这个image. initialize this image
-                  ▼ ImageLoaderMachO::doImageInit()  //解析LC_ROUTINES_COMMAND 这个加载命令，可以参考loader.h中该命令的说明，这个命令包含了动态共享库初始化函数的地址，该函数必须在库中任意模块初始化函数(如C++ 静态构造函数等)之前调用
+                  ▼ ImageLoaderMachO::doImageInit()     // 解析LC_ROUTINES_COMMAND 这个加载命令，可以参考loader.h中该命令的说明，这个命令包含了动态共享库初始化函数的地址，该函数必须在库中任意模块初始化函数(如C++ 静态构造函数等)之前调用
                   ▼ ImageLoaderMachO::doModInitFunctions()  // 内部会调用C++全局对象的构造函数、__attribute__((constructor))修饰的C函数
                   // 以上两个函数中，libSystem相关的都是要首先执行的，而且在上述递归加载动态库过程，libSystem是默认引入的，所以栈中会出现libSystem_initializer的初始化方法
           ▶︎ (*gLibSystemHelpers->cxa_atexit)(&runAllStaticTerminators, NULL, NULL);// register cxa_atexit() handler to run static terminators in all loaded images when this process exits
-	    ▶︎ // 第九步，查找入口点 main() 并返回，调用 getEntryFromLC_MAIN，从 Load Command 读取LC_MAIN入口，如果没有LC_MAIN入口，就读取LC_UNIXTHREAD，然后跳到主程序的入口处执行
+        ▶︎ // 第九步，查找入口点 main() 并返回，调用 getEntryFromLC_MAIN，从 Load Command 读取LC_MAIN入口，如果没有LC_MAIN入口，就读取LC_UNIXTHREAD，然后跳到主程序的入口处执行
         ▶︎ (uintptr_t)sMainExecutable->getEntryFromLC_MAIN();
 ```
 
