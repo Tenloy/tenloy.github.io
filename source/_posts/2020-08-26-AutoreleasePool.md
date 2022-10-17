@@ -115,13 +115,18 @@ struct __AtAutoreleasePool {
   ~__AtAutoreleasePool() {objc_autoreleasePoolPop(atautoreleasepoolobj);}
   void * atautoreleasepoolobj;
 };
-__AtAutoreleasePool`结构体包含了：构造函数、析构函数和一个边界对象；
- 构造函数内部调用：`objc_autoreleasePoolPush()`方法，返回边界对象`atautoreleasepoolobj`
- 析构函数内部调用：`objc_autoreleasePoolPop()`方法，传入边界对象`atautoreleasepoolobj
 ```
 
+`__AtAutoreleasePool`结构体包含了：构造函数、析构函数和一个边界对象：
+
+- 构造函数内部调用：`objc_autoreleasePoolPush()`方法，返回边界对象`atautoreleasepoolobj`
+- 析构函数内部调用：`objc_autoreleasePoolPop()`方法，传入边界对象`atautoreleasepoolobj`
+
 分析`main`函数中`__autoreleasepool`结构体实例的生命周期是这样的：
- `__autoreleasepool`是一个自动变量，其构造函数是在程序执行到声明这个对象的位置时调用的，而其析构函数则是在程序执行到离开这个对象的作用域时调用。所以，我们可以将上面`main`函数的代码简化如下：
+
+- `__autoreleasepool`是一个自动变量，其构造函数是在程序执行到声明这个对象的位置时调用的，而其析构函数则是在程序执行到离开这个对象的作用域时调用。
+
+所以，我们可以将上面`main`函数的代码简化如下：
 
 ```swift
 int main(int argc, const char * argv[]) {
@@ -315,7 +320,7 @@ static inline void pop(void *token)   //POOL_BOUNDARY的地址
 另外，清空`page`对象还会遵循一些原则：
 
 1. 如果当前的`page`中存放的对象少于一半，则子`page`全部删除；
-2. 如果当前当前的`page`存放的多余一半（意味着马上将要满），则保留一个子`page`，节省创建新`page`的开销;
+2. 如果当前的`page`存放的多余一半（意味着马上将要满），则保留一个子`page`，节省创建新`page`的开销;
 
 ### 2.8 autorelease方法
 

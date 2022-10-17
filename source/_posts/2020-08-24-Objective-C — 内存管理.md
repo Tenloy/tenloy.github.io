@@ -498,16 +498,12 @@ NSLog(@"%@", tmp);
 objc_destroyweak(&obj1);
 ```
 
-与被赋值时相比，在使用附有`__weak` 修饰符变量的情形下，增加了对 `objc_loadWeakRetained`
-函数和 `objc_autorelease` 函数的调用。这些函数的动作如下：
+与被赋值时相比，在使用附有`__weak` 修饰符变量的情形下，增加了对 `objc_loadWeakRetained` 函数和 `objc_autorelease` 函数的调用。这些函数的动作如下：
 
 - `objc_loadWeakRetained` 函数取出附有 `__weak` 修饰符变量所引用的对象并 retain。
 - `objc_autorelease` 两数将对象注册到 autorelcasepool 中。
 
-由此可知，因为附有 `__weak` 修饰符变量所引用的对象像这样被注册到autoreleasepool 中，
-所以在 @autoreleasepool 块结束之前都可以放心使用。但是，如果大量地使用附有 `__weak` 修饰
-符的变量，注册到autoreleasepool 的对象也会大量地增加，因此在使用附有 `__weak` 修饰符的变
-量时，最好先暂时赋值给附有 `__strong` 修饰符的变量后再使用。
+由此可知，因为附有 `__weak` 修饰符变量所引用的对象像这样被注册到autoreleasepool 中，所以在 @autoreleasepool 块结束之前都可以放心使用。但是，如果大量地使用附有 `__weak` 修饰符的变量，注册到autoreleasepool 的对象也会大量地增加，因此在使用附有 `__weak` 修饰符的变量时，最好先暂时赋值给附有 `__strong` 修饰符的变量后再使用。
 
 比如，以下源代码使用了5次附有 weak 修饰符的变量o。
 
@@ -557,23 +553,17 @@ objc[14481]: ##############
 ### 4.2.6 不能使用__weak修饰符的场景
 
 - 在iOS4 和OS X Snow Leopard 中是不能使用 `__weak` 修饰符的，而有时在其他环境下也不能使用。
-
 - 实际上存在着不支持 `__weak` 修饰符的类。
-
   - 独自实现引用计数机制的类。例如NSMachPort类，这些类重写了retain/release并实现该类独自的引用计数机制。因为赋值以及使用附有 `__weak` 修饰符的变量都必须恰当地使用objc4运行时库中的函数，所以这些独自实现引用计数机制的类大多不支持 `__weak` 修饰符。
-
   - 声明中附加了`__attribute__ ((objc_arc_weak_reference_unavailable))`这一属性的类，同时定义了NS_AUTOMATED_REFCOUNT_WEAK_UNAVAILABLE。
-
   - 如果将不支持 `__weak` 声明类的对象赋值给附有 `__weak` 修饰符的变量，那么一旦编译器检验出来就会报告**编译错误**。而且在Cocoa框架类中，不支持 `__weak` 修饰符的类极为罕见，因此没有必要太过担心。
-
   - allowsWeakReference/retainWeakReference实例方法（没有写入NSObject接口说明文档中）返回NO的类。这些方法的声明如下：
-
     ```objc
     - (BOOL)allowsWeakReference;
     - (BOOL)retainWeakReference;
     ```
 
-在赋值给 `__weak` 修饰符的变量时，
+在赋值给 `__weak` 修饰符的变量时：
 
 - 如果赋值对象的allowsWeakReference方法返回NO，程序将异常终止。
 
