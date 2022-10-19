@@ -332,18 +332,27 @@ objc_retainAutoreleasedReturnValue (obj); //参数，应为autorelease对象。
 
 要点：
 
-- **内存管理方法命名规则规定：alloc/new/copy/mutableCopy开头之外的初始化方法需要返回autorelease对象**
-- `objc_retainAutoreleasedReturnValue` 与 `objc_autoreleaseReturnValue` **是成对出现的，用于alloc/new/copy/mutableCopy方法以外的初始化构造方法返回对象的实现上。**
+- **内存管理方法命名规则规定：alloc/new/copy/mutableCopy开头之外的构造方法需要返回autorelease对象**。对于此类构造方法返回对象的实现，会利用 `objc_retainAutoreleasedReturnValue` 与 `objc_autoreleaseReturnValue` 搭配协作，实现最优化程序运行。
 - id类型与对象类型默认是__strong修饰符。
 
-### 4.1.2 objc_autoreleaseReturnValue
+### 4.1.2 objc_autoreleaseReturnValue和objc_retainAutoreleasedReturnValue
 
 两个函数的实现可以在 Objective-C [NSObject.mm](https://opensource.apple.com/source/objc4/objc4-723/runtime/NSObject.mm.auto.html) 的源码中找到：
 
 ```cpp
 //加工过的代码
+
+/*
+ * objc_autoreleaseReturnValue函数同objc_autorelease函数不同，一般不仅限于注册对象到autoreleasepool中。
+ */
 id objc_autoreleaseReturnValue(id obj) {
+    /*
+      callerAcceptsOptimizedReturn(__builtin_return_address(0)) 函数在不同架构的 CPU 上实现也是不一样的。具体代码不再贴出来了。
+         __builtin_return_address(0)：获取当前函数返回地址。
+         callerAcceptsOptimizedReturn()：判断调用方是否紧接着调用了 objc_retainAutoreleasedReturnValue 或者 objc_unsafeClaimAutoreleasedReturnValue方法。
+    */
     if (callerAcceptsOptimizedReturn(__builtin_return_address(0))) {
+        // 如果外部调用了objc_retainAutoreleasedReturnValue，就表示外面是ARC环境，那么就可以使用TLS进行优化了，否则MRC就不能使用。
         if (ReturnAtPlus1){
             tls_set_direct(RETURN_DISPOSITION_KEY, (void*)(uintptr_t)ReturnAtPlus1);
         }
@@ -351,19 +360,12 @@ id objc_autoreleaseReturnValue(id obj) {
     }   
     return objc_autorelease(obj);
 }
-```
 
-`callerAcceptsOptimizedReturn(__builtin_return_address(0))` 函数在不同架构的 CPU 上实现也是不一样的。具体代码不再贴出来了。
-
-主要作用：
-
-1. `__builtin_return_address(0)` 获取当前函数返回地址。
-2. callerAcceptsOptimizedReturn() 方法判断调用方是否紧接着调用了 objc_retainAutoreleasedReturnValue或者 objc_unsafeClaimAutoreleasedReturnValue方法。
-3. 如果调用了objc_retainAutoreleasedReturnValue，就表示外面是ARC环境，那么就可以使用TLS了，否则MRC就不能使用。
-
-### 4.1.3 objc_retainAutoreleasedReturnValue
-
-```objc
+/*
+ * 用于自己持有(retain)对象的函数。
+ * @param obj 应为返回 注册在autoreleasepool中对象 的方法/函数的返回值
+ * 如上面的示例代码中，当我们调用alloc/new/copy/mutableCopy以外的构造方法时，由编译器插入该函数。
+ */
 id objc_retainAutoreleasedReturnValue(id obj) {
     ReturnDisposition disposition = (ReturnDisposition)(uintptr_t)tls_get_direct(RETURN_DISPOSITION_KEY);
     if (disposition == ReturnAtPlus1) return obj;
@@ -371,11 +373,13 @@ id objc_retainAutoreleasedReturnValue(id obj) {
 }
 ```
 
-### 4.1.4 补充说明
+总结：alloc/new/copy/mutableCopy开头以外的构造方法，其返回值对象是要注册到autoreleasepool中的。但是ARC出于优化，此时不直接调用对象的 `autorelease` 方法，而是改为调用 `objc_autoreleaseReturnValue`。
 
-- `objc_autoreleaseReturnValue` 函数同 `objc_autorelease` 函数不同，一般不仅限于注册对象到autoreleasepool中。
-- 在ARC中原本对象生成之后是要注册到autoreleasepool中。但是此时调用了`objc_autoreleaseReturnValue`函数，该函数就会检查使用该函数的方法或函数调用方的执行命令列表，如果方法或函数的调用方在调用了方法或函数后紧接着调用`objc_retainAutoreleasedReturnValue()`函数(调用了这个方法就表示外面的环境是ARC)，就将这个返回值obj储存在TLS中，然后直接返回这个obj（不调用autorelease）给方法或者函数的调用方。达到了即使对象不注册到autoreleasepool中，也可以返回拿到相应的对象。
-- 同时，在外部接收这个返回值的objc_retainAutoreleasedReturnValue里，发现TLS中正好存了这个对象，那么直接返回这个object（不调用retain）。
+`objc_autoreleaseReturnValue` 函数会检查使用该函数的方法/函数调用方的执行命令列表，如果调用方在调用了本函数后紧接着调用`objc_retainAutoreleasedReturnValue()`函数，那么：
+
+- `objc_autoreleaseReturnValue` 函数内不再调用对象的 `autorelease` 方法，而是直接返回对象，并设置全局数据结构 TLS 中的一个标志位。
+- `objc_retainAoutoreleasedReturnValue`函数内检测刚才的标志位，若已经置位，则不执行 `retain` 操作。
+- 设置并检测标志位，要比调用 `autorelease` 和`retain `更快。
 
 > TLS 全称为 Thread Local Storage（线程本地存储），是每个线程专有的键值存储，需要调用方与被调用方必须都是ARC的情况下（即全ARC环境下）
 
@@ -451,7 +455,7 @@ objc_storeWeak (&obj1, 0);
 - 把第二参数的赋值对象的地址作为 **键值**。把第一参数的附有__weak修饰符的变量的地址注册到weak表中。
 - 如果第二参数为0，则把变量的地址从**weak表**中删除。并从**引用计数表**中删除对应的键值记录。
 
-**weak表与引用计数表相同，作为散列表被实现**。如果使用weak表，将废弃对象的地址作为键值进行检索，就能高速地获取对应的附有__weak修饰符的变量的地址。另外，由于一个对象可同时赋值给多个附有 weak修饰符的变量中，所以对于**一个键值，可注册多个变量的地址**。
+**weak表与引用计数表相同，作为散列表被实现。Key是所指对象的地址，Value是weak指针的地址数组**。如果使用weak表，将废弃对象的地址作为键值进行检索，就能高速地获取对应的附有__weak修饰符的变量的地址。另外，由于一个对象可同时赋值给多个附有 weak修饰符的变量中，所以对于**一个键值，可注册多个变量的地址**。
 
 ### 4.2.4 释放对象的过程
 
@@ -503,7 +507,9 @@ objc_destroyweak(&obj1);
 - `objc_loadWeakRetained` 函数取出附有 `__weak` 修饰符变量所引用的对象并 retain。
 - `objc_autorelease` 两数将对象注册到 autorelcasepool 中。
 
-由此可知，因为附有 `__weak` 修饰符变量所引用的对象像这样被注册到autoreleasepool 中，所以在 @autoreleasepool 块结束之前都可以放心使用。但是，如果大量地使用附有 `__weak` 修饰符的变量，注册到autoreleasepool 的对象也会大量地增加，因此在使用附有 `__weak` 修饰符的变量时，最好先暂时赋值给附有 `__strong` 修饰符的变量后再使用。
+由此可知，因为附有 `__weak` 修饰符变量所引用的对象像这样被注册到autoreleasepool 中，所以在 @autoreleasepool 块结束之前都可以放心使用。
+
+但是，如果大量地使用附有 `__weak` 修饰符的变量，注册到autoreleasepool 的对象也会大量地增加，因此在使用附有 `__weak` 修饰符的变量时，最好先暂时赋值给附有 `__strong` 修饰符的变量后再使用。
 
 比如，以下源代码使用了5次附有 weak 修饰符的变量o。
 

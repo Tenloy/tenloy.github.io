@@ -516,7 +516,7 @@ void map_images_nolock(unsigned mhCount, const char * const mhPaths[],
 
 ### 3.3 _read_images()
 
-观看下面内容之前，如果对 OC 中 `Class`、`Category`、`Protocol`的实现结构(底层的结构体实现及成员变量)不熟悉，建议先看一下[Runtime(一)：面向对象(Class和Object)的基本数据结构]()、[Runtime(二)：Category、Protocol的实现与加载]()
+观看下面内容之前，如果对 OC 中 `Class`、`Category`、`Protocol`的实现结构(底层的结构体实现及成员变量)不熟悉，建议先看一下[Objc Runtime总结](https://tenloy.github.io/2020/10/28/runtime-data-structure.html)
 ```c++
 // 对以 headerList 开头的链表中的 headers 进行初始处理
 void _read_images(header_info **hList, uint32_t hCount, int totalClasses, int unoptimizedTotalClasses)
@@ -1686,12 +1686,10 @@ static void load_categories_nolock(header_info *hi) {
 #### 4.2.3 attachCategories()
 
 - 把所有Category的方法、属性、协议数据，合并到一个大数组中。后面参与编译的Category数据，会在数组的前面。
-
 - 将合并后的分类数据(方法、属性、协议)，插入到类原来数据的前面。
 
 ```c++
 // 将方法列表、属性和协议从categories附加到class。
-// 假设cats_list中的所有categories都已加载，并按加载顺序排序，最老的类别优先。
 static void
 attachCategories(Class cls, const locstamped_category_t *cats_list, uint32_t cats_count, int flags)
 {
@@ -1706,9 +1704,9 @@ attachCategories(Class cls, const locstamped_category_t *cats_list, uint32_t cat
 
     /*
      在发布期间，只有少数类的类别超过 64 个。
-		 这使用了一个小stack，避免了 malloc。
-		 Categories 必须以正确的顺序添加，即从后到前。为了通过分块(chunking)来做到这一点，我们从前到后迭代cats_list，向后构建本地缓冲区，
-		 并在块上调用attachLists。 attachLists将列表放在前面，因此最终结果按预期顺序排列。
+     这使用了一个小stack，避免了 malloc。
+     Categories 必须以正确的顺序添加，即从后到前。为了通过分块(chunking)来做到这一点，我们从前到后迭代cats_list，向后构建本地缓冲区，
+     并在块上调用attachLists。 attachLists将列表放在前面，因此最终结果按预期顺序排列。
      */
     constexpr uint32_t ATTACH_BUFSIZ = 64;
     method_list_t   *mlists[ATTACH_BUFSIZ];
@@ -1799,7 +1797,7 @@ bool hasLoadMethods(const headerType *mhdr)
 }
 ```
 
-### 4.3 prepare_load_methods()
+### 4.4 prepare_load_methods()
 
 获取所有要调用的 +load 方法（父类、子类、分类）。
 
@@ -1871,7 +1869,7 @@ void prepare_load_methods(const headerType *mhdr)
 }
 ```
 
-#### 4.3.1 schedule_class_load
+#### 4.4.1 schedule_class_load
 
 ```c++
 // schedule_class_load 将其 +load 函数添加到 loadable_classes 数组中，优先添加其父类的 +load 方法。（用于后续 call_load_methods 函数调用）
@@ -1943,7 +1941,7 @@ void add_class_to_loadable_list(Class cls)
 }
 ```
 
-### 4.4 call_load_methods()
+### 4.5 call_load_methods()
 
 `+load` 函数的调用顺序：父类 -> 子类 -> 分类。
 
@@ -1995,7 +1993,7 @@ void call_load_methods(void)
 }
 ```
 
-### 4.5 关于 +load 方法的几个QA
+### 4.6 关于 +load 方法的几个QA
 
 Q: +load的应用？
 
