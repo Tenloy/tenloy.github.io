@@ -347,38 +347,38 @@ log:
 下面的汇编代码很简单，如果不清楚，可以看一下这篇汇编入门文章[iOS需要了解的ARM64汇编](https://www.jianshu.com/p/23a9110cff96)。
 ```arm
 #if __arm64__
-	.text
-	.align 2
-	.globl __dyld_start
+  .text
+  .align 2
+  .globl __dyld_start
 __dyld_start:
 ; 操作fp栈帧寄存器，sp栈指针寄存器，配置函数栈帧
-	mov 	x28, sp
-	and     sp, x28, #~15		// force 16-byte alignment of stack
-	mov	x0, #0
-	mov	x1, #0
-	stp	x1, x0, [sp, #-16]!	// make aligned terminating frame
-	mov	fp, sp			// set up fp to point to terminating frame
-	sub	sp, sp, #16             // make room for local variables
+  mov 	x28, sp
+  and     sp, x28, #~15		// force 16-byte alignment of stack
+  mov	x0, #0
+  mov	x1, #0
+  stp	x1, x0, [sp, #-16]!	// make aligned terminating frame
+  mov	fp, sp			// set up fp to point to terminating frame
+  sub	sp, sp, #16             // make room for local variables
 ; L(long 64位) P(point)，在前面的汇编一文中，我们已经知道：r0 - r30 是31个通用整形寄存器。每个寄存器可以存取一个64位大小的数。 
 ; 当使用 x0 - x30访问时，它就是一个64位的数。
 ; 当使用 w0 - w30访问时，访问的是这些寄存器的低32位
 #if __LP64__       
-	ldr     x0, [x28]               // get app's mh into x0
-	ldr     x1, [x28, #8]           // get argc into x1 (kernel passes 32-bit int argc as 64-bits on stack to keep alignment)
-	add     x2, x28, #16            // get argv into x2
+  ldr     x0, [x28]               // get app's mh into x0
+  ldr     x1, [x28, #8]           // get argc into x1 (kernel passes 32-bit int argc as 64-bits on stack to keep alignment)
+  add     x2, x28, #16            // get argv into x2
 #else
-	ldr     w0, [x28]               // get app's mh into x0
-	ldr     w1, [x28, #4]           // get argc into x1 (kernel passes 32-bit int argc as 64-bits on stack to keep alignment)
-	add     w2, w28, #8             // get argv into x2
+  ldr     w0, [x28]               // get app's mh into x0
+  ldr     w1, [x28, #4]           // get argc into x1 (kernel passes 32-bit int argc as 64-bits on stack to keep alignment)
+  add     w2, w28, #8             // get argv into x2
 #endif
-	adrp	x3,___dso_handle@page
-	add 	x3,x3,___dso_handle@pageoff // get dyld's mh in to x4
-	mov	x4,sp                   // x5 has &startGlue
+  adrp	x3,___dso_handle@page
+  add 	x3,x3,___dso_handle@pageoff // get dyld's mh in to x4
+  mov	x4,sp                   // x5 has &startGlue
 ; 从上面的汇编代码可以看到，主要是在设置dyldbootstrap::start函数调用栈的配置，在前面的汇编一文中，我们已经知道函数的参数，主要通过x0-x7几个寄存器来传递
 ; 可以看到函数需要的几个参数app_mh，argc，argv，dyld_mh，&startGlue分别被放置到了x0 x1 x2 x4 x5寄存器上
     ; call dyldbootstrap::start(app_mh, argc, argv, dyld_mh, &startGlue)
-	bl	__ZN13dyldbootstrap5startEPKN5dyld311MachOLoadedEiPPKcS3_Pm
-	mov	x16,x0                  // save entry point address in x16
+  bl	__ZN13dyldbootstrap5startEPKN5dyld311MachOLoadedEiPPKcS3_Pm
+  mov	x16,x0                  // save entry point address in x16
 ```
 
 ### 4.2 dyldbootstrap::start()
@@ -423,82 +423,82 @@ dyld也是Mach-O文件格式的，文件头中的 filetype 字段为`MH_DYLINKER
 // 返回主程序模块的mian()函数地址，__dyld_start中会跳到该地址。Returns address of main() in target program which __dyld_start jumps to
 uintptr_t
 _main(const macho_header* mainExecutableMH, uintptr_t mainExecutableSlide, 
-		int argc, const char* argv[], const char* envp[], const char* apple[], 
-		uintptr_t* startGlue)
+    int argc, const char* argv[], const char* envp[], const char* apple[], 
+    uintptr_t* startGlue)
 {
 ```
 #### 第一步 配置上下文信息，设置运行环境，处理环境变量
 ```c++
-	#pragma mark -- 第一步，设置运行环境
+#pragma mark -- 第一步，设置运行环境
     // Grab the cdHash of the main executable from the environment
-	uint8_t mainExecutableCDHashBuffer[20];
-	const uint8_t* mainExecutableCDHash = nullptr;
-	if ( hexToBytes(_simple_getenv(apple, "executable_cdhash"), 40, mainExecutableCDHashBuffer) )
-		// 获取主程序的hash
-		mainExecutableCDHash = mainExecutableCDHashBuffer;
+  uint8_t mainExecutableCDHashBuffer[20];
+  const uint8_t* mainExecutableCDHash = nullptr;
+  if ( hexToBytes(_simple_getenv(apple, "executable_cdhash"), 40, mainExecutableCDHashBuffer) )
+    // 获取主程序的hash
+    mainExecutableCDHash = mainExecutableCDHashBuffer;
 
 #if !TARGET_OS_SIMULATOR
-	// Trace dyld's load
-	notifyKernelAboutImage((macho_header*)&__dso_handle, _simple_getenv(apple, "dyld_file"));
-	// Trace the main executable's load
-	notifyKernelAboutImage(mainExecutableMH, _simple_getenv(apple, "executable_file"));
+  // Trace dyld's load
+  notifyKernelAboutImage((macho_header*)&__dso_handle, _simple_getenv(apple, "dyld_file"));
+  // Trace the main executable's load
+  notifyKernelAboutImage(mainExecutableMH, _simple_getenv(apple, "executable_file"));
 #endif
 
-	uintptr_t result = 0;
-	// 获取主程序的macho_header结构
-	sMainExecutableMachHeader = mainExecutableMH;
-	// 获取主程序的slide值
-	sMainExecutableSlide = mainExecutableSlide;
+  uintptr_t result = 0;
+  // 获取主程序的macho_header结构
+  sMainExecutableMachHeader = mainExecutableMH;
+  // 获取主程序的slide值
+  sMainExecutableSlide = mainExecutableSlide;
     ......
-	CRSetCrashLogMessage("dyld: launch started");
-	// 传入Mach-O头部以及一些参数设置上下文信息
-	setContext(mainExecutableMH, argc, argv, envp, apple);
+  CRSetCrashLogMessage("dyld: launch started");
+  // 传入Mach-O头部以及一些参数设置上下文信息
+  setContext(mainExecutableMH, argc, argv, envp, apple);
 
-	// Pickup the pointer to the exec path.
-	// 获取主程序路径
-	sExecPath = _simple_getenv(apple, "executable_path");
+  // Pickup the pointer to the exec path.
+  // 获取主程序路径
+  sExecPath = _simple_getenv(apple, "executable_path");
 
-	// <rdar://problem/13868260> Remove interim apple[0] transition code from dyld
-	if (!sExecPath) sExecPath = apple[0];
+  // <rdar://problem/13868260> Remove interim apple[0] transition code from dyld
+  if (!sExecPath) sExecPath = apple[0];
     ......
-	if ( sExecPath[0] != '/' ) {
-		// have relative path, use cwd to make absolute
-		char cwdbuff[MAXPATHLEN];
-	    if ( getcwd(cwdbuff, MAXPATHLEN) != NULL ) {
-			// maybe use static buffer to avoid calling malloc so early...
-			char* s = new char[strlen(cwdbuff) + strlen(sExecPath) + 2];
-			strcpy(s, cwdbuff);
-			strcat(s, "/");
-			strcat(s, sExecPath);
-			sExecPath = s;
-		}
-	}
+  if ( sExecPath[0] != '/' ) {
+    // have relative path, use cwd to make absolute
+    char cwdbuff[MAXPATHLEN];
+      if ( getcwd(cwdbuff, MAXPATHLEN) != NULL ) {
+      // maybe use static buffer to avoid calling malloc so early...
+      char* s = new char[strlen(cwdbuff) + strlen(sExecPath) + 2];
+      strcpy(s, cwdbuff);
+      strcat(s, "/");
+      strcat(s, sExecPath);
+      sExecPath = s;
+    }
+  }
 
-	// Remember short name of process for later logging
-	// 获取进程名称
-	sExecShortName = ::strrchr(sExecPath, '/');
-	if ( sExecShortName != NULL )
-		++sExecShortName;
-	else
-		sExecShortName = sExecPath;
+  // Remember short name of process for later logging
+  // 获取进程名称
+  sExecShortName = ::strrchr(sExecPath, '/');
+  if ( sExecShortName != NULL )
+    ++sExecShortName;
+  else
+    sExecShortName = sExecPath;
 
-	// 配置进程受限模式
+  // 配置进程受限模式
     configureProcessRestrictions(mainExecutableMH, envp);
     ......
-	// 检测环境变量
-	checkEnvironmentVariables(envp);
-	// 在DYLD_FALLBACK为空时设置默认值
-	defaultUninitializedFallbackPaths(envp);
+  // 检测环境变量
+  checkEnvironmentVariables(envp);
+  // 在DYLD_FALLBACK为空时设置默认值
+  defaultUninitializedFallbackPaths(envp);
     ......
-	// 如果设置了DYLD_PRINT_OPTS则调用printOptions()打印参数
-	if ( sEnv.DYLD_PRINT_OPTS )
-		printOptions(argv);
-	// 如果设置了DYLD_PRINT_ENV则调用printEnvironmentVariables()打印环境变量
-	if ( sEnv.DYLD_PRINT_ENV ) 
-		printEnvironmentVariables(envp);
+  // 如果设置了DYLD_PRINT_OPTS则调用printOptions()打印参数
+  if ( sEnv.DYLD_PRINT_OPTS )
+    printOptions(argv);
+  // 如果设置了DYLD_PRINT_ENV则调用printEnvironmentVariables()打印环境变量
+  if ( sEnv.DYLD_PRINT_ENV ) 
+    printEnvironmentVariables(envp);
     ......
-	// 获取当前程序架构
-	getHostInfo(mainExecutableMH, mainExecutableSlide);
+  // 获取当前程序架构
+  getHostInfo(mainExecutableMH, mainExecutableSlide);
 ```
 #### 第二步 加载共享缓存
 在iOS系统中，UIKit，Foundation等基础库是每个程序都依赖的，需要通过dyld（位于/usr/lib/dyld）一个一个加载到内存，然而如果在每个程序运行的时候都重复的去加载一次，势必造成运行缓慢，为了优化启动速度和提高程序性能，共享缓存机制就应运而生。iOS的dyld采用了一个共享库预链接缓存，苹果从iOS 3.0开始将所有的基础库都移到了这个缓存中，合并成一个大的缓存文件，放到/System/Library/Caches/com.apple.dyld/目录下(OS X中是在/private/var/db/dyld目录)，按不同的架构保存分别保存着，如dyld_shared_cache_armv7。而且在OS X中还有一个辅助的.map文件，而iOS中没有。
@@ -507,23 +507,23 @@ _main(const macho_header* mainExecutableMH, uintptr_t mainExecutableSlide,
 
 
 ```c++
-	#pragma mark -- 第二步，加载共享缓存 // load shared cache
+#pragma mark -- 第二步，加载共享缓存 // load shared cache
     // 检查共享缓存是否开启，iOS必须开启
-	checkSharedRegionDisable((dyld3::MachOLoaded*)mainExecutableMH, mainExecutableSlide);
-	if ( gLinkContext.sharedRegionMode != ImageLoader::kDontUseSharedRegion ) {
+  checkSharedRegionDisable((dyld3::MachOLoaded*)mainExecutableMH, mainExecutableSlide);
+  if ( gLinkContext.sharedRegionMode != ImageLoader::kDontUseSharedRegion ) {
       /*
        * mapSharedCache加载共享缓存库，其中调用loadDyldCache函数，展开loadDyldCache，有这么几种情况：
          * 仅加载到当前进程mapCachePrivate（模拟器仅支持加载到当前进程）
          * 共享缓存是第一次被加载，就去做加载操作mapCacheSystemWide
          * 共享缓存不是第一次被加载，那么就不做任何处理
        */
-	  mapSharedCache();
-	}
+    mapSharedCache();
+  }
     ......
 
-	try {
-		// add dyld itself to UUID list
-		addDyldImageToUUIDList();
+  try {
+    // add dyld itself to UUID list
+    addDyldImageToUUIDList();
 ```
 #### 第三步 实例化主程序image
 
@@ -533,40 +533,40 @@ ImageLoader：前面已经提到image(映像文件)常见的有可执行文件�
 
 从下面可以看到大概的顺序：先将动态链接的 image 递归加载，再依次进行可执行文件的链接。
 ```c++
-		#pragma mark -- 第三步 实例化主程序，会实例化一个主程序ImageLoader
-		// instantiate ImageLoader for main executable
-		/*
-		 * 展开 instantiateFromLoadedImage 函数, 可以看到主要分三步:
-		 * 	isCompatibleMachO()：检查mach-o的subtype是否是当前cpu可以支持；
-		 * 	instantiateMainExecutable()： 就是实例化可执行文件，这个期间会解析LoadCommand，这个之后会发送 dyld_image_state_mapped 通知；
-		 * 	addImage()： 添加到 allImages中
-		 */
-		sMainExecutable = instantiateFromLoadedImage(mainExecutableMH, mainExecutableSlide, sExecPath);
-		gLinkContext.mainExecutable = sMainExecutable;
-		gLinkContext.mainExecutableCodeSigned = hasCodeSignatureLoadCommand(mainExecutableMH);
+#pragma mark -- 第三步 实例化主程序，会实例化一个主程序ImageLoader
+    // instantiate ImageLoader for main executable
+    /*
+     * 展开 instantiateFromLoadedImage 函数, 可以看到主要分三步:
+     *   isCompatibleMachO()：检查mach-o的subtype是否是当前cpu可以支持；
+     *   instantiateMainExecutable()： 就是实例化可执行文件，这个期间会解析LoadCommand，这个之后会发送 dyld_image_state_mapped 通知；
+     *   addImage()： 添加到 allImages中
+     */
+    sMainExecutable = instantiateFromLoadedImage(mainExecutableMH, mainExecutableSlide, sExecPath);
+    gLinkContext.mainExecutable = sMainExecutable;
+    gLinkContext.mainExecutableCodeSigned = hasCodeSignatureLoadCommand(mainExecutableMH);
 
-		// Now that shared cache is loaded, setup an versioned dylib overrides
-	#if SUPPORT_VERSIONED_PATHS
-		checkVersionedPaths();
-	#endif
+    // Now that shared cache is loaded, setup an versioned dylib overrides
+  #if SUPPORT_VERSIONED_PATHS
+    checkVersionedPaths();
+  #endif
 
-		// dyld_all_image_infos image list does not contain dyld
-		// add it as dyldPath field in dyld_all_image_infos
-		// for simulator, dyld_sim is in image list, need host dyld added
+    // dyld_all_image_infos image list does not contain dyld
+    // add it as dyldPath field in dyld_all_image_infos
+    // for simulator, dyld_sim is in image list, need host dyld added
 #if TARGET_OS_SIMULATOR
-		// get path of host dyld from table of syscall vectors in host dyld
-		void* addressInDyld = gSyscallHelpers;
+    // get path of host dyld from table of syscall vectors in host dyld
+    void* addressInDyld = gSyscallHelpers;
 #else
-		// get path of dyld itself
-		void*  addressInDyld = (void*)&__dso_handle;
+    // get path of dyld itself
+    void*  addressInDyld = (void*)&__dso_handle;
 #endif
-		char dyldPathBuffer[MAXPATHLEN+1];
-		int len = proc_regionfilename(getpid(), (uint64_t)(long)addressInDyld, dyldPathBuffer, MAXPATHLEN);
-		if ( len > 0 ) {
-			dyldPathBuffer[len] = '\0'; // proc_regionfilename() does not zero terminate returned string
-			if ( strcmp(dyldPathBuffer, gProcessInfo->dyldPath) != 0 )
-				gProcessInfo->dyldPath = strdup(dyldPathBuffer);
-		}
+    char dyldPathBuffer[MAXPATHLEN+1];
+    int len = proc_regionfilename(getpid(), (uint64_t)(long)addressInDyld, dyldPathBuffer, MAXPATHLEN);
+    if ( len > 0 ) {
+      dyldPathBuffer[len] = '\0'; // proc_regionfilename() does not zero terminate returned string
+      if ( strcmp(dyldPathBuffer, gProcessInfo->dyldPath) != 0 )
+        gProcessInfo->dyldPath = strdup(dyldPathBuffer);
+    }
 ```
 ##### 2. instantiateFromLoadedImage
 
@@ -575,14 +575,14 @@ ImageLoader：前面已经提到image(映像文件)常见的有可执行文件�
 // make an ImageLoader* for the already mapped in main executable.
 static ImageLoaderMachO* instantiateFromLoadedImage(const macho_header* mh, uintptr_t slide, const char* path)
 {
-	// try mach-o loader
-//	if ( isCompatibleMachO((const uint8_t*)mh, path) ) {
-		ImageLoader* image = ImageLoaderMachO::instantiateMainExecutable(mh, slide, path, gLinkContext);
-		addImage(image);
-		return (ImageLoaderMachO*)image;
-//	}
-	
-//	throw "main executable not a known format";
+  // try mach-o loader
+//  if ( isCompatibleMachO((const uint8_t*)mh, path) ) {
+    ImageLoader* image = ImageLoaderMachO::instantiateMainExecutable(mh, slide, path, gLinkContext);
+    addImage(image);
+    return (ImageLoaderMachO*)image;
+//  }
+  
+//  throw "main executable not a known format";
 }
 ```
 
@@ -598,33 +598,33 @@ static ImageLoaderMachO* instantiateFromLoadedImage(const macho_header* mh, uint
 
 在三方App的Mach-O文件中通过修改DYLD_INSERT_LIBRARIES的值来加入我们自己的动态库，从而注入代码，hook别人的App。
 ```c++
-		#pragma mark -- 第四步 加载插入的动态库
-		// load any inserted libraries
-		if	( sEnv.DYLD_INSERT_LIBRARIES != NULL ) {
-			for (const char* const* lib = sEnv.DYLD_INSERT_LIBRARIES; *lib != NULL; ++lib) 
-				loadInsertedDylib(*lib);
-		}
-		// record count of inserted libraries so that a flat search will look at 
-		// inserted libraries, then main, then others.
-		// 记录插入的动态库数量
-		sInsertedDylibCount = sAllImages.size()-1;
+#pragma mark -- 第四步 加载插入的动态库
+    // load any inserted libraries
+    if  ( sEnv.DYLD_INSERT_LIBRARIES != NULL ) {
+      for (const char* const* lib = sEnv.DYLD_INSERT_LIBRARIES; *lib != NULL; ++lib) 
+        loadInsertedDylib(*lib);
+    }
+    // record count of inserted libraries so that a flat search will look at 
+    // inserted libraries, then main, then others.
+    // 记录插入的动态库数量
+    sInsertedDylibCount = sAllImages.size()-1;
 ```
 #### 第五步 链接主程序(重点link())
 
 ##### 1. 源码解读
 
 ```c++
-		#pragma mark -- 第五步 链接主程序
-		// link main executable
-		gLinkContext.linkingMainExecutable = true;
+#pragma mark -- 第五步 链接主程序
+    // link main executable
+    gLinkContext.linkingMainExecutable = true;
 #if SUPPORT_ACCELERATE_TABLES
-		if ( mainExcutableAlreadyRebased ) {
-			// previous link() on main executable has already adjusted its internal pointers for ASLR 
-		    // work around that by rebasing by inverse amount
-			sMainExecutable->rebase(gLinkContext, -mainExecutableSlide);
-		}
+    if ( mainExcutableAlreadyRebased ) {
+      // previous link() on main executable has already adjusted its internal pointers for ASLR 
+        // work around that by rebasing by inverse amount
+      sMainExecutable->rebase(gLinkContext, -mainExecutableSlide);
+    }
 #endif
-		/*
+    /*
         link() 函数的递归调用函数堆栈形式
           ▼ ImageLoader::link() //启动主程序的连接进程   —— ImageLoader.cpp，ImageLoader类中可以发现很多由dyld调用来实现二进制加载逻辑的函数。
             ▼ recursiveLoadLibraries() //进行所有需求动态库的加载
@@ -634,12 +634,12 @@ static ImageLoaderMachO* instantiateFromLoadedImage(const macho_header* mh, uint
                   ▶︎ loadPhase0() → loadPhase1() → ... → loadPhase5() → loadPhase5load() → loadPhase5open() → loadPhase6() 递归调用  //每一个函数都负责加载进程工作的一个具体任务。比如，解析路径或者处理会影响加载进程的环境变量。
                   ▼ loadPhase6() // 该函数从文件系统加载需求的dylib到内存中。然后调用一个ImageLoaderMachO类的实例对象。来完成每个dylib对象Mach-O文件具体的加载和连接逻辑。
          */
-		link(sMainExecutable, sEnv.DYLD_BIND_AT_LAUNCH, true, ImageLoader::RPathChain(NULL, NULL), -1);
-		sMainExecutable->setNeverUnloadRecursive();
-		if ( sMainExecutable->forceFlat() ) {
-			gLinkContext.bindFlat = true;
-			gLinkContext.prebindUsage = ImageLoader::kUseNoPrebinding;
-		}
+    link(sMainExecutable, sEnv.DYLD_BIND_AT_LAUNCH, true, ImageLoader::RPathChain(NULL, NULL), -1);
+    sMainExecutable->setNeverUnloadRecursive();
+    if ( sMainExecutable->forceFlat() ) {
+      gLinkContext.bindFlat = true;
+      gLinkContext.prebindUsage = ImageLoader::kUseNoPrebinding;
+    }
 ```
 ##### 2. ImageLoader::link()
 
@@ -650,22 +650,22 @@ static ImageLoaderMachO* instantiateFromLoadedImage(const macho_header* mh, uint
 ```c++
 void ImageLoader::link(const LinkContext& context, bool forceLazysBound, bool preflightOnly, bool neverUnload, const RPathChain& loaderRPaths, const char* imagePath)
 {
-	//dyld::log("ImageLoader::link(%s) refCount=%d, neverUnload=%d\n", imagePath, fDlopenReferenceCount, fNeverUnload);
-	
-	// clear error strings
-	(*context.setErrorStrings)(0, NULL, NULL, NULL);
+  //dyld::log("ImageLoader::link(%s) refCount=%d, neverUnload=%d\n", imagePath, fDlopenReferenceCount, fNeverUnload);
+  
+  // clear error strings
+  (*context.setErrorStrings)(0, NULL, NULL, NULL);
 
-	uint64_t t0 = mach_absolute_time();
+  uint64_t t0 = mach_absolute_time();
   // 1. recursiveLoadLibraries 这一步就是根据 LoadCommand 中的 LC_LOAD_DYLIB 把依赖的动态库和Framework加载进来。也就是对这些动态库 instantiate 的过程。 只是动态库不会用instantiateMainExecutable方法来加载了，最终用的是 instantiateFromFile 来加载。
-	this->recursiveLoadLibraries(context, preflightOnly, loaderRPaths, imagePath);
-	context.notifyBatch(dyld_image_state_dependents_mapped, preflightOnly);
+  this->recursiveLoadLibraries(context, preflightOnly, loaderRPaths, imagePath);
+  context.notifyBatch(dyld_image_state_dependents_mapped, preflightOnly);
 
-	// we only do the loading step for preflights
-	if ( preflightOnly )
-		return;
+  // we only do the loading step for preflights
+  if ( preflightOnly )
+    return;
 
-	uint64_t t1 = mach_absolute_time();
-	context.clearAllDepths();
+  uint64_t t1 = mach_absolute_time();
+  context.clearAllDepths();
   // 2. recursiveUpdateDepth 刷新depth, 就是库依赖的层级。层级越深，depth越大。
   /*
   unsigned int ImageLoader::updateDepth(unsigned int maxDepth)
@@ -680,12 +680,12 @@ void ImageLoader::link(const LinkContext& context, bool forceLazysBound, bool pr
     return depth;
   }
   */
-	this->updateDepth(context.imageCount());
+  this->updateDepth(context.imageCount());
 
-	__block uint64_t t2, t3, t4, t5;
-	{
-		dyld3::ScopedTimer(DBG_DYLD_TIMING_APPLY_FIXUPS, 0, 0, 0);
-		t2 = mach_absolute_time();
+  __block uint64_t t2, t3, t4, t5;
+  {
+    dyld3::ScopedTimer(DBG_DYLD_TIMING_APPLY_FIXUPS, 0, 0, 0);
+    t2 = mach_absolute_time();
     // 3. recursiveRebase rebase的过程，recursiveRebase就会把主二进制和依赖进来的动态库全部rebase.
     /*
     void ImageLoader::recursiveRebaseWithAccounting(const LinkContext& context)
@@ -694,11 +694,11 @@ void ImageLoader::link(const LinkContext& context, bool forceLazysBound, bool pr
       vmAccountingSetSuspended(context, false);
     }
      */
-		this->recursiveRebaseWithAccounting(context);
-		context.notifyBatch(dyld_image_state_rebased, false);
+    this->recursiveRebaseWithAccounting(context);
+    context.notifyBatch(dyld_image_state_rebased, false);
 
-		t3 = mach_absolute_time();
-		if ( !context.linkingMainExecutable )
+    t3 = mach_absolute_time();
+    if ( !context.linkingMainExecutable )
       // 4. 主二进制和依赖进来的动态库全部执行 bind
       /*
       void ImageLoader::recursiveBindWithAccounting(const LinkContext& context, bool forceLazysBound, bool neverUnload)
@@ -707,50 +707,50 @@ void ImageLoader::link(const LinkContext& context, bool forceLazysBound, bool pr
         vmAccountingSetSuspended(context, false);
       }
        */
-			this->recursiveBindWithAccounting(context, forceLazysBound, neverUnload);
+      this->recursiveBindWithAccounting(context, forceLazysBound, neverUnload);
 
-		t4 = mach_absolute_time();
-		if ( !context.linkingMainExecutable )
+    t4 = mach_absolute_time();
+    if ( !context.linkingMainExecutable )
       // 5. weakBind. 执行weakBind，这里看到如果是主二进制在link的话，是不会在这个时候执行weak bind的，在dyld::_main里面可以看到，是在link完成之后再执行的weakBind.
-			this->weakBind(context);
-		t5 = mach_absolute_time();
-	}
+      this->weakBind(context);
+    t5 = mach_absolute_time();
+  }
 
-	// interpose any dynamically loaded images
-	if ( !context.linkingMainExecutable && (fgInterposingTuples.size() != 0) ) {
-		dyld3::ScopedTimer timer(DBG_DYLD_TIMING_APPLY_INTERPOSING, 0, 0, 0);
+  // interpose any dynamically loaded images
+  if ( !context.linkingMainExecutable && (fgInterposingTuples.size() != 0) ) {
+    dyld3::ScopedTimer timer(DBG_DYLD_TIMING_APPLY_INTERPOSING, 0, 0, 0);
     // 6. recursiveApplyInterposing. (主二进制link时候也不执行)
-		this->recursiveApplyInterposing(context);
-	}
+    this->recursiveApplyInterposing(context);
+  }
 
-	// now that all fixups are done, make __DATA_CONST segments read-only
-	if ( !context.linkingMainExecutable )
-		this->recursiveMakeDataReadOnly(context);
+  // now that all fixups are done, make __DATA_CONST segments read-only
+  if ( !context.linkingMainExecutable )
+    this->recursiveMakeDataReadOnly(context);
 
     if ( !context.linkingMainExecutable )
         context.notifyBatch(dyld_image_state_bound, false);
-	uint64_t t6 = mach_absolute_time();
+  uint64_t t6 = mach_absolute_time();
 
-	if ( context.registerDOFs != NULL ) {
-		std::vector<DOFInfo> dofs;
-		this->recursiveGetDOFSections(context, dofs);
+  if ( context.registerDOFs != NULL ) {
+    std::vector<DOFInfo> dofs;
+    this->recursiveGetDOFSections(context, dofs);
     // 7. registerDOFs. 注册DTrace Object Format。DTrace(Dynamic Trace)是一个提供了 zero disable cost 的动态追踪框架，也就是说当代码中的探针关闭时，不会有额外的资源消耗 - 即使在生产版本中我们也可以将探针留在代码中。只有使用的时候才产生消耗。
     // DTrace 是动态的，也就是说我们可以将它附加在一个已经在运行的程序上，也可以不打断程序将它剥离。不需要重新编译或启动。
-		context.registerDOFs(dofs);
-	}
-	uint64_t t7 = mach_absolute_time();
+    context.registerDOFs(dofs);
+  }
+  uint64_t t7 = mach_absolute_time();
 
-	// clear error strings
-	(*context.setErrorStrings)(0, NULL, NULL, NULL);
+  // clear error strings
+  (*context.setErrorStrings)(0, NULL, NULL, NULL);
 
-	fgTotalLoadLibrariesTime += t1 - t0;
-	fgTotalRebaseTime += t3 - t2;
-	fgTotalBindTime += t4 - t3;
-	fgTotalWeakBindTime += t5 - t4;
-	fgTotalDOF += t7 - t6;
-	
-	// done with initial dylib loads
-	fgNextPIEDylibAddress = 0;
+  fgTotalLoadLibrariesTime += t1 - t0;
+  fgTotalRebaseTime += t3 - t2;
+  fgTotalBindTime += t4 - t3;
+  fgTotalWeakBindTime += t5 - t4;
+  fgTotalDOF += t7 - t6;
+  
+  // done with initial dylib loads
+  fgNextPIEDylibAddress = 0;
 }
 ```
 
@@ -771,57 +771,57 @@ void ImageLoader::link(const LinkContext& context, bool forceLazysBound, bool pr
 #### 第六步 链接插入的动态库
 
 ```c++
-		#pragma mark -- 第六步 链接插入的动态库
-		// link any inserted libraries
-		// do this after linking main executable so that any dylibs pulled in by inserted 
-		// dylibs (e.g. libSystem) will not be in front of dylibs the program uses
-		if ( sInsertedDylibCount > 0 ) {
-			for(unsigned int i=0; i < sInsertedDylibCount; ++i) {
-				ImageLoader* image = sAllImages[i+1];
-				link(image, sEnv.DYLD_BIND_AT_LAUNCH, true, ImageLoader::RPathChain(NULL, NULL), -1);
-				image->setNeverUnloadRecursive();
-			}
-			// only INSERTED libraries can interpose
-			// register interposing info after all inserted libraries are bound so chaining works
-			for(unsigned int i=0; i < sInsertedDylibCount; ++i) {
-				ImageLoader* image = sAllImages[i+1];
-				image->registerInterposing(gLinkContext);
-			}
-		}
+#pragma mark -- 第六步 链接插入的动态库
+    // link any inserted libraries
+    // do this after linking main executable so that any dylibs pulled in by inserted 
+    // dylibs (e.g. libSystem) will not be in front of dylibs the program uses
+    if ( sInsertedDylibCount > 0 ) {
+      for(unsigned int i=0; i < sInsertedDylibCount; ++i) {
+        ImageLoader* image = sAllImages[i+1];
+        link(image, sEnv.DYLD_BIND_AT_LAUNCH, true, ImageLoader::RPathChain(NULL, NULL), -1);
+        image->setNeverUnloadRecursive();
+      }
+      // only INSERTED libraries can interpose
+      // register interposing info after all inserted libraries are bound so chaining works
+      for(unsigned int i=0; i < sInsertedDylibCount; ++i) {
+        ImageLoader* image = sAllImages[i+1];
+        image->registerInterposing(gLinkContext);
+      }
+    }
 
-		// <rdar://problem/19315404> dyld should support interposition even without DYLD_INSERT_LIBRARIES
-		for (long i=sInsertedDylibCount+1; i < sAllImages.size(); ++i) {
-			ImageLoader* image = sAllImages[i];
-			if ( image->inSharedCache() )
-				continue;
-			image->registerInterposing(gLinkContext);
-		}
+    // <rdar://problem/19315404> dyld should support interposition even without DYLD_INSERT_LIBRARIES
+    for (long i=sInsertedDylibCount+1; i < sAllImages.size(); ++i) {
+      ImageLoader* image = sAllImages[i];
+      if ( image->inSharedCache() )
+        continue;
+      image->registerInterposing(gLinkContext);
+    }
         ......
 
-		// apply interposing to initial set of images
-		for(int i=0; i < sImageRoots.size(); ++i) {
-			sImageRoots[i]->applyInterposing(gLinkContext);
-		}
-		gLinkContext.notifyBatch(dyld_image_state_bound, false);
+    // apply interposing to initial set of images
+    for(int i=0; i < sImageRoots.size(); ++i) {
+      sImageRoots[i]->applyInterposing(gLinkContext);
+    }
+    gLinkContext.notifyBatch(dyld_image_state_bound, false);
 
-		// Bind and notify for the inserted images now interposing has been registered
-		if ( sInsertedDylibCount > 0 ) {
-			for(unsigned int i=0; i < sInsertedDylibCount; ++i) {
-				ImageLoader* image = sAllImages[i+1];
-				image->recursiveBind(gLinkContext, sEnv.DYLD_BIND_AT_LAUNCH, true);
-			}
-		}
+    // Bind and notify for the inserted images now interposing has been registered
+    if ( sInsertedDylibCount > 0 ) {
+      for(unsigned int i=0; i < sInsertedDylibCount; ++i) {
+        ImageLoader* image = sAllImages[i+1];
+        image->recursiveBind(gLinkContext, sEnv.DYLD_BIND_AT_LAUNCH, true);
+      }
+    }
 ```
 #### 第七步 弱符号绑定weakBind
-```		c++
-		// <rdar://problem/12186933> do weak binding only after all inserted images linked
-		#pragma mark -- 第七步 执行弱符号绑定。weakBind: 从代码中可以看出这一步会对所有含有弱符号的镜像合并排序进行bind。OC中没发现应用场景，可能是C++的吧
-		sMainExecutable->weakBind(gLinkContext);
-		gLinkContext.linkingMainExecutable = false;
+```c++
+    // <rdar://problem/12186933> do weak binding only after all inserted images linked
+#pragma mark -- 第七步 执行弱符号绑定。weakBind: 从代码中可以看出这一步会对所有含有弱符号的镜像合并排序进行bind。OC中没发现应用场景，可能是C++的吧
+    sMainExecutable->weakBind(gLinkContext);
+    gLinkContext.linkingMainExecutable = false;
 
-		sMainExecutable->recursiveMakeDataReadOnly(gLinkContext);
+    sMainExecutable->recursiveMakeDataReadOnly(gLinkContext);
 
-		CRSetCrashLogMessage("dyld: launch, running initializers");
+    CRSetCrashLogMessage("dyld: launch, running initializers");
         //......
 ```
 #### 第八步 执行初始化方法initialize
@@ -830,14 +830,14 @@ void ImageLoader::link(const LinkContext& context, bool forceLazysBound, bool pr
 dyld会优先初始化动态库，然后初始化主程序。
 
 ```c++
-		#pragma mark -- 第八步 执行初始化方法initialize() 
+#pragma mark -- 第八步 执行初始化方法initialize() 
         // run all initializers
-		//attribute((constructor)) 修饰的函数就是在这一步执行的, 即在主程序的main()函数之前。__DATA中有个Section __mod_init_func就是记录这些函数的。
-		//与之对应的是attribute((destructor))修饰的函数, 是主程序 main() 执行之后的一些全局函数析构操作, 也是记录在一个Section __mod_term_func中.
-		initializeMainExecutable(); 
+    //attribute((constructor)) 修饰的函数就是在这一步执行的, 即在主程序的main()函数之前。__DATA中有个Section __mod_init_func就是记录这些函数的。
+    //与之对应的是attribute((destructor))修饰的函数, 是主程序 main() 执行之后的一些全局函数析构操作, 也是记录在一个Section __mod_term_func中.
+    initializeMainExecutable(); 
 
-		// 通知所有的监视进程，本进程要进入main()函数了。 notify any montoring proccesses that this process is about to enter main()
-		notifyMonitoringDyldMain();
+    // 通知所有的监视进程，本进程要进入main()函数了。 notify any montoring proccesses that this process is about to enter main()
+    notifyMonitoringDyldMain();
         //......
 ```
 ##### 2. initializeMainExecutable()
@@ -939,11 +939,11 @@ void _os_object_init(void) {
   #endif
     // 初始化 trampoline machinery。通常这什么都不做，因为一切都是惰性初始化的，但对于某些进程，我们会主动加载 trampolines dylib。
     _imp_implementationWithBlock_init();
-		
+    
     // 注册dyld事件的监听，监听每个image(动态库、可执行文件)的加载，该方法是dyld提供的，内部调用了dyld::registerObjCNotifiers这个方法，记录了这三个分别对应map，init，unmap事件的回调函数。会在相应时机触发
     _dyld_objc_notify_register(&map_images, load_images, unmap_image);
 
-  	// runtime 监听到dyld中image加载后，调用 map_images 做解析和处理，至此，可执行文件中和动态库所有的符号（Class，Protocol，Selector，IMP，…）都已经按格式成功加载到内存中，被 runtime 所管理，在这之后，runtime 的那些方法（动态添加 Class、swizzle 等等才能生效）
+    // runtime 监听到dyld中image加载后，调用 map_images 做解析和处理，至此，可执行文件中和动态库所有的符号（Class，Protocol，Selector，IMP，…）都已经按格式成功加载到内存中，被 runtime 所管理，在这之后，runtime 的那些方法（动态添加 Class、swizzle 等等才能生效）
     // 接下来 load_images 中调用 call_load_methods 方法，遍历所有加载进来的 Class，按继承层级依次调用 Class 的 +load 方法和其 Category 的 +load 方法
 
 #if __OBJC2__
@@ -999,32 +999,32 @@ enum dyld_image_states
 
 #### 第九步 查找主程序入口点并返回，__dyld_start会跳转进入
 ```c++
-	    #pragma mark -- 第九步 查找入口点 main() 并返回，调用 getEntryFromLC_MAIN，从 Load Command 读取LC_MAIN入口，如果没有LC_MAIN入口，就读取LC_UNIXTHREAD，然后跳到主程序的入口处执行
-	    // find entry point for main executable
-		result = (uintptr_t)sMainExecutable->getEntryFromLC_MAIN();
-		if ( result != 0 ) {
-			// main executable uses LC_MAIN, we need to use helper in libdyld to call into main()
-			if ( (gLibSystemHelpers != NULL) && (gLibSystemHelpers->version >= 9) )
-				*startGlue = (uintptr_t)gLibSystemHelpers->startGlueToCallExit;
-			else
-				halt("libdyld.dylib support not present for LC_MAIN");
-		}
-		else {
-			// main executable uses LC_UNIXTHREAD, dyld needs to let "start" in program set up for main()
-			result = (uintptr_t)sMainExecutable->getEntryFromLC_UNIXTHREAD();
-			*startGlue = 0;
-		}
+#pragma mark -- 第九步 查找入口点 main() 并返回，调用 getEntryFromLC_MAIN，从 Load Command 读取LC_MAIN入口，如果没有LC_MAIN入口，就读取LC_UNIXTHREAD，然后跳到主程序的入口处执行
+      // find entry point for main executable
+    result = (uintptr_t)sMainExecutable->getEntryFromLC_MAIN();
+    if ( result != 0 ) {
+      // main executable uses LC_MAIN, we need to use helper in libdyld to call into main()
+      if ( (gLibSystemHelpers != NULL) && (gLibSystemHelpers->version >= 9) )
+        *startGlue = (uintptr_t)gLibSystemHelpers->startGlueToCallExit;
+      else
+        halt("libdyld.dylib support not present for LC_MAIN");
+    }
+    else {
+      // main executable uses LC_UNIXTHREAD, dyld needs to let "start" in program set up for main()
+      result = (uintptr_t)sMainExecutable->getEntryFromLC_UNIXTHREAD();
+      *startGlue = 0;
+    }
     ......
 
-	catch(const char* message) {
-		syncAllImages();
-		halt(message);
-	}
-	catch(...) {
-		dyld::log("dyld: launch failed\n");
-	}
+  catch(const char* message) {
+    syncAllImages();
+    halt(message);
+  }
+  catch(...) {
+    dyld::log("dyld: launch failed\n");
+  }
     ......
-	return result;
+  return result;
 }
 ```
 
