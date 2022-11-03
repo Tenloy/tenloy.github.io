@@ -36,7 +36,7 @@
 <meta property="og:image" content="https://tenloy.github.io/images/Engineering/modular_and_component_summary_4.jpg">
 <meta property="og:image" content="https://tenloy.github.io/images/Engineering/mgj-component.jpg">
 <meta property="article:published_time" content="2021-04-02T09:43:56.000Z">
-<meta property="article:modified_time" content="2022-10-20T02:39:23.217Z">
+<meta property="article:modified_time" content="2022-11-03T12:14:06.737Z">
 <meta property="article:author" content="Tenloy">
 <meta property="article:tag" content="Tenloy, iOS, Tenloy Blog, 博客，Swift, 编译, 计算机">
 <meta name="twitter:card" content="summary">
@@ -497,11 +497,11 @@ height:40vh;
 <img src="/images/Engineering/plans.jpg" style="zoom:80%">
 
 <ul>
-<li><p>**Web增强(Web+)**：方向主要基于 WebView 实现，能够进行快速的迭代。不过在性能和稳定性上略差，使用场景有限。</p>
+<li><p><strong>Web增强</strong>(<strong>Web+</strong>)：方向主要基于 WebView 实现，能够进行快速的迭代。不过在性能和稳定性上略差，使用场景有限。</p>
 </li>
 <li><p>GPL  和 DSL 可以看作 <code>Native 增强(Native+)</code> 方向的子方向，Native+ 方向基于 App 内自带的语言解析器，独立于 WebView 实现动态化逻辑的解析、布局和渲染。</p>
 <ul>
-<li>**基于GPL的 Native增强(GPL)**：<ul>
+<li><strong>基于GPL的 Native增强</strong>(<strong>GPL</strong>)：<ul>
 <li>这个方向是移动端动态化的热门方向。React Native、Flutter、NativeScript 等等，实现原理各不相同；</li>
 <li>共同的特点是利用了通用编程语言器，可以是系统提供的（如 Javascript），或者是集成到 App 的（如 Dart），再辅以某个布局系统和渲染方案，由于语言是图灵完备的，可以提供完美的动态化解决方案；</li>
 <li>GPL 方案虽然在动态化能力、渲染性能方面效果出色，但 Framework 体积、学习和开发成本等方面却也是相当高。于是产生了基于领域专用语言的解决方案。</li>
@@ -520,38 +520,32 @@ height:40vh;
 </blockquote>
 <p><a target="_blank" rel="noopener" href="https://tech.meituan.com/2020/09/30/waimai-mobile-architecture-evolution.html">美团外卖客户端容器化架构的演进</a>中对容器化的理解：<strong>将前端呈现业务的环境抽象出来，将能力进行标准化，形成统一的容器，通过容器去屏蔽平台和端的差异</strong>。容器提供上层标准统一的能力接口，使得业务开发人员专注于容器内的业务逻辑的实现，最大复用已有的能力，而不用关注现在的环境是Android还是iOS，现在的端是美团App还是大众点评App。</p>
 <p>容器和远端达成呈现协议，使得端上的内容具备随时可变化的能力。<strong>容器化架构的实现是存在一定前提的，如果业务的发展本身处在一个探索阶段，还有较多可变的因素，是无法形成稳定的能力层的，这时候建设容器化架构反而使得架构偏向复杂</strong>。但对于外卖业务场景来说，经过多年的沉淀固定，外卖业务逐渐形成了一套稳定的业务形态，已经进入到场景细分和快速迭代业务模块的阶段。在这样的阶段下，容器化架构才有可实施的前提。</p>
-<p>容器在不同场景下的含义</p>
+<p>容器在不同场景下的含义：</p>
 <ul>
-<li><p>字面意思，容器就是指容纳小物品的事物，比如：</p>
-<ul>
+<li>字面意思，容器就是指容纳小物品的事物，比如：<ul>
 <li>UIStackview</li>
 <li>自定义的Container视图组件</li>
 <li>前端组件化开发中的页面充当的角色(将一个页面分成很多个组件，此处页面就相当于是个纯粹的容器)</li>
 </ul>
 </li>
-<li><p>代码/数据的运行环境，完成代码的解释/数据的解析。比如(从小到大)：</p>
-<ul>
-<li><p>美团，后端返回协商好的结构化的数据，移动端对数据进行解析，还原成界面的layout。进行视图创建、渲染</p>
-<p>动态化是整个外卖业务的发展方向。提单页的动态化建立在容器化的基础之上，在完成容器化之后，就具备了动态化的基础。当前提单页的动态化，所指的主要是模块层级的动态化，提单页的各模块展示顺序、展示与否，都可以完全由根据服务端下发的数据决定，各模块可以自由地进行组合、拼装，实现提单页的动态配置。</p>
+<li>代码/数据的运行环境，完成代码的解释/数据的解析。比如(从小到大)：<ul>
+<li>美团，后端返回协商好的结构化的数据，移动端对数据进行解析，还原成界面的layout。进行视图创建、渲染。<ul>
+<li>动态化是整个外卖业务的发展方向。提单页的动态化建立在容器化的基础之上，在完成容器化之后，就具备了动态化的基础。当前提单页的动态化，所指的主要是模块层级的动态化，提单页的各模块展示顺序、展示与否，都可以完全由根据服务端下发的数据决定，各模块可以自由地进行组合、拼装，实现提单页的动态配置。</li>
+</ul>
 </li>
-<li><p>RN。在一定程度上，React Native和NodeJS有异曲同工之妙。它们都是通过扩展JavaScript Engine, 使它具备强大的本地资源和原生接口调用能力，然后结合JavaScript丰富的库和社区和及其稳定的跨平台能力，把javascript的魔力在浏览器之外的地方充分发挥出来。</p>
-<ul>
-<li><p><code>JavaScriptCore</code>负责JS代码解释执行</p>
-</li>
-<li><p><code>ReactJS</code>负责描述和管理<code>VirtualDom</code>，指挥原生组件进行绘制和更新，同时很多计算逻辑也在js里面进行。ReactJS自身是不直接绘制UI的，UI绘制是非常耗时的操作，原生组件最擅长这事情。</p>
-</li>
-<li><p><code>Bridges</code>用来翻译ReactJS的绘制指令给原生组件进行绘制，同时把原生组件接收到的用户事件反馈给<code>ReactJS</code>。</p>
-<p>要在不同的平台实现不同的效果就可以通过定制<code>Bridges</code>来实现</p>
+<li>RN。在一定程度上，React Native和NodeJS有异曲同工之妙。它们都是通过扩展JavaScript Engine, 使它具备强大的本地资源和原生接口调用能力，然后结合JavaScript丰富的库和社区和及其稳定的跨平台能力，把javascript的魔力在浏览器之外的地方充分发挥出来。<ul>
+<li><code>JavaScriptCore</code>负责JS代码解释执行</li>
+<li><code>ReactJS</code>负责描述和管理<code>VirtualDom</code>，指挥原生组件进行绘制和更新，同时很多计算逻辑也在js里面进行。ReactJS自身是不直接绘制UI的，UI绘制是非常耗时的操作，原生组件最擅长这事情。</li>
+<li><code>Bridges</code>用来翻译ReactJS的绘制指令给原生组件进行绘制，同时把原生组件接收到的用户事件反馈给<code>ReactJS</code>。<ul>
+<li>要在不同的平台实现不同的效果就可以通过定制<code>Bridges</code>来实现</li>
+</ul>
 </li>
 </ul>
 </li>
-<li><p>服务器容器</p>
-</li>
+<li>服务器容器</li>
 </ul>
 </li>
-<li><p>上面的Docker容器（主要是为了一键部署）。</p>
-<p>个人：Docker容器的概念换到移动端架构中，有些不同：</p>
-<ul>
+<li>上面的Docker容器（主要是为了一键部署）。个人：Docker容器的概念换到移动端架构中，有些不同：<ul>
 <li>如果都是容器（容纳物品的事物），iOS架构中的容器更偏向空的容器(不包含代码、数据)。而Docker容器，像是装满物品的容器（包含代码数据）。</li>
 <li>容器化很多时候是为了方便实现动态化，而Docker容器的概念，就是个静态。</li>
 </ul>
@@ -613,16 +607,11 @@ height:40vh;
 </ul>
 <p>区别：</p>
 <ul>
-<li><p>模块化开发是横向分块，组件化开发是纵向分层。(说法都不绝对，一般来讲)</p>
-</li>
-<li><p>模块化强调的是<strong>拆分</strong>，无论是从业务角度还是从架构、技术角度，模块化首先意味着将代码、数据等内容按照其职责不同分离，使其变得更加容易维护、迭代，使开发人员可以分而治之。</p>
-</li>
-<li><p>组件化则着重于<strong>可重用性</strong>，不管是界面上反复使用的用户头像按钮，还是处理数据的流程中的某个部件，只要可以被反复使用，并且进行了高度封装，只能通过接口访问，就可以称其为“组件”。</p>
-</li>
-<li><p>进行模块化拆分时你可以完全不考虑代码重用，只是把同一业务的代码做内聚整合成不同的模块。只不过这样得到的成果相对简单，我们一般不会这样而已。(<strong>并不是说模块就不能被复用！</strong>)</p>
-</li>
-<li><p>一般来讲，模块的体量会大于组件。不过，大的组件也可以称为模块，小的模块也可以称为组件，所以，在我看来组件和模块的划分并没有那么的泾渭分明。随意两者的粒度的大小改变，两者是可以转换的。</p>
-</li>
+<li>模块化开发是横向分块，组件化开发是纵向分层。(说法都不绝对，一般来讲)</li>
+<li>模块化强调的是<strong>拆分</strong>，无论是从业务角度还是从架构、技术角度，模块化首先意味着将代码、数据等内容按照其职责不同分离，使其变得更加容易维护、迭代，使开发人员可以分而治之。</li>
+<li>组件化则着重于<strong>可重用性</strong>，不管是界面上反复使用的用户头像按钮，还是处理数据的流程中的某个部件，只要可以被反复使用，并且进行了高度封装，只能通过接口访问，就可以称其为“组件”。</li>
+<li>进行模块化拆分时你可以完全不考虑代码重用，只是把同一业务的代码做内聚整合成不同的模块。只不过这样得到的成果相对简单，我们一般不会这样而已。(<strong>并不是说模块就不能被复用！</strong>)</li>
+<li>一般来讲，模块的体量会大于组件。不过，大的组件也可以称为模块，小的模块也可以称为组件，所以，在我看来组件和模块的划分并没有那么的泾渭分明。随意两者的粒度的大小改变，两者是可以转换的。</li>
 </ul>
 <p>这三个概念是经常同时出现在一个项目中的，我们往往对复杂大项目进行模块化划分的时候，也会进行组件化，而且插件化的本质是面向接口编程，对于组件化和模块化都是适用的，可实现随意插拔的灵活和高扩展性，属于项目架构的高端设计。</p>
 <h3 id="5-5-前端与iOS中的组件化"><a href="#5-5-前端与iOS中的组件化" class="headerlink" title="5.5 前端与iOS中的组件化"></a>5.5 前端与iOS中的组件化</h3><p>在前端、iOS、Android中，都会有组件化的说法(Android先不讨论)。不过与上面的组件概念都稍微有所出入。</p>
@@ -631,21 +620,16 @@ height:40vh;
 </blockquote>
 <p>前端中的组件化：</p>
 <ul>
-<li><p>横向划分模块、纵向划分组件</p>
-</li>
-<li><p>前端中的组件 <code>Component </code>可以简单理解为<strong>页面组成部件</strong>：页面组成部件(header、footer、nav、search等)。不是以重用为基础定义组件</p>
-</li>
-<li><p>前端中数据加工一般不称为组件，更倾向于<code>utils</code>。</p>
-</li>
+<li>横向划分模块、纵向划分组件</li>
+<li>前端中的组件 <code>Component </code>可以简单理解为<strong>页面组成部件</strong>：页面组成部件(header、footer、nav、search等)。不是以重用为基础定义组件</li>
+<li>前端中数据加工一般不称为组件，更倾向于<code>utils</code>。</li>
 </ul>
 <p>iOS中的组件化：以蘑菇街的组件化文章图为例：</p>
 <img src="/images/Engineering/mgj-component.jpg" style="zoom:50%">
 
 <ul>
-<li><p>大到业务模块，小到视图、数据加工组件，都统称为了组件。可以简单理解为<strong>APP组成部件</strong>。</p>
-</li>
-<li><p>这个叫法在起初接触组件化概念的时候给我造成了很大的困惑。一度怀疑自己的理解狭隘了….，直到看到Bang的文章，找到了同感。</p>
-</li>
+<li>大到业务模块，小到视图、数据加工组件，都统称为了组件。可以简单理解为<strong>APP组成部件</strong>。</li>
+<li>这个叫法在起初接触组件化概念的时候给我造成了很大的困惑。一度怀疑自己的理解狭隘了….，直到看到Bang的文章，找到了同感。</li>
 </ul>
 <blockquote>
 <p>首先我觉得”组件”在这里不太合适，因为按我理解组件是指比较小的功能块，这些组件不需要多少组件间通信，没什么依赖，也就不需要做什么其他处理，面向对象就能搞定。而这里提到的是较大粒度的业务功能，我们习惯称为”模块”。为了方便表述，下面模块和组件代表同一个意思，都是指较大粒度的业务模块。 —— <a target="_blank" rel="noopener" href="http://blog.cnbang.net/tech/3080/">iOS 组件化方案探索 — Bang’s blog</a></p>
@@ -680,7 +664,7 @@ height:40vh;
             <p>Author：<a href="https://tenloy.github.io">Tenloy</a>
             <p>原文链接：<a href="https://tenloy.github.io/2021/04/02/Engineering.html">https://tenloy.github.io/2021/04/02/Engineering.html</a>
             <p>发表日期：2021.04.02 , 9:43 AM</p>
-            <p>更新日期：2022.10.20 , 2:39 AM</p>
+            <p>更新日期：2022.11.03 , 12:14 PM</p>
             <p>版权声明：本文采用<a rel="license noopener" target="_blank" href="http://creativecommons.org/licenses/by-nc/4.0/">Crative Commons 4.0 许可协议</a>进行许可</p>
         </div>
     
@@ -2174,7 +2158,7 @@ top:40vh;
     
     
         <li class="archive-post-item">
-            <span class="archive-post-date">04/29</span><a class="archive-post-title" href= "/2021/04/29/iOS-ComRouter.html" >iOS的组件化方案</a>
+            <span class="archive-post-date">04/29</span><a class="archive-post-title" href= "/2021/04/29/iOS-ComRouter.html" >[转] iOS的组件化方案</a>
         </li>
     
     

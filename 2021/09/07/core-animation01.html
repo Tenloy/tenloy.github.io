@@ -35,9 +35,9 @@
 <meta property="og:image" content="https://tenloy.github.io/images/caa/viewdrawasync.png">
 <meta property="og:image" content="https://tenloy.github.io/images/caa/layoutdraw.png">
 <meta property="og:image" content="https://tenloy.github.io/images/caa/layoutdraw2.png">
-<meta property="og:image" content="https://static001.geekbang.org/resource/image/7c/1c/7ca0e14ef02231c9aba7cb49c7e9271c.png">
+<meta property="og:image" content="https://tenloy.github.io/images/caa/7ca0e14ef02231c9aba7cb49c7e9271c.webp">
 <meta property="article:published_time" content="2021-09-07T14:50:38.000Z">
-<meta property="article:modified_time" content="2022-10-20T02:39:23.225Z">
+<meta property="article:modified_time" content="2022-11-03T12:14:06.745Z">
 <meta property="article:author" content="Tenloy">
 <meta property="article:tag" content="Tenloy, iOS, Tenloy Blog, 博客，Swift, 编译, 计算机">
 <meta name="twitter:card" content="summary">
@@ -471,7 +471,7 @@ height:40vh;
 <h3 id="1-2-1-视图层级"><a href="#1-2-1-视图层级" class="headerlink" title="1.2.1 视图层级"></a>1.2.1 视图层级</h3><p>视图在层级关系中可以互相嵌套，一个视图可以管理它的所有子视图的位置。</p>
 <h3 id="1-2-2-图层树"><a href="#1-2-2-图层树" class="headerlink" title="1.2.2 图层树"></a>1.2.2 图层树</h3><p>每一个<code>UIView</code>都有一个<code>CALayer</code>实例的图层属性，也就是所谓的<em>backing layer</em>，视图的职责就是创建并管理这个图层，以确保当子视图在层级关系中添加或者被移除的时候，他们关联的图层也同样对应在层级关系树当中有相同的操作</p>
 <h3 id="1-2-3-呈现树"><a href="#1-2-3-呈现树" class="headerlink" title="1.2.3 呈现树"></a>1.2.3 呈现树</h3><p>在iOS中，屏幕每秒钟重绘60次。如果动画时长比60分之一秒要长，Core Animation就需要在设置一次新值和新值生效之间，对屏幕上的图层进行重新组织。这意味着<code>CALayer</code>除了“真实”值（就是你设置的值）之外，必须要知道当前<em>显示</em>在屏幕上的属性值的记录。</p>
-<p>每个图层属性的显示值都被存储在一个叫做<em>呈现图层</em>的独立图层当中，他可以通过<code>-presentationLayer</code>方法来访问。这个呈现图层实际上是模型图层的复制，但是它的属性值代表了在任何指定时刻当前外观效果。换句话说，你可以通过呈现图层的值来获取当前屏幕上真正显示出来的值。</p>
+<p>每个图层属性的显示值都被存储在一个叫做<em>呈现图层</em>的独立图层当中，他可以通过<code>-presentationLayer</code>方法来访问。这个呈现图层实际上是模型图层（上面的图层树？）的复制，但是它的属性值代表了在任何指定时刻当前外观效果。换句话说，你可以通过呈现图层的值来获取当前屏幕上真正显示出来的值。</p>
 <p>呈现树通过图层树中所有图层的呈现图层所形成。注意呈现图层仅仅当图层首次被<em>提交</em>（就是首次第一次在屏幕上显示）的时候创建，所以在那之前调用<code>-presentationLayer</code>将会返回<code>nil</code>。</p>
 <h3 id="1-2-4-渲染树"><a href="#1-2-4-渲染树" class="headerlink" title="1.2.4 渲染树"></a>1.2.4 渲染树</h3><p>详见<a href="https://tenloy.github.io/2021/09/11/core-animation03.html">下下篇 iOS渲染流程探究</a></p>
 <p>图层树的改动会在Application这一层以事务的形式完成打包提交，一旦打包的图层和动画到达渲染服务进程，他们会被反序列化来形成另一个叫做<em>渲染树</em>的图层树。使用这个树状结构，渲染服务对动画的每一帧做出如下工作：</p>
@@ -713,7 +713,7 @@ height:40vh;
 <h2 id="4-3-约束的实现原理"><a href="#4-3-约束的实现原理" class="headerlink" title="4.3 约束的实现原理"></a>4.3 约束的实现原理</h2><p>Auto Layout 不只有布局算法 Cassowary，还包含了布局在运行时的生命周期等一整套布局引擎系统，用来统一管理布局的创建、更新和销毁。了解 Auto Layout 的生命周期，是理解它的性能相关话题的基础。这样，在遇到问题，特别是性能问题时，我们才能从根儿上找到原因，从而避免或改进类似的问题。</p>
 <p>这一整套布局引擎系统叫作 Layout Engine ，是 Auto Layout 的核心，主导着整个界面布局。</p>
 <p>每个视图在得到自己的布局之前，Layout Engine 会将视图、约束、优先级、固定大小通过计算转换成最终的大小和位置。在 Layout Engine 里，每当约束发生变化，就会触发 Deffered Layout Pass，完成后进入监听约束变化的状态。当再次监听到约束变化，即进入下一轮循环中。Layout Engine 界面布局过程如下图所示：</p>
-<img src="https://static001.geekbang.org/resource/image/7c/1c/7ca0e14ef02231c9aba7cb49c7e9271c.png" style="zoom:50%;" />
+<img src="/images/caa/7ca0e14ef02231c9aba7cb49c7e9271c.webp" style="zoom:50%;" />
 
 <p>图中：</p>
 <ul>
@@ -781,7 +781,7 @@ height:40vh;
             <p>Author：<a href="https://tenloy.github.io">Tenloy</a>
             <p>原文链接：<a href="https://tenloy.github.io/2021/09/07/core-animation01.html">https://tenloy.github.io/2021/09/07/core-animation01.html</a>
             <p>发表日期：2021.09.07 , 2:50 PM</p>
-            <p>更新日期：2022.10.20 , 2:39 AM</p>
+            <p>更新日期：2022.11.03 , 12:14 PM</p>
             <p>版权声明：本文采用<a rel="license noopener" target="_blank" href="http://creativecommons.org/licenses/by-nc/4.0/">Crative Commons 4.0 许可协议</a>进行许可</p>
         </div>
     
@@ -2275,7 +2275,7 @@ top:40vh;
     
     
         <li class="archive-post-item">
-            <span class="archive-post-date">04/29</span><a class="archive-post-title" href= "/2021/04/29/iOS-ComRouter.html" >iOS的组件化方案</a>
+            <span class="archive-post-date">04/29</span><a class="archive-post-title" href= "/2021/04/29/iOS-ComRouter.html" >[转] iOS的组件化方案</a>
         </li>
     
     
