@@ -584,7 +584,7 @@ $ LayerTest[21215:c07] Inside: <CABasicAnimation: 0x757f090>
 
 当动画刚被添加到 layer 时，属性的新值还没有被改变。在构建动画时，只有 `fromValue` (也就是当前值) 被显式地指定了。[CABasicAnimation 的文档](https://developer.apple.com/library/ios/documentation/GraphicsImaging/Reference/CABasicAnimation_class/Introduction/Introduction.html)向我们简单介绍了这么做对于动画的插值来说，意味着什么：
 
-> fromValue、toValue、byValue三个对象定义了要插入的属性值。三者都是可选的，并且不应该超过两个非nil。
+> fromValue、toValue、byValue三个对象定义了要插入的属性值。三者都是可选的，并且最多两个非nil。
 >
 > 当只有 `fromValue` 不是 `nil` 时，在 `fromValue` 和属性当前显示层的值之间进行插值。
 >

@@ -588,7 +588,6 @@ struct dispatch_queue_static_s _dispatch_mgr_q = {
 再次重申：
 
 - overcommit的队列在队列创建时会新建一个线程，非overcommit队列创建队列则未必创建线程。
-
 - 另外，width=1意味着是串行队列，只有一个线程可用，width=0xffe则意味着并行队列，线程则是从线程池获取。
 
 *测试现象：*
@@ -597,7 +596,6 @@ struct dispatch_queue_static_s _dispatch_mgr_q = {
 - 主队列是overcommit的com.apple.root.default-qos.overcommit，不过它是串行队列，width=1，并且运行的这个线程只能是主线程。
 - 自定义串行队列是overcommit的，默认优先级则是 com.apple.root.default-qos.overcommit。**创建串行队列肯定会创建1个新的线程**。
   - 最多可以创建512个，明显已经是灾难性的了，所以，**串行队列是开发中应该注意的**。【测试代码1，线程号是3-514】
-
 - 自定义并行队列则是非overcommit的。
   - **创建并行队列不一定会新建线程，会从线程池中的64个线程中获取并使用。** 【测试代码2，线程号是3-66】
   - 如果64个线程都在使用中，那么如果再调用需要【申请新的子线程资源】的API，那么会**进行等待状态，直到有可用子线程**。【测试代码3，注意如果64个线程一直得不到释放，那么会发生死等】
