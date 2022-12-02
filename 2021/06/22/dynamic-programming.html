@@ -20,12 +20,12 @@
     <meta name="keywords" content="Tenloy,iOS,Swift">
     
     <meta name="description" content="学习 生活 记录 回忆">
-    <meta name="description" content="一、术语介绍先来说几个动态规划问题中的术语。 动态规划(dynamic programming)是运筹学的一个分支，是求解决策过程(decision process)最优化的数学方法。20世纪50年代初美国数学家R.E.Bellman等人在研究多阶段决策过程(multistep decision process)的优化问题时，提出了著名的最优化原理(principle of optimality)">
+    <meta name="description" content="一、术语介绍先来说几个动态规划问题中的术语。 动态规划(dynamic programming)是运筹学的一个分支，是求解决策过程最优化的数学方法。20世纪50年代初美国数学家在研究多阶段决策过程的优化问题时，提出了著名的最优化原理，把多阶段过程转化为一系列单阶段问题，利用各阶段之间的关系，逐个求解，创立了解决这类过程优化问题的新方法——动态规划。 多阶段决策问题图示：  1.1 阶段 把所给求解">
 <meta property="og:type" content="article">
 <meta property="og:title" content="(二) 动态规划算法">
 <meta property="og:url" content="https://tenloy.github.io/2021/06/22/dynamic-programming.html">
 <meta property="og:site_name" content="Tenloy&#39;s Blog">
-<meta property="og:description" content="一、术语介绍先来说几个动态规划问题中的术语。 动态规划(dynamic programming)是运筹学的一个分支，是求解决策过程(decision process)最优化的数学方法。20世纪50年代初美国数学家R.E.Bellman等人在研究多阶段决策过程(multistep decision process)的优化问题时，提出了著名的最优化原理(principle of optimality)">
+<meta property="og:description" content="一、术语介绍先来说几个动态规划问题中的术语。 动态规划(dynamic programming)是运筹学的一个分支，是求解决策过程最优化的数学方法。20世纪50年代初美国数学家在研究多阶段决策过程的优化问题时，提出了著名的最优化原理，把多阶段过程转化为一系列单阶段问题，利用各阶段之间的关系，逐个求解，创立了解决这类过程优化问题的新方法——动态规划。 多阶段决策问题图示：  1.1 阶段 把所给求解">
 <meta property="og:locale" content="en_US">
 <meta property="og:image" content="https://tenloy.github.io/images/algorithm/dp-1.jpg">
 <meta property="og:image" content="https://tenloy.github.io/images/algorithm/dp-3.png">
@@ -35,7 +35,7 @@
 <meta property="og:image" content="https://tenloy.github.io/images/algorithm/dp-5.png">
 <meta property="og:image" content="https://tenloy.github.io/images/algorithm/dp-6.png">
 <meta property="article:published_time" content="2021-06-22T14:40:13.000Z">
-<meta property="article:modified_time" content="2022-11-22T04:13:30.593Z">
+<meta property="article:modified_time" content="2022-12-02T07:40:02.227Z">
 <meta property="article:author" content="Tenloy">
 <meta property="article:tag" content="dp">
 <meta name="twitter:card" content="summary">
@@ -448,8 +448,9 @@ height:40vh;
             <main class="main post-page">
     <article class="article-entry">
         <h2 id="一、术语介绍"><a href="#一、术语介绍" class="headerlink" title="一、术语介绍"></a>一、术语介绍</h2><p>先来说几个动态规划问题中的术语。</p>
-<p>动态规划(<code>dynamic programming</code>)是运筹学的一个分支，是求解决策过程(<code>decision process</code>)最优化的数学方法。20世纪50年代初美国数学家R.E.Bellman等人在研究多阶段决策过程(<code>multistep decision process</code>)的优化问题时，提出了著名的最优化原理(<code>principle of optimality</code>)，把多阶段过程转化为一系列单阶段问题，利用各阶段之间的关系，逐个求解，创立了解决这类过程优化问题的新方法——动态规划。</p>
-<p><img src="/images/algorithm/dp-1.jpg" alt="多阶段决策问题的图示"></p>
+<p>动态规划(<code>dynamic programming</code>)是运筹学的一个分支，是求解决策过程最优化的数学方法。20世纪50年代初美国数学家在研究多阶段决策过程的优化问题时，提出了著名的最优化原理，<strong>把多阶段过程转化为一系列单阶段问题，利用各阶段之间的关系，逐个求解，创立了解决这类过程优化问题的新方法——动态规划。</strong></p>
+<p>多阶段决策问题图示：</p>
+<p><img src="/images/algorithm/dp-1.jpg"></p>
 <h3 id="1-1-阶段"><a href="#1-1-阶段" class="headerlink" title="1.1 阶段"></a>1.1 阶段</h3><ul>
 <li>把所给求解问题的过程恰当地分成若干个相互联系的阶段，以便于求解，过程不同，阶段数就可能不同。</li>
 <li>描述阶段的变量称为阶段变量。在多数情况下，阶段变量是离散的，用 <code>k</code> 表示。</li>
@@ -496,8 +497,8 @@ height:40vh;
 <h2 id="二、基本思想"><a href="#二、基本思想" class="headerlink" title="二、基本思想"></a>二、基本思想</h2><blockquote>
 <p>动态规划算法通常用于<strong>求解最优性问题</strong>：在这类问题中，可能会有许多可行解，每一个解都对应于一个值，我们希望找到具有最优值的解。  </p>
 </blockquote>
-<p><strong>动态规划</strong>(DP：Dynamic Programming)是一种重要的程序设计手段，其基本思想是在对一个<strong>多阶段决策</strong>的问题，按照某一顺序，根据每一步所选决策的不同会引起状态的转移，最后会在变化的状态中获取到一个决策序列。</p>
-<p><strong>动态规划</strong>是一种把多阶段过程转化为一系列单阶段问题，逐个求解的方法泛应用于生产调度、工程技术和最优控制等领域。</p>
+<p><strong>动态规划</strong>(DP：Dynamic Programming)是一种重要的程序设计手段，是一种通过把原问题分解为相对简单的子问题的方式求解复杂问题的方法。</p>
+<p>其基本思想是在对一个<strong>多阶段决策</strong>的问题，按照某一顺序，根据每一步所选决策的不同会引起状态的转移，最后会在变化的状态中获取到一个决策序列。</p>
 <p>动态规划与分治法的异同：</p>
 <ul>
 <li>相同点：都是将待求解问题分解成若干个子问题，先求解子问题，然后从这些子问题的解得到原问题的解。</li>
@@ -694,7 +695,7 @@ height:40vh;
             <p>Author：<a href="https://tenloy.github.io">Tenloy</a>
             <p>原文链接：<a href="https://tenloy.github.io/2021/06/22/dynamic-programming.html">https://tenloy.github.io/2021/06/22/dynamic-programming.html</a>
             <p>发表日期：2021.06.22 , 2:40 PM</p>
-            <p>更新日期：2022.11.22 , 4:13 AM</p>
+            <p>更新日期：2022.12.02 , 7:40 AM</p>
             <p>版权声明：本文采用<a rel="license noopener" target="_blank" href="http://creativecommons.org/licenses/by-nc/4.0/">Crative Commons 4.0 许可协议</a>进行许可</p>
         </div>
     
