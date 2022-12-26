@@ -53,7 +53,7 @@
 <meta property="og:image" content="https://tenloy.github.io/images/Fiber/16deecd21336ca41.jpg">
 <meta property="og:image" content="https://tenloy.github.io/images/Fiber/16deecd2d4124b05.png">
 <meta property="article:published_time" content="2021-05-27T16:51:02.000Z">
-<meta property="article:modified_time" content="2022-12-02T07:40:02.227Z">
+<meta property="article:modified_time" content="2022-12-26T09:12:45.777Z">
 <meta property="article:author" content="Tenloy">
 <meta property="article:tag" content="Fiber">
 <meta name="twitter:card" content="summary">
@@ -336,7 +336,7 @@ height:40vh;
                 
                 
                     <div class="post-intro-read">
-                        <span>Word count: <span class="post-count word-count">11.6k</span>Reading time: <span class="post-count reading-time">42 min</span></span>
+                        <span>Word count: <span class="post-count word-count">11.7k</span>Reading time: <span class="post-count reading-time">42 min</span></span>
                     </div>
                 
                 <div class="post-intro-meta">
@@ -573,7 +573,13 @@ height:40vh;
 <li>司徒正美在<a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/37095662">《React Fiber架构》</a> 也提到：<strong>给浏览器一点喘息的机会，他会对代码进行编译优化（JIT）及进行热代码优化，或者对reflow进行修正</strong>。</li>
 </ul>
 <p>这就是为什么React 需要 Fiber 。</p>
-<h2 id="三、何为-Fiber"><a href="#三、何为-Fiber" class="headerlink" title="三、何为 Fiber"></a>三、何为 Fiber</h2><p>对于 React 来说，Fiber 可以从两个角度理解:</p>
+<h2 id="三、何为-Fiber"><a href="#三、何为-Fiber" class="headerlink" title="三、何为 Fiber"></a>三、何为 Fiber</h2><p>Fiber 如何解决性能问题的思路：</p>
+<ul>
+<li>在 Fiber 架构中 React 放弃了递归调用，采用循环来模拟递归，因为循环可以随时被中断。</li>
+<li>Fiber 将大的渲染任务拆分成一个个小任务</li>
+<li>React 使用 requestIdleCallback 去利用浏览器的空闲时间去执行小任务，React 在执行一个任务单元后，查看是否有其他高优先级的任务，如果有，放弃占用线程，先执行优先级高的任务。</li>
+</ul>
+<p>对于 React 来说，Fiber 可以从两个角度理解:</p>
 <h3 id="1-一种流程控制原语"><a href="#1-一种流程控制原语" class="headerlink" title="1. 一种流程控制原语"></a>1. 一种流程控制原语</h3><h4 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h4><p>Fiber 也称<a target="_blank" rel="noopener" href="https://www.liaoxuefeng.com/wiki/897692888725344/923057403198272">协程</a>、或者纤程。 笔者第一次接触这个概念是在学习 Ruby 的时候，Ruby就将协程称为 Fiber。后来发现很多语言都有类似的机制，例如Lua 的<code>Coroutine</code>，还有前端开发者比较熟悉的 <code>ES6</code> 新增的<a target="_blank" rel="noopener" href="https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/Generator"><code>Generator</code></a>。</p>
 <p><strong>其实协程和线程并不一样，协程本身是没有并发或者并行能力的（需要配合线程），它只是一种控制流程的让出机制</strong>。要理解协程，你得和普通函数一起来看，以Generator为例:</p>
 <p>普通函数执行的过程中无法<strong>被中断和恢复</strong>：</p>
@@ -583,7 +589,7 @@ height:40vh;
 <figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> tasks = []</span><br><span class="line"><span class="function"><span class="keyword">function</span> * <span class="title">run</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">  <span class="keyword">let</span> task</span><br><span class="line"></span><br><span class="line">  <span class="keyword">while</span> (task = tasks.shift()) &#123;</span><br><span class="line">    <span class="comment">// 🔴 判断是否有高优先级事件需要处理，有的话让出控制权</span></span><br><span class="line">    <span class="keyword">if</span> (hasHighPriorityEvent()) &#123;</span><br><span class="line">      <span class="keyword">yield</span></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 处理完高优先级事件后，恢复函数调用栈，继续执行...</span></span><br><span class="line">    execute(task)</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
 <p>React Fiber 的思想和协程的概念是契合的: <strong>React 渲染的过程可以被中断，可以将控制权交回浏览器，让位给高优先级的任务，浏览器空闲后再恢复渲染</strong>。</p>
-<h4 id="问题1"><a href="#问题1" class="headerlink" title="问题1"></a>问题1</h4><p>浏览器没有抢占的条件，所以React只能用让出机制?</p>
+<h4 id="问题1：让出机制？"><a href="#问题1：让出机制？" class="headerlink" title="问题1：让出机制？"></a>问题1：让出机制？</h4><p>浏览器没有抢占的条件，所以React只能用让出机制?</p>
 <p><strong>答: 没错，主动让出机制</strong></p>
 <p>一是浏览器中没有类似进程的概念，’任务‘之间的界限很模糊，没有上下文，所以不具备中断/恢复的条件。二是没有抢占的机制，我们无法中断一个正在执行的程序。</p>
 <p>所以我们只能采用类似协程这样控制权让出机制。这个和上文提到的进程调度策略都不同，它有更一个专业的名词：<a target="_blank" rel="noopener" href="https://juejin.im/post/6844903874692661255#heading-7"><strong>合作式调度(Cooperative Scheduling)</strong></a>，相对应的有<strong>抢占式调度(Preemptive Scheduling)</strong></p>
@@ -592,7 +598,7 @@ height:40vh;
 
 <p>这种调度方式很有趣，你会发现<strong>这是一种身份的对调</strong>，以前我们是老子，想怎么执行就怎么执行，执行多久就执行多久; 现在为了我们共同的用户体验统一了战线，一切听由浏览器指挥调度，浏览器是老子，我们要跟浏览器申请执行权，而且这个执行权有期限，借了后要按照约定归还给浏览器。</p>
 <p>当然你超时不还浏览器也拿你没办法 … 合作式调度的缺点就在于此，全凭自律，用户要挖大坑，谁都拦不住。</p>
-<h4 id="问题2"><a href="#问题2" class="headerlink" title="问题2"></a>问题2</h4><p>怎么确定有高优先任务要处理，即什么时候让出？</p>
+<h4 id="问题2：requestIdleCallback"><a href="#问题2：requestIdleCallback" class="headerlink" title="问题2：requestIdleCallback?"></a>问题2：requestIdleCallback?</h4><p>怎么确定有高优先任务要处理，即什么时候让出？</p>
 <p><strong>答: requestIdleCallback API</strong></p>
 <p>上面代码示例中的 <code>hasHighPriorityEvent()</code> 在目前浏览器中是无法实现的，我们没办法判断当前是否有更高优先级的任务等待被执行。</p>
 <p>只能换一种思路，通过<strong>超时检查的机制来让出控制权</strong>。解决办法是: <em>确定一个合理的运行时长，然后在合适的检查点检测是否超时(比如每执行一个小任务)，如果超时就停止执行，将控制权交换给浏览器</em>。</p>
@@ -644,7 +650,7 @@ height:40vh;
 <li><code>Low</code> (10s) 这些任务可以放后，但是最终应该得到执行. 例如分析通知</li>
 <li><code>Idle</code> (没有超时时间) 一些没有必要做的任务 (e.g. 比如隐藏的内容)，可能会被饿死</li>
 </ul>
-<h4 id="问题3"><a href="#问题3" class="headerlink" title="问题3"></a>问题3</h4><p>React 那为什么不使用 Generator？</p>
+<h4 id="问题3：为什么不用Generator"><a href="#问题3：为什么不用Generator" class="headerlink" title="问题3：为什么不用Generator?"></a>问题3：为什么不用Generator?</h4><p>React 那为什么不使用 Generator？</p>
 <p><strong>答: 太麻烦</strong></p>
 <p>官方在<a target="_blank" rel="noopener" href="https://github.com/facebook/react/issues/7942">《Fiber Principles: Contributing To Fiber》</a> 也作出了解答。主要有两个原因：</p>
 <ol>
@@ -898,7 +904,7 @@ height:40vh;
             <p>Author：<a href="https://tenloy.github.io">Tenloy</a>
             <p>原文链接：<a href="https://tenloy.github.io/2021/05/27/Fiber.html">https://tenloy.github.io/2021/05/27/Fiber.html</a>
             <p>发表日期：2021.05.27 , 4:51 PM</p>
-            <p>更新日期：2022.12.02 , 7:40 AM</p>
+            <p>更新日期：2022.12.26 , 9:12 AM</p>
             <p>版权声明：本文采用<a rel="license noopener" target="_blank" href="http://creativecommons.org/licenses/by-nc/4.0/">Crative Commons 4.0 许可协议</a>进行许可</p>
         </div>
     
@@ -1040,7 +1046,7 @@ top:40vh;
         <div class="toc-catalog">
             <span class="iconfont-archer catalog-icon">&#xe613;</span><span>CATALOG</span>
         </div>
-        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E3%80%81%E5%8D%95%E5%A4%84%E7%90%86%E5%99%A8%E8%BF%9B%E7%A8%8B%E8%B0%83%E5%BA%A6"><span class="toc-text">一、单处理器进程调度</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-1-%E5%B9%B6%E5%8F%91%E4%B8%8E%E5%B9%B6%E8%A1%8C"><span class="toc-text">1.1 并发与并行</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-2-%E8%BF%9B%E7%A8%8B%E8%B0%83%E5%BA%A6%E7%AD%96%E7%95%A5"><span class="toc-text">1.2 进程调度策略</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#1-2-1-%E5%85%88%E5%88%B0%E5%85%88%E5%BE%97-First-Come-First-Served-FCFS"><span class="toc-text">1.2.1 先到先得(First-Come-First-Served, FCFS)</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#1-2-2-%E8%BD%AE%E8%BD%AC"><span class="toc-text">1.2.2 轮转</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#1-2-3-%E6%9C%80%E7%9F%AD%E8%BF%9B%E7%A8%8B%E4%BC%98%E5%85%88-Shortest-Process-Next-SPN"><span class="toc-text">1.2.3 最短进程优先(Shortest Process Next, SPN)</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#1-2-4-%E6%9C%80%E7%9F%AD%E5%89%A9%E4%BD%99%E6%97%B6%E9%97%B4-Shortest-Remaining-Time-SRT"><span class="toc-text">1.2.4 最短剩余时间(Shortest Remaining Time, SRT)</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#1-2-5-%E6%9C%80%E9%AB%98%E5%93%8D%E5%BA%94%E6%AF%94%E4%BC%98%E5%85%88-HRRN"><span class="toc-text">1.2.5 最高响应比优先(HRRN)</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#1-2-6-%E5%8F%8D%E9%A6%88%E6%B3%95"><span class="toc-text">1.2.6 反馈法</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8C%E3%80%81%E6%B5%8F%E8%A7%88%E5%99%A8JavaScript%E6%89%A7%E8%A1%8C%E7%8E%AF%E5%A2%83"><span class="toc-text">二、浏览器JavaScript执行环境</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%89%E3%80%81%E4%BD%95%E4%B8%BA-Fiber"><span class="toc-text">三、何为 Fiber</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-%E4%B8%80%E7%A7%8D%E6%B5%81%E7%A8%8B%E6%8E%A7%E5%88%B6%E5%8E%9F%E8%AF%AD"><span class="toc-text">1. 一种流程控制原语</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%A6%82%E8%BF%B0"><span class="toc-text">概述</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E9%97%AE%E9%A2%981"><span class="toc-text">问题1</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E9%97%AE%E9%A2%982"><span class="toc-text">问题2</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E9%97%AE%E9%A2%983"><span class="toc-text">问题3</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-%E4%B8%80%E4%B8%AA%E6%89%A7%E8%A1%8C%E5%8D%95%E5%85%83"><span class="toc-text">2. 一个执行单元</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9B%9B%E3%80%81React-%E7%9A%84Fiber%E6%94%B9%E9%80%A0"><span class="toc-text">四、React 的Fiber改造</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E7%9A%84%E8%B0%83%E6%95%B4"><span class="toc-text">1. 数据结构的调整</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-%E4%B8%A4%E4%B8%AA%E9%98%B6%E6%AE%B5%E7%9A%84%E6%8B%86%E5%88%86"><span class="toc-text">2. 两个阶段的拆分</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-Reconcilation"><span class="toc-text">3. Reconcilation</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-%E5%8F%8C%E7%BC%93%E5%86%B2"><span class="toc-text">4. 双缓冲</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-%E5%89%AF%E4%BD%9C%E7%94%A8%E7%9A%84%E6%94%B6%E9%9B%86%E5%92%8C%E6%8F%90%E4%BA%A4"><span class="toc-text">5. 副作用的收集和提交</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%94%E3%80%81%E4%B8%AD%E6%96%AD%E5%92%8C%E6%81%A2%E5%A4%8D"><span class="toc-text">五、中断和恢复</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%B0%8F%E7%BB%93"><span class="toc-text">小结</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%AD%A6%E4%B9%A0%E8%B7%AF%E5%BE%84"><span class="toc-text">学习路径</span></a></li></ol>
+        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E3%80%81%E5%8D%95%E5%A4%84%E7%90%86%E5%99%A8%E8%BF%9B%E7%A8%8B%E8%B0%83%E5%BA%A6"><span class="toc-text">一、单处理器进程调度</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-1-%E5%B9%B6%E5%8F%91%E4%B8%8E%E5%B9%B6%E8%A1%8C"><span class="toc-text">1.1 并发与并行</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-2-%E8%BF%9B%E7%A8%8B%E8%B0%83%E5%BA%A6%E7%AD%96%E7%95%A5"><span class="toc-text">1.2 进程调度策略</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#1-2-1-%E5%85%88%E5%88%B0%E5%85%88%E5%BE%97-First-Come-First-Served-FCFS"><span class="toc-text">1.2.1 先到先得(First-Come-First-Served, FCFS)</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#1-2-2-%E8%BD%AE%E8%BD%AC"><span class="toc-text">1.2.2 轮转</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#1-2-3-%E6%9C%80%E7%9F%AD%E8%BF%9B%E7%A8%8B%E4%BC%98%E5%85%88-Shortest-Process-Next-SPN"><span class="toc-text">1.2.3 最短进程优先(Shortest Process Next, SPN)</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#1-2-4-%E6%9C%80%E7%9F%AD%E5%89%A9%E4%BD%99%E6%97%B6%E9%97%B4-Shortest-Remaining-Time-SRT"><span class="toc-text">1.2.4 最短剩余时间(Shortest Remaining Time, SRT)</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#1-2-5-%E6%9C%80%E9%AB%98%E5%93%8D%E5%BA%94%E6%AF%94%E4%BC%98%E5%85%88-HRRN"><span class="toc-text">1.2.5 最高响应比优先(HRRN)</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#1-2-6-%E5%8F%8D%E9%A6%88%E6%B3%95"><span class="toc-text">1.2.6 反馈法</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8C%E3%80%81%E6%B5%8F%E8%A7%88%E5%99%A8JavaScript%E6%89%A7%E8%A1%8C%E7%8E%AF%E5%A2%83"><span class="toc-text">二、浏览器JavaScript执行环境</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%89%E3%80%81%E4%BD%95%E4%B8%BA-Fiber"><span class="toc-text">三、何为 Fiber</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-%E4%B8%80%E7%A7%8D%E6%B5%81%E7%A8%8B%E6%8E%A7%E5%88%B6%E5%8E%9F%E8%AF%AD"><span class="toc-text">1. 一种流程控制原语</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%A6%82%E8%BF%B0"><span class="toc-text">概述</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E9%97%AE%E9%A2%981%EF%BC%9A%E8%AE%A9%E5%87%BA%E6%9C%BA%E5%88%B6%EF%BC%9F"><span class="toc-text">问题1：让出机制？</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E9%97%AE%E9%A2%982%EF%BC%9ArequestIdleCallback"><span class="toc-text">问题2：requestIdleCallback?</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E9%97%AE%E9%A2%983%EF%BC%9A%E4%B8%BA%E4%BB%80%E4%B9%88%E4%B8%8D%E7%94%A8Generator"><span class="toc-text">问题3：为什么不用Generator?</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-%E4%B8%80%E4%B8%AA%E6%89%A7%E8%A1%8C%E5%8D%95%E5%85%83"><span class="toc-text">2. 一个执行单元</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9B%9B%E3%80%81React-%E7%9A%84Fiber%E6%94%B9%E9%80%A0"><span class="toc-text">四、React 的Fiber改造</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E7%9A%84%E8%B0%83%E6%95%B4"><span class="toc-text">1. 数据结构的调整</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-%E4%B8%A4%E4%B8%AA%E9%98%B6%E6%AE%B5%E7%9A%84%E6%8B%86%E5%88%86"><span class="toc-text">2. 两个阶段的拆分</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-Reconcilation"><span class="toc-text">3. Reconcilation</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-%E5%8F%8C%E7%BC%93%E5%86%B2"><span class="toc-text">4. 双缓冲</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-%E5%89%AF%E4%BD%9C%E7%94%A8%E7%9A%84%E6%94%B6%E9%9B%86%E5%92%8C%E6%8F%90%E4%BA%A4"><span class="toc-text">5. 副作用的收集和提交</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%94%E3%80%81%E4%B8%AD%E6%96%AD%E5%92%8C%E6%81%A2%E5%A4%8D"><span class="toc-text">五、中断和恢复</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%B0%8F%E7%BB%93"><span class="toc-text">小结</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%AD%A6%E4%B9%A0%E8%B7%AF%E5%BE%84"><span class="toc-text">学习路径</span></a></li></ol>
     </div>
     
     <div class="back-top iconfont-archer">&#xe639;</div>
@@ -1098,6 +1104,18 @@ top:40vh;
 </div>
           <div class="sidebar-panel-archives">
     <!-- 在ejs中将archive按照时间排序 -->
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
     
     
     
