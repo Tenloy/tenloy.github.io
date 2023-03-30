@@ -45,11 +45,20 @@ categories:
 > 函数(变量)符号的内存地址、可执行文件地址计算
 
 #### 2.3.1 函数内存地址计算
-- **File Offset:** 在当前架构(MachO)文件中的偏移量。
--  **VM Address【未偏移/ASLR偏移前】:** 编译链接后，映射到虚拟地址中的内存起始地址。 `VM Address = File Offset + __PAGEZERO Size`(__PAGEZERO段在MachO文件中没有实际大小，在VM中展开)
-- **Load Address【ASLR偏移后的VM Address】:** 在运行时加载到虚拟内存的起始位置。Slide是加载到内存的偏移，这个偏移值是一个随机值，每次运行都不相同。`Load Address = VM Address + Slide(ASLR Offset)`
-  - 真正的运行时地址。本质也是虚拟地址空间中的地址，当未开启ASLR时，Load Address(运行时VM Address) ＝ 上面的静态VM Address
+- **File Offset**：在当前架构(MachO)文件中的偏移量。
+- **VM Address【未偏移/ASLR偏移前】** ：
+  - 编译链接后，映射到虚拟地址中的内存起始地址。 
+  - `VM Address = File Offset + __PAGEZERO Size`(__PAGEZERO段在MachO文件中没有实际大小，在VM中展开)
+- **Load Address【ASLR偏移后的VM Address】**：
+  - 在运行时加载到虚拟内存的起始位置。（真正的运行时地址，也是虚拟地址空间中的地址）。
+  - Slide是加载到内存的偏移，这个偏移值是一个随机值，每次运行都不相同。`Load Address = VM Address + Slide(ASLR Offset)`
+  - 当未开启ASLR时，Load Address(运行时VM Address) ＝ 上面的静态VM Address
+  
 
+注意：
+- MachO文件一生成，代码段、数据段在MachO文件中的位置(File Offset)、在运行内存(虚拟内存)中的地址值(vm address)就已经确定了。
+- 运行时，真正的运行内存地址，还得加上ASLR偏移量。
+- 开发者面向的地址，都是虚拟内存中的地址（虚拟地址），而不是真实的硬件设备上的地址（物理地址）。
 
 由于dsym符号表是编译时生成的地址，crash堆栈的地址是运行时地址，这个时候需要经过转换才能正确的符号化。crash日志里的符号地址被称为Stack Address，而编译后的符号地址被称为Symbol Address，他们之间的关系如下：`Stack Address = Symbol Address + Slide`。
 
