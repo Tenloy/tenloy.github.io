@@ -27,8 +27,8 @@
 <meta property="og:site_name" content="Tenloy&#39;s Blog">
 <meta property="og:description" content="WKWebView API1. 属性关于 extendedLayoutIncludesOpaqueBars 和 automaticallyAdjustsScrollViewInsets  这两个属性属于UIViewController 默认情况下extendedLayoutIncludesOpaqueBars &#x3D; false 扩展布局不包含导航栏 默认情况下automaticallyAdjusts">
 <meta property="og:locale" content="en_US">
-<meta property="article:published_time" content="2022-01-18T17:39:45.000Z">
-<meta property="article:modified_time" content="2023-01-05T07:44:12.460Z">
+<meta property="article:published_time" content="2022-01-18T09:39:45.000Z">
+<meta property="article:modified_time" content="2023-03-30T09:31:31.811Z">
 <meta property="article:author" content="Tenloy">
 <meta property="article:tag" content="Tenloy, iOS, Tenloy Blog, 博客，Swift, 编译, 计算机">
 <meta name="twitter:card" content="summary">
@@ -228,7 +228,7 @@
     
     <!-- 谷歌统计  -->
     
-<meta name="generator" content="Hexo 5.4.0"><link rel="alternate" href="/atom.xml" title="Tenloy's Blog" type="application/atom+xml">
+<meta name="generator" content="Hexo 5.4.2"><link rel="alternate" href="/atom.xml" title="Tenloy's Blog" type="application/atom+xml">
 </head>
 
     
@@ -450,7 +450,7 @@ height:40vh;
 </ul>
 <p><strong>调整WKWebView布局方式，避免调整webView.scrollView.contentInset。实际上，即便在 UIWebView 上也不建议直接调整webView.scrollView.contentInset的值.</strong></p>
 <h2 id="2-调整滚动速率"><a href="#2-调整滚动速率" class="headerlink" title="2. 调整滚动速率"></a>2. 调整滚动速率</h2><p>WKWebView 需要通过 scrollView delegate 调整滚动速率：</p>
-<figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">- (<span class="keyword">void</span>)scrollViewWillBeginDragging:(<span class="built_in">UIScrollView</span> *)scrollView &#123;</span><br><span class="line">  scrollView.decelerationRate = <span class="built_in">UIScrollViewDecelerationRateNormal</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">- (<span class="type">void</span>)scrollViewWillBeginDragging:(<span class="built_in">UIScrollView</span> *)scrollView &#123;</span><br><span class="line">  scrollView.decelerationRate = <span class="built_in">UIScrollViewDecelerationRateNormal</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
 <h2 id="3-视频自动播放"><a href="#3-视频自动播放" class="headerlink" title="3. 视频自动播放"></a>3. 视频自动播放</h2><p>WKWebView 需要通过WKWebViewConfiguration.mediaPlaybackRequiresUserAction设置是否允许自动播放，但一定要在 WKWebView 初始化之前设置，在 WKWebView 初始化之后设置无效。</p>
 <h2 id="4-goBack-API问题"><a href="#4-goBack-API问题" class="headerlink" title="4. goBack API问题"></a>4. goBack API问题</h2><p>WKWebView 上调用 -[WKWebView goBack]， 回退到上一个页面后不会触发window.onload()函数、不会执行JS。</p>
@@ -523,7 +523,7 @@ height:40vh;
 <figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">self</span> -&gt; webView -&gt; <span class="built_in">WKWebViewConfiguration</span> -&gt; <span class="built_in">WKUserContentController</span> -&gt; <span class="keyword">weak</span> delegate obj --delegate--&gt; <span class="keyword">self</span></span><br></pre></td></tr></table></figure>
 
 <p>示例代码：</p>
-<figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//1.创建一个新类WeakScriptMessageDelegate</span></span><br><span class="line"><span class="meta">#import <span class="meta-string">&lt;Foundation/Foundation.h&gt;</span></span></span><br><span class="line"><span class="meta">#import <span class="meta-string">&lt;WebKit/WebKit.h&gt;</span></span></span><br><span class="line"><span class="class"><span class="keyword">@interface</span> <span class="title">WeakScriptMessageDelegate</span> : <span class="title">NSObject</span></span></span><br><span class="line"><span class="keyword">@property</span> (<span class="keyword">nonatomic</span>, <span class="keyword">weak</span>) <span class="keyword">id</span>&lt;<span class="built_in">WKScriptMessageHandler</span>&gt; scriptDelegate;</span><br><span class="line">- (<span class="keyword">instancetype</span>)initWithDelegate:(<span class="keyword">id</span>&lt;<span class="built_in">WKScriptMessageHandler</span>&gt;)scriptDelegate;</span><br><span class="line"><span class="keyword">@end</span></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">@implementation</span> <span class="title">WeakScriptMessageDelegate</span></span></span><br><span class="line"></span><br><span class="line">- (<span class="keyword">instancetype</span>)initWithDelegate:(<span class="keyword">id</span>&lt;<span class="built_in">WKScriptMessageHandler</span>&gt;)scriptDelegate &#123;</span><br><span class="line">    <span class="keyword">self</span> = [<span class="keyword">super</span> init];</span><br><span class="line">    <span class="keyword">if</span> (<span class="keyword">self</span>) &#123;</span><br><span class="line">      _scriptDelegate = scriptDelegate;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">self</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">- (<span class="keyword">void</span>)userContentController:(<span class="built_in">WKUserContentController</span> *)userContentController didReceiveScriptMessage:(<span class="built_in">WKScriptMessage</span> *)message &#123;</span><br><span class="line">    [<span class="keyword">self</span>.scriptDelegate userContentController:userContentController didReceiveScriptMessage:message];</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">@end</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// 2.在我们使用WKWebView的控制器中引入我们创建的那个类，将注入js对象的代码改为:</span></span><br><span class="line">[config.userContentController addScriptMessageHandler:[[WeakScriptMessageDelegate alloc] initWithDelegate:<span class="keyword">self</span>] name:scriptMessage];</span><br><span class="line"></span><br><span class="line"><span class="comment">// 3.在delloc方法中通过下面的方式移除注入的js对象</span></span><br><span class="line">[<span class="keyword">self</span>.config.userContentController removeScriptMessageHandlerForName:scriptMessage];</span><br></pre></td></tr></table></figure>
+<figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//1.创建一个新类WeakScriptMessageDelegate</span></span><br><span class="line"><span class="meta">#import <span class="string">&lt;Foundation/Foundation.h&gt;</span></span></span><br><span class="line"><span class="meta">#import <span class="string">&lt;WebKit/WebKit.h&gt;</span></span></span><br><span class="line"><span class="class"><span class="keyword">@interface</span> <span class="title">WeakScriptMessageDelegate</span> : <span class="title">NSObject</span></span></span><br><span class="line"><span class="keyword">@property</span> (<span class="keyword">nonatomic</span>, <span class="keyword">weak</span>) <span class="type">id</span>&lt;<span class="built_in">WKScriptMessageHandler</span>&gt; scriptDelegate;</span><br><span class="line">- (<span class="keyword">instancetype</span>)initWithDelegate:(<span class="type">id</span>&lt;<span class="built_in">WKScriptMessageHandler</span>&gt;)scriptDelegate;</span><br><span class="line"><span class="keyword">@end</span></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">@implementation</span> <span class="title">WeakScriptMessageDelegate</span></span></span><br><span class="line"></span><br><span class="line">- (<span class="keyword">instancetype</span>)initWithDelegate:(<span class="type">id</span>&lt;<span class="built_in">WKScriptMessageHandler</span>&gt;)scriptDelegate &#123;</span><br><span class="line">    <span class="keyword">self</span> = [<span class="variable language_">super</span> init];</span><br><span class="line">    <span class="keyword">if</span> (<span class="keyword">self</span>) &#123;</span><br><span class="line">      _scriptDelegate = scriptDelegate;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">self</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">- (<span class="type">void</span>)userContentController:(<span class="built_in">WKUserContentController</span> *)userContentController didReceiveScriptMessage:(<span class="built_in">WKScriptMessage</span> *)message &#123;</span><br><span class="line">    [<span class="keyword">self</span>.scriptDelegate userContentController:userContentController didReceiveScriptMessage:message];</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">@end</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// 2.在我们使用WKWebView的控制器中引入我们创建的那个类，将注入js对象的代码改为:</span></span><br><span class="line">[config.userContentController addScriptMessageHandler:[[WeakScriptMessageDelegate alloc] initWithDelegate:<span class="keyword">self</span>] name:scriptMessage];</span><br><span class="line"></span><br><span class="line"><span class="comment">// 3.在delloc方法中通过下面的方式移除注入的js对象</span></span><br><span class="line">[<span class="keyword">self</span>.config.userContentController removeScriptMessageHandlerForName:scriptMessage];</span><br></pre></td></tr></table></figure>
 
 <p>上面三步就可以解决控制器不能被释放的问题了。</p>
 <h2 id="4-WKWebView的白屏问题-拍照引起"><a href="#4-WKWebView的白屏问题-拍照引起" class="headerlink" title="4.  WKWebView的白屏问题(拍照引起)"></a>4.  WKWebView的白屏问题(拍照引起)</h2><h3 id="原理"><a href="#原理" class="headerlink" title="原理"></a>原理</h3><p>WKWebView 自诩拥有更快的加载速度，更低的内存占用，但实际上 WKWebView 是一个多进程组件，Network Loading 以及 UI Rendering 在其它进程中执行。</p>
@@ -540,7 +540,7 @@ height:40vh;
 <li>WKWebView的URL不空，出现白屏、部分白屏、白屏部分能点击，这种现象无论是reload还是loadRequest都不能刷出网页。（可以尝试3、4）</li>
 </ul>
 <h4 id="方案1-ContentProcessDidTerminate"><a href="#方案1-ContentProcessDidTerminate" class="headerlink" title="方案1. ContentProcessDidTerminate"></a>方案1. ContentProcessDidTerminate</h4><p>借助 iOS 9以后 <code>WKNavigtionDelegate</code> 新增了一个回调函数：</p>
-<figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">- (<span class="keyword">void</span>)webViewWebContentProcessDidTerminate:(<span class="built_in">WKWebView</span> *)webView API_AVAILABLE(macosx(<span class="number">10.11</span>), ios(<span class="number">9.0</span>));</span><br></pre></td></tr></table></figure>
+<figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">- (<span class="type">void</span>)webViewWebContentProcessDidTerminate:(<span class="built_in">WKWebView</span> *)webView API_AVAILABLE(macosx(<span class="number">10.11</span>), ios(<span class="number">9.0</span>));</span><br></pre></td></tr></table></figure>
 
 <p>当 WKWebView 总体内存占用过大，页面即将白屏的时候，系统会调用上面的回调函数，我们在该函数里执行<code>[webView reload]</code>(这个时候 webView.URL 取值尚不为 nil）解决白屏问题。在一些高内存消耗的页面可能会频繁刷新当前页面，H5侧也要做相应的适配操作。</p>
 <h4 id="方案2-检测-webView-title-是否为空"><a href="#方案2-检测-webView-title-是否为空" class="headerlink" title="方案2. 检测 webView.title 是否为空"></a>方案2. 检测 webView.title 是否为空</h4><p>并不是所有H5页面白屏的时候都会调用上面的回调函数，比如，最近遇到在一个高内存消耗的<code>意见反馈</code>H5页面上 present 系统相机，拍照完毕后返回原来页面的时候出现白屏现象（拍照过程消耗了大量内存，导致内存紧张，<strong>WebContent Process 被系统挂起</strong>），但上面的回调函数并没有被调用。</p>
@@ -551,7 +551,7 @@ height:40vh;
 <p>（<em>未验证，有人说不好使</em>）</p>
 </blockquote>
 <p>WKWebView的URL不空，出现白屏不能点击、白屏部分能点击、部分白屏能点击等，这种现象无论是reload、loadRequest、清缓存、setNeedsLayout都不能刷出网页，只能回收旧webview（webview = nil 后记得清除代理，移除监听，要不然会crash）创建新的 webview， 然后重新request。</p>
-<figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 判断是否白屏</span></span><br><span class="line">- (<span class="built_in">BOOL</span>)isBlankView:(<span class="built_in">UIView</span> *)view &#123; <span class="comment">// YES：blank</span></span><br><span class="line">    Class wkCompositingView = <span class="built_in">NSClassFromString</span>(<span class="string">@&quot;WKCompositingView&quot;</span>);</span><br><span class="line">    <span class="keyword">if</span> ([view isKindOfClass:[wkCompositingView <span class="keyword">class</span>]]) &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">NO</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">for</span>(<span class="built_in">UIView</span> * subView <span class="keyword">in</span> view.subviews) &#123;</span><br><span class="line">        <span class="keyword">if</span> (![<span class="keyword">self</span> isBlankView:subView]) &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="literal">NO</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">	<span class="keyword">return</span> <span class="literal">YES</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 判断是否白屏</span></span><br><span class="line">- (<span class="type">BOOL</span>)isBlankView:(<span class="built_in">UIView</span> *)view &#123; <span class="comment">// YES：blank</span></span><br><span class="line">    Class wkCompositingView = <span class="built_in">NSClassFromString</span>(<span class="string">@&quot;WKCompositingView&quot;</span>);</span><br><span class="line">    <span class="keyword">if</span> ([view isKindOfClass:[wkCompositingView <span class="keyword">class</span>]]) &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">NO</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">for</span>(<span class="built_in">UIView</span> * subView <span class="keyword">in</span> view.subviews) &#123;</span><br><span class="line">        <span class="keyword">if</span> (![<span class="keyword">self</span> isBlankView:subView]) &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="literal">NO</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">	<span class="keyword">return</span> <span class="literal">YES</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
 <h4 id="方案4-html中加入资源加载的监听"><a href="#方案4-html中加入资源加载的监听" class="headerlink" title="方案4. html中加入资源加载的监听"></a>方案4. html中加入资源加载的监听</h4><p>在本地html中加入资源加载的监听，只要发生错误，就调用location.reload();重载当前文档。</p>
 <figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//监控资源加载错误(img,script,css,以及jsonp)</span></span><br><span class="line">window.addEventListener(<span class="string">&#x27;error&#x27;</span>, function (e) &#123;</span><br><span class="line">    console.log(<span class="string">&quot;===&quot;</span> + e.message + <span class="string">&quot;===&quot;</span>);</span><br><span class="line">    location.reload();</span><br><span class="line">&#125;, <span class="literal">true</span>);</span><br><span class="line"></span><br><span class="line">window.onerror = function (errorMessage, scriptURI, lineNumber, columnNumber, errorObj) &#123;</span><br><span class="line">    console.log(<span class="string">&quot;错误信息：&quot;</span>, errorMessage);</span><br><span class="line">    console.log(<span class="string">&quot;出错文件：&quot;</span>, scriptURI);</span><br><span class="line">    console.log(<span class="string">&quot;出错行号：&quot;</span>, lineNumber);</span><br><span class="line">    console.log(<span class="string">&quot;出错列号：&quot;</span>, columnNumber);</span><br><span class="line">    console.log(<span class="string">&quot;错误详情：&quot;</span>, errorObj);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
@@ -616,7 +616,7 @@ height:40vh;
             <p>Author：<a href="https://tenloy.github.io">Tenloy</a>
             <p>原文链接：<a href="https://tenloy.github.io/2022/01/18/wkwebview-buges.html">https://tenloy.github.io/2022/01/18/wkwebview-buges.html</a>
             <p>发表日期：2022.01.18 , 5:39 PM</p>
-            <p>更新日期：2023.01.05 , 7:44 AM</p>
+            <p>更新日期：2023.03.30 , 5:31 PM</p>
             <p>版权声明：本文采用<a rel="license noopener" target="_blank" href="http://creativecommons.org/licenses/by-nc/4.0/">Crative Commons 4.0 许可协议</a>进行许可</p>
         </div>
     
@@ -816,28 +816,6 @@ top:40vh;
 </div>
           <div class="sidebar-panel-archives">
     <!-- 在ejs中将archive按照时间排序 -->
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
     
     
     
@@ -2227,19 +2205,9 @@ top:40vh;
         <div class="sidebar-panel-tags">
     <div class="sidebar-tags-name">
     
-        <span class="sidebar-tag-name" data-tags="hexo"><span class="iconfont-archer">&#xe606;</span>hexo</span>
-    
-        <span class="sidebar-tag-name" data-tags="多线程"><span class="iconfont-archer">&#xe606;</span>多线程</span>
-    
-        <span class="sidebar-tag-name" data-tags="协程"><span class="iconfont-archer">&#xe606;</span>协程</span>
-    
-        <span class="sidebar-tag-name" data-tags="SwiftUI"><span class="iconfont-archer">&#xe606;</span>SwiftUI</span>
-    
-        <span class="sidebar-tag-name" data-tags="Swift-Syntax"><span class="iconfont-archer">&#xe606;</span>Swift-Syntax</span>
-    
-        <span class="sidebar-tag-name" data-tags="Log"><span class="iconfont-archer">&#xe606;</span>Log</span>
-    
         <span class="sidebar-tag-name" data-tags="AutoreleasePool"><span class="iconfont-archer">&#xe606;</span>AutoreleasePool</span>
+    
+        <span class="sidebar-tag-name" data-tags="hexo"><span class="iconfont-archer">&#xe606;</span>hexo</span>
     
         <span class="sidebar-tag-name" data-tags="ISA"><span class="iconfont-archer">&#xe606;</span>ISA</span>
     
@@ -2247,27 +2215,37 @@ top:40vh;
     
         <span class="sidebar-tag-name" data-tags="Soc"><span class="iconfont-archer">&#xe606;</span>Soc</span>
     
+        <span class="sidebar-tag-name" data-tags="ARM64"><span class="iconfont-archer">&#xe606;</span>ARM64</span>
+    
+        <span class="sidebar-tag-name" data-tags="多线程"><span class="iconfont-archer">&#xe606;</span>多线程</span>
+    
         <span class="sidebar-tag-name" data-tags="Docker"><span class="iconfont-archer">&#xe606;</span>Docker</span>
     
-        <span class="sidebar-tag-name" data-tags="DSL"><span class="iconfont-archer">&#xe606;</span>DSL</span>
-    
-        <span class="sidebar-tag-name" data-tags="dp"><span class="iconfont-archer">&#xe606;</span>dp</span>
+        <span class="sidebar-tag-name" data-tags="GCD"><span class="iconfont-archer">&#xe606;</span>GCD</span>
     
         <span class="sidebar-tag-name" data-tags="CLI"><span class="iconfont-archer">&#xe606;</span>CLI</span>
     
         <span class="sidebar-tag-name" data-tags="Shell"><span class="iconfont-archer">&#xe606;</span>Shell</span>
     
-        <span class="sidebar-tag-name" data-tags="ARM64"><span class="iconfont-archer">&#xe606;</span>ARM64</span>
+        <span class="sidebar-tag-name" data-tags="DSL"><span class="iconfont-archer">&#xe606;</span>DSL</span>
     
-        <span class="sidebar-tag-name" data-tags="RunLoop"><span class="iconfont-archer">&#xe606;</span>RunLoop</span>
-    
-        <span class="sidebar-tag-name" data-tags="LagMonitor"><span class="iconfont-archer">&#xe606;</span>LagMonitor</span>
-    
-        <span class="sidebar-tag-name" data-tags="CrashMonitor"><span class="iconfont-archer">&#xe606;</span>CrashMonitor</span>
+        <span class="sidebar-tag-name" data-tags="协程"><span class="iconfont-archer">&#xe606;</span>协程</span>
     
         <span class="sidebar-tag-name" data-tags="Fiber"><span class="iconfont-archer">&#xe606;</span>Fiber</span>
     
-        <span class="sidebar-tag-name" data-tags="GCD"><span class="iconfont-archer">&#xe606;</span>GCD</span>
+        <span class="sidebar-tag-name" data-tags="dp"><span class="iconfont-archer">&#xe606;</span>dp</span>
+    
+        <span class="sidebar-tag-name" data-tags="RunLoop"><span class="iconfont-archer">&#xe606;</span>RunLoop</span>
+    
+        <span class="sidebar-tag-name" data-tags="SwiftUI"><span class="iconfont-archer">&#xe606;</span>SwiftUI</span>
+    
+        <span class="sidebar-tag-name" data-tags="Swift-Syntax"><span class="iconfont-archer">&#xe606;</span>Swift-Syntax</span>
+    
+        <span class="sidebar-tag-name" data-tags="LagMonitor"><span class="iconfont-archer">&#xe606;</span>LagMonitor</span>
+    
+        <span class="sidebar-tag-name" data-tags="Log"><span class="iconfont-archer">&#xe606;</span>Log</span>
+    
+        <span class="sidebar-tag-name" data-tags="CrashMonitor"><span class="iconfont-archer">&#xe606;</span>CrashMonitor</span>
     
         <span class="sidebar-tag-name" data-tags="AFN"><span class="iconfont-archer">&#xe606;</span>AFN</span>
     
