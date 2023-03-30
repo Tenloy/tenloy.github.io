@@ -30,7 +30,7 @@
 <meta property="og:image" content="https://tenloy.github.io/images/encode/09.png">
 <meta property="og:image" content="https://tenloy.github.io/images/encode/10.png">
 <meta property="article:published_time" content="2021-07-24T06:00:00.000Z">
-<meta property="article:modified_time" content="2023-03-30T09:31:31.810Z">
+<meta property="article:modified_time" content="2023-03-30T12:17:47.686Z">
 <meta property="article:author" content="Tenloy">
 <meta property="article:tag" content="Tenloy, iOS, Tenloy Blog, 博客，Swift, 编译, 计算机">
 <meta name="twitter:card" content="summary">
@@ -459,19 +459,11 @@ height:40vh;
 <p>所以，Base64编码会把3字节的二进制数据编码为4字节的文本数据，长度增加33%，好处是编码后的文本数据可以在邮件正文、网页等直接显示。</p>
 <p><strong>注意点：</strong></p>
 <ul>
-<li>如果要编码的二进制数据不是3的倍数，最后会剩下1个或2个字节怎么办？Base64用<code>\x00</code>字节在末尾补足后，再在编码的末尾加上1个或2个<code>=</code>号，表示补了多少字节，解码的时候，会自动去掉。</li>
-</ul>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 举例：原字符串abcd</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 二进制形式(因为模3之后，剩1一个字节，所以需要补两个字节)</span></span><br><span class="line">01100001 01100010 01100011 01100100 00000000 00000000</span><br><span class="line"></span><br><span class="line"><span class="comment"># 每3个字节一组，划分为4组，每组6bit</span></span><br><span class="line">011000 010110 001001 100011 011001 000000 000000 000000</span><br><span class="line">  24     22     9      35     25      0</span><br><span class="line">  Y      W      J      j      Z       A</span><br><span class="line"></span><br><span class="line"><span class="comment"># 需要注意，因为我们补了两个字节，所以最后必然会有两组000000，注意，此处000000不会编码为A，而是记为=，标志着我们在末尾补充了2个`\x00`</span></span><br><span class="line"><span class="comment"># 所以最后的结果为：</span></span><br><span class="line">YWJjZA==</span><br><span class="line"></span><br><span class="line"><span class="comment"># 同理：当我们补了1个字节时，最后必然会有一组000000，此处000000也是记为=，标志着我们在末尾补充了1个`\x00`</span></span><br><span class="line">abcde 编码为 -&gt; YWJjZGU=</span><br></pre></td></tr></table></figure>
-
-<ul>
-<li><p>由于<code>=</code>字符也可能出现在Base64编码中，但 <strong><code>=</code> 用在URL、Cookie里面会造成歧义</strong>，所以，很多Base64编码后会把<code>=</code>去掉。<br>去掉<code>=</code>后怎么解码呢？因为Base64是把3个字节变为4个字节，所以，<strong>Base64编码的长度永远是4的倍数</strong>，因此，需要加上<code>=</code>把Base64字符串的长度变为4的倍数，就可以正常解码了。</p>
-</li>
-<li><p>由于标准的Base64编码后可能出现字符<code>+</code> 和 <code>/</code>，<strong>在URL中就不能直接作为参数</strong>，所以又有一种<code>&quot;url safe&quot;</code>的base64编码，其实就是把字符<code>+</code>和<code>/</code>分别变成<code>-</code>和<code>_</code>：<br>比如：<strong>有些平台上用的Base64 URL 是标准Base64编码的一个变种，分别用 -、_ 替换标准Base64编码结果中的 + 、 / ，并删除结果最后的 =</strong></p>
-</li>
-<li><p>还可以自己定义64个字符的排列顺序，这样就可以自定义Base64编码，不过，通常情况下完全没有必要。</p>
-</li>
-<li><p>Base64是一种通过查表的编码方法，不能用于加密，即使使用自定义的编码表也不行。适用于小段内容的编码，比如数字证书签名、Cookie的内容等。</p>
-</li>
+<li>如果要编码的二进制数据不是3的倍数，最后会剩下1个或2个字节怎么办？Base64用<code>\x00</code>字节在末尾补足后，再在编码的末尾加上1个或2个<code>=</code>号，表示补了多少字节，解码的时候，会自动去掉。<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 举例：原字符串abcd</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 二进制形式(因为模3之后，剩1一个字节，所以需要补两个字节)</span></span><br><span class="line">01100001 01100010 01100011 01100100 00000000 00000000</span><br><span class="line"></span><br><span class="line"><span class="comment"># 每3个字节一组，划分为4组，每组6bit</span></span><br><span class="line">011000 010110 001001 100011 011001 000000 000000 000000</span><br><span class="line">  24     22     9      35     25      0</span><br><span class="line">  Y      W      J      j      Z       A</span><br><span class="line"></span><br><span class="line"><span class="comment"># 需要注意，因为我们补了两个字节，所以最后必然会有两组000000，注意，此处000000不会编码为A，而是记为=，标志着我们在末尾补充了2个`\x00`</span></span><br><span class="line"><span class="comment"># 所以最后的结果为：</span></span><br><span class="line">YWJjZA==</span><br><span class="line"></span><br><span class="line"><span class="comment"># 同理：当我们补了1个字节时，最后必然会有一组000000，此处000000也是记为=，标志着我们在末尾补充了1个`\x00`</span></span><br><span class="line">abcde 编码为 -&gt; YWJjZGU=</span><br></pre></td></tr></table></figure></li>
+<li>由于<code>=</code>字符也可能出现在Base64编码中，但 <strong><code>=</code> 用在URL、Cookie里面会造成歧义</strong>，所以，很多Base64编码后会把<code>=</code>去掉。<br>去掉<code>=</code>后怎么解码呢？因为Base64是把3个字节变为4个字节，所以，<strong>Base64编码的长度永远是4的倍数</strong>，因此，需要加上<code>=</code>把Base64字符串的长度变为4的倍数，就可以正常解码了。</li>
+<li>由于标准的Base64编码后可能出现字符<code>+</code> 和 <code>/</code>，<strong>在URL中就不能直接作为参数</strong>，所以又有一种<code>&quot;url safe&quot;</code>的base64编码，其实就是把字符<code>+</code>和<code>/</code>分别变成<code>-</code>和<code>_</code>：<br>比如：<strong>有些平台上用的Base64 URL 是标准Base64编码的一个变种，分别用 -、_ 替换标准Base64编码结果中的 + 、 / ，并删除结果最后的 =</strong></li>
+<li>还可以自己定义64个字符的排列顺序，这样就可以自定义Base64编码，不过，通常情况下完全没有必要。</li>
+<li>Base64是一种通过查表的编码方法，不能用于加密，即使使用自定义的编码表也不行。适用于小段内容的编码，比如数字证书签名、Cookie的内容等。</li>
 </ul>
 <h2 id="四、iOS中的Base64"><a href="#四、iOS中的Base64" class="headerlink" title="四、iOS中的Base64"></a>四、iOS中的Base64</h2><figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//字符串 base64编码</span></span><br><span class="line"><span class="comment">//UTF8字符串——data——base64编码字符串</span></span><br><span class="line"><span class="built_in">NSString</span> *target = <span class="string">@&quot;Hello!&quot;</span>;</span><br><span class="line"><span class="built_in">NSData</span> *data = [target dataUsingEncoding:<span class="built_in">NSUTF8StringEncoding</span>];</span><br><span class="line"><span class="built_in">NSString</span> *base64Str = [data base64EncodedStringWithOptions:<span class="number">0</span>];</span><br><span class="line"></span><br><span class="line"><span class="comment">//UTF8字符串——data——base64、UTF8编码格式的data——base64编码字符串</span></span><br><span class="line"><span class="built_in">NSData</span> * base64Data = [nsdata base64EncodedDataWithOptions:<span class="number">0</span>];</span><br><span class="line"><span class="built_in">NSString</span> *ret = [[<span class="built_in">NSString</span> alloc] initWithData:base64Data encoding:<span class="built_in">NSUTF8StringEncoding</span>];</span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">pragma</span> mark -- 关于base64EncodedDataWithOptions方法生成的Base-64, UTF-8 encoded NSData</span></span><br><span class="line"><span class="comment">/* </span></span><br><span class="line"><span class="comment">Create a Base-64, UTF-8 encoded NSData from the receiver&#x27;s contents using the given options.</span></span><br><span class="line"><span class="comment">从方法说明中可以看到，生成的是base64、UTF8编码的字节数组。</span></span><br><span class="line"><span class="comment">比如：@“hello!” 转成NSData对象</span></span><br><span class="line"><span class="comment">  对应的字节数组是 &lt;48656c6c 6f21&gt;(十六进制)</span></span><br><span class="line"><span class="comment">进行base64编码</span></span><br><span class="line"><span class="comment">  按照上面的过程，结果字节数组是&lt;18 06 21 44 27 06 60 33&gt;(十进制表示，方便查Base64编码表)，对应的字符串是SGVsbG8h</span></span><br><span class="line"><span class="comment">  而使用上面的iOS api，得到的字节数组是 &lt;83 71 86 115 98 71 56 104&gt;(十进制表示，方便查UTF8编码表)，对应的字符串是SGVsbG8h</span></span><br><span class="line"><span class="comment">*/</span></span><br><span class="line">- (<span class="built_in">NSData</span> *)base64EncodedDataWithOptions:(<span class="built_in">NSDataBase64EncodingOptions</span>)options API_AVAILABLE(macos(<span class="number">10.9</span>), ios(<span class="number">7.0</span>), watchos(<span class="number">2.0</span>), tvos(<span class="number">9.0</span>));</span><br></pre></td></tr></table></figure>
 
@@ -487,7 +479,7 @@ height:40vh;
             <p>Author：<a href="https://tenloy.github.io">Tenloy</a>
             <p>原文链接：<a href="https://tenloy.github.io/2021/07/24/base64.html">https://tenloy.github.io/2021/07/24/base64.html</a>
             <p>发表日期：2021.07.24 , 2:00 PM</p>
-            <p>更新日期：2023.03.30 , 5:31 PM</p>
+            <p>更新日期：2023.03.30 , 8:17 PM</p>
             <p>版权声明：本文采用<a rel="license noopener" target="_blank" href="http://creativecommons.org/licenses/by-nc/4.0/">Crative Commons 4.0 许可协议</a>进行许可</p>
         </div>
     
@@ -687,32 +679,6 @@ top:40vh;
 </div>
           <div class="sidebar-panel-archives">
     <!-- 在ejs中将archive按照时间排序 -->
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
     
     
     
@@ -2078,6 +2044,8 @@ top:40vh;
     
         <span class="sidebar-tag-name" data-tags="AutoreleasePool"><span class="iconfont-archer">&#xe606;</span>AutoreleasePool</span>
     
+        <span class="sidebar-tag-name" data-tags="GCD"><span class="iconfont-archer">&#xe606;</span>GCD</span>
+    
         <span class="sidebar-tag-name" data-tags="hexo"><span class="iconfont-archer">&#xe606;</span>hexo</span>
     
         <span class="sidebar-tag-name" data-tags="ISA"><span class="iconfont-archer">&#xe606;</span>ISA</span>
@@ -2086,21 +2054,19 @@ top:40vh;
     
         <span class="sidebar-tag-name" data-tags="Soc"><span class="iconfont-archer">&#xe606;</span>Soc</span>
     
+        <span class="sidebar-tag-name" data-tags="CLI"><span class="iconfont-archer">&#xe606;</span>CLI</span>
+    
+        <span class="sidebar-tag-name" data-tags="Shell"><span class="iconfont-archer">&#xe606;</span>Shell</span>
+    
         <span class="sidebar-tag-name" data-tags="ARM64"><span class="iconfont-archer">&#xe606;</span>ARM64</span>
     
         <span class="sidebar-tag-name" data-tags="多线程"><span class="iconfont-archer">&#xe606;</span>多线程</span>
     
         <span class="sidebar-tag-name" data-tags="Docker"><span class="iconfont-archer">&#xe606;</span>Docker</span>
     
-        <span class="sidebar-tag-name" data-tags="GCD"><span class="iconfont-archer">&#xe606;</span>GCD</span>
-    
-        <span class="sidebar-tag-name" data-tags="CLI"><span class="iconfont-archer">&#xe606;</span>CLI</span>
-    
-        <span class="sidebar-tag-name" data-tags="Shell"><span class="iconfont-archer">&#xe606;</span>Shell</span>
+        <span class="sidebar-tag-name" data-tags="协程"><span class="iconfont-archer">&#xe606;</span>协程</span>
     
         <span class="sidebar-tag-name" data-tags="DSL"><span class="iconfont-archer">&#xe606;</span>DSL</span>
-    
-        <span class="sidebar-tag-name" data-tags="协程"><span class="iconfont-archer">&#xe606;</span>协程</span>
     
         <span class="sidebar-tag-name" data-tags="Fiber"><span class="iconfont-archer">&#xe606;</span>Fiber</span>
     
@@ -2108,9 +2074,9 @@ top:40vh;
     
         <span class="sidebar-tag-name" data-tags="RunLoop"><span class="iconfont-archer">&#xe606;</span>RunLoop</span>
     
-        <span class="sidebar-tag-name" data-tags="SwiftUI"><span class="iconfont-archer">&#xe606;</span>SwiftUI</span>
-    
         <span class="sidebar-tag-name" data-tags="Swift-Syntax"><span class="iconfont-archer">&#xe606;</span>Swift-Syntax</span>
+    
+        <span class="sidebar-tag-name" data-tags="SwiftUI"><span class="iconfont-archer">&#xe606;</span>SwiftUI</span>
     
         <span class="sidebar-tag-name" data-tags="LagMonitor"><span class="iconfont-archer">&#xe606;</span>LagMonitor</span>
     

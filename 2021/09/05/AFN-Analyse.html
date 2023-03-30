@@ -40,7 +40,7 @@
 <meta property="og:image" content="https://tenloy.github.io/images/AFN/AFN-11.jpg">
 <meta property="og:image" content="https://tenloy.github.io/images/AFN/AFN-12.jpg">
 <meta property="article:published_time" content="2021-09-05T00:53:12.000Z">
-<meta property="article:modified_time" content="2023-03-30T09:31:31.803Z">
+<meta property="article:modified_time" content="2023-03-30T12:01:42.396Z">
 <meta property="article:author" content="Tenloy">
 <meta property="article:tag" content="AFN">
 <meta name="twitter:card" content="summary">
@@ -499,10 +499,8 @@ height:40vh;
 
 <p>这里先说结论，有些内容是在下面陈述的：</p>
 <ul>
-<li><p>首先我们要明确一个概念，<strong>这里的并发数仅仅是回调代理的线程并发数。而不是请求网络的线程并发数。请求网络是由NSURLSession来做的，它内部维护了一个线程池，用来做网络请求</strong>。它调度线程，基于底层的CFSocket去发送请求和接收数据。这些<strong>线程是并发的</strong>。</p>
-</li>
-<li><p>明确了这个概念之后，我们来梳理一下AF3.x的整个流程和线程的关系：</p>
-<ul>
+<li>首先我们要明确一个概念，<strong>这里的并发数仅仅是回调代理的线程并发数。而不是请求网络的线程并发数。请求网络是由NSURLSession来做的，它内部维护了一个线程池，用来做网络请求</strong>。它调度线程，基于底层的CFSocket去发送请求和接收数据。这些<strong>线程是并发的</strong>。</li>
+<li>明确了这个概念之后，我们来梳理一下AF3.x的整个流程和线程的关系：<ul>
 <li>我们一开始初始化sessionManager的时候，一般都是在主线程，（当然不排除有些人喜欢在分线程初始化…）</li>
 <li>然后我们调用get或者post等去请求数据，接着会进行request拼接，AF代理的字典映射，progress的KVO添加等等，到NSUrlSession的resume之前这些准备工作，仍旧是在主线程中的。</li>
 <li>然后我们调用NSUrlSession的resume，接着就跑到NSUrlSession内部去对网络进行数据请求了,在它内部是多线程并发的去请求数据的。</li>
@@ -511,15 +509,13 @@ height:40vh;
 <li>最后我们如果有自定义的completionQueue，则在自定义的queue中回调回来，也就是分线程回调回来，否则就是主队列，主线程中回调结束。</li>
 </ul>
 </li>
-<li><p>最后我们来解释解释为什么回调Queue要设置并发数为1：个人认为AF这么做有以下两点原因：</p>
-<ul>
-<li><p>众所周知，AF2.x所有的回调是在一条线程（<em>参考6.7小节</em>），这条线程是AF的常驻线程，而这一条线程正是AF调度request的思想精髓所在，所以第一个目的就是为了和之前版本保持一致。</p>
+<li>最后我们来解释解释为什么回调Queue要设置并发数为1：个人认为AF这么做有以下两点原因：<ul>
+<li>众所周知，AF2.x所有的回调是在一条线程（<em>参考6.7小节</em>），这条线程是AF的常驻线程，而这一条线程正是AF调度request的思想精髓所在，所以第一个目的就是为了和之前版本保持一致。</li>
+<li>因为跟代理相关的一些操作AF都使用了NSLock。所以就算Queue的并发数设置为n，因为多线程回调，锁的等待，导致所提升的程序速度也并不明显。<strong>反而多task回调导致的多线程并发，平白浪费了部分性能。</strong><ul>
+<li>而设置Queue的并发数为1（注：这里虽然回调Queue的并发数为1，仍然会有不止一条线程，但是因为是串行回调，所以同一时间，只会有一条线程在操作AFURLSessionManager的那些方法）至少回调的事件，是不需要多线程并发的。<strong>回调没有了NSLock的等待时间，所以对时间并没有多大的影响。</strong></li>
+</ul>
 </li>
-<li><p>因为跟代理相关的一些操作AF都使用了NSLock。所以就算Queue的并发数设置为n，因为多线程回调，锁的等待，导致所提升的程序速度也并不明显。<strong>反而多task回调导致的多线程并发，平白浪费了部分性能。</strong></p>
-<p>而设置Queue的并发数为1（注：这里虽然回调Queue的并发数为1，仍然会有不止一条线程，但是因为是串行回调，所以同一时间，只会有一条线程在操作AFURLSessionManager的那些方法）至少回调的事件，是不需要多线程并发的。<strong>回调没有了NSLock的等待时间，所以对时间并没有多大的影响。</strong></p>
-</li>
-<li><p>注：但是还是会有多线程的操作的，因为设置刚开始调起请求的时候，是在主线程的，而回调则是串行分线程：<font color='red'>response的解析是并发线程执行的</font>（<em>参考2.3.6-1小节</em>）。</p>
-</li>
+<li>注：但是还是会有多线程的操作的，因为设置刚开始调起请求的时候，是在主线程的，而回调则是串行分线程：<font color='red'>response的解析是并发线程执行的</font>（<em>参考2.3.6-1小节</em>）。</li>
 </ul>
 </li>
 </ul>
@@ -742,13 +738,11 @@ height:40vh;
 
 <p>官方文档翻译如下：</p>
 <ul>
-<li><p>函数作用：</p>
-<ul>
+<li>函数作用：<ul>
 <li>询问data task或上传任务（upload task）是否缓存response。</li>
 </ul>
 </li>
-<li><p>函数讨论：</p>
-<ul>
+<li>函数讨论：<ul>
 <li>当task接收到所有期望的数据后，session会调用此代理方法。如果你没有实现该方法，那么就会使用创建session时使用的configuration对象决定缓存策略。这个代理方法最初的目的是为了阻止缓存特定的URLs或者修改NSCacheURLResponse对象相关的userInfo字典。</li>
 <li>该方法只会当request决定缓存response时候调用。作为准则，responses只会当以下条件都成立的时候返回缓存：<ul>
 <li>该request是HTTP或HTTPS URL的请求（或者你自定义的网络协议，并且确保该协议支持缓存）</li>
@@ -761,8 +755,7 @@ height:40vh;
 </li>
 </ul>
 </li>
-<li><p>总结一下就是一个用来缓存response的方法，方法中调用了我们自定义的Block，自定义一个response用来缓存。</p>
-</li>
+<li>总结一下就是一个用来缓存response的方法，方法中调用了我们自定义的Block，自定义一个response用来缓存。</li>
 </ul>
 <h3 id="2-3-5-NSURLSessionDownloadDelegate实现"><a href="#2-3-5-NSURLSessionDownloadDelegate实现" class="headerlink" title="2.3.5 NSURLSessionDownloadDelegate实现"></a>2.3.5 NSURLSessionDownloadDelegate实现</h3><h4 id="13-URLSession-downloadTask-didFinishDown…"><a href="#13-URLSession-downloadTask-didFinishDown…" class="headerlink" title="13. URLSession:downloadTask:didFinishDown…"></a>13. URLSession:downloadTask:didFinishDown…</h4><figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//下载完成的时候调用</span></span><br><span class="line">- (<span class="type">void</span>)URLSession:(<span class="built_in">NSURLSession</span> *)session</span><br><span class="line">      downloadTask:(<span class="built_in">NSURLSessionDownloadTask</span> *)downloadTask</span><br><span class="line">didFinishDownloadingToURL:(<span class="built_in">NSURL</span> *)location</span><br><span class="line">&#123;</span><br><span class="line">    AFURLSessionManagerTaskDelegate *delegate = [<span class="keyword">self</span> delegateForTask:downloadTask];</span><br><span class="line">    <span class="comment">//这个是session的，也就是全局的，后面的个人代理也会做同样的这件事</span></span><br><span class="line">    <span class="keyword">if</span> (<span class="keyword">self</span>.downloadTaskDidFinishDownloading) &#123;</span><br><span class="line"></span><br><span class="line">        <span class="comment">//调用自定义的block拿到文件存储的地址</span></span><br><span class="line">        <span class="built_in">NSURL</span> *fileURL = <span class="keyword">self</span>.downloadTaskDidFinishDownloading(session, downloadTask, location);</span><br><span class="line">        <span class="keyword">if</span> (fileURL) &#123;</span><br><span class="line">            delegate.downloadFileURL = fileURL;</span><br><span class="line">            <span class="built_in">NSError</span> *error = <span class="literal">nil</span>;</span><br><span class="line">            <span class="comment">//从临时的下载路径移动至我们需要的路径</span></span><br><span class="line">            [[<span class="built_in">NSFileManager</span> defaultManager] moveItemAtURL:location toURL:fileURL error:&amp;error];</span><br><span class="line">            <span class="comment">//如果移动出错</span></span><br><span class="line">            <span class="keyword">if</span> (error) &#123;</span><br><span class="line">                [[<span class="built_in">NSNotificationCenter</span> defaultCenter] postNotificationName:AFURLSessionDownloadTaskDidFailToMoveFileNotification object:downloadTask userInfo:error.userInfo];</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">return</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">//转发代理</span></span><br><span class="line">    <span class="keyword">if</span> (delegate) &#123;</span><br><span class="line">        [delegate URLSession:session downloadTask:downloadTask didFinishDownloadingToURL:location];</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
@@ -783,13 +776,11 @@ height:40vh;
 
 <p>官方文档翻译：</p>
 <ul>
-<li><p>函数作用：</p>
-<ul>
+<li>函数作用：<ul>
 <li>告诉代理，下载任务重新开始下载了。</li>
 </ul>
 </li>
-<li><p>函数讨论：</p>
-<ul>
+<li>函数讨论：<ul>
 <li>如果一个正在下载任务被取消或者失败了，你可以请求一个resumeData对象（比如在userInfo字典中通过NSURLSessionDownloadTaskResumeData这个键来获取到resumeData）并使用它来提供足够的信息以重新开始下载任务。</li>
 <li>随后，你可以使用resumeData作为downloadTaskWithResumeData:或downloadTaskWithResumeData:completionHandler:的参数。当你调用这些方法时，你将开始一个新的下载任务。一旦你继续下载任务，session会调用它的代理方法URLSession:downloadTask:didResumeAtOffset:expectedTotalBytes:其中的downloadTask参数表示的就是新的下载任务，这也意味着下载重新开始了。</li>
 </ul>
@@ -968,8 +959,7 @@ height:40vh;
 <p>如果上述两点都校验通过，就证明当前的服务端是可信任的，否则就是不可信任，应当中断当前连接。</p>
 <h2 id="4-2-session-didReceiveChallenge代理方法"><a href="#4-2-session-didReceiveChallenge代理方法" class="headerlink" title="4.2 session:didReceiveChallenge代理方法"></a>4.2 session:didReceiveChallenge代理方法</h2><p>这个方法就是做https认证的。把官方文档对这个方法的描述翻译一下：</p>
 <ul>
-<li><p>函数作用：</p>
-<ul>
+<li>函数作用：<ul>
 <li>web服务器接收到客户端请求时，有时候需要先验证客户端是否为正常用户，再决定是够返回真实数据。这种情况称之为服务端要求客户端接收挑战（NSURLAuthenticationChallenge *challenge）。</li>
 <li>接收到挑战后，客户端要根据服务端传来的challenge来生成completionHandler所需的NSURLSessionAuthChallengeDisposition disposition和NSURLCredential *credential。<ul>
 <li>disposition是应对这个挑战的认证方式，而credential是客户端应对这个挑战生成的证书。</li>
@@ -979,8 +969,7 @@ height:40vh;
 <li>最后调用completionHandler回应服务器端的挑战。</li>
 </ul>
 </li>
-<li><p>函数讨论：</p>
-<ul>
+<li>函数讨论：<ul>
 <li>该代理方法会在下面两种情况调用：<ul>
 <li>当服务器端要求客户端提供证书时或者进行NTLM认证（Windows NT LAN Manager，微软提出的WindowsNT挑战/响应验证机制）时，此方法允许你的app提供正确的挑战证书。</li>
 <li>当某个session使用SSL/TLS协议，第一次和服务器端建立连接的时候，服务器会发送给iOS客户端一个证书，此方法允许你的app验证服务期端的证书链（certificate keychain）</li>
@@ -1245,10 +1234,8 @@ height:40vh;
 
 <p>注意这个类大量的使用了<code>dispatch_barrier_sync</code>与<code>dispatch_barrier_async</code>，小伙伴们如果对这两个方法有任何疑惑，可以看看这篇文章：<a target="_blank" rel="noopener" href="http://blog.csdn.net/u013046795/article/details/47057585">dispatch_barrier_async与dispatch_barrier_sync异同</a>。</p>
 <ul>
-<li><p>这里我们可以看到使用了<code>dispatch_barrier_sync</code>，这里没有用锁，但是因为使用了<code>dispatch_barrier_sync</code>，不仅同步了<code>synchronizationQueue</code>队列，而且阻塞了当前线程，所以保证了里面执行代码的线程安全问题。</p>
-</li>
-<li><p>在这里其实使用锁也可以，但是AF在这的处理却是使用同步的机制来保证线程安全，<strong>或许这跟图片的加载缓存的使用场景，高频次有关系</strong>，在这里使用sync，并不需要在去开辟新的线程，浪费性能，只需要在原有线程，提交到<code>synchronizationQueue</code>队列中，阻塞的执行即可。这样省去大量的开辟线程与使用锁带来的性能消耗。（当然这仅仅是我的一个猜测，有不同意见的朋友欢迎讨论~）</p>
-<ul>
+<li>这里我们可以看到使用了<code>dispatch_barrier_sync</code>，这里没有用锁，但是因为使用了<code>dispatch_barrier_sync</code>，不仅同步了<code>synchronizationQueue</code>队列，而且阻塞了当前线程，所以保证了里面执行代码的线程安全问题。</li>
+<li>在这里其实使用锁也可以，但是AF在这的处理却是使用同步的机制来保证线程安全，<strong>或许这跟图片的加载缓存的使用场景，高频次有关系</strong>，在这里使用sync，并不需要在去开辟新的线程，浪费性能，只需要在原有线程，提交到<code>synchronizationQueue</code>队列中，阻塞的执行即可。这样省去大量的开辟线程与使用锁带来的性能消耗。（当然这仅仅是我的一个猜测，有不同意见的朋友欢迎讨论~）<ul>
 <li>在这里用了<code>dispatch_barrier_sync</code>，因为<code>synchronizationQueue</code>是个并行queue，所以在这里不会出现死锁的问题。</li>
 <li>关于保证线程安全的同时，同步还是异步，与性能方面的考量，可以参考这篇文章：<a target="_blank" rel="noopener" href="http://www.cocoachina.com/industry/20130821/6842.html">Objc的底层并发API</a>。</li>
 </ul>
@@ -1524,7 +1511,7 @@ height:40vh;
             <p>Author：<a href="https://tenloy.github.io">Tenloy</a>
             <p>原文链接：<a href="https://tenloy.github.io/2021/09/05/AFN-Analyse.html">https://tenloy.github.io/2021/09/05/AFN-Analyse.html</a>
             <p>发表日期：2021.09.05 , 8:53 AM</p>
-            <p>更新日期：2023.03.30 , 5:31 PM</p>
+            <p>更新日期：2023.03.30 , 8:01 PM</p>
             <p>版权声明：本文采用<a rel="license noopener" target="_blank" href="http://creativecommons.org/licenses/by-nc/4.0/">Crative Commons 4.0 许可协议</a>进行许可</p>
         </div>
     
@@ -1724,32 +1711,6 @@ top:40vh;
 </div>
           <div class="sidebar-panel-archives">
     <!-- 在ejs中将archive按照时间排序 -->
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
     
     
     
@@ -3115,6 +3076,8 @@ top:40vh;
     
         <span class="sidebar-tag-name" data-tags="AutoreleasePool"><span class="iconfont-archer">&#xe606;</span>AutoreleasePool</span>
     
+        <span class="sidebar-tag-name" data-tags="GCD"><span class="iconfont-archer">&#xe606;</span>GCD</span>
+    
         <span class="sidebar-tag-name" data-tags="hexo"><span class="iconfont-archer">&#xe606;</span>hexo</span>
     
         <span class="sidebar-tag-name" data-tags="ISA"><span class="iconfont-archer">&#xe606;</span>ISA</span>
@@ -3123,21 +3086,19 @@ top:40vh;
     
         <span class="sidebar-tag-name" data-tags="Soc"><span class="iconfont-archer">&#xe606;</span>Soc</span>
     
+        <span class="sidebar-tag-name" data-tags="CLI"><span class="iconfont-archer">&#xe606;</span>CLI</span>
+    
+        <span class="sidebar-tag-name" data-tags="Shell"><span class="iconfont-archer">&#xe606;</span>Shell</span>
+    
         <span class="sidebar-tag-name" data-tags="ARM64"><span class="iconfont-archer">&#xe606;</span>ARM64</span>
     
         <span class="sidebar-tag-name" data-tags="多线程"><span class="iconfont-archer">&#xe606;</span>多线程</span>
     
         <span class="sidebar-tag-name" data-tags="Docker"><span class="iconfont-archer">&#xe606;</span>Docker</span>
     
-        <span class="sidebar-tag-name" data-tags="GCD"><span class="iconfont-archer">&#xe606;</span>GCD</span>
-    
-        <span class="sidebar-tag-name" data-tags="CLI"><span class="iconfont-archer">&#xe606;</span>CLI</span>
-    
-        <span class="sidebar-tag-name" data-tags="Shell"><span class="iconfont-archer">&#xe606;</span>Shell</span>
+        <span class="sidebar-tag-name" data-tags="协程"><span class="iconfont-archer">&#xe606;</span>协程</span>
     
         <span class="sidebar-tag-name" data-tags="DSL"><span class="iconfont-archer">&#xe606;</span>DSL</span>
-    
-        <span class="sidebar-tag-name" data-tags="协程"><span class="iconfont-archer">&#xe606;</span>协程</span>
     
         <span class="sidebar-tag-name" data-tags="Fiber"><span class="iconfont-archer">&#xe606;</span>Fiber</span>
     
@@ -3145,9 +3106,9 @@ top:40vh;
     
         <span class="sidebar-tag-name" data-tags="RunLoop"><span class="iconfont-archer">&#xe606;</span>RunLoop</span>
     
-        <span class="sidebar-tag-name" data-tags="SwiftUI"><span class="iconfont-archer">&#xe606;</span>SwiftUI</span>
-    
         <span class="sidebar-tag-name" data-tags="Swift-Syntax"><span class="iconfont-archer">&#xe606;</span>Swift-Syntax</span>
+    
+        <span class="sidebar-tag-name" data-tags="SwiftUI"><span class="iconfont-archer">&#xe606;</span>SwiftUI</span>
     
         <span class="sidebar-tag-name" data-tags="LagMonitor"><span class="iconfont-archer">&#xe606;</span>LagMonitor</span>
     

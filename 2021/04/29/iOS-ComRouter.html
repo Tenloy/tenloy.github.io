@@ -43,7 +43,7 @@
 <meta property="og:image" content="https://p1-jj.byteimg.com/tos-cn-i-t2oaga2asx/gold-user-assets/2019/6/22/16b7f27d5882ec38~tplv-t2oaga2asx-watermark.awebp">
 <meta property="og:image" content="https://p1-jj.byteimg.com/tos-cn-i-t2oaga2asx/gold-user-assets/2019/6/22/16b7f27d626abf68~tplv-t2oaga2asx-watermark.awebp">
 <meta property="article:published_time" content="2021-04-29T02:09:20.000Z">
-<meta property="article:modified_time" content="2023-03-30T09:31:31.801Z">
+<meta property="article:modified_time" content="2023-03-30T11:40:48.328Z">
 <meta property="article:author" content="Tenloy">
 <meta property="article:tag" content="Tenloy, iOS, Tenloy Blog, 博客，Swift, 编译, 计算机">
 <meta name="twitter:card" content="summary">
@@ -642,19 +642,16 @@ height:40vh;
 <p>在分层架构中，<strong>需要注意只能上层对下层依赖，下层对上层不能有依赖，下层中不要包含上层业务逻辑</strong>。对于项目中存在的公共资源和代码，应该将其下沉到下层中。</p>
 <h3 id="6-2-2-职责划分"><a href="#6-2-2-职责划分" class="headerlink" title="6.2.2 职责划分"></a>6.2.2 职责划分</h3><p>在三层架构中：</p>
 <ul>
-<li><p>业务层负责处理上层业务，将不同业务划分到相应组件中。例如<code>IM</code>组件、导航组件、用户组件等。</p>
-<ul>
+<li>业务层负责处理上层业务，将不同业务划分到相应组件中。例如<code>IM</code>组件、导航组件、用户组件等。<ul>
 <li>业务层的组件间关系比较复杂，会涉及到组件间业务的通信，以及业务层组件对下层组件的引用。</li>
 </ul>
 </li>
-<li><p>核心层位于业务层下方，为业务层提供业务支持。例如网络、语音识别等组件应该划分到核心层。</p>
-<ul>
+<li>核心层位于业务层下方，为业务层提供业务支持。例如网络、语音识别等组件应该划分到核心层。<ul>
 <li>核心层应该尽量减少组件间的依赖，将依赖降到最小。</li>
 <li>核心层有时相互之间也需要支持，例如经纬度组件需要网络组件提供网络请求的支持，这种是不可避免的。</li>
 </ul>
 </li>
-<li><p>其他比较基础的模块，都放在基础层当做基础组件。例如<code>AFN</code>、地图<code>SDK</code>、加密算法等。</p>
-<ul>
+<li>其他比较基础的模块，都放在基础层当做基础组件。例如<code>AFN</code>、地图<code>SDK</code>、加密算法等。<ul>
 <li>这些组件都比较独立且不掺杂任何业务逻辑，职责更加单一，相对于核心层更底层。</li>
 <li>可以包含第三方库、资源文件、配置文件、基础库等几大类，<strong>基础层组件相互之间不应该产生任何依赖。</strong></li>
 </ul>
@@ -793,7 +790,7 @@ height:40vh;
             <p>Author：<a href="https://tenloy.github.io">Tenloy</a>
             <p>原文链接：<a href="https://tenloy.github.io/2021/04/29/iOS-ComRouter.html">https://tenloy.github.io/2021/04/29/iOS-ComRouter.html</a>
             <p>发表日期：2021.04.29 , 10:09 AM</p>
-            <p>更新日期：2023.03.30 , 5:31 PM</p>
+            <p>更新日期：2023.03.30 , 7:40 PM</p>
             <p>版权声明：本文采用<a rel="license noopener" target="_blank" href="http://creativecommons.org/licenses/by-nc/4.0/">Crative Commons 4.0 许可协议</a>进行许可</p>
         </div>
     
@@ -993,32 +990,6 @@ top:40vh;
 </div>
           <div class="sidebar-panel-archives">
     <!-- 在ejs中将archive按照时间排序 -->
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
     
     
     
@@ -2384,6 +2355,8 @@ top:40vh;
     
         <span class="sidebar-tag-name" data-tags="AutoreleasePool"><span class="iconfont-archer">&#xe606;</span>AutoreleasePool</span>
     
+        <span class="sidebar-tag-name" data-tags="GCD"><span class="iconfont-archer">&#xe606;</span>GCD</span>
+    
         <span class="sidebar-tag-name" data-tags="hexo"><span class="iconfont-archer">&#xe606;</span>hexo</span>
     
         <span class="sidebar-tag-name" data-tags="ISA"><span class="iconfont-archer">&#xe606;</span>ISA</span>
@@ -2392,21 +2365,19 @@ top:40vh;
     
         <span class="sidebar-tag-name" data-tags="Soc"><span class="iconfont-archer">&#xe606;</span>Soc</span>
     
+        <span class="sidebar-tag-name" data-tags="CLI"><span class="iconfont-archer">&#xe606;</span>CLI</span>
+    
+        <span class="sidebar-tag-name" data-tags="Shell"><span class="iconfont-archer">&#xe606;</span>Shell</span>
+    
         <span class="sidebar-tag-name" data-tags="ARM64"><span class="iconfont-archer">&#xe606;</span>ARM64</span>
     
         <span class="sidebar-tag-name" data-tags="多线程"><span class="iconfont-archer">&#xe606;</span>多线程</span>
     
         <span class="sidebar-tag-name" data-tags="Docker"><span class="iconfont-archer">&#xe606;</span>Docker</span>
     
-        <span class="sidebar-tag-name" data-tags="GCD"><span class="iconfont-archer">&#xe606;</span>GCD</span>
-    
-        <span class="sidebar-tag-name" data-tags="CLI"><span class="iconfont-archer">&#xe606;</span>CLI</span>
-    
-        <span class="sidebar-tag-name" data-tags="Shell"><span class="iconfont-archer">&#xe606;</span>Shell</span>
+        <span class="sidebar-tag-name" data-tags="协程"><span class="iconfont-archer">&#xe606;</span>协程</span>
     
         <span class="sidebar-tag-name" data-tags="DSL"><span class="iconfont-archer">&#xe606;</span>DSL</span>
-    
-        <span class="sidebar-tag-name" data-tags="协程"><span class="iconfont-archer">&#xe606;</span>协程</span>
     
         <span class="sidebar-tag-name" data-tags="Fiber"><span class="iconfont-archer">&#xe606;</span>Fiber</span>
     
@@ -2414,9 +2385,9 @@ top:40vh;
     
         <span class="sidebar-tag-name" data-tags="RunLoop"><span class="iconfont-archer">&#xe606;</span>RunLoop</span>
     
-        <span class="sidebar-tag-name" data-tags="SwiftUI"><span class="iconfont-archer">&#xe606;</span>SwiftUI</span>
-    
         <span class="sidebar-tag-name" data-tags="Swift-Syntax"><span class="iconfont-archer">&#xe606;</span>Swift-Syntax</span>
+    
+        <span class="sidebar-tag-name" data-tags="SwiftUI"><span class="iconfont-archer">&#xe606;</span>SwiftUI</span>
     
         <span class="sidebar-tag-name" data-tags="LagMonitor"><span class="iconfont-archer">&#xe606;</span>LagMonitor</span>
     

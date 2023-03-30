@@ -42,7 +42,7 @@
 <meta property="og:image" content="https://tenloy.github.io/images/git/Snip20200423_10.png">
 <meta property="og:image" content="https://tenloy.github.io/images/git/Snip20200423_11.png">
 <meta property="article:published_time" content="2021-11-10T03:06:05.000Z">
-<meta property="article:modified_time" content="2023-03-30T09:31:31.805Z">
+<meta property="article:modified_time" content="2023-03-30T12:01:42.292Z">
 <meta property="article:author" content="Tenloy">
 <meta property="article:tag" content="Tenloy, iOS, Tenloy Blog, 博客，Swift, 编译, 计算机">
 <meta name="twitter:card" content="summary">
@@ -745,41 +745,29 @@ height:40vh;
 <p>不过， 记住文件的每一个版本所对应的 SHA-1 值并不现实。另一个问题是，在这个（简单的版本控制）系统中，文件名并没有被保存——我们仅保存了文件的内容。 上述类型的对象我们称之为数据对象（blob object）</p>
 <h5 id="2-树对象-对应-目录"><a href="#2-树对象-对应-目录" class="headerlink" title="2. 树对象(对应 目录)"></a>2. 树对象(对应 目录)</h5><p>树对象（tree object）能解决文件名保存的问题，也允许我们将多个文件组织到一起。 <strong>Git 以一种类似于 UNIX 文件系统的方式存储内容，但作了些许简化</strong>：</p>
 <ul>
-<li><p>所有内容均以树对象和数据对象的形式存储，其中<font color='red'>树对象对应了 UNIX 中的目录项</font><strong>，</strong><font color='red'>数据对象则大致上对应了 inodes 或文件内容</font>；</p>
-<blockquote>
-<p><a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Inode">inode</a>是一个重要概念，是理解Unix/Linux文件系统和硬盘储存的基础。</p>
-<p>我觉得，理解inode，不仅有助于提高系统操作水平，还有助于体会Unix设计哲学，即如何把底层的复杂性抽象成一个简单概念，从而大大简化用户接口。</p>
-<p><strong>一、inode是什么？</strong></p>
-<p>理解inode，要从文件储存说起。</p>
-<p>文件储存在硬盘上，硬盘的最小存储单位叫做”扇区”（Sector）。每个扇区储存512字节（相当于0.5KB）。</p>
-<p>操作系统读取硬盘的时候，不会一个个扇区地读取，这样效率太低，而是一次性连续读取多个扇区，即一次性读取一个”块”（block）。这种由多个扇区组成的”块”，是文件存取的最小单位。”块”的大小，最常见的是4KB，即连续八个 sector组成一个 block。</p>
-<p>文件数据都储存在”块”中，那么很显然，我们还必须找到一个地方储存文件的元信息，比如文件的创建者、文件的创建日期、文件的大小等等。这种储存文件元信息的区域就叫做inode，中文译名为”索引节点”。</p>
-<p>每一个文件都有对应的inode，里面包含了与该文件有关的一些信息。</p>
-<p><strong>二、inode的内容</strong></p>
-<p>inode包含文件的元信息，具体来说有以下内容：</p>
+<li>所有内容均以树对象和数据对象的形式存储，其中<font color='red'>树对象对应了 UNIX 中的目录项</font><strong>，</strong><font color='red'>数据对象则大致上对应了 inodes 或文件内容</font>；<blockquote>
+<p><a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Inode">inode</a>是一个重要概念，是理解Unix/Linux文件系统和硬盘储存的基础。<br>我觉得，理解inode，不仅有助于提高系统操作水平，还有助于体会Unix设计哲学，即如何把底层的复杂性抽象成一个简单概念，从而大大简化用户接口。<br><strong>一、inode是什么？</strong><br>理解inode，要从文件储存说起。</p>
 <ul>
-<li><p>文件的字节数</p>
-</li>
-<li><p>文件拥有者的User ID</p>
-</li>
-<li><p>文件的Group ID</p>
-</li>
-<li><p>文件的读、写、执行权限</p>
-</li>
-<li><p>文件的时间戳，共有三个：ctime指inode上一次变动的时间，mtime指文件内容上一次变动的时间，atime指文件上一次打开的时间。</p>
-</li>
-<li><p>链接数，即有多少文件名指向这个inode</p>
-</li>
-<li><p>文件数据block的位置</p>
-</li>
+<li>文件储存在硬盘上，硬盘的最小存储单位叫做”扇区”（Sector）。每个扇区储存512字节（相当于0.5KB）。</li>
+<li>操作系统读取硬盘的时候，不会一个个扇区地读取，这样效率太低，而是一次性连续读取多个扇区，即一次性读取一个”块”（block）。这种由多个扇区组成的”块”，是文件存取的最小单位。”块”的大小，最常见的是4KB，即连续八个 sector组成一个 block。</li>
+<li>文件数据都储存在”块”中，那么很显然，我们还必须找到一个地方储存文件的元信息，比如文件的创建者、文件的创建日期、文件的大小等等。这种储存文件元信息的区域就叫做inode，中文译名为”索引节点”。</li>
+<li>每一个文件都有对应的inode，里面包含了与该文件有关的一些信息。</li>
+</ul>
+<p><strong>二、inode的内容</strong><br>inode包含文件的元信息，具体来说有以下内容：</p>
+<ul>
+<li>文件的字节数</li>
+<li>文件拥有者的User ID</li>
+<li>文件的Group ID</li>
+<li>文件的读、写、执行权限</li>
+<li>文件的时间戳，共有三个：ctime指inode上一次变动的时间，mtime指文件内容上一次变动的时间，atime指文件上一次打开的时间。</li>
+<li>链接数，即有多少文件名指向这个inode</li>
+<li>文件数据block的位置</li>
 </ul>
 <p>可以用stat命令，查看某个文件的inode信息：<code>stat example.txt</code></p>
 </blockquote>
 </li>
-<li><p>一个树对象包含了一条或多条树对象记录（tree entry）；</p>
-</li>
-<li><p>每条记录含有一个指向数据对象或者子树对象的 SHA-1 指针，以及相应的模式、类型、文件名信息。</p>
-<ul>
+<li>一个树对象包含了一条或多条树对象记录（tree entry）；</li>
+<li>每条记录含有一个指向数据对象或者子树对象的 SHA-1 指针，以及相应的模式、类型、文件名信息。<ul>
 <li>文件模式为 <code>100644</code>，表明这是一个普通文件。 </li>
 <li><code>100755</code>，表示一个可执行文件；</li>
 <li><code>120000</code>，表示一个符号链接。</li>
@@ -907,21 +895,18 @@ height:40vh;
 
 <p>将当前分支的HEAD指向给定的版本，并根据模式的不同决定是否修改index和working tree。</p>
 <ul>
-<li><p>–soft模式</p>
-<ul>
+<li>–soft模式<ul>
 <li>指定commit id之后的所有commit的修改、目前index中暂存的修改都被保留在index中；</li>
 <li>working tree中还没暂存的修改保持原样。</li>
 </ul>
 </li>
-<li><p>–mixed(默认)</p>
-<ul>
+<li>–mixed(默认)<ul>
 <li>清空index</li>
 <li>指定commit id之后的所有commit的修改、目前index中暂存的修改、目前working tree中还没暂存的修改都被保留在工作区中</li>
 <li>可以巧用<code>git reset</code>来<strong>撤销添加到暂存区中的修改</strong>(放入了工作区)，即<code>git reset HEAD &lt;file&gt;</code></li>
 </ul>
 </li>
-<li><p>–hard：</p>
-<ul>
+<li>–hard：<ul>
 <li>清空index、workingtree，指定commit id之后的所有提交修改也不会保留。</li>
 </ul>
 </li>
@@ -1223,10 +1208,8 @@ height:40vh;
 
 <h3 id="9-2-SSH调试：需要密码或直接被拒"><a href="#9-2-SSH调试：需要密码或直接被拒" class="headerlink" title="9.2 SSH调试：需要密码或直接被拒"></a>9.2 SSH调试：需要密码或直接被拒</h3><p>两个现象，原因都一样：</p>
 <ul>
-<li><p>Permission denied (publickey)</p>
-</li>
-<li><p>一直要求输入密码</p>
-</li>
+<li>Permission denied (publickey)</li>
+<li>一直要求输入密码</li>
 </ul>
 <h4 id="9-2-1-前提：公私钥已经配置正确"><a href="#9-2-1-前提：公私钥已经配置正确" class="headerlink" title="9.2.1 前提：公私钥已经配置正确"></a>9.2.1 前提：公私钥已经配置正确</h4><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ git <span class="built_in">clone</span> git@xxx.com</span><br><span class="line">git@xxx.com<span class="string">&#x27;s password: </span></span><br></pre></td></tr></table></figure>
 
@@ -1257,7 +1240,7 @@ height:40vh;
             <p>Author：<a href="https://tenloy.github.io">Tenloy</a>
             <p>原文链接：<a href="https://tenloy.github.io/2021/11/10/git-use.html">https://tenloy.github.io/2021/11/10/git-use.html</a>
             <p>发表日期：2021.11.10 , 11:06 AM</p>
-            <p>更新日期：2023.03.30 , 5:31 PM</p>
+            <p>更新日期：2023.03.30 , 8:01 PM</p>
             <p>版权声明：本文采用<a rel="license noopener" target="_blank" href="http://creativecommons.org/licenses/by-nc/4.0/">Crative Commons 4.0 许可协议</a>进行许可</p>
         </div>
     
@@ -1457,32 +1440,6 @@ top:40vh;
 </div>
           <div class="sidebar-panel-archives">
     <!-- 在ejs中将archive按照时间排序 -->
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
     
     
     
@@ -2848,6 +2805,8 @@ top:40vh;
     
         <span class="sidebar-tag-name" data-tags="AutoreleasePool"><span class="iconfont-archer">&#xe606;</span>AutoreleasePool</span>
     
+        <span class="sidebar-tag-name" data-tags="GCD"><span class="iconfont-archer">&#xe606;</span>GCD</span>
+    
         <span class="sidebar-tag-name" data-tags="hexo"><span class="iconfont-archer">&#xe606;</span>hexo</span>
     
         <span class="sidebar-tag-name" data-tags="ISA"><span class="iconfont-archer">&#xe606;</span>ISA</span>
@@ -2856,21 +2815,19 @@ top:40vh;
     
         <span class="sidebar-tag-name" data-tags="Soc"><span class="iconfont-archer">&#xe606;</span>Soc</span>
     
+        <span class="sidebar-tag-name" data-tags="CLI"><span class="iconfont-archer">&#xe606;</span>CLI</span>
+    
+        <span class="sidebar-tag-name" data-tags="Shell"><span class="iconfont-archer">&#xe606;</span>Shell</span>
+    
         <span class="sidebar-tag-name" data-tags="ARM64"><span class="iconfont-archer">&#xe606;</span>ARM64</span>
     
         <span class="sidebar-tag-name" data-tags="多线程"><span class="iconfont-archer">&#xe606;</span>多线程</span>
     
         <span class="sidebar-tag-name" data-tags="Docker"><span class="iconfont-archer">&#xe606;</span>Docker</span>
     
-        <span class="sidebar-tag-name" data-tags="GCD"><span class="iconfont-archer">&#xe606;</span>GCD</span>
-    
-        <span class="sidebar-tag-name" data-tags="CLI"><span class="iconfont-archer">&#xe606;</span>CLI</span>
-    
-        <span class="sidebar-tag-name" data-tags="Shell"><span class="iconfont-archer">&#xe606;</span>Shell</span>
+        <span class="sidebar-tag-name" data-tags="协程"><span class="iconfont-archer">&#xe606;</span>协程</span>
     
         <span class="sidebar-tag-name" data-tags="DSL"><span class="iconfont-archer">&#xe606;</span>DSL</span>
-    
-        <span class="sidebar-tag-name" data-tags="协程"><span class="iconfont-archer">&#xe606;</span>协程</span>
     
         <span class="sidebar-tag-name" data-tags="Fiber"><span class="iconfont-archer">&#xe606;</span>Fiber</span>
     
@@ -2878,9 +2835,9 @@ top:40vh;
     
         <span class="sidebar-tag-name" data-tags="RunLoop"><span class="iconfont-archer">&#xe606;</span>RunLoop</span>
     
-        <span class="sidebar-tag-name" data-tags="SwiftUI"><span class="iconfont-archer">&#xe606;</span>SwiftUI</span>
-    
         <span class="sidebar-tag-name" data-tags="Swift-Syntax"><span class="iconfont-archer">&#xe606;</span>Swift-Syntax</span>
+    
+        <span class="sidebar-tag-name" data-tags="SwiftUI"><span class="iconfont-archer">&#xe606;</span>SwiftUI</span>
     
         <span class="sidebar-tag-name" data-tags="LagMonitor"><span class="iconfont-archer">&#xe606;</span>LagMonitor</span>
     

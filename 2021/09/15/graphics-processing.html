@@ -31,7 +31,7 @@
 <meta property="og:image" content="https://tenloy.github.io/images/iosrender/01.png">
 <meta property="og:image" content="https://tenloy.github.io/images/graphics/architecture_2x.png">
 <meta property="article:published_time" content="2021-09-14T21:54:01.000Z">
-<meta property="article:modified_time" content="2023-03-30T09:31:31.812Z">
+<meta property="article:modified_time" content="2023-03-30T12:01:42.354Z">
 <meta property="article:author" content="Tenloy">
 <meta property="article:tag" content="Tenloy, iOS, Tenloy Blog, 博客，Swift, 编译, 计算机">
 <meta name="twitter:card" content="summary">
@@ -601,16 +601,14 @@ height:40vh;
 <p>OpenCV 声明了命名空间 <code>cv</code>，因此 OpenCV 的类的前面会有个 <code>cv::</code> 前缀，就像 <code>cv::Mat</code>、 <code>cv::Algorithm</code> 等等。你也可以在 <code>.mm</code> 文件中使用 <code>using namespace cv</code> 来避免在一堆类名前使用 <code>cv::</code>前缀。但是，在某些类名前你必须使用命名空间前缀，比如 <code>cv::Rect</code> 和 <code>cv::Point</code>，因为它们会跟定义在 <code>MacTypes.h</code> 中的 <code>Rect</code> 和 <code>Point</code> 相冲突。尽管这只是个人偏好问题，我还是偏向在任何地方都使用 <code>cv::</code>以保持一致性。</p>
 <p>一般讲的OpenCV是基于CPU的，相关资料和支持也是最完善的。当然，也有基于GPU模块，但提供的接口非常坑爹，相当一部分不支持浮点类型（像histogram、integral这类常用的都不支持）；又如，遇到阈值判断的地方，就必须传回cpu处理，因为gpu函数都是并行处理的，每改写完一个算法模块，就测试一下运行效率，有的时候是振奋人心，有的时候则是当头棒喝——比CPU还慢。详情可参阅 <a href="https://link.juejin.cn/?target=https://blog.csdn.net/kelvin_yan/article/details/41804357">这里</a>。</p>
 <h2 id="十、参考文献"><a href="#十、参考文献" class="headerlink" title="十、参考文献"></a>十、参考文献</h2><ul>
-<li><p>Core Animations</p>
-<ul>
+<li>Core Animations<ul>
 <li><a target="_blank" rel="noopener" href="https://www.sohu.com/a/203987045_468740">https://www.sohu.com/a/203987045_468740</a> </li>
 <li><a target="_blank" rel="noopener" href="https://blog.csdn.net/huangznian/article/details/42919221">https://blog.csdn.net/huangznian/article/details/42919221</a> </li>
 <li><a target="_blank" rel="noopener" href="https://www.jianshu.com/p/446a6b72f981">https://www.jianshu.com/p/446a6b72f981</a> </li>
 <li><a target="_blank" rel="noopener" href="https://www.jianshu.com/p/439e158b44de">https://www.jianshu.com/p/439e158b44de</a></li>
 </ul>
 </li>
-<li><p>Metal</p>
-<ul>
+<li>Metal<ul>
 <li><a target="_blank" rel="noopener" href="https://juejin.cn/post/6844903494072139789">https://juejin.cn/post/6844903494072139789</a> </li>
 <li><a target="_blank" rel="noopener" href="https://www.jianshu.com/p/ce53d0178f20">https://www.jianshu.com/p/ce53d0178f20</a> </li>
 <li><a target="_blank" rel="noopener" href="https://blog.csdn.net/pizi0475/article/details/50232029">https://blog.csdn.net/pizi0475/article/details/50232029</a> </li>
@@ -618,24 +616,21 @@ height:40vh;
 <li><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/24623380?utm_source=tuicool&amp;utm_medium=referral">https://zhuanlan.zhihu.com/p/24623380?utm_source=tuicool&amp;utm_medium=referral</a></li>
 </ul>
 </li>
-<li><p>Core Image</p>
-<ul>
+<li>Core Image<ul>
 <li><a target="_blank" rel="noopener" href="https://objccn.io/issue-21-6/">https://objccn.io/issue-21-6/</a> </li>
 <li><a target="_blank" rel="noopener" href="http://colin1994.github.io/2016/10/21/Core-Image-OverView/?utm_source=tuicool&amp;utm_medium=referral">http://colin1994.github.io/2016/10/21/Core-Image-OverView/?utm_source=tuicool&amp;utm_medium=referral</a> </li>
 <li><a target="_blank" rel="noopener" href="https://blog.csdn.net/jingcheng345413/article/details/54967640">https://blog.csdn.net/jingcheng345413/article/details/54967640</a> </li>
 <li><a target="_blank" rel="noopener" href="https://www.cnblogs.com/try2do-neo/p/3601546.html">https://www.cnblogs.com/try2do-neo/p/3601546.html</a></li>
 </ul>
 </li>
-<li><p>Core Graphics</p>
-<ul>
+<li>Core Graphics<ul>
 <li><a target="_blank" rel="noopener" href="https://www.jianshu.com/p/e7a50dcbe7c8">https://www.jianshu.com/p/e7a50dcbe7c8</a> </li>
 <li><a target="_blank" rel="noopener" href="https://www.jianshu.com/p/55cc1587e618">https://www.jianshu.com/p/55cc1587e618</a> </li>
 <li><a target="_blank" rel="noopener" href="https://www.jianshu.com/p/494c57f49479">https://www.jianshu.com/p/494c57f49479</a> </li>
 <li><a target="_blank" rel="noopener" href="https://my.oschina.net/flyfishbay/blog/1504698">https://my.oschina.net/flyfishbay/blog/1504698</a></li>
 </ul>
 </li>
-<li><p>OpenCV</p>
-<ul>
+<li>OpenCV<ul>
 <li><a target="_blank" rel="noopener" href="https://blog.csdn.net/zhonggaorong/article/details/78191514">https://blog.csdn.net/zhonggaorong/article/details/78191514</a> </li>
 <li><a target="_blank" rel="noopener" href="http://www.opencv.org.cn/forum.php?mod=viewthread&amp;tid=33549">http://www.opencv.org.cn/forum.php?mod=viewthread&amp;tid=33549</a> </li>
 <li><a target="_blank" rel="noopener" href="https://blog.csdn.net/kelvin_yan/article/details/41804357">https://blog.csdn.net/kelvin_yan/article/details/41804357</a> </li>
@@ -643,13 +638,11 @@ height:40vh;
 <li><a target="_blank" rel="noopener" href="https://blog.csdn.net/liyuefeilong/article/details/46292339">https://blog.csdn.net/liyuefeilong/article/details/46292339</a></li>
 </ul>
 </li>
-<li><p>GPUImage</p>
-<ul>
+<li>GPUImage<ul>
 <li><a target="_blank" rel="noopener" href="https://blog.csdn.net/fanbird2008/article/details/51707430">https://blog.csdn.net/fanbird2008/article/details/51707430</a></li>
 </ul>
 </li>
-<li><p>其它</p>
-<ul>
+<li>其它<ul>
 <li><a target="_blank" rel="noopener" href="https://blog.csdn.net/goohong/article/details/40743883">https://blog.csdn.net/goohong/article/details/40743883</a></li>
 </ul>
 </li>
@@ -662,7 +655,7 @@ height:40vh;
             <p>Author：<a href="https://tenloy.github.io">Tenloy</a>
             <p>原文链接：<a href="https://tenloy.github.io/2021/09/15/graphics-processing.html">https://tenloy.github.io/2021/09/15/graphics-processing.html</a>
             <p>发表日期：2021.09.15 , 5:54 AM</p>
-            <p>更新日期：2023.03.30 , 5:31 PM</p>
+            <p>更新日期：2023.03.30 , 8:01 PM</p>
             <p>版权声明：本文采用<a rel="license noopener" target="_blank" href="http://creativecommons.org/licenses/by-nc/4.0/">Crative Commons 4.0 许可协议</a>进行许可</p>
         </div>
     
@@ -862,32 +855,6 @@ top:40vh;
 </div>
           <div class="sidebar-panel-archives">
     <!-- 在ejs中将archive按照时间排序 -->
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
     
     
     
@@ -2253,6 +2220,8 @@ top:40vh;
     
         <span class="sidebar-tag-name" data-tags="AutoreleasePool"><span class="iconfont-archer">&#xe606;</span>AutoreleasePool</span>
     
+        <span class="sidebar-tag-name" data-tags="GCD"><span class="iconfont-archer">&#xe606;</span>GCD</span>
+    
         <span class="sidebar-tag-name" data-tags="hexo"><span class="iconfont-archer">&#xe606;</span>hexo</span>
     
         <span class="sidebar-tag-name" data-tags="ISA"><span class="iconfont-archer">&#xe606;</span>ISA</span>
@@ -2261,21 +2230,19 @@ top:40vh;
     
         <span class="sidebar-tag-name" data-tags="Soc"><span class="iconfont-archer">&#xe606;</span>Soc</span>
     
+        <span class="sidebar-tag-name" data-tags="CLI"><span class="iconfont-archer">&#xe606;</span>CLI</span>
+    
+        <span class="sidebar-tag-name" data-tags="Shell"><span class="iconfont-archer">&#xe606;</span>Shell</span>
+    
         <span class="sidebar-tag-name" data-tags="ARM64"><span class="iconfont-archer">&#xe606;</span>ARM64</span>
     
         <span class="sidebar-tag-name" data-tags="多线程"><span class="iconfont-archer">&#xe606;</span>多线程</span>
     
         <span class="sidebar-tag-name" data-tags="Docker"><span class="iconfont-archer">&#xe606;</span>Docker</span>
     
-        <span class="sidebar-tag-name" data-tags="GCD"><span class="iconfont-archer">&#xe606;</span>GCD</span>
-    
-        <span class="sidebar-tag-name" data-tags="CLI"><span class="iconfont-archer">&#xe606;</span>CLI</span>
-    
-        <span class="sidebar-tag-name" data-tags="Shell"><span class="iconfont-archer">&#xe606;</span>Shell</span>
+        <span class="sidebar-tag-name" data-tags="协程"><span class="iconfont-archer">&#xe606;</span>协程</span>
     
         <span class="sidebar-tag-name" data-tags="DSL"><span class="iconfont-archer">&#xe606;</span>DSL</span>
-    
-        <span class="sidebar-tag-name" data-tags="协程"><span class="iconfont-archer">&#xe606;</span>协程</span>
     
         <span class="sidebar-tag-name" data-tags="Fiber"><span class="iconfont-archer">&#xe606;</span>Fiber</span>
     
@@ -2283,9 +2250,9 @@ top:40vh;
     
         <span class="sidebar-tag-name" data-tags="RunLoop"><span class="iconfont-archer">&#xe606;</span>RunLoop</span>
     
-        <span class="sidebar-tag-name" data-tags="SwiftUI"><span class="iconfont-archer">&#xe606;</span>SwiftUI</span>
-    
         <span class="sidebar-tag-name" data-tags="Swift-Syntax"><span class="iconfont-archer">&#xe606;</span>Swift-Syntax</span>
+    
+        <span class="sidebar-tag-name" data-tags="SwiftUI"><span class="iconfont-archer">&#xe606;</span>SwiftUI</span>
     
         <span class="sidebar-tag-name" data-tags="LagMonitor"><span class="iconfont-archer">&#xe606;</span>LagMonitor</span>
     
