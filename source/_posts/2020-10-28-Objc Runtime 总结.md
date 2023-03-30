@@ -138,9 +138,7 @@ struct objc_class {
 从arm64架构开始：
 
 - 明确的将objc_class定义为一个Object，继承自struct objc_object。
-
 - 对isa进行了优化，变成了一个共用体（union）结构，使用位域来存储了更多的信息。
-
 ```c++
 struct objc_object {
     isa_t isa;   // isa(is a)指向它的类。当向object发送消息时，Runtime库会根据object的isa指针找到这个实例object所属于的类，然后在类的方法列表以及父类方法列表寻找对应的方法运行。
@@ -225,9 +223,7 @@ static inline mask_t cache_hash(SEL sel, mask_t mask)
 #### 要点：
 
 - **不管是在本类、父类、基类中找到的，只要不在本类的cache中，就填充缓存。**详见4.3节
-
 - 关于缓存的扩容以及限制：
-
   - 初始大小为4；
   - 当缓存使用达到3/4后，进行缓存扩容，扩容系数为2；
   - 扩容时，会清空缓存，否则hash值就不对了；
@@ -1839,7 +1835,6 @@ OC中的方法调用，其实都是转换为下面几个函数的调用。编译
 - 如果是传递给超类就会调用带super的函数；
 - 如果返回是数据结构而不是一个值就会调用带stret的函数；
 - 在i386平台返回类型为浮点消息会调用objc_msgSend_fpret函数。
-
 ```c++
 // 这个函数将消息接收者和方法名(选择器)作为基础参数。
    // 使用self关键字来引用实例本身，self的内容即接收消息的对象是在Method运行时被传入
@@ -2081,10 +2076,8 @@ id objc_msgSendSuper2(struct objc_super * _Nonnull super, SEL _Nonnull op, ...);
 
 - **Swizzling应该总在+load中执行**：objectivec在运行时会自动调用类的两个方法+load和+initialize。+load会在类初始加载时调用，和+initialize比较+load能保证在类的初始化过程中被加载。
   - Swizzling在+load中执行时，不要调用[super load]。原因同下面一条，如果是多继承，并且对同一个方法都进行了Swizzling（*没有在dispatch_once中执行*），那么调用[super load]以后，父类的Swizzling就失效了。
-
 - **Swizzling应该总是在dispatch_once中执行**：swizzling会改变全局状态，所以在运行时采取一些预防措施，使用dispatch_once就能够确保代码不管有多少线程都只被执行一次。这将成为method swizzling的最佳实践。
   - 如果不写dispatch_once，偶数次交换以后，相当于没有交换，Swizzling失效！
-
 - **Swizzling时，需要注意class_getInstanceMethod的特性**：该方法的实现中，如果这个类中没有实现selector这个方法，那么它会沿着继承链找到为止，即其可能返回的是它某父类的Method对象。所以提前判断很重要，避免错误的交换了父类中的方法。
 - 交换的分类方法应尽量调用原实现。
   - 很多情况我们不清楚被交换的的方法具体做了什么内部逻辑，而且很多被交换的方法都是系统封装的方法，所以为了保证其逻辑性都应该在分类的交换方法中去调用原被交换方法。

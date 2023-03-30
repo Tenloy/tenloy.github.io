@@ -323,7 +323,6 @@ CALayer有一个可选的`delegate`属性，实现了`CALayerDelegate`协议，�
 此方法的默认实现：
 
 - 如果 layer 有delegate对象，且实现了 layoutSublayersOfLayer: 方法，调用它。
-
 - 否则，该方法调用 layoutManager 属性对象(Mac OS API)的 layoutSublayersOfLayer: 方法。 
 
 #### 2. -setNeedsLayout(做标记)
@@ -638,9 +637,7 @@ labels Set horizontal compression resistance priority to 751/749.
 设置：
 
 - xib中，有右侧尺寸检查器中，有此选项
-
 - 代码中：
-
   ```objc
   static const UILayoutPriority UILayoutPriorityRequired = 1000;
   static const UILayoutPriority UILayoutPriorityDefaultHigh = 750;

@@ -64,17 +64,11 @@ DSL 分为内部 DSL 和外部 DSL：
 最常见的 DSL 包括 Regex 以及 HTML & CSS，在这里会对这几个例子进行简单介绍
 
 - Regex
-
   - 正则表达式仅仅指定了字符串的 pattern，其引擎就会根据 pattern 判断当前字符串跟正则表达式是否匹配。
-
     <img src="/images/DSL/2016-10-03-regex.jpg" style="zoom:70%">
-
 - SQL
-
   - SQL 语句在使用时也并没有真正的执行，我们输入的 SQL 语句最终还要交给数据库来进行处理，数据库会从 SQL 语句中**读取**有用的信息，然后从数据库中返回使用者期望的结果。
-
 - HTML & CSS
-
   - HTML 和 CSS 只是对 Web 界面的结构语义和样式进行描述，虽然它们在构建网站时非常重要，但是它们并非是一种编程语言，正相反，我们可以认为 HTML 和 CSS 是在 Web 中的领域特定语言。
 
 ### Features

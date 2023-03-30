@@ -228,7 +228,6 @@ gitalk
 
 - 在_book文件夹中找到gitbook->theme.js文件。
 - 在代码中搜索 `if(m)for(n.handler&&`
-
 - 将`if(m)`改成`if(false)`，再重新打开index.html即可 
 
 缺点：每次都会重置侧边栏。如果是部署后访问，侧边栏点击跳转后，不会重置状态

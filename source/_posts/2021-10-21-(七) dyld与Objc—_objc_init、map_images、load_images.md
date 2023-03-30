@@ -950,7 +950,6 @@ Class readClass(Class cls, bool headerIsBundle, bool headerIsPreoptimized)
 从上文`readClass(...)`代码`if (Class newCls = popFutureNamedClass(mangledName))`分支内`free((void *)old_ro)`语句，得出在`cls`映射到`newCls`过程中，完全丢弃了 future class 的`ro`数据。最后，结合以上所有代码，可以归纳以下结论：
 
 - Future class 类的有效数据实际上仅有：类名和`rw`。`rw`中的数据作用也非常少，仅使用`flags`的`RO_FUTURE`（实际上就是`RW_FUTURE`）标记类是 future class；
-
 - Future class 的作用是为指定类名的类，提前分配好内存空间，调用`readClass(...)`函数读取类时，才正式写入类的数据。 Future class 是用于支持类的懒加载机制；
 
 #### 4. remapped(重新映射) classes

@@ -183,7 +183,6 @@ OC的代码貌似不会编译出`Weak Bind`. 目前遇到的`Weak Bind`都是C++
 - OS X 和其他 UN\*X 不同，它的库不是“共享对象(.so)”，因为 OS X 和 ELF 不兼容，而且这个概念在 Mach-O 中不存在。OS 中的动态链接文件一般称为**动态库**文件，带有 `.dylib`、`.framework`及链接符号`.tbd`。
   - 库文件可以在 `/usr/lib` 目录下找到(这一点和其他所有的 UN*X 一样，不同的是在OS X 和 iOS 中没有/lib目录)，这些库已被设置全局可用。
   - 我们在使用系统的.dylib动态库时，经常发现没有头文件，其实这些库的头文件都位于一个已知位置，如`/usr/local/include`、`/usr/include`等 (后者文件夹在新系统中由SDK附带了，见 [/usr/include missing on macOS Catalina (with Xcode 11)](https://apple.stackexchange.com/questions/372032/usr-include-missing-on-macos-catalina-with-xcode-11) )。
-
 - OS X 与其他 UN\*X 另一点不同是：没有`libc`。开发者可能熟悉其他 UN\*X 上的C运行时库(或Windows上的MSVCRT) 。但是在 OS X 上对应的库`/usr/lib/libc.dylib`只不过是指向`libSystem.B.dylib`的符号链接。
 - 以C语言运行库为例，补充一下**运行库**的概念：任何一个C程序，它的背后都有一套庞大的代码来进行支撑，以使得该程序能够正常运行。这套代码至少包括入口函数，及其所依赖的函数所构成的函数集合。当然，它还理应包括各种标准库函数的实现。这样的一个代码集合称之为运行时库（Runtime Library）。而C语言的运行库，即被称为C运行库（CRT）。**运行库顾名思义是让程序能正常运行的一个库。**
 

@@ -47,13 +47,9 @@ llvm特点：
 简单罗列LLVM几个主要的子项目，详见[官网](https://llvm.org/)：
 
 - LLVM Core libraries：LLVM核心库提供了一个独立于源和目标架构的现代[优化器optimizer](https://llvm.org/docs/Passes.html)，以及对许多流行cpu(以及一些不太常见的cpu)的[代码生成(code generation)](https://llvm.org/docs/CodeGenerator.html)支持。这些库是围绕一种被称为LLVM中间表示(“LLVM IR”)的良好指定的代码表示构建的。
-
 - **Clang**：一个 C/C++/Objective-C 编译器，提供高效快速的编译效率，比 GCC 快3倍，其中的 clang static analyzer 主要是进行语法分析，语义分析和生成中间代码，当然这个过程会对代码进行检查，出错的和需要警告的会标注出来。(见下文详述)
-
 - lld： 是LLVM开发一个内置的，平台独立的链接器，去除对所有第三方链接器的依赖。在2017年5月，lld已经支持ELF、PE/COFF、和Mach-O。在lld支持不完全的情况下，用户可以使用其他项目，如 GNU ld 链接器。 
-  
-  lld支持链接时优化。当LLVM链接时优化被启用时，LLVM可以输出bitcode而不是本机代码，而本机代码生成由链接器优化处理。
-  
+  - lld支持链接时优化。当LLVM链接时优化被启用时，LLVM可以输出bitcode而不是本机代码，而本机代码生成由链接器优化处理。
 - LLDB：基于 LLVM 和 Clang提供的库构建的一个优秀的本地调试器，使用了 Clang ASTs、表达式解析器、LLVM JIT、LLVM 反汇编器等。
 
 ### 1.2 Clang
@@ -66,11 +62,9 @@ llvm特点：
 
 Clang 为一些需要分析代码语法、语义信息的工具提供了基础设施。分别是：
 - **LibClang**。LibClang提供了一个稳定的高级 C 接口，Xcode 使用的就是 LibClang。LibClang 可以访问 Clang 的上层高级抽象的能力，比如获取所有 Token、遍历语法树、代码补全等。由于 API 很稳定，Clang 版本更新对其 影响不大。但是，LibClang 并不能完全访问到 Clang AST 信息。
-
 - **Clang Plugins**。可以在 AST 上做些操作，这些操作能够集成到编译中，成为编译的一部分。插件是在运 行时由编译器加载的动态库，方便集成到构建系统中。
 使用 Clang Plugins 一般都是希望能够完全控制 Clang AST，同时能够集成在编译流程中，可以影响编译的过程，进行中断或者提示。
 应用：实现命名规范、代码规范等一些扩展功能
-
 - **LibTooling**。是一个 C++ 接口，所写的工具不依赖于构建系统，可以作为一个命令单独使用。与 Clang Plugins 相比，LibTooling 无法影响编译过程；与 LibClang 相比，LibTooling 的接口没有那么稳定。
 应用：做代码转换，比如把 OC 转 JavaScript 或 Swift；代码检查。
 

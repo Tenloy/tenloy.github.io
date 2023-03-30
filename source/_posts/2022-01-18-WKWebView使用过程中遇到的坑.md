@@ -203,7 +203,6 @@ WKWebView 自诩拥有更快的加载速度，更低的内存占用，但实际�
 换WKWebView加载网页后，App 进程内存消耗反而大幅下降，但是仔细观察会发现，Other Process 的内存占用会增加。**在一些用 webGL 渲染的复杂页面，使用 WKWebView 总体的内存占用（App Process Memory + Other Process Memory）不见得比 UIWebView 少很多。**
 
 - 在 UIWebView 上当内存占用太大的时候，App Process 会 crash；
-
 - 在 WKWebView 上当总体的内存占用比较大的时候，WebContent Process 会 crash，从而出现白屏现象
 
 ### 解决方案
@@ -312,7 +311,6 @@ WKWebView上述事件WKWebView 不会自动交给UIApplication 来处理，除�
 
 - 在UIWebView初始化之前，全局设置User-Agent才会生效
 - 在shouldStartLoadWithRequest可以给某个request设置UA，但是需要重新[webView loadUrl]，注意判断条件，不要死循环
-
 - **不要擅自修改webView的User-Agent，务必要跟前端反复确认，是否有用UA来做一些设备区分，进而做一些系统、机型适配问题。**
 
 ## 10. didFinish不调用

@@ -351,7 +351,7 @@ dispatch_release(mySerialDispatchQueue)
 - 同步：将block提交到队列，并执行完毕后，继续往下执行。
 - 异步：将block提交到队列后，立即返回。执行下面的代码。
 
- 有的文章中说 `dispatch_sync` 与 `dispatch_async` 的区别在于会不会开辟新的线程，个人感觉是有些问题的。
+有的文章中说 `dispatch_sync` 与 `dispatch_async` 的区别在于会不会开辟新的线程，个人感觉是有些问题的。
 
 - 前者的文档中只说**尽可能**在当前线程中执行。
 - 后者与并行队列组合时，如果线程数已经超过64，也是不会继续创建新线程的，而是会等待线程资源的释放。
@@ -397,14 +397,10 @@ dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
 GCD 和 NSOperation 的优先级设置：
 
 - NSThread 可以指定线程的优先级：iOS8之前是threadPriority，之后是qualityOfService。较高优先级不保证你的线程具体执行的时间，只是相比较低优先级的线程，它更有可能被调度器选择执⾏而已。 （*read-only after the thread is started*）
-
 - GCD 可以指定队列优先级：（以下两者指定优先级时，使用的值不一样，有映射关系）。
-
   - `dispatch_queue_create` 创建队列时，指定优先级。
   - `dispatch_get_global_queue` 获取全局并行队列时，指定优先级。
-
 - NSOperation 可以设置 operation 的 qualityOfService 属性；
-
 - NSOperationQueue 可以设置 队列 的 qualityOfService 属性。指定了添加到该队列的 operation 对象的服务质量级别。如果 operation 显式设置过自身的 qualityOfService，则优先使用后者。
 
 
@@ -1715,7 +1711,6 @@ void dispatch_group_leave(dispatch_group_t dg) {
 当value等于LONG_MAX时表示所有任务已完成，调用`_dispatch_group_wake`唤醒group，因此`dispatch_group_leave`与`dispatch_group_enter`需成对出现。
 
 - 当调用了`dispatch_group_enter`而没有调用`dispatch_group_leave`时，会造成value值不等于LONG_MAX而不会走到唤醒逻辑，`dispatch_group_notify`函数的block无法执行或者`dispatch_group_wait`收不到`semaphore_signal`信号而卡住线程。
-
 - 当`dispatch_group_leave`比`dispatch_group_enter`多调用了一次时，dispatch_semaphore_t的value会等于LONGMAX+1（2147483647+1），即long的负数最小值 LONG_MIN(–2147483648)。因为此时value小于0，所以会出现"Unbalanced call to dispatch_group_leave()"的崩溃，这是一个特别需要注意的地方。
 
 ### 4.3.4 dispatch_group_async
@@ -2129,9 +2124,7 @@ NSLog（@"done"）;
 ```
 
 - Global Dispatch Queue中执行，所以各个处理的执行时间不定，但是输出结果的最后必定是done，这是因为dispatch_apply函数会等待全部处理执行结束。
-
 - dispatch_apply和dispatch_sync函数一样，会等待处理执行结束，因此推荐在dispatch_async函数中非同步的执行dispatch_apply函数
-
 ```objectivec
 dispatch_queue_t queue = dispatch_get_global_queue(DISPATCH_QUEUE_PRORITY_DEFAULT,0);
 
@@ -2393,7 +2386,6 @@ struct kevent {
 在一个 kqueue 中，{ident, filter} 确定一个唯一的事件：
 
 - ident 事件的 id，一般设置为文件描述符。
-
 - filter 可以将 kqueue filter 看作事件。内核检测 ident 上注册的 filter 的状态，状态发生了变化，就通知应用程序。kqueue 定义了较多的 filter：
 
   ```c

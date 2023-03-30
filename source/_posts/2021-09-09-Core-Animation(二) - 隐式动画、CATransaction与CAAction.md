@@ -37,7 +37,6 @@ Core Animation支持两种类型的事务：隐式事务和显式事务。
 
 - **当图层树被没有显式事务的线程修改时，隐式事务会自动创建，并在线程的 runloop 下一次迭代时自动提交**。
   - 即Core Animation会监测修改，然后在每个*runloop*周期中自动开始一次新的事务（runloop是iOS负责收集用户输入，处理未完成的定时器或者网络事件，最终重新绘制屏幕的东西），即使你不显式地使用`[CATransaction begin]`开始一次事务，在一个特定runloop循环中的任何属性的变化都会被收集起来，然后做一次0.25秒的动画。
-
 - 当应用程序在修改图层树之前向 CATransaction 类发送 begin() 消息，然后向 CATransaction 类发送 commit() 消息时，就会发生显式事务。
 
 ```objectivec
@@ -206,7 +205,6 @@ Core Animation支持两种类型的事务：隐式事务和显式事务。
 当然了，附加到 view 上的 layer 和单独的 layer 在行为上还是稍有不同的。
 
 - 基本上你改变一个单独的 layer 的任何属性的时候，都会触发一个从旧的值过渡到新值的简单动画（这就是所谓的可动画 `animatable`）。
-
 - 然而，如果你改变的是 view 中 layer 的同一个属性，它只会从这一帧直接跳变到下一帧。尽管两种情况中都有 layer，但是当 layer 附加在 view 上时，它的默认的隐式动画的 layer 行为就不起作用了。
 
 在 Core Animation 编程指南的 “How to Animate Layer-Backed Views” 中，对*为什么*会这样做出了一个解释：

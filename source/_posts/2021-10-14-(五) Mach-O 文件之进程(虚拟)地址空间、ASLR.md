@@ -156,13 +156,10 @@ Load command 2
 - 利用`dwarfdump`可以从dsym文件中得到symbol Address对应的内容：
   + 拿到crash日志后，我们要先确定dsym文件是否匹配。可以使用下面命令查看dsym文件所有架构的UUID：`dwarfdump --uuid CrashDemo.app.dSYM `，然后跟crash日志中Binary Images中的UUID相比对。
   + 用得到的Symbol Address去 dsym 文件中查询，命令如下：`dwarfdump --arch arm64 --lookup [Symbol Address] CrashDemo.app.dSYM`，就可以定位下来具体的代码、函数名、所处的文件、行等信息了
-
 - 如果只是简单的获取符号名，可以用`atos`来符号化：
-
   ```bash
   atos -o [dsym file path] -l [Load Address] -arch [arch type] [Stack Address]
   ```
-  
   + 不需要指定Symbol Address，只需要Load Address、Stack Address即可。
 
 ## 三、进程地址空间

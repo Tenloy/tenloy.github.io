@@ -124,17 +124,12 @@ NSLog(@"name:%@ uid:%d email:%@",person2.name,person2.uid,person2.email);
 
 - Protocol Buffer 序列化采用 Varint、Zigzag 方法，压缩 int 型整数和带符号的整数。对浮点型数字不做压缩（这里可以进一步的压缩，Protocol Buffer 还有提升空间）。
 - 对 `.proto` 文件，会对 option 和 repeated 字段进行检查，若 optional 或 repeated 字段没有被设置字段值，那么该字段在序列化时的数据中是完全不存在的，即不进行序列化（少编码一个字段）。
-
 - 上面这两点做到了压缩数据，使得序列化工作量减少。
-
 - Protocol Buffer 是 Tag - Value (TLV)的编码方式的实现
-
   - > 在通信协议中，TLV（type-length-value或tag-length-value）是一种用于某种协议中可选信息元素的编码方案。TLV 编码的数据流包含记录类型的代码，然后是记录值长度，最后是值本身。
-
   - 数据都以 tag - length - value (或者 tag - value)的形式存在二进制数据流中
   - 减少了分隔符的使用（比 JSON 和 XML 少了 `{ } :` 这些符号）
   - 没有这些分隔符，使得数据存储更加紧凑，也算是再一次减少了数据的体积。
-
 - 综上，pb 体积相对较小，如果选用它作为网络数据传输，势必相同数据，消耗的网络流量更少。
 
 ### 4.2 反序列化
@@ -146,7 +141,6 @@ NSLog(@"name:%@ uid:%d email:%@",person2.name,person2.uid,person2.email);
 ### 4.3 性能
 
 - 如果很少用到整型数字，浮点型数字，全部都是字符串数据，那么 JSON 和 protocol buffers 性能不会差太多。纯前端之间交互的话，选择 JSON 或者 protocol buffers 差别不是很大。
-
 - 与后端交互过程中，用到 protocol buffers 比较多，笔者认为选择 protocol buffers 除了性能强以外，完美兼容 RPC 调用也是一个重要因素。
 
 ### 4.4 其它特性
