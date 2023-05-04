@@ -7,9 +7,9 @@ categories:
   - iOS
 ---
 
-# WKWebView API
+# 一、WKWebView的使用
 
-## 1. 属性
+## 1.1 属性
 
 关于 `extendedLayoutIncludesOpaqueBars` 和 `automaticallyAdjustsScrollViewInsets`
 
@@ -29,7 +29,7 @@ UIScrollViewContentInsetAdjustmentBehavior 是一个枚举类型，值有以下�
 
 **调整WKWebView布局方式，避免调整webView.scrollView.contentInset。实际上，即便在 UIWebView 上也不建议直接调整webView.scrollView.contentInset的值.**
 
-## 2. 调整滚动速率
+## 1.2 调整滚动速率
 
 WKWebView 需要通过 scrollView delegate 调整滚动速率：
 
@@ -39,15 +39,236 @@ WKWebView 需要通过 scrollView delegate 调整滚动速率：
 }
 ```
 
-## 3. 视频自动播放
+## 1.3 视频自动播放
 
 WKWebView 需要通过WKWebViewConfiguration.mediaPlaybackRequiresUserAction设置是否允许自动播放，但一定要在 WKWebView 初始化之前设置，在 WKWebView 初始化之后设置无效。
 
-## 4. goBack API问题
+## 1.4 goBack API问题
 
 WKWebView 上调用 -[WKWebView goBack]， 回退到上一个页面后不会触发window.onload()函数、不会执行JS。
 
-# 遇到的坑
+## 1.5 WKWebview+NSURLProtocol实现网页缓存
+
+### 1.5.1 前言
+
+出于节省hybrid app的性能，以及加载时间，对app内的一些资源做缓存处理，包括：图片、js文件。
+首先，我们需要能拦截到这些请求，实验之后，发现`NSURLProtocol`在`WKWebViwe`中不生效。
+本文分一下两个部分：
+
+- 让WKWebView支持NSURLProtocol，摘抄了[这篇博客](https://blog.csdn.net/u011661836/article/details/70241061)大篇幅内容，其中有关于**苹果对私有API的监测以及开发人员的应对措施**
+- 对资源做缓存措施
+
+### 1.5.2 让WKWebView支持NSURLProtocol
+
+在UIWebView中，只需要一行代码`[NSURLProtocol registerClass:[customeURLProtocol class]];`，就可以对app内所有的网络请求进行拦截处理。
+
+但是在WKWebView中，除了一开始会调用一下 `+ [NSURLProtocol canInitWithRequest:]` 方法，之后就全拦截不到了。网上查，说是WKWebView 的请求是在单独的进程里，所以不走 NSURLProtocol。
+
+#### 1. registerSchemeForCustomProtocol
+
+从方法名来猜测，它的作用的应该是**注册一个自定义的 scheme**，这样对于 WebKit 进程的所有网络请求，都会先检查是否有匹配的 scheme，有的话再走主进程的 NSURLProtocol 这一套流程。
+
+博客作者猜测这么做可能是为了保证效率 (**NSURLRequest 的 HTTPBody 属性在 WKWebView 中被忽略了应该也出于这个原因!!! --- 这是个大坑 不能发POST请求了！**)，毕竟 IPC 代价挺高的。详细可以看： `WebKit::CustomProtocolManager` 和 `WebKit::WebProcessPool` 等相关源码
+
+解决方案：
+
+```objectivec
+Class cls = NSClassFromString(@"WKBrowsingContextController");
+SEL sel = NSSelectorFromString(@"registerSchemeForCustomProtocol:");
+if ([(id)cls respondsToSelector:sel]) {
+// 把 http 和 https 请求交给 NSURLProtocol 处理
+[(id)cls performSelector:sel withObject:@"http"];
+[(id)cls performSelector:sel withObject:@"https"];
+```
+
+此时，`[NSURLProtocol registerClass:[customeURLProtocol class]]`就可以生效了
+
+#### 2. 优化 - 私有API检测
+
+##### 关于私有 API
+
+按照 @sunnyxx 的[总结](http://blog.sunnyxx.com/2015/06/07/fullscreen-pop-gesture/)，Apple 检查私有 API 的使用，大概会采取下面几种手段：
+
+- 是否 link 了私有 framework 或者公开 framework 中的私有符号，这可以防止开发者把私有 header 都 dump 出来供程序直接调用。
+- 同上，使用@selector(_private_sel)加上-performSelector:的方式直接调用私有 API。
+- 扫描所有符号，查看是否有继承自私有类，重载私有方法，方法名是否有重合。
+- 扫描所有string，看字符串常量段是否出现和私有 API 对应的。
+
+```objectivec
+Class cls = NSClassFromString(@"WKBrowsingContextController");
+SEL sel = NSSelectorFromString(@"registerSchemeForCustomProtocol:");
+```
+
+上面两行代码非常之符合第四条。
+
+解决方案：
+
+查询 [WKWebView.h](https://github.com/JaviSoto/iOS10-Runtime-Headers/blob/master/Frameworks/WebKit.framework/WKWebView.h) 可以看到，有个方法 `- browsingContextController` 的方法名跟 `WKBrowsingContextController` 长得很像，通过 KVC 取出来（没错，KVC 不但可以取 property 取 ivar，还可以取无入参 selector 的返回值）发现它就是 `WKBrowsingContextController` 的一个实例，这样一来这个私有类就可以通过 KVC 的方式来得到了：
+
+```dart
+Class cls = [[[WKWebView new] valueForKey:@"browsingContextController"] class];
+```
+
+`valueForKey` 比直接使用 `NSClassFromString`安全了许多。
+
+其他解决方案：这些字符串也可以不明着写出来，只要运行时算出来就行，比如用 base64 编码啊，图片资源里藏一段啊，甚至通过服务器下发……
+
+##### 使用私有 API 的另一风险是兼容性问题
+
+比如上面的 `browsingContextController` 就只能在 iOS 8.4 以后才能用，反注册 scheme 的方法 `unregisterSchemeForCustomProtocol:`也是在 iOS 8.4 以后才被添加进来的。
+
+要支持 iOS 8.0 ~ 8.3 机型的话，只能通过动态生成字符串的方式拿到 `WKBrowsingContextControlle`，而且还**不能反注册**，不过这些问题都不大。至于向后兼容，这个也不用太担心，因为 iOS 发布新版本之前都会有**开发者预览版**的，那个时候可以提前关注测一下。对于以上的例子来说，如果将来哪个 iOS 版本移除了这个 API，那很可能是因为官方提供了完整的解决方案，到那时候自然也不需要以上的方法了。
+
+### 1.5.3 对资源做缓存措施
+
+#### 1. 图片资源
+
+通过`response.MIMEType`判断如果是: `image/gif` `image/jpeg` `image/jpg` `image/png`利用SDWebImage提供的缓存api来存储数据：
+
+```objectivec
+- (void)storeImage:(nullable UIImage *)image
+     imageData:(nullable NSData *)imageData
+        forKey:(nullable NSString *)key
+        toDisk:(BOOL)toDisk
+    completion:(nullable SDWebImageNoParamsBlock)completionBlock;    
+```
+
+#### 2. 文件
+
+文件之类的我们是使用本地存储来做缓存
+
+### 1.5.4 问题及处理
+
+- 这么做有隐患，自定义`NSURLProtocol` 会影响`WKWebView`中POST请求，所以使用起来还得根据场景来看
+  - 控制自定义的协议的开关时机
+  - 如果实在冲突可以再创建一个WKWebView、UIWebView的控制器，根据场景分开使用
+- 有一阵，页面上有一些图片资源无法正常加载，下拉刷新无效，怀疑是缓存了错误资源，两个方面：1. CDN资源有问题 2. 缓存策略有问题。
+- 不会拦截原生AFN请求(也不算问题，一般也没必要)
+  - 如果监控网络是通过注册NSURLProtocol来进行网络监控的，而且是用的AFN3.0，那么是拦截不到的，通过 `sessionWithConfiguration:delegate:delegateQueue:`得到的session，他的configuration中已经有一个NSURLProtocol，所以不会走自定义的protocol（通过share得到的session没这个问题)
+
+解决方案：
+
+- 我们将NSURLSessionConfiguration的属性`protocolClasses的get方法`hook掉，通过返回自定义的protocol,这样，我们就能够监控到通过 `sessionWithConfiguration:delegate:delegateQueue:`得到的session的网络请求
+- 在AFHTTPSessionManager中注册
+
+```objc
+NSMutableArray *protocols = [NSMutableArray arrayWithArray:manager.session.configuration.protocolClasses];
+
+[protocols insertObject:[customeURLProtocol class] atIndex:0];
+manager.session.configuration.protocolClasses = [protocols copy];
+
+//manager是你发送请求时的AFHTTPSessionManager类，注意不能用[AFHTTPSessionManager manager]代替[AFHTTPSessionManager manager]其实不是单例，每次调用的时候都会init出一个新的manager，因此只能在每次初始化好manager之后都注册一次NSURLProtocol
+```
+
+## 1.6 Cookie的传递
+
+iOS下的cookie机制：
+
+- iOS平台下每一个APP都有自己的Cookie，APP之间不共享Cookie，一个Cookie 对应一个NSHTTPCookie实体，并通过NSHTTPCookieStrorage进行管理。那些需要持久化的Cookie是存放在`~/Library/Cookies/Cookies.binarycookies` 文件中的二进制格式。
+
+- cookie是iOS系统默认持久化存储的，一般我们使用到cookie的地方，都要注意cookie的更新，删除。
+
+### 1.6.1 UIWebview 相关API
+
+```objc
+@interface NSHTTPCookieStorage : NSObject
+
+- (nullable NSArray<NSHTTPCookie *> *)cookiesForURL:(NSURL *)URL;
+- (void)deleteCookie:(NSHTTPCookie *)cookie;
+
+@end
+
+// 这个地方，明明缓存策略是：忽略本地和远程的缓存，重新加载。但是好像还是会取本地存储的，发送上去，也不知道为什么？只能手动清理
+[webView loadRequest:[NSURLRequest requestWithURL: url cachePolicy:NSURLRequestReloadIgnoringLocalAndRemoteCacheData timeoutInterval:30]];
+```
+
+Cookie的生成途径有两种：
+
+- 一种是访问网页，网页返回的是HTTP Header 中有 Set-Cookie指令进行Cookie 的设置，这里Cookie 的本地处理其实是由WebKit 进行的  
+
+  ```objc
+  [[NSHTTPCookieStorage sharedHTTPCookieStorage] setCookie:cookie];
+  ```
+
+- 还有一种途径就是我们客户端通过手动设置的Cookie
+
+  ```objc
+  [request setValue:[NSString stringWithFormat:@"%@=%@",[cookie name],[cookie value]] forHTTPHeaderField:@"Cookie"];
+  ```
+
+以上两种说的是UIWebView的设置方法
+
+### 1.6.2 WKWebView相关API
+
+WKWebView的取、设置，理论详见[WKWebView 那些坑 — Cookie 问题](https://mp.weixin.qq.com/s/rhYKLIbXOsUJC_n6dt9UfA?)
+
+业界普遍认为 WKWebView 拥有自己的私有存储，不会将 Cookie 存入到标准的 Cookie 容器 NSHTTPCookieStorage 中。会忽略任何的默认网络存储器(`NSURLCache`, `NSHTTPCookieStorage`, `NSCredentialStorage`) 和一些标准的自定义网络请求类(`NSURLProtocol`,等等.)，导致`NSURLCache`和`NSHTTPCookieStroage`无法操作(WKWebView)WebCore进程的缓存和Cookie
+
+实践发现 WKWebView 实例其实也会将 Cookie 存储于 NSHTTPCookieStorage 中，但存储时机有延迟，在iOS 8上，当页面跳转的时候，当前页面的 Cookie 会写入 NSHTTPCookieStorage 中，而在 iOS 10 上，JS 执行 document.cookie 或服务器 set-cookie 注入的 Cookie 会很快同步到 NSHTTPCookieStorage 中，FireFox 工程师曾建议通过 reset WKProcessPool 来触发 Cookie 同步到 NSHTTPCookieStorage 中，实践发现不起作用，并可能会引发当前页面 session cookie 丢失等问题。
+
+WKWebView Cookie 问题在于**WKWebView 发起的请求不会自动带上**存储于 NSHTTPCookieStorage 容器中的 Cookie。而**UIWebView是自动注入cookie**。
+
+与Cookie相同的情况就是WKWebView的缓存、凭据等。WKWebView都拥有自己的私有存储，因此和标准cocoa网络类兼容的不是那么好。
+
+#### 1. webView设置cookie
+
+  + JS注入的Cookie，比如PHP代码在Cookie容器中取是取不到的， javascript document.cookie能读取到，浏览器中也能看到。
+  + NSMutableURLRequest 注入的PHP等动态语言直接能从$_COOKIE对象中获取到，但是js读取不到，浏览器也看不到。
+
+解决方案：
+
+```objectivec
+1.在初始化时，通过js注入添加cookies
+// WKUserContentController对象为JavaScript提供了一种方式，可以将消息发送到web视图，并将用户脚本注入到web视图中。
+NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url];
+//设置cookie，传值给服务端
+NSString *cookie1 = [NSString stringWithFormat:@"document.cookie='goola_app_latitude=%lf'",userLocation.location.coordinate.latitude];
+NSString *cookie2 = [NSString stringWithFormat:@"document.cookie='goola_app_longitude=%lf'",userLocation.location.coordinate.longitude];
+        
+WKUserContentController *userContentController = self.webView.configuration.userContentController;
+        
+WKUserScript *script1 = [[WKUserScript alloc] initWithSource:cookie1 injectionTime:WKUserScriptInjectionTimeAtDocumentStart forMainFrameOnly:NO];
+WKUserScript *script2 = [[WKUserScript alloc] initWithSource:cookie2 injectionTime:WKUserScriptInjectionTimeAtDocumentStart forMainFrameOnly:NO];
+     
+[userContentController addUserScript:script1];
+[userContentController addUserScript:script2];
+
+
+2.给发出的request也添加上cookies
+NSMutableURLRequest *request = [[NSMutableURLRequest alloc] initWithURL:url cachePolicy:NSURLRequestReloadIgnoringLocalCacheData timeoutInterval:20.0f];
+[request setValue:@"userId=zhangpeng" forHTTPHeaderField:@"Cookie"];
+[_webView loadRequest:request];
+```
+
+#### 2. webview取cookie
+
+```objc
+//iOS11之前(好像失效了？？解决无果，换UIWebView了)
+- (void)webView:(WKWebView *)webView decidePolicyForNavigationResponse:(WKNavigationResponse *)navigationResponse decisionHandler:(void (^)(WKNavigationResponsePolicy))decisionHandler{
+    
+    NSHTTPURLResponse *response = (NSHTTPURLResponse *)navigationResponse.response;
+    NSArray *cookies =[NSHTTPCookie cookiesWithResponseHeaderFields:[response allHeaderFields] forURL:response.URL];
+    //读取wkwebview中的cookie
+    for (NSHTTPCookie *cookie in cookies) {
+        // 这里就是你需要的cookie
+        NSLog(@"%@----%@----%lu----",cookie.name,cookie.value,cookie.version);
+    }
+    decisionHandler(WKNavigationResponsePolicyAllow);
+}
+
+//iOS11之后，存取都发生了变化
+//WKHTTPCookieStore的使用 
+WKHTTPCookieStore *cookieStore = self.webView.configuration.websiteDataStore.httpCookieStore;
+//get cookies
+[cookieStore getAllCookies:^(NSArray<NSHTTPCookie *> * _Nonnull cookies) {
+      NSLog(@"All cookies %@",cookies);
+}];
+
+WKHTTPCookieStore *cookieStore = self.webView.configuration.websiteDataStore.httpCookieStore;
+[cookieStore setCookie:cookie completionHandler:nil];
+```
+
+# 二、遇到的问题
 
 在以前，一直以为Hybrid App开发是一种略显简单的事，不会使用太多能发挥移动端原生本身优势的复杂API，后来在新公司的工作(半混合式开发)过程中，发现混合式开发也是很多坑... 或者说WKWebView好多坑...
 
@@ -59,7 +280,7 @@ WKWebView 上调用 -[WKWebView goBack]， 回退到上一个页面后不会触�
 
 ## 1. 加载URL的 encode问题
 
-在数据网络请求或其他情况下，需要把URL中的一些特殊字符转换成UTF-8编码，比如：中文。解决`无法加载`的问题
+在数据网络请求或其他情况下，需要把URL中的一些特殊字符转换成UTF-8编码，比如：中文。解决**无法加载**的问题
 ### 编码
 
 ```objectivec
@@ -224,7 +445,7 @@ WKWebView 自诩拥有更快的加载速度，更低的内存占用，但实际�
 
 #### 方案2. 检测 webView.title 是否为空
 
-并不是所有H5页面白屏的时候都会调用上面的回调函数，比如，最近遇到在一个高内存消耗的`意见反馈`H5页面上 present 系统相机，拍照完毕后返回原来页面的时候出现白屏现象（拍照过程消耗了大量内存，导致内存紧张，**WebContent Process 被系统挂起**），但上面的回调函数并没有被调用。
+并不是所有H5页面白屏的时候都会调用上面的回调函数，比如，最近遇到在一个高内存消耗的**意见反馈**H5页面上 present 系统相机，拍照完毕后返回原来页面的时候出现白屏现象（拍照过程消耗了大量内存，导致内存紧张，**WebContent Process 被系统挂起**），但上面的回调函数并没有被调用。
 
 在WKWebView白屏的时候，另一种现象是 webView.titile 会被置空， 因此，可以在 viewWillAppear 的时候检测 `webView.title` 是否为空来 reload 页面。
 
