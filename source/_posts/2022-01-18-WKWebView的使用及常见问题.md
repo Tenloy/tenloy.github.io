@@ -552,7 +552,7 @@ Error Domain=NSURLErrorDomain Code=-1003 "未能找到使用指定主机名的�
 // ios 11之后
 _baseWebView.scrollView.contentInsetAdjustmentBehavior = UIScrollViewContentInsetAdjustmentNever;
 ```
-然后：前端需要在meta标签中增加 **iPhoneX**的适配**---**适配方案**viewport-fit**：**cover**
+然后：前端需要在meta标签中增加 **iPhoneX**的适配---适配方案**viewport-fit: cover**
 
 ### 11.2. iOS 12中WKWebView中表单 键盘
 
