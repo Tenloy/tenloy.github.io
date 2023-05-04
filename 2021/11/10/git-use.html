@@ -42,7 +42,7 @@
 <meta property="og:image" content="https://tenloy.github.io/images/git/Snip20200423_10.png">
 <meta property="og:image" content="https://tenloy.github.io/images/git/Snip20200423_11.png">
 <meta property="article:published_time" content="2021-11-10T03:06:05.000Z">
-<meta property="article:modified_time" content="2023-04-21T08:46:44.899Z">
+<meta property="article:modified_time" content="2023-05-04T06:02:40.977Z">
 <meta property="article:author" content="Tenloy">
 <meta property="article:tag" content="Tenloy, iOS, Tenloy Blog, 博客，Swift, 编译, 计算机">
 <meta name="twitter:card" content="summary">
@@ -319,7 +319,7 @@ height:40vh;
                 
                 
                     <div class="post-intro-read">
-                        <span>Word count: <span class="post-count word-count">23.1k</span>Reading time: <span class="post-count reading-time">88 min</span></span>
+                        <span>Word count: <span class="post-count word-count">23.2k</span>Reading time: <span class="post-count reading-time">88 min</span></span>
                     </div>
                 
                 <div class="post-intro-meta">
@@ -889,8 +889,11 @@ height:40vh;
 <li>会显示： file changed(文件修改)、insertions(插入行)、deletions(删除行)</li>
 <li>可以多次add，一次commit</li>
 </ul>
-<p>commit id解释说明： 看到的一串类似<code>1094adb...</code>的是<code>commit id</code>（版本号），和SVN不一样，Git的commit id不是1，2，3……递增的数字，而是一个SHA1计算出来的一个非常大的数字，用十六进制表示。</p>
-<p>为什么commit id需要用这么一大串数字表示呢？因为Git是分布式的版本控制系统，后面我们还要研究多人在同一个版本库里工作，如果大家都用1，2，3……作为版本号，那肯定就冲突了。</p>
+<p>commit id解释说明： </p>
+<ul>
+<li>看到的一串类似<code>1094adb...</code>的是<code>commit id</code>（版本号），和SVN不一样，Git的commit id不是1，2，3……递增的数字，而是一个SHA1计算出来的一个非常大的数字，用十六进制表示。</li>
+<li>为什么commit id需要用这么一大串数字表示呢？因为Git是分布式的版本控制系统，后面我们还要研究多人在同一个版本库里工作，如果大家都用1，2，3……作为版本号，那肯定就冲突了。</li>
+</ul>
 <h4 id="5-git-reset-暂存区与本地仓库的撤销"><a href="#5-git-reset-暂存区与本地仓库的撤销" class="headerlink" title="5. git reset 暂存区与本地仓库的撤销"></a>5. git reset 暂存区与本地仓库的撤销</h4><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git reset [&lt;mode&gt;] [&lt;commit&gt;]</span><br></pre></td></tr></table></figure>
 
 <p>将当前分支的HEAD指向给定的版本，并根据模式的不同决定是否修改index和working tree。</p>
@@ -1046,9 +1049,15 @@ height:40vh;
 
 <h4 id="4-git-merge-合并"><a href="#4-git-merge-合并" class="headerlink" title="4. git merge 合并"></a>4. git merge 合并</h4><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git merge &lt;branch&gt;  <span class="comment"># 合并指定分支到当前分支</span></span><br></pre></td></tr></table></figure>
 
-<p>如果合并发生冲突(两个分支都对一个文件进行修改)，需要解决冲突后，再手动commit。</p>
+<p>如果合并发生冲突(两个分支都对一个文件进行修改)：</p>
 <ul>
+<li>继续合并，那需要我们解决冲突后，再手动提交。<ul>
 <li>解决冲突就是把Git合并失败的文件手动编辑为我们希望的内容，再提交。</li>
+<li><code>git status</code>也可以告诉我们冲突的文件。</li>
+<li>处理完文件中的修改冲突后，git add .(或者git add 冲突文件)，然后 <code>git commit</code> 或者 <code>git merge --continue</code>（会检查是否存在正在进行的（中断的）合并git commit）</li>
+</ul>
+</li>
+<li>决定不合并，可以使用 <code>git merge --abort</code> 。</li>
 </ul>
 <h5 id="–no-ff"><a href="#–no-ff" class="headerlink" title="–no-ff"></a>–no-ff</h5><p>合并分支时，如果可能，Git会用<code>Fast forward</code>模式：</p>
 <ul>
@@ -1253,7 +1262,7 @@ height:40vh;
             <p>Author：<a href="https://tenloy.github.io">Tenloy</a>
             <p>原文链接：<a href="https://tenloy.github.io/2021/11/10/git-use.html">https://tenloy.github.io/2021/11/10/git-use.html</a>
             <p>发表日期：2021.11.10 , 11:06 AM</p>
-            <p>更新日期：2023.04.21 , 4:46 PM</p>
+            <p>更新日期：2023.05.04 , 2:02 PM</p>
             <p>版权声明：本文采用<a rel="license noopener" target="_blank" href="http://creativecommons.org/licenses/by-nc/4.0/">Crative Commons 4.0 许可协议</a>进行许可</p>
         </div>
     
@@ -2451,9 +2460,85 @@ top:40vh;
     
     
     
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
     <div class="total-and-search">
         <div class="total-archive">
-        Total : 72
+        Total : 76
         </div>
         <!-- search  -->
         
@@ -2667,6 +2752,11 @@ top:40vh;
     
     
         <li class="archive-post-item">
+            <span class="archive-post-date">07/10</span><a class="archive-post-title" href= "/2021/07/10/p-npc-np.html" >P问题、NP问题、NPC、NP-Hard、P=NP?</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
             <span class="archive-post-date">06/30</span><a class="archive-post-title" href= "/2021/06/30/probability.html" >(六) 概率算法</a>
         </li>
     
@@ -2849,6 +2939,21 @@ top:40vh;
             <span class="archive-post-date">08/01</span><a class="archive-post-title" href= "/2020/08/01/ui-navigation-bar.html" >[转] 导航栏的架构介绍及使用</a>
         </li>
     
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/15</span><a class="archive-post-title" href= "/2020/07/15/symbol-decl.html" >变量声明、函数声明的作用</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/01</span><a class="archive-post-title" href= "/2020/07/01/ios-apns.html" >iOS APNS接收逻辑梳理</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/13</span><a class="archive-post-title" href= "/2020/06/13/ios-vest.html" >iOS制作马甲总结</a>
+        </li>
+    
     </div>
   </div>
         <div class="sidebar-panel-tags">
@@ -2872,13 +2977,13 @@ top:40vh;
     
         <span class="sidebar-tag-name" data-tags="多线程"><span class="iconfont-archer">&#xe606;</span>多线程</span>
     
-        <span class="sidebar-tag-name" data-tags="ARM64"><span class="iconfont-archer">&#xe606;</span>ARM64</span>
-    
         <span class="sidebar-tag-name" data-tags="Docker"><span class="iconfont-archer">&#xe606;</span>Docker</span>
     
-        <span class="sidebar-tag-name" data-tags="DSL"><span class="iconfont-archer">&#xe606;</span>DSL</span>
+        <span class="sidebar-tag-name" data-tags="ARM64"><span class="iconfont-archer">&#xe606;</span>ARM64</span>
     
         <span class="sidebar-tag-name" data-tags="协程"><span class="iconfont-archer">&#xe606;</span>协程</span>
+    
+        <span class="sidebar-tag-name" data-tags="DSL"><span class="iconfont-archer">&#xe606;</span>DSL</span>
     
         <span class="sidebar-tag-name" data-tags="Fiber"><span class="iconfont-archer">&#xe606;</span>Fiber</span>
     
@@ -2886,13 +2991,13 @@ top:40vh;
     
         <span class="sidebar-tag-name" data-tags="SwiftUI"><span class="iconfont-archer">&#xe606;</span>SwiftUI</span>
     
-        <span class="sidebar-tag-name" data-tags="Swift-Syntax"><span class="iconfont-archer">&#xe606;</span>Swift-Syntax</span>
-    
-        <span class="sidebar-tag-name" data-tags="Log"><span class="iconfont-archer">&#xe606;</span>Log</span>
-    
         <span class="sidebar-tag-name" data-tags="RunLoop"><span class="iconfont-archer">&#xe606;</span>RunLoop</span>
     
+        <span class="sidebar-tag-name" data-tags="Swift-Syntax"><span class="iconfont-archer">&#xe606;</span>Swift-Syntax</span>
+    
         <span class="sidebar-tag-name" data-tags="LagMonitor"><span class="iconfont-archer">&#xe606;</span>LagMonitor</span>
+    
+        <span class="sidebar-tag-name" data-tags="Log"><span class="iconfont-archer">&#xe606;</span>Log</span>
     
         <span class="sidebar-tag-name" data-tags="CrashMonitor"><span class="iconfont-archer">&#xe606;</span>CrashMonitor</span>
     
