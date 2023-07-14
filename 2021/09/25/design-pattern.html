@@ -90,7 +90,7 @@
 <meta property="og:image" content="https://tenloy.github.io/images/pattern/72.png">
 <meta property="og:image" content="https://tenloy.github.io/images/pattern/74.png">
 <meta property="article:published_time" content="2021-09-25T01:37:12.000Z">
-<meta property="article:modified_time" content="2023-03-30T12:01:42.354Z">
+<meta property="article:modified_time" content="2023-05-11T09:24:44.414Z">
 <meta property="article:author" content="Tenloy">
 <meta property="article:tag" content="Tenloy, iOS, Tenloy Blog, 博客，Swift, 编译, 计算机">
 <meta name="twitter:card" content="summary">
@@ -852,7 +852,7 @@ height:40vh;
 <p>程序运行错误的原因是：几维鸟类因为没有飞行的能力，所以重写了鸟类的 setSpeed(double speed) 方法，这违背了里氏替换原则。正确的做法是：取消几维鸟原来的继承关系，定义鸟和几维鸟的更抽象的父类，如动物类，然后定义它们奔跑的能力。</p>
 <p>几维鸟的飞行速度虽然为 0，但奔跑速度不为 0，可以计算出其奔跑 300 千米所要花费的时间。</p>
 <h2 id="3-3-依赖倒置原则（DIP）"><a href="#3-3-依赖倒置原则（DIP）" class="headerlink" title="3.3 依赖倒置原则（DIP）"></a>3.3 依赖倒置原则（DIP）</h2><h3 id="3-3-1-定义"><a href="#3-3-1-定义" class="headerlink" title="3.3.1 定义"></a>3.3.1 定义</h3><p>依赖倒置原则（Dependence Inversion Principle，DIP）是 Object Mentor 公司总裁罗伯特·马丁于 1996 年在 C++ Report 上发表的文章。</p>
-<p>依赖倒置原则的原始定义为：<strong>高层模块不应该依赖低层模块，两者都应该依赖其抽象；抽象不应该依赖细节，细节应该依赖抽象</strong>。</p>
+<p>依赖倒置原则的原始定义为：<strong>高层模块不应该依赖低层模块，两者都应该依赖(其)抽象；抽象不应该依赖细节，细节应该依赖抽象</strong>。</p>
 <ul>
 <li>高层模块和低层模块容易理解，每一个逻辑的实现都是由原子逻辑组成的，不可分割的原子逻辑就是低层模块，原子逻辑的再组装就是高层模块。</li>
 <li>在Java语言中，抽象就是指接口或抽象类，两者都是不能直接被实例化的；细节就是实现接口或继承抽象类的类，其特点就是可以直接被实例化。</li>
@@ -2470,7 +2470,7 @@ height:40vh;
             <p>Author：<a href="https://tenloy.github.io">Tenloy</a>
             <p>原文链接：<a href="https://tenloy.github.io/2021/09/25/design-pattern.html">https://tenloy.github.io/2021/09/25/design-pattern.html</a>
             <p>发表日期：2021.09.25 , 9:37 AM</p>
-            <p>更新日期：2023.03.30 , 8:01 PM</p>
+            <p>更新日期：2023.05.11 , 5:24 PM</p>
             <p>版权声明：本文采用<a rel="license noopener" target="_blank" href="http://creativecommons.org/licenses/by-nc/4.0/">Crative Commons 4.0 许可协议</a>进行许可</p>
         </div>
     
@@ -2670,16 +2670,6 @@ top:40vh;
 </div>
           <div class="sidebar-panel-archives">
     <!-- 在ejs中将archive按照时间排序 -->
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
     
     
     
@@ -4167,9 +4157,9 @@ top:40vh;
         <div class="sidebar-panel-tags">
     <div class="sidebar-tags-name">
     
-        <span class="sidebar-tag-name" data-tags="AutoreleasePool"><span class="iconfont-archer">&#xe606;</span>AutoreleasePool</span>
-    
         <span class="sidebar-tag-name" data-tags="GCD"><span class="iconfont-archer">&#xe606;</span>GCD</span>
+    
+        <span class="sidebar-tag-name" data-tags="AutoreleasePool"><span class="iconfont-archer">&#xe606;</span>AutoreleasePool</span>
     
         <span class="sidebar-tag-name" data-tags="hexo"><span class="iconfont-archer">&#xe606;</span>hexo</span>
     
@@ -4179,19 +4169,19 @@ top:40vh;
     
         <span class="sidebar-tag-name" data-tags="Soc"><span class="iconfont-archer">&#xe606;</span>Soc</span>
     
+        <span class="sidebar-tag-name" data-tags="ARM64"><span class="iconfont-archer">&#xe606;</span>ARM64</span>
+    
+        <span class="sidebar-tag-name" data-tags="多线程"><span class="iconfont-archer">&#xe606;</span>多线程</span>
+    
         <span class="sidebar-tag-name" data-tags="CLI"><span class="iconfont-archer">&#xe606;</span>CLI</span>
     
         <span class="sidebar-tag-name" data-tags="Shell"><span class="iconfont-archer">&#xe606;</span>Shell</span>
     
-        <span class="sidebar-tag-name" data-tags="多线程"><span class="iconfont-archer">&#xe606;</span>多线程</span>
-    
         <span class="sidebar-tag-name" data-tags="Docker"><span class="iconfont-archer">&#xe606;</span>Docker</span>
     
-        <span class="sidebar-tag-name" data-tags="ARM64"><span class="iconfont-archer">&#xe606;</span>ARM64</span>
+        <span class="sidebar-tag-name" data-tags="DSL"><span class="iconfont-archer">&#xe606;</span>DSL</span>
     
         <span class="sidebar-tag-name" data-tags="协程"><span class="iconfont-archer">&#xe606;</span>协程</span>
-    
-        <span class="sidebar-tag-name" data-tags="DSL"><span class="iconfont-archer">&#xe606;</span>DSL</span>
     
         <span class="sidebar-tag-name" data-tags="Fiber"><span class="iconfont-archer">&#xe606;</span>Fiber</span>
     
@@ -4199,15 +4189,15 @@ top:40vh;
     
         <span class="sidebar-tag-name" data-tags="SwiftUI"><span class="iconfont-archer">&#xe606;</span>SwiftUI</span>
     
-        <span class="sidebar-tag-name" data-tags="RunLoop"><span class="iconfont-archer">&#xe606;</span>RunLoop</span>
-    
         <span class="sidebar-tag-name" data-tags="Swift-Syntax"><span class="iconfont-archer">&#xe606;</span>Swift-Syntax</span>
     
-        <span class="sidebar-tag-name" data-tags="LagMonitor"><span class="iconfont-archer">&#xe606;</span>LagMonitor</span>
+        <span class="sidebar-tag-name" data-tags="RunLoop"><span class="iconfont-archer">&#xe606;</span>RunLoop</span>
+    
+        <span class="sidebar-tag-name" data-tags="CrashMonitor"><span class="iconfont-archer">&#xe606;</span>CrashMonitor</span>
     
         <span class="sidebar-tag-name" data-tags="Log"><span class="iconfont-archer">&#xe606;</span>Log</span>
     
-        <span class="sidebar-tag-name" data-tags="CrashMonitor"><span class="iconfont-archer">&#xe606;</span>CrashMonitor</span>
+        <span class="sidebar-tag-name" data-tags="LagMonitor"><span class="iconfont-archer">&#xe606;</span>LagMonitor</span>
     
         <span class="sidebar-tag-name" data-tags="AFN"><span class="iconfont-archer">&#xe606;</span>AFN</span>
     
