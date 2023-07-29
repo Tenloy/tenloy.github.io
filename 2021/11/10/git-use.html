@@ -42,7 +42,7 @@
 <meta property="og:image" content="https://tenloy.github.io/images/git/Snip20200423_10.png">
 <meta property="og:image" content="https://tenloy.github.io/images/git/Snip20200423_11.png">
 <meta property="article:published_time" content="2021-11-10T03:06:05.000Z">
-<meta property="article:modified_time" content="2023-05-04T06:02:40.977Z">
+<meta property="article:modified_time" content="2023-07-29T12:25:43.840Z">
 <meta property="article:author" content="Tenloy">
 <meta property="article:tag" content="Tenloy, iOS, Tenloy Blog, 博客，Swift, 编译, 计算机">
 <meta name="twitter:card" content="summary">
@@ -319,7 +319,7 @@ height:40vh;
                 
                 
                     <div class="post-intro-read">
-                        <span>Word count: <span class="post-count word-count">23.2k</span>Reading time: <span class="post-count reading-time">88 min</span></span>
+                        <span>Word count: <span class="post-count word-count">23.3k</span>Reading time: <span class="post-count reading-time">89 min</span></span>
                     </div>
                 
                 <div class="post-intro-meta">
@@ -477,7 +477,7 @@ height:40vh;
 </ul>
 </li>
 <li><p>将已存在的文件夹，变成 Git 仓库，并创建关联的远程仓库：</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">cd</span> 本地文件夹名称</span><br><span class="line"></span><br><span class="line"><span class="comment"># 把这个目录变成Git可以管理的仓库 ，会多一个.git的目录，是Git来跟踪管理版本库的，如非必要不要手动修改这个目录里面的文件，不然改乱了，就把Git仓库给破坏了。 </span></span><br><span class="line">git init </span><br><span class="line"></span><br><span class="line"><span class="comment"># 添加后，远程库的名字一般就是origin，这是Git默认的叫法，也可以改成别的，只不过origin这个名字一看就知道是远程库。</span></span><br><span class="line">git remote add &lt;remote-name&gt; &lt;remote-url(ssh/https)&gt; </span><br><span class="line"><span class="comment"># 一个本地仓库是可以关联多个远程库的，多次执行上面命令即可，但不能重名</span></span><br><span class="line"><span class="comment"># 查看远程库信息（如果没有推送权限，就不会看到push的地址）</span></span><br><span class="line">git remote [-v/--verbose]</span><br><span class="line"><span class="comment"># 删除已有的远程库</span></span><br><span class="line">git remote <span class="built_in">rm</span> &lt;remoteName&gt;</span><br><span class="line"></span><br><span class="line"><span class="comment"># 把本地的master分支内容推送的远程新的master分支，并建立本地master与远程仓库的master分支的关联，详见git push命令</span></span><br><span class="line">git push -u &lt;remote-name&gt; master </span><br></pre></td></tr></table></figure></li>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">cd</span> 本地文件夹名称</span><br><span class="line"></span><br><span class="line"><span class="comment"># 把这个目录变成Git可以管理的仓库 ，会多一个.git的目录，是Git来跟踪管理版本库的，如非必要不要手动修改这个目录里面的文件，不然改乱了，就把Git仓库给破坏了。 </span></span><br><span class="line">git init </span><br><span class="line"></span><br><span class="line"><span class="comment"># 添加远程库</span></span><br><span class="line">	<span class="comment"># &lt;remote-url&gt;: 远程库的地址。</span></span><br><span class="line">	<span class="comment"># &lt;remote-name&gt;: 远程库的名字是可以随便取的，不过强烈建议使用Git默认远程库名称【origin】，一看就知道是远程库。之后我们就可以在命令中使用&lt;remote-name&gt;代指项目远程库地址。</span></span><br><span class="line">git remote add &lt;remote-name&gt; &lt;remote-url(ssh/https)&gt; </span><br><span class="line">	<span class="comment"># 添加成功后，可以在项目根目录/.git/config文件中看到</span></span><br><span class="line">	<span class="comment"># [remote &quot;origin&quot;]</span></span><br><span class="line">	<span class="comment">#     url = git@gitlab.100credit.cn:dingfangchao/Banyan.git</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 一个本地仓库是可以关联多个远程库的，多次执行上面命令即可，但不能重名</span></span><br><span class="line"><span class="comment"># 查看远程库信息（如果没有推送权限，就不会看到push的地址）</span></span><br><span class="line">git remote [-v/--verbose]</span><br><span class="line"><span class="comment"># 删除已有的远程库</span></span><br><span class="line">git remote <span class="built_in">rm</span> &lt;remoteName&gt;</span><br><span class="line"></span><br><span class="line"><span class="comment"># 把本地的master分支内容推送的远程新的master分支，并建立本地master与远程仓库的master分支的关联，详见git push命令</span></span><br><span class="line">git push -u &lt;remote-name&gt; master </span><br></pre></td></tr></table></figure></li>
 </ul>
 <h3 id="3-2-配置忽略文件"><a href="#3-2-配置忽略文件" class="headerlink" title="3.2 配置忽略文件"></a>3.2 配置忽略文件</h3><h4 id="3-2-1-全局与局部忽略"><a href="#3-2-1-全局与局部忽略" class="headerlink" title="3.2.1 全局与局部忽略"></a>3.2.1 全局与局部忽略</h4><p>有些时候，你必须把某些文件放到Git工作目录中，但又不能提交它们，比如保存了数据库密码的配置文件啦。</p>
 <p>此时，可以把要忽略的文件名填入忽略文件，Git就会自动忽略这些文件。可以定义忽略是全局的，还是局限于一个仓库。</p>
@@ -1105,7 +1105,7 @@ height:40vh;
 <ul>
 <li>不加参数即默认比较工作区与暂存区；</li>
 <li>如果加了一个commit id，表示比较目前代码与指定commit的差异 = 当前工作区+暂存区+指定commit后的commit修改；</li>
-<li>如果加了两个commit id，表示比较后者与前者两次提交之间的差异；</li>
+<li>如果加了两个commit id，表示比较后者与前者两次提交之间的差异；(新提交的commit id在后)</li>
 <li>如果加了–cached（后面即使没有commit id，默认相当于有个HEAD），意义是在上条的基础上忽略工作区的改动，即差异 = 当前暂存区 + 指定commit后的commit修改；</li>
 <li>在上面的基础上，后面如果加了 <code>&gt; 文件名</code>，表示将上面比较出的差异，导出一个补丁，可以拷贝到另一机器或者另一个马甲项目中应用。</li>
 </ul>
@@ -1262,7 +1262,7 @@ height:40vh;
             <p>Author：<a href="https://tenloy.github.io">Tenloy</a>
             <p>原文链接：<a href="https://tenloy.github.io/2021/11/10/git-use.html">https://tenloy.github.io/2021/11/10/git-use.html</a>
             <p>发表日期：2021.11.10 , 11:06 AM</p>
-            <p>更新日期：2023.05.04 , 2:02 PM</p>
+            <p>更新日期：2023.07.29 , 8:25 PM</p>
             <p>版权声明：本文采用<a rel="license noopener" target="_blank" href="http://creativecommons.org/licenses/by-nc/4.0/">Crative Commons 4.0 许可协议</a>进行许可</p>
         </div>
     
@@ -1462,14 +1462,6 @@ top:40vh;
 </div>
           <div class="sidebar-panel-archives">
     <!-- 在ejs中将archive按照时间排序 -->
-    
-    
-    
-    
-    
-    
-    
-    
     
     
     
@@ -2949,9 +2941,9 @@ top:40vh;
         <div class="sidebar-panel-tags">
     <div class="sidebar-tags-name">
     
-        <span class="sidebar-tag-name" data-tags="GCD"><span class="iconfont-archer">&#xe606;</span>GCD</span>
-    
         <span class="sidebar-tag-name" data-tags="AutoreleasePool"><span class="iconfont-archer">&#xe606;</span>AutoreleasePool</span>
+    
+        <span class="sidebar-tag-name" data-tags="GCD"><span class="iconfont-archer">&#xe606;</span>GCD</span>
     
         <span class="sidebar-tag-name" data-tags="hexo"><span class="iconfont-archer">&#xe606;</span>hexo</span>
     
@@ -2961,13 +2953,13 @@ top:40vh;
     
         <span class="sidebar-tag-name" data-tags="Soc"><span class="iconfont-archer">&#xe606;</span>Soc</span>
     
-        <span class="sidebar-tag-name" data-tags="ARM64"><span class="iconfont-archer">&#xe606;</span>ARM64</span>
-    
-        <span class="sidebar-tag-name" data-tags="多线程"><span class="iconfont-archer">&#xe606;</span>多线程</span>
-    
         <span class="sidebar-tag-name" data-tags="CLI"><span class="iconfont-archer">&#xe606;</span>CLI</span>
     
         <span class="sidebar-tag-name" data-tags="Shell"><span class="iconfont-archer">&#xe606;</span>Shell</span>
+    
+        <span class="sidebar-tag-name" data-tags="ARM64"><span class="iconfont-archer">&#xe606;</span>ARM64</span>
+    
+        <span class="sidebar-tag-name" data-tags="多线程"><span class="iconfont-archer">&#xe606;</span>多线程</span>
     
         <span class="sidebar-tag-name" data-tags="Docker"><span class="iconfont-archer">&#xe606;</span>Docker</span>
     
@@ -2975,9 +2967,9 @@ top:40vh;
     
         <span class="sidebar-tag-name" data-tags="协程"><span class="iconfont-archer">&#xe606;</span>协程</span>
     
-        <span class="sidebar-tag-name" data-tags="Fiber"><span class="iconfont-archer">&#xe606;</span>Fiber</span>
-    
         <span class="sidebar-tag-name" data-tags="dp"><span class="iconfont-archer">&#xe606;</span>dp</span>
+    
+        <span class="sidebar-tag-name" data-tags="Fiber"><span class="iconfont-archer">&#xe606;</span>Fiber</span>
     
         <span class="sidebar-tag-name" data-tags="SwiftUI"><span class="iconfont-archer">&#xe606;</span>SwiftUI</span>
     
@@ -2985,11 +2977,11 @@ top:40vh;
     
         <span class="sidebar-tag-name" data-tags="RunLoop"><span class="iconfont-archer">&#xe606;</span>RunLoop</span>
     
-        <span class="sidebar-tag-name" data-tags="CrashMonitor"><span class="iconfont-archer">&#xe606;</span>CrashMonitor</span>
+        <span class="sidebar-tag-name" data-tags="LagMonitor"><span class="iconfont-archer">&#xe606;</span>LagMonitor</span>
     
         <span class="sidebar-tag-name" data-tags="Log"><span class="iconfont-archer">&#xe606;</span>Log</span>
     
-        <span class="sidebar-tag-name" data-tags="LagMonitor"><span class="iconfont-archer">&#xe606;</span>LagMonitor</span>
+        <span class="sidebar-tag-name" data-tags="CrashMonitor"><span class="iconfont-archer">&#xe606;</span>CrashMonitor</span>
     
         <span class="sidebar-tag-name" data-tags="AFN"><span class="iconfont-archer">&#xe606;</span>AFN</span>
     
