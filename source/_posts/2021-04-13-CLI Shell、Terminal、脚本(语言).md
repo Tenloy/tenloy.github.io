@@ -38,20 +38,28 @@ Bash命令行界面图例：
 
 所以，现在的操作系统中，虽然很注重图形用户界面，提供了好看好用的GUI Shell，但却都没有因而停止提供文字模式的命令行操作方式(CLI Shell)，相反的，许多系统反而更加强这部分的功能。
 
-### 1.2 命令
+### 1.2 命令(行) 与 Linux命令
 
 **CLI程序区别于GUI程序的是：后者提供给用户的使用(输入)方式是点击、输入即可，输出的结果也是形象生成的图形，而CLI程序提供给用户的是一条条命令，用户通过键盘输入命令、参数来使用功能，结果是以一系列的字符形式输出**
 
 - 命令提示符
   - 命令提示符是操作系统在CLI界面上向用户提供的一种提示标志。命令提示符有两重含义：一是标志着上一条命令的结束; 二是标志着可以启动运行下一条命令。
   - 比如DOS中的`C>`、UNIX中的`¥`或`%`、Mac OS中的`$`
-- 命令(行)
+- **命令(行)  — 终端上的输入**
   - 通常把在命令提示符后打入的程序名和其参数称为命令行(到回车为止)或命令。
   - **任一命令行(即任一条命令)的本质都是 申请某一程序执行。**
   - **交互式命令**：与用户进行交互。比如shell等待你的输入，并且执行你提交的命令
   - **非交互式命令**：不存在进行交互，而是读取存放在文件中的命令，并且执行它们。当它读到文件的结尾，命令也就终止了。
+- 注意：区分一个概念 **Linux命令 — 一个个的可执行文件**。
+  - **OS提供**了一组不同操作命令组成的集合，每个命令实现用户所要求的不同功能，为用户提供相应的服务。
+    - 每一条命令都对应着一个可执行文件。
+    - 这些命令通常是用C语言编写的，也有一些是用其他编程语言编写的。比如awk命令是awk语言编写。
+  - 另外**自己**也可以基于内核提供的一些系统调用、编程语言的标准库、已安装的命令行工具等来**开发**一些命令行工具。
+    - 系统自带、自安装的这些命令工具，可以在其他语言中通过指定方式直接调用。
+    - 对于一些开发人员来说，经常会使用自己熟悉的编程语言，常见的比如bash、zsh shell语言、AWK、Perl、Python、Nodejs等，来编写自己的命令或工具，以执行特定的任务，扩展Linux系统的功能。
+- **我们在终端中，输入的就是一行行bash或zsh等shell编程语言代码，也称命令(行)，经过/bin/zsh、/bin/bash等Shell程序的解释，进而成功调用一个个的Linux命令工具(可执行程序)**。
 
-linux/cmd命令行语法规则、语法格式：
+linux/cmd命令语法规则、语法格式：
 ```
 command [options] [arguments]
 < > : 必选参数
@@ -67,8 +75,6 @@ command [options] [arguments]
 
 几个括号之间可以相互嵌套，具体嵌套关系根据实际情况来判断
 ```
-
-OS提供了一组不同操作命令组成的集合，每个命令实现用户所要求的不同功能，为用户提供相应的服务。另外自己也可以基于内核提供的一些系统调用开发一些命令行工具。
 
 命令行的执行过程：
 
@@ -416,39 +422,99 @@ Unix 系统为了支持这些TTY设备，就设计了名为 tty 的子系统，�
 
 ### 6.1 基本教程
 
-- [Bash 脚本教程 — 阮一峰](https://wangdoc.com/bash/)
-  - [ 简介](https://wangdoc.com/bash/intro.html)
-  - [ 基本语法](https://wangdoc.com/bash/grammar.html)
-  - [ 模式扩展](https://wangdoc.com/bash/expansion.html)
-  - [ 引号和转义](https://wangdoc.com/bash/quotation.html)
-  - [ 变量](https://wangdoc.com/bash/variable.html)
-  - [ 字符串操作](https://wangdoc.com/bash/string.html)
-  - [ 算术运算](https://wangdoc.com/bash/arithmetic.html)
-  - [ 行操作](https://wangdoc.com/bash/readline.html)
-  - [ 目录堆栈](https://wangdoc.com/bash/stack.html)
-  - [ 脚本入门](https://wangdoc.com/bash/script.html)
-  - [ read 命令](https://wangdoc.com/bash/read.html)
-  - [ 条件判断](https://wangdoc.com/bash/condition.html)
-  - [ 循环](https://wangdoc.com/bash/loop.html)
-  - [ 函数](https://wangdoc.com/bash/function.html)
-  - [ 数组](https://wangdoc.com/bash/array.html)
-  - [ set 命令，shopt 命令](https://wangdoc.com/bash/set.html)
-  - [ 脚本除错](https://wangdoc.com/bash/debug.html)
-  - [ mktemp 命令，trap 命令](https://wangdoc.com/bash/mktemp.html)
-  - [ 启动环境](https://wangdoc.com/bash/startup.html)
-  - [ 命令提示符](https://wangdoc.com/bash/prompt.html)
-  
-- 补充：
-  - 变量替换：一般情况下，$var与${var}是没有区别的，但是用${ }会比较精确的界定变量名称的范围
-  - 命令替换：在bash中，$( )与反引号`` ` ` ``都是用来作命令替换的。命令替换与变量替换差不多，都是用来重组命令行的，先完成引号里的命令行，然后将其结果替换出来，再重组成新的命令行。
-    - `` ` ` ``很容易与`''`搞混乱，尤其对初学者来说，而$( )比较直观。但$( )的弊端是，并不是所有的类unix系统都支持这种方式，而反引号是肯定支持的。（**Mac上就不支持$**()）
-      
-      ```bash
-      $ RESULT=`curl -s www.baidu.com`  #此时curl命令的返回数据不会显示在控制台，而是赋值该给RESULT变量
-      ```
-  - Bash 允许字符串放在单引号或双引号之中，加以引用。
-    - 单引号用于保留字符的字面含义，各种特殊字符在单引号里面，都会变为普通字符，比如星号（`*`）、美元符号（`$`）、反斜杠（`\`）等。
-    - 双引号比单引号宽松，大部分特殊字符在双引号里面，都会失去特殊含义，变成普通字符。三个特殊字符除外：美元符号（`$`）、反引号（`` ` ` ``）和反斜杠（`\`）。这三个字符在双引号之中，依然有特殊含义，会被 Bash 自动扩展。
+#### 6.1.1 [Bash 脚本教程 — 阮一峰](https://wangdoc.com/bash/)
+
+- [ 简介](https://wangdoc.com/bash/intro.html)
+- [ 基本语法](https://wangdoc.com/bash/grammar.html)
+- [ 模式扩展](https://wangdoc.com/bash/expansion.html)
+- [ 引号和转义](https://wangdoc.com/bash/quotation.html)
+- [ 变量](https://wangdoc.com/bash/variable.html)
+- [ 字符串操作](https://wangdoc.com/bash/string.html)
+- [ 算术运算](https://wangdoc.com/bash/arithmetic.html)
+- [ 行操作](https://wangdoc.com/bash/readline.html)
+- [ 目录堆栈](https://wangdoc.com/bash/stack.html)
+- [ 脚本入门](https://wangdoc.com/bash/script.html)
+- [ read 命令](https://wangdoc.com/bash/read.html)
+- [ 条件判断](https://wangdoc.com/bash/condition.html)
+- [ 循环](https://wangdoc.com/bash/loop.html)
+- [ 函数](https://wangdoc.com/bash/function.html)
+- [ 数组](https://wangdoc.com/bash/array.html)
+- [ set 命令，shopt 命令](https://wangdoc.com/bash/set.html)
+- [ 脚本除错](https://wangdoc.com/bash/debug.html)
+- [ mktemp 命令，trap 命令](https://wangdoc.com/bash/mktemp.html)
+- [ 启动环境](https://wangdoc.com/bash/startup.html)
+- [ 命令提示符](https://wangdoc.com/bash/prompt.html)
+
+#### 6.1.2 补充
+
+##### 1. 知识点
+
+- 变量替换：一般情况下，$var与${var}是没有区别的，但是用${ }会比较精确的界定变量名称的范围
+
+- 命令替换：在bash中，$( )与反引号`` ` ` ``都是用来作命令替换的。命令替换与变量替换差不多，都是用来重组命令行的，先完成引号里的命令行，然后将其结果替换出来，再重组成新的命令行。
+  - `` ` ` ``很容易与`''`搞混乱，尤其对初学者来说，而$( )比较直观。但$( )的弊端是，并不是所有的类unix系统都支持这种方式，而反引号是肯定支持的。（**Mac上就不支持$**()）
+    ```bash
+    $ RESULT=`curl -s www.baidu.com`  #此时curl命令的返回数据不会显示在控制台，而是赋值该给RESULT变量
+    ```
+- Bash 允许字符串放在单引号或双引号之中，加以引用。
+  - 单引号用于保留字符的字面含义，各种特殊字符在单引号里面，都会变为普通字符，比如星号（`*`）、美元符号（`$`）、反斜杠（`\`）等。
+  - 双引号比单引号宽松，大部分特殊字符在双引号里面，都会失去特殊含义，变成普通字符。三个特殊字符除外：美元符号（`$`）、反引号（`` ` ` ``）和反斜杠（`\`）。这三个字符在双引号之中，依然有特殊含义，会被 Bash 自动扩展。
+- 当命令太长时，一般可用续行符 "`\`" 进行换行/续行。反斜杠`\` 后面紧跟回车，表示下一行是当前行的续行。
+  - 注意：`\` 后面紧接着是enter换行符，即使用 `\回车` 的方式，不能有空格之类的任何符号，否则会造成解析错误。
+- 分号（`;`）是命令的结束符，使得一行可以放置多个命令，上一个命令执行结束后（不管成功或失败），再执行第二个命令。
+- 除了分号，Bash 还提供两个命令组合符`&&`和`||`，允许更好地控制多个命令之间的继发关系。
+  - `&&`：表示前面的命令成功后，执行后面的。
+  - `||`：表示前面的命令失败后，执行后面的。
+  - 结合实现三目运算符的效果：
+    ```bash
+    command1 && command2 || command3
+    # 如果 command 是一连串的组合，那么可以使用 { } 将commands 括起来。
+    command1 
+        && { command2_1; command2_2; command2_3; } 
+        || { command3_1; command3_3; command3_3; }
+    ```
+- 字符串拼接：在 Shell 中你不需要使用任何运算符，将两个字符串并排放在一起就能实现拼接，非常简单粗暴。
+  ```bash
+  name="Shell"
+  url="http://c.biancheng.net/shell/"
+  str1=$name$url  #中间不能有空格
+  str2="$name $url"  #如果被双引号包围，那么中间可以有空格
+  str3=$name": "$url  #中间可以出现别的字符串
+  str4="$name: $url"  #这样写也可以 冒号不会认为是变量名的一部分。因为Bash中变量是由字母、数字和下划线字符组成。不允许出现空格和标点符号。
+  str5="${name}Script: ${url}index.html"  #这个时候需要给变量名加上大括号
+  ```
+
+##### 2. `2>&1` 的解释
+
+**结论：2>&1的意思是将标准错误(2)也定向到标准输出(1)的输出文件中。**
+
+我们来具体了解下：Linux 中三种标准输入输出，分别是STDIN，STDOUT，STDERR，对应的数字是0，1，2。
+
+- STDIN就是标准输入，默认从键盘读取信息；
+- STDOUT是标准输出，默认将输出结果输出至终端，也就是显示器之类的东西；
+- STDERR是标准的错误信息，默认也会显示在终端上。
+
+由于STDOUT与STDERR都会默认显示在终端上，为了区分二者的信息，就有了编号的0，1，2的定义，用1表示STDOUT，2表示STDERR。
+
+**从command>/dev/null说起**
+
+- 其实这条命令是一个缩写版，对于一个重定向命令，肯定是`a > b`这种形式，那么`command > /dev/null`难道是command充当a的角色，/dev/null充当b的角色。
+- 这样看起来比较合理，其实一条命令肯定是充当不了a，肯定是command执行产生的输出来充当a，其实就是标准输出stdout。
+- 所以`command > /dev/null`相当于执行了`command 1 > /dev/null` ，执行command产生了标准输出stdout(**1表示标准输出，可以省略**)，重定向到/dev/null的设备文件中。
+
+**说说2>&1**
+
+- 通过上面`command > /dev/null`等价于`command 1 > /dev/null`,那么对于`2>&1`也就好理解了，2就是标准错误，1是标准输出，那么这条命令不就是相当于把标准错误重定向到标准输出么。
+- 等等是&1而不是1，这里&是什么？**& 是一个描述符，如果1或2前加上&，表示标准输出/标准错误要输出到的文件。反之，如果1或2前不加&，会被当成一个普通文件。**
+
+**command>a 2>a 与 command>a 2>&1的区别**
+
+- 通过上面的分析，对于`command>a 2>&1`（等价于`command 1>a 2>&1`）这条命令，可以理解为执行command产生的标准输入重定向到文件a中，标准错误也重定向到文件a中。
+- 那么是否就说`command 1>a 2>&1`等价于`command 1>a 2>a`呢。其实不是，`command 1>a 2>&1`与`command 1>a 2>a`还是有区别的，区别就在于前者只打开一次文件a，后者会打开文件两次，并导致stdout被stderr覆盖。`&1`的含义就可以理解为用标准输出的引用，引用的就是重定向标准输出产生打开的a。从IO效率上来讲，`command 1>a 2>&1`比`command 1>a 2>a`的效率更高
+
+**再思考一下**
+
+- 为什么2>&1 要放在后边呢？ 我的理解是因为2（也就是错误输出）要重定向到&1，也就是标准输出的引用中，也就是标准输出打开的文件中，所以需要先在前面打开1的输出文件。
 
 ### 6.2 网络请求
 
