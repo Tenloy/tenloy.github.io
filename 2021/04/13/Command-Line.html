@@ -36,7 +36,7 @@
 <meta property="og:image" content="https://tenloy.github.io/images/OS/CLI/2181780-9b4168b70942c326.jpg">
 <meta property="og:image" content="https://tenloy.github.io/images/OS/CLI/2181780-32c55593fee90d0c.png">
 <meta property="article:published_time" content="2021-04-13T07:00:20.000Z">
-<meta property="article:modified_time" content="2023-03-30T11:36:44.881Z">
+<meta property="article:modified_time" content="2023-08-04T08:04:24.368Z">
 <meta property="article:author" content="Tenloy">
 <meta property="article:tag" content="CLI">
 <meta property="article:tag" content="Shell">
@@ -322,7 +322,7 @@ height:40vh;
                 
                 
                     <div class="post-intro-read">
-                        <span>Word count: <span class="post-count word-count">10k</span>Reading time: <span class="post-count reading-time">35 min</span></span>
+                        <span>Word count: <span class="post-count word-count">11.5k</span>Reading time: <span class="post-count reading-time">41 min</span></span>
                     </div>
                 
                 <div class="post-intro-meta">
@@ -475,25 +475,38 @@ height:40vh;
 
 <p>因为，命令行界面的软件通常需要用户记忆操作的命令，所以<strong>操作起来不那么方便</strong>，但是，由于其本身的特点，命令行界面要较图形用户界面<strong>节约计算机系统的资源(GUI要保证界面渲染得易于接收)<strong>。在熟记命令的前提下，使用命令行界面往往要较使用图形用户界面的</strong>操作速度要快</strong>。</p>
 <p>所以，现在的操作系统中，虽然很注重图形用户界面，提供了好看好用的GUI Shell，但却都没有因而停止提供文字模式的命令行操作方式(CLI Shell)，相反的，许多系统反而更加强这部分的功能。</p>
-<h3 id="1-2-命令"><a href="#1-2-命令" class="headerlink" title="1.2 命令"></a>1.2 命令</h3><p><strong>CLI程序区别于GUI程序的是：后者提供给用户的使用(输入)方式是点击、输入即可，输出的结果也是形象生成的图形，而CLI程序提供给用户的是一条条命令，用户通过键盘输入命令、参数来使用功能，结果是以一系列的字符形式输出</strong></p>
+<h3 id="1-2-命令-行-与-Linux命令"><a href="#1-2-命令-行-与-Linux命令" class="headerlink" title="1.2 命令(行) 与 Linux命令"></a>1.2 命令(行) 与 Linux命令</h3><p><strong>CLI程序区别于GUI程序的是：后者提供给用户的使用(输入)方式是点击、输入即可，输出的结果也是形象生成的图形，而CLI程序提供给用户的是一条条命令，用户通过键盘输入命令、参数来使用功能，结果是以一系列的字符形式输出</strong></p>
 <ul>
 <li>命令提示符<ul>
 <li>命令提示符是操作系统在CLI界面上向用户提供的一种提示标志。命令提示符有两重含义：一是标志着上一条命令的结束; 二是标志着可以启动运行下一条命令。</li>
 <li>比如DOS中的<code>C&gt;</code>、UNIX中的<code>¥</code>或<code>%</code>、Mac OS中的<code>$</code></li>
 </ul>
 </li>
-<li>命令(行)<ul>
+<li><strong>命令(行)  — 终端上的输入</strong><ul>
 <li>通常把在命令提示符后打入的程序名和其参数称为命令行(到回车为止)或命令。</li>
 <li><strong>任一命令行(即任一条命令)的本质都是 申请某一程序执行。</strong></li>
 <li><strong>交互式命令</strong>：与用户进行交互。比如shell等待你的输入，并且执行你提交的命令</li>
 <li><strong>非交互式命令</strong>：不存在进行交互，而是读取存放在文件中的命令，并且执行它们。当它读到文件的结尾，命令也就终止了。</li>
 </ul>
 </li>
+<li>注意：区分一个概念 <strong>Linux命令 — 一个个的可执行文件</strong>。<ul>
+<li><strong>OS提供</strong>了一组不同操作命令组成的集合，每个命令实现用户所要求的不同功能，为用户提供相应的服务。<ul>
+<li>每一条命令都对应着一个可执行文件。</li>
+<li>这些命令通常是用C语言编写的，也有一些是用其他编程语言编写的。比如awk命令是awk语言编写。</li>
 </ul>
-<p>linux/cmd命令行语法规则、语法格式：</p>
+</li>
+<li>另外<strong>自己</strong>也可以基于内核提供的一些系统调用、编程语言的标准库、已安装的命令行工具等来<strong>开发</strong>一些命令行工具。<ul>
+<li>系统自带、自安装的这些命令工具，可以在其他语言中通过指定方式直接调用。</li>
+<li>对于一些开发人员来说，经常会使用自己熟悉的编程语言，常见的比如bash、zsh shell语言、AWK、Perl、Python、Nodejs等，来编写自己的命令或工具，以执行特定的任务，扩展Linux系统的功能。</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>**我们在终端中，输入的就是一行行bash或zsh等shell编程语言代码，也称命令(行)，经过/bin/zsh、/bin/bash等Shell程序的解释，进而成功调用一个个的Linux命令工具(可执行程序)**。</li>
+</ul>
+<p>linux/cmd命令语法规则、语法格式：</p>
 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">command [options] [arguments]</span><br><span class="line">&lt; &gt; : 必选参数</span><br><span class="line">&#123; &#125; : 必选参数，内部使用</span><br><span class="line">[ ] : 可选参数</span><br><span class="line">( ) : 指明参数的默认值，只用于&#123;&#125;中</span><br><span class="line"> |  : 用于分割，表示|侧的值可任选其一</span><br><span class="line">... : 任意多个参数，即前面的选项可重复</span><br><span class="line">&amp;&amp;  : 连接多个命令</span><br><span class="line">--  : 后跟参数名</span><br><span class="line"> .  : 当前</span><br><span class="line"> ,  : 分割一个简写的选项和一个完整的选项，这两个选项的作用是一样的，最终只能选其一。而且可能有多个简写和多个完整些，之间都用,分割</span><br><span class="line"></span><br><span class="line">几个括号之间可以相互嵌套，具体嵌套关系根据实际情况来判断</span><br></pre></td></tr></table></figure>
 
-<p>OS提供了一组不同操作命令组成的集合，每个命令实现用户所要求的不同功能，为用户提供相应的服务。另外自己也可以基于内核提供的一些系统调用开发一些命令行工具。</p>
 <p>命令行的执行过程：</p>
 <img src="/images/OS/CLI/2181780-878e469efcfcc763.png" style="zoom:80%">
 
@@ -778,8 +791,7 @@ height:40vh;
 </ul>
 <p><strong>脚本语言工作必须依赖对应的解释器，创造一门语言的同时，需要创建(使用已有的)对应的编译器、解释器</strong>。</p>
 <h2 id="六、Shell脚本编程"><a href="#六、Shell脚本编程" class="headerlink" title="六、Shell脚本编程"></a>六、Shell脚本编程</h2><p>上面已经说过，不管是正流行的bash、zsh本质上都是解释器，它们都服务的是shell语言，因此bash脚本、zsh脚本程序在使用shell commands(类比SDK API)编程时，语法上基本相同，部分兼容性差异可参考：<a target="_blank" rel="noopener" href="https://segmentfault.com/a/1190000011122024">zsh和bash的兼容性差异</a>。（<em>这个类似JS代码在Chrome、Safari、Edge等浏览器平台的兼容性</em>）</p>
-<h3 id="6-1-基本教程"><a href="#6-1-基本教程" class="headerlink" title="6.1 基本教程"></a>6.1 基本教程</h3><ul>
-<li><a target="_blank" rel="noopener" href="https://wangdoc.com/bash/">Bash 脚本教程 — 阮一峰</a><ul>
+<h3 id="6-1-基本教程"><a href="#6-1-基本教程" class="headerlink" title="6.1 基本教程"></a>6.1 基本教程</h3><h4 id="6-1-1-Bash-脚本教程-—-阮一峰"><a href="#6-1-1-Bash-脚本教程-—-阮一峰" class="headerlink" title="6.1.1 Bash 脚本教程 — 阮一峰"></a>6.1.1 <a target="_blank" rel="noopener" href="https://wangdoc.com/bash/">Bash 脚本教程 — 阮一峰</a></h4><ul>
 <li><a target="_blank" rel="noopener" href="https://wangdoc.com/bash/intro.html"> 简介</a></li>
 <li><a target="_blank" rel="noopener" href="https://wangdoc.com/bash/grammar.html"> 基本语法</a></li>
 <li><a target="_blank" rel="noopener" href="https://wangdoc.com/bash/expansion.html"> 模式扩展</a></li>
@@ -801,20 +813,64 @@ height:40vh;
 <li><a target="_blank" rel="noopener" href="https://wangdoc.com/bash/startup.html"> 启动环境</a></li>
 <li><a target="_blank" rel="noopener" href="https://wangdoc.com/bash/prompt.html"> 命令提示符</a></li>
 </ul>
+<h4 id="6-1-2-补充"><a href="#6-1-2-补充" class="headerlink" title="6.1.2 补充"></a>6.1.2 补充</h4><h5 id="1-知识点"><a href="#1-知识点" class="headerlink" title="1. 知识点"></a>1. 知识点</h5><ul>
+<li><p>变量替换：一般情况下，$var与${var}是没有区别的，但是用${ }会比较精确的界定变量名称的范围</p>
 </li>
-<li>补充：<ul>
-<li>变量替换：一般情况下，$var与${var}是没有区别的，但是用${ }会比较精确的界定变量名称的范围</li>
-<li>命令替换：在bash中，$( )与反引号<code>` `</code>都是用来作命令替换的。命令替换与变量替换差不多，都是用来重组命令行的，先完成引号里的命令行，然后将其结果替换出来，再重组成新的命令行。<ul>
+<li><p>命令替换：在bash中，$( )与反引号<code>` `</code>都是用来作命令替换的。命令替换与变量替换差不多，都是用来重组命令行的，先完成引号里的命令行，然后将其结果替换出来，再重组成新的命令行。</p>
+<ul>
 <li><code>` `</code>很容易与<code>&#39;&#39;</code>搞混乱，尤其对初学者来说，而$( )比较直观。但$( )的弊端是，并不是所有的类unix系统都支持这种方式，而反引号是肯定支持的。（<strong>Mac上就不支持$</strong>()）<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ RESULT=`curl -s www.baidu.com`  <span class="comment">#此时curl命令的返回数据不会显示在控制台，而是赋值该给RESULT变量</span></span><br></pre></td></tr></table></figure></li>
 </ul>
 </li>
-<li>Bash 允许字符串放在单引号或双引号之中，加以引用。<ul>
+<li><p>Bash 允许字符串放在单引号或双引号之中，加以引用。</p>
+<ul>
 <li>单引号用于保留字符的字面含义，各种特殊字符在单引号里面，都会变为普通字符，比如星号（<code>*</code>）、美元符号（<code>$</code>）、反斜杠（<code>\</code>）等。</li>
 <li>双引号比单引号宽松，大部分特殊字符在双引号里面，都会失去特殊含义，变成普通字符。三个特殊字符除外：美元符号（<code>$</code>）、反引号（<code>` `</code>）和反斜杠（<code>\</code>）。这三个字符在双引号之中，依然有特殊含义，会被 Bash 自动扩展。</li>
 </ul>
 </li>
+<li><p>当命令太长时，一般可用续行符 “<code>\</code>“ 进行换行/续行。反斜杠<code>\</code> 后面紧跟回车，表示下一行是当前行的续行。</p>
+<ul>
+<li>注意：<code>\</code> 后面紧接着是enter换行符，即使用 <code>\回车</code> 的方式，不能有空格之类的任何符号，否则会造成解析错误。</li>
 </ul>
 </li>
+<li><p>分号（<code>;</code>）是命令的结束符，使得一行可以放置多个命令，上一个命令执行结束后（不管成功或失败），再执行第二个命令。</p>
+</li>
+<li><p>除了分号，Bash 还提供两个命令组合符<code>&amp;&amp;</code>和<code>||</code>，允许更好地控制多个命令之间的继发关系。</p>
+<ul>
+<li><code>&amp;&amp;</code>：表示前面的命令成功后，执行后面的。</li>
+<li><code>||</code>：表示前面的命令失败后，执行后面的。</li>
+<li>结合实现三目运算符的效果：<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">command1 &amp;&amp; command2 || command3</span><br><span class="line"><span class="comment"># 如果 command 是一连串的组合，那么可以使用 &#123; &#125; 将commands 括起来。</span></span><br><span class="line">command1 </span><br><span class="line">    &amp;&amp; &#123; command2_1; command2_2; command2_3; &#125; </span><br><span class="line">    || &#123; command3_1; command3_3; command3_3; &#125;</span><br></pre></td></tr></table></figure></li>
+</ul>
+</li>
+<li><p>字符串拼接：在 Shell 中你不需要使用任何运算符，将两个字符串并排放在一起就能实现拼接，非常简单粗暴。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">name=<span class="string">&quot;Shell&quot;</span></span><br><span class="line">url=<span class="string">&quot;http://c.biancheng.net/shell/&quot;</span></span><br><span class="line">str1=$name<span class="variable">$url</span>  <span class="comment">#中间不能有空格</span></span><br><span class="line">str2=<span class="string">&quot;<span class="variable">$name</span> <span class="variable">$url</span>&quot;</span>  <span class="comment">#如果被双引号包围，那么中间可以有空格</span></span><br><span class="line">str3=<span class="variable">$name</span><span class="string">&quot;: &quot;</span><span class="variable">$url</span>  <span class="comment">#中间可以出现别的字符串</span></span><br><span class="line">str4=<span class="string">&quot;<span class="variable">$name</span>: <span class="variable">$url</span>&quot;</span>  <span class="comment">#这样写也可以 冒号不会认为是变量名的一部分。因为Bash中变量是由字母、数字和下划线字符组成。不允许出现空格和标点符号。</span></span><br><span class="line">str5=<span class="string">&quot;<span class="variable">$&#123;name&#125;</span>Script: <span class="variable">$&#123;url&#125;</span>index.html&quot;</span>  <span class="comment">#这个时候需要给变量名加上大括号</span></span><br></pre></td></tr></table></figure></li>
+</ul>
+<h5 id="2-2-gt-amp-1-的解释"><a href="#2-2-gt-amp-1-的解释" class="headerlink" title="2. 2&gt;&amp;1 的解释"></a>2. <code>2&gt;&amp;1</code> 的解释</h5><p><strong>结论：2&gt;&amp;1的意思是将标准错误(2)也定向到标准输出(1)的输出文件中。</strong></p>
+<p>我们来具体了解下：Linux 中三种标准输入输出，分别是STDIN，STDOUT，STDERR，对应的数字是0，1，2。</p>
+<ul>
+<li>STDIN就是标准输入，默认从键盘读取信息；</li>
+<li>STDOUT是标准输出，默认将输出结果输出至终端，也就是显示器之类的东西；</li>
+<li>STDERR是标准的错误信息，默认也会显示在终端上。</li>
+</ul>
+<p>由于STDOUT与STDERR都会默认显示在终端上，为了区分二者的信息，就有了编号的0，1，2的定义，用1表示STDOUT，2表示STDERR。</p>
+<p><strong>从command&gt;/dev/null说起</strong></p>
+<ul>
+<li>其实这条命令是一个缩写版，对于一个重定向命令，肯定是<code>a &gt; b</code>这种形式，那么<code>command &gt; /dev/null</code>难道是command充当a的角色，/dev/null充当b的角色。</li>
+<li>这样看起来比较合理，其实一条命令肯定是充当不了a，肯定是command执行产生的输出来充当a，其实就是标准输出stdout。</li>
+<li>所以<code>command &gt; /dev/null</code>相当于执行了<code>command 1 &gt; /dev/null</code> ，执行command产生了标准输出stdout(<strong>1表示标准输出，可以省略</strong>)，重定向到/dev/null的设备文件中。</li>
+</ul>
+<p><strong>说说2&gt;&amp;1</strong></p>
+<ul>
+<li>通过上面<code>command &gt; /dev/null</code>等价于<code>command 1 &gt; /dev/null</code>,那么对于<code>2&gt;&amp;1</code>也就好理解了，2就是标准错误，1是标准输出，那么这条命令不就是相当于把标准错误重定向到标准输出么。</li>
+<li>等等是&amp;1而不是1，这里&amp;是什么？**&amp; 是一个描述符，如果1或2前加上&amp;，表示标准输出/标准错误要输出到的文件。反之，如果1或2前不加&amp;，会被当成一个普通文件。**</li>
+</ul>
+<p><strong>command&gt;a 2&gt;a 与 command&gt;a 2&gt;&amp;1的区别</strong></p>
+<ul>
+<li>通过上面的分析，对于<code>command&gt;a 2&gt;&amp;1</code>（等价于<code>command 1&gt;a 2&gt;&amp;1</code>）这条命令，可以理解为执行command产生的标准输入重定向到文件a中，标准错误也重定向到文件a中。</li>
+<li>那么是否就说<code>command 1&gt;a 2&gt;&amp;1</code>等价于<code>command 1&gt;a 2&gt;a</code>呢。其实不是，<code>command 1&gt;a 2&gt;&amp;1</code>与<code>command 1&gt;a 2&gt;a</code>还是有区别的，区别就在于前者只打开一次文件a，后者会打开文件两次，并导致stdout被stderr覆盖。<code>&amp;1</code>的含义就可以理解为用标准输出的引用，引用的就是重定向标准输出产生打开的a。从IO效率上来讲，<code>command 1&gt;a 2&gt;&amp;1</code>比<code>command 1&gt;a 2&gt;a</code>的效率更高</li>
+</ul>
+<p><strong>再思考一下</strong></p>
+<ul>
+<li>为什么2&gt;&amp;1 要放在后边呢？ 我的理解是因为2（也就是错误输出）要重定向到&amp;1，也就是标准输出的引用中，也就是标准输出打开的文件中，所以需要先在前面打开1的输出文件。</li>
 </ul>
 <h3 id="6-2-网络请求"><a href="#6-2-网络请求" class="headerlink" title="6.2 网络请求"></a>6.2 网络请求</h3><p>curl 是常用的命令行工具，用来请求 Web 服务器。它的名字就是客户端（client）的 URL 工具的意思。<a target="_blank" rel="noopener" href="https://www.ruanyifeng.com/blog/2019/09/curl-reference.html">curl 的用法指南 by 阮一峰</a></p>
 <p>curl 与 wget的比较：</p>
@@ -863,7 +919,7 @@ height:40vh;
             <p>Author：<a href="https://tenloy.github.io">Tenloy</a>
             <p>原文链接：<a href="https://tenloy.github.io/2021/04/13/Command-Line.html">https://tenloy.github.io/2021/04/13/Command-Line.html</a>
             <p>发表日期：2021.04.13 , 3:00 PM</p>
-            <p>更新日期：2023.03.30 , 7:36 PM</p>
+            <p>更新日期：2023.08.04 , 4:04 PM</p>
             <p>版权声明：本文采用<a rel="license noopener" target="_blank" href="http://creativecommons.org/licenses/by-nc/4.0/">Crative Commons 4.0 许可协议</a>进行许可</p>
         </div>
     
@@ -1005,7 +1061,7 @@ top:40vh;
         <div class="toc-catalog">
             <span class="iconfont-archer catalog-icon">&#xe613;</span><span>CATALOG</span>
         </div>
-        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E3%80%81%E5%91%BD%E4%BB%A4%E8%A1%8C%E7%95%8C%E9%9D%A2-CLI-%E5%92%8C%E5%91%BD%E4%BB%A4-%E8%A1%8C"><span class="toc-text">一、命令行界面(CLI)和命令(行)</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-1-CLI%E3%80%81GUI%E6%98%AF%E4%BB%80%E4%B9%88%EF%BC%9F"><span class="toc-text">1.1 CLI、GUI是什么？</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-2-%E5%91%BD%E4%BB%A4"><span class="toc-text">1.2 命令</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-3-%E5%B8%B8%E8%A7%81%E7%9A%84CLI-Shell%E7%A8%8B%E5%BA%8F"><span class="toc-text">1.3 常见的CLI Shell程序</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8C%E3%80%81Shell"><span class="toc-text">二、Shell</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#2-1-Shell-%E5%88%86%E7%B1%BB"><span class="toc-text">2.1 Shell 分类</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-2-CLI-Shell%E7%9A%84%E5%8F%91%E5%B1%95"><span class="toc-text">2.2 CLI Shell的发展</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-3-%E4%B8%8D%E5%90%8C%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E7%9A%84Shell%E4%B8%BE%E4%BE%8B"><span class="toc-text">2.3 不同操作系统的Shell举例</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-4-Shell%E4%B8%8EShell%E8%84%9A%E6%9C%AC"><span class="toc-text">2.4 Shell与Shell脚本</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%89%E3%80%81%E7%BB%88%E7%AB%AF-Terminal"><span class="toc-text">三、终端(Terminal)</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#3-1-%E7%8E%B0%E5%9C%A8%E7%9A%84%E4%B8%80%E4%BA%9B%E5%8F%AB%E6%B3%95%E5%90%8D%E8%AF%8D"><span class="toc-text">3.1 现在的一些叫法名词</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-2-%E5%8E%86%E5%8F%B2"><span class="toc-text">3.2 历史</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#3-2-1-%E6%97%A9%E6%9C%9F%E7%9A%84%E7%BB%88%E7%AB%AF"><span class="toc-text">3.2.1 早期的终端</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3-2-2-%E5%AD%97%E7%AC%A6%E7%BB%88%E7%AB%AF%EF%BC%88%E5%93%91%E7%BB%88%E7%AB%AF%E3%80%81%E6%99%BA%E8%83%BD%E7%BB%88%E7%AB%AF"><span class="toc-text">3.2.2 字符终端（哑终端、智能终端)</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3-2-3-%E5%9B%BE%E5%BD%A2%E7%BB%88%E7%AB%AF"><span class="toc-text">3.2.3 图形终端</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-3-%E7%8E%B0%E4%BB%A3-%E7%BB%88%E7%AB%AF%E6%A8%A1%E6%8B%9F%E5%99%A8"><span class="toc-text">3.3 现代: 终端模拟器</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#3-3-1-%E4%BD%9C%E7%94%A8"><span class="toc-text">3.3.1 作用</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3-3-2-%E5%B7%A5%E4%BD%9C%E6%B5%81%E7%A8%8B"><span class="toc-text">3.3.2 工作流程</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3-3-3-%E5%B8%B8%E8%A7%81%E7%9A%84%E7%BB%88%E7%AB%AF%E6%A8%A1%E6%8B%9F%E5%99%A8"><span class="toc-text">3.3.3 常见的终端模拟器</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3-3-4-%E4%B8%A4%E7%A7%8D%E5%BD%A2%E5%BC%8F"><span class="toc-text">3.3.4 两种形式</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-4-%E8%A1%A5%E5%85%85-%E6%8E%A7%E5%88%B6%E5%8F%B0%E3%80%81TTY%E3%80%81%E7%BB%88%E7%AB%AF%E6%9C%8D%E5%8A%A1%E5%99%A8"><span class="toc-text">3.4 补充: 控制台、TTY、终端服务器</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#3-4-1-%E6%8E%A7%E5%88%B6%E5%8F%B0-Console"><span class="toc-text">3.4.1 控制台(Console)</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3-4-2-TTY"><span class="toc-text">3.4.2 TTY</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#1-TTY%E6%98%AF%E4%BB%80%E4%B9%88%EF%BC%9F"><span class="toc-text">1. TTY是什么？</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#2-TTY%E8%AE%BE%E5%A4%87%E7%BB%93%E6%9E%84"><span class="toc-text">2. TTY设备结构</span></a></li></ol></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3-4-3-%E7%BB%88%E7%AB%AF%E6%9C%8D%E5%8A%A1%E5%99%A8"><span class="toc-text">3.4.3 终端服务器</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9B%9B%E3%80%81Shell%E4%B8%8E%E7%BB%88%E7%AB%AF%E7%9A%84%E5%88%86%E5%B7%A5"><span class="toc-text">四、Shell与终端的分工</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%94%E3%80%81%E8%84%9A%E6%9C%ACScript"><span class="toc-text">五、脚本Script</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#5-1-%E6%A6%82%E8%BF%B0"><span class="toc-text">5.1 概述</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-2-%E8%84%9A%E6%9C%AC%E3%80%81%E7%A8%8B%E5%BA%8F%E3%80%81%E8%BD%AF%E4%BB%B6"><span class="toc-text">5.2 脚本、程序、软件</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-3-%E8%84%9A%E6%9C%AC%E8%AF%AD%E8%A8%80%E5%8F%8A%E5%88%86%E7%B1%BB"><span class="toc-text">5.3 脚本语言及分类</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#5-3-1-%E5%8F%91%E5%B1%95"><span class="toc-text">5.3.1 发展</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#5-3-2-%E5%88%86%E7%B1%BB"><span class="toc-text">5.3.2 分类</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%AD%E3%80%81Shell%E8%84%9A%E6%9C%AC%E7%BC%96%E7%A8%8B"><span class="toc-text">六、Shell脚本编程</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#6-1-%E5%9F%BA%E6%9C%AC%E6%95%99%E7%A8%8B"><span class="toc-text">6.1 基本教程</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-2-%E7%BD%91%E7%BB%9C%E8%AF%B7%E6%B1%82"><span class="toc-text">6.2 网络请求</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-3-%E6%95%B0%E6%8D%AE%E8%A7%A3%E6%9E%90"><span class="toc-text">6.3 数据解析</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%83%E3%80%81%E5%8F%82%E8%80%83%E9%93%BE%E6%8E%A5"><span class="toc-text">七、参考链接</span></a></li></ol>
+        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E3%80%81%E5%91%BD%E4%BB%A4%E8%A1%8C%E7%95%8C%E9%9D%A2-CLI-%E5%92%8C%E5%91%BD%E4%BB%A4-%E8%A1%8C"><span class="toc-text">一、命令行界面(CLI)和命令(行)</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-1-CLI%E3%80%81GUI%E6%98%AF%E4%BB%80%E4%B9%88%EF%BC%9F"><span class="toc-text">1.1 CLI、GUI是什么？</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-2-%E5%91%BD%E4%BB%A4-%E8%A1%8C-%E4%B8%8E-Linux%E5%91%BD%E4%BB%A4"><span class="toc-text">1.2 命令(行) 与 Linux命令</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-3-%E5%B8%B8%E8%A7%81%E7%9A%84CLI-Shell%E7%A8%8B%E5%BA%8F"><span class="toc-text">1.3 常见的CLI Shell程序</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8C%E3%80%81Shell"><span class="toc-text">二、Shell</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#2-1-Shell-%E5%88%86%E7%B1%BB"><span class="toc-text">2.1 Shell 分类</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-2-CLI-Shell%E7%9A%84%E5%8F%91%E5%B1%95"><span class="toc-text">2.2 CLI Shell的发展</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-3-%E4%B8%8D%E5%90%8C%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E7%9A%84Shell%E4%B8%BE%E4%BE%8B"><span class="toc-text">2.3 不同操作系统的Shell举例</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-4-Shell%E4%B8%8EShell%E8%84%9A%E6%9C%AC"><span class="toc-text">2.4 Shell与Shell脚本</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%89%E3%80%81%E7%BB%88%E7%AB%AF-Terminal"><span class="toc-text">三、终端(Terminal)</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#3-1-%E7%8E%B0%E5%9C%A8%E7%9A%84%E4%B8%80%E4%BA%9B%E5%8F%AB%E6%B3%95%E5%90%8D%E8%AF%8D"><span class="toc-text">3.1 现在的一些叫法名词</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-2-%E5%8E%86%E5%8F%B2"><span class="toc-text">3.2 历史</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#3-2-1-%E6%97%A9%E6%9C%9F%E7%9A%84%E7%BB%88%E7%AB%AF"><span class="toc-text">3.2.1 早期的终端</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3-2-2-%E5%AD%97%E7%AC%A6%E7%BB%88%E7%AB%AF%EF%BC%88%E5%93%91%E7%BB%88%E7%AB%AF%E3%80%81%E6%99%BA%E8%83%BD%E7%BB%88%E7%AB%AF"><span class="toc-text">3.2.2 字符终端（哑终端、智能终端)</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3-2-3-%E5%9B%BE%E5%BD%A2%E7%BB%88%E7%AB%AF"><span class="toc-text">3.2.3 图形终端</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-3-%E7%8E%B0%E4%BB%A3-%E7%BB%88%E7%AB%AF%E6%A8%A1%E6%8B%9F%E5%99%A8"><span class="toc-text">3.3 现代: 终端模拟器</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#3-3-1-%E4%BD%9C%E7%94%A8"><span class="toc-text">3.3.1 作用</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3-3-2-%E5%B7%A5%E4%BD%9C%E6%B5%81%E7%A8%8B"><span class="toc-text">3.3.2 工作流程</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3-3-3-%E5%B8%B8%E8%A7%81%E7%9A%84%E7%BB%88%E7%AB%AF%E6%A8%A1%E6%8B%9F%E5%99%A8"><span class="toc-text">3.3.3 常见的终端模拟器</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3-3-4-%E4%B8%A4%E7%A7%8D%E5%BD%A2%E5%BC%8F"><span class="toc-text">3.3.4 两种形式</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-4-%E8%A1%A5%E5%85%85-%E6%8E%A7%E5%88%B6%E5%8F%B0%E3%80%81TTY%E3%80%81%E7%BB%88%E7%AB%AF%E6%9C%8D%E5%8A%A1%E5%99%A8"><span class="toc-text">3.4 补充: 控制台、TTY、终端服务器</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#3-4-1-%E6%8E%A7%E5%88%B6%E5%8F%B0-Console"><span class="toc-text">3.4.1 控制台(Console)</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3-4-2-TTY"><span class="toc-text">3.4.2 TTY</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#1-TTY%E6%98%AF%E4%BB%80%E4%B9%88%EF%BC%9F"><span class="toc-text">1. TTY是什么？</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#2-TTY%E8%AE%BE%E5%A4%87%E7%BB%93%E6%9E%84"><span class="toc-text">2. TTY设备结构</span></a></li></ol></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3-4-3-%E7%BB%88%E7%AB%AF%E6%9C%8D%E5%8A%A1%E5%99%A8"><span class="toc-text">3.4.3 终端服务器</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9B%9B%E3%80%81Shell%E4%B8%8E%E7%BB%88%E7%AB%AF%E7%9A%84%E5%88%86%E5%B7%A5"><span class="toc-text">四、Shell与终端的分工</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%94%E3%80%81%E8%84%9A%E6%9C%ACScript"><span class="toc-text">五、脚本Script</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#5-1-%E6%A6%82%E8%BF%B0"><span class="toc-text">5.1 概述</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-2-%E8%84%9A%E6%9C%AC%E3%80%81%E7%A8%8B%E5%BA%8F%E3%80%81%E8%BD%AF%E4%BB%B6"><span class="toc-text">5.2 脚本、程序、软件</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-3-%E8%84%9A%E6%9C%AC%E8%AF%AD%E8%A8%80%E5%8F%8A%E5%88%86%E7%B1%BB"><span class="toc-text">5.3 脚本语言及分类</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#5-3-1-%E5%8F%91%E5%B1%95"><span class="toc-text">5.3.1 发展</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#5-3-2-%E5%88%86%E7%B1%BB"><span class="toc-text">5.3.2 分类</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%AD%E3%80%81Shell%E8%84%9A%E6%9C%AC%E7%BC%96%E7%A8%8B"><span class="toc-text">六、Shell脚本编程</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#6-1-%E5%9F%BA%E6%9C%AC%E6%95%99%E7%A8%8B"><span class="toc-text">6.1 基本教程</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#6-1-1-Bash-%E8%84%9A%E6%9C%AC%E6%95%99%E7%A8%8B-%E2%80%94-%E9%98%AE%E4%B8%80%E5%B3%B0"><span class="toc-text">6.1.1 Bash 脚本教程 — 阮一峰</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#6-1-2-%E8%A1%A5%E5%85%85"><span class="toc-text">6.1.2 补充</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#1-%E7%9F%A5%E8%AF%86%E7%82%B9"><span class="toc-text">1. 知识点</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#2-2-gt-amp-1-%E7%9A%84%E8%A7%A3%E9%87%8A"><span class="toc-text">2. 2&gt;&amp;1 的解释</span></a></li></ol></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-2-%E7%BD%91%E7%BB%9C%E8%AF%B7%E6%B1%82"><span class="toc-text">6.2 网络请求</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-3-%E6%95%B0%E6%8D%AE%E8%A7%A3%E6%9E%90"><span class="toc-text">6.3 数据解析</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%83%E3%80%81%E5%8F%82%E8%80%83%E9%93%BE%E6%8E%A5"><span class="toc-text">七、参考链接</span></a></li></ol>
     </div>
     
     <div class="back-top iconfont-archer">&#xe639;</div>
@@ -1063,6 +1119,44 @@ top:40vh;
 </div>
           <div class="sidebar-panel-archives">
     <!-- 在ejs中将archive按照时间排序 -->
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
     
     
     
@@ -2558,9 +2652,9 @@ top:40vh;
     
         <span class="sidebar-tag-name" data-tags="Shell"><span class="iconfont-archer">&#xe606;</span>Shell</span>
     
-        <span class="sidebar-tag-name" data-tags="ARM64"><span class="iconfont-archer">&#xe606;</span>ARM64</span>
-    
         <span class="sidebar-tag-name" data-tags="多线程"><span class="iconfont-archer">&#xe606;</span>多线程</span>
+    
+        <span class="sidebar-tag-name" data-tags="ARM64"><span class="iconfont-archer">&#xe606;</span>ARM64</span>
     
         <span class="sidebar-tag-name" data-tags="Docker"><span class="iconfont-archer">&#xe606;</span>Docker</span>
     
@@ -2572,17 +2666,17 @@ top:40vh;
     
         <span class="sidebar-tag-name" data-tags="dp"><span class="iconfont-archer">&#xe606;</span>dp</span>
     
+        <span class="sidebar-tag-name" data-tags="SwiftUI"><span class="iconfont-archer">&#xe606;</span>SwiftUI</span>
+    
         <span class="sidebar-tag-name" data-tags="RunLoop"><span class="iconfont-archer">&#xe606;</span>RunLoop</span>
     
         <span class="sidebar-tag-name" data-tags="Swift-Syntax"><span class="iconfont-archer">&#xe606;</span>Swift-Syntax</span>
     
-        <span class="sidebar-tag-name" data-tags="SwiftUI"><span class="iconfont-archer">&#xe606;</span>SwiftUI</span>
-    
-        <span class="sidebar-tag-name" data-tags="CrashMonitor"><span class="iconfont-archer">&#xe606;</span>CrashMonitor</span>
-    
         <span class="sidebar-tag-name" data-tags="LagMonitor"><span class="iconfont-archer">&#xe606;</span>LagMonitor</span>
     
         <span class="sidebar-tag-name" data-tags="Log"><span class="iconfont-archer">&#xe606;</span>Log</span>
+    
+        <span class="sidebar-tag-name" data-tags="CrashMonitor"><span class="iconfont-archer">&#xe606;</span>CrashMonitor</span>
     
         <span class="sidebar-tag-name" data-tags="AFN"><span class="iconfont-archer">&#xe606;</span>AFN</span>
     
