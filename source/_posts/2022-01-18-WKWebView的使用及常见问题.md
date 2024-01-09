@@ -214,6 +214,22 @@ WKWebView的取、设置，理论详见[WKWebView 那些坑 — Cookie 问题](h
 
 WKWebView Cookie 问题在于**WKWebView 发起的请求不会自动带上**存储于 NSHTTPCookieStorage 容器中的 Cookie。而**UIWebView是自动注入cookie**。
 
+> **更新于2024.01.05.**
+>
+> 测试发现：一个页面上通过 `document.cookie` 设置的Cookie，关闭WebView后，再次打开还是可以获取到。
+>
+> 但是：
+>
+> - document.cookie = 'uid=lala'; 是指定当前host下的path，才能访问。其他path无法访问。
+> - document.cookie = 'uid333=lala; expires=Sat, 01 Jan 2050 00:00:00 GMT; path=/'; 是当前host下的所有path都可以访问到。
+>
+> **另外：WKWebview中发起的请求，通过抓包查看，请求头中也是会自动带上这个Cookie的！！**
+>
+> 限制：
+>
+> - 无法跨host访问Cookie
+> - 无法跨APP访问Cookie
+
 与Cookie相同的情况就是WKWebView的缓存、凭据等。WKWebView都拥有自己的私有存储，因此和标准cocoa网络类兼容的不是那么好。
 
 #### 1. webView设置cookie
