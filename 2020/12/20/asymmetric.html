@@ -29,7 +29,7 @@
 <meta property="og:locale" content="en_US">
 <meta property="og:image" content="https://tenloy.github.io/images/encrypt/01.jpg">
 <meta property="article:published_time" content="2020-12-19T21:49:12.000Z">
-<meta property="article:modified_time" content="2023-03-30T11:36:44.881Z">
+<meta property="article:modified_time" content="2023-10-19T05:09:31.000Z">
 <meta property="article:author" content="Tenloy">
 <meta property="article:tag" content="Tenloy, iOS, Tenloy Blog, 博客，Swift, 编译, 计算机">
 <meta name="twitter:card" content="summary">
@@ -306,7 +306,7 @@ height:40vh;
                 
                 
                     <div class="post-intro-read">
-                        <span>Word count: <span class="post-count word-count">4.1k</span>Reading time: <span class="post-count reading-time">15 min</span></span>
+                        <span>Word count: <span class="post-count word-count">4.3k</span>Reading time: <span class="post-count reading-time">16 min</span></span>
                     </div>
                 
                 <div class="post-intro-meta">
@@ -579,14 +579,16 @@ height:40vh;
 <p>当然你仍然可以使用 OpenSSL，比如说在 iOS 上使用开源库 <a target="_blank" rel="noopener" href="https://link.jianshu.com/?t=https://github.com/x2on/OpenSSL-for-iPhone">OpenSSL for iPhone</a>。</p>
 <p>分为两步(其实很简单)：</p>
 <ol>
-<li><p>将公私钥文件或者字符串转换成 SecKeyRef 对象， SecKeyRef 对象是一个密码学角度的抽象的密钥对象（也就是说它可以代表一个公钥、私钥或者某种对称加密的密钥）。无论是加解密还是签名，都会需要这个对象。</p>
-<figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// pragma mark - &#x27;.der&#x27;公钥文件生成SecKeyRef对象(公钥)</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// pragma mark - PKCS#1、PKCS#8 PEM编码公钥生成SecKeyRef对象(公钥)</span></span><br><span class="line">  <span class="comment">// PKCS#8格式的证书如果在代码的处理上，比PKCS#1多了一步对header的处理，也就是demo中的stripPublicKeyHeader函数，如果是PKCS#1的证书，跳过这个函数即可</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// pragma mark - &#x27;.12&#x27;私钥文件生成SecKeyRef对象(私钥)</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// pragma mark - PKCS#1、PKCS#8 PEM编码公钥生成SecKeyRef对象(私钥)</span></span><br><span class="line">  <span class="comment">// 生成代码与公钥过程大致相同，有一些细微差别</span></span><br></pre></td></tr></table></figure>
+<li>将公私钥文件或者字符串转换成 SecKeyRef 对象， SecKeyRef 对象是一个密码学角度的抽象的密钥对象（也就是说它可以代表一个公钥、私钥或者某种对称加密的密钥）。无论是加解密还是签名，都会需要这个对象。<figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// pragma mark - &#x27;.der&#x27;公钥文件生成SecKeyRef对象(公钥)</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// pragma mark - PKCS#1、PKCS#8 PEM编码公钥生成SecKeyRef对象(公钥)</span></span><br><span class="line">  <span class="comment">// PKCS#8格式的证书如果在代码的处理上，比PKCS#1多了一步对header的处理，也就是demo中的stripPublicKeyHeader函数，如果是PKCS#1的证书，跳过这个函数即可</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// pragma mark - &#x27;.12&#x27;私钥文件生成SecKeyRef对象(私钥)</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// pragma mark - PKCS#1、PKCS#8 PEM编码公钥生成SecKeyRef对象(私钥)</span></span><br><span class="line">  <span class="comment">// 生成代码与公钥过程大致相同，有一些细微差别</span></span><br></pre></td></tr></table></figure>
+我们在 <a href="https://tenloy.github.io/2020/12/09/pki.html#4-7-RSA%E7%A7%81%E9%92%A5PKCS1%E4%B8%8EPKCS8%E6%A0%BC%E5%BC%8F%E5%8C%BA%E5%88%AB%EF%BC%9F">上一章4.7 RSA私钥PKCS1与PKCS8格式区别？</a> 中已经证明过 <strong>如果从后往前看的话，其实可以发现PKCS8仅比PKCS1多了一个26自己的头，剩余的内容均完全一致。</strong>所以我们在这里使用时，如果是pkcs8格式的公钥私钥就要多一步<strong>除去头部</strong>的步骤，如果是pkcs1则不用，区别仅仅只有这一点。</li>
+</ol>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">+ (<span class="built_in">NSData</span> *)stripPublicKeyHeader:(<span class="built_in">NSData</span> *)d_key;  <span class="comment">// 去掉pkcs8公钥的头</span></span><br><span class="line">+ (<span class="built_in">NSData</span> *)stripPrivateKeyHeader:(<span class="built_in">NSData</span> *)d_key; <span class="comment">//去掉pkcs8私钥的头</span></span><br></pre></td></tr></table></figure>
+
+<p>注意，上面的方法不能对pkcs1格式的公钥、私钥进行操作。前者能生成SecKeyRef，但后续操作失败code=-9809；后者去除头失败，返回处理后的私钥字符串为空，导致无法生成SecKeyRef。</p>
 <p>有兴趣可以看下<a target="_blank" rel="noopener" href="https://www.jianshu.com/p/783f2605f3e9">这篇文章 — iOS 生成 SecKeyRef 的正规方式</a>，文章有提到直接处理PEM编码格式的头时，由于对应的代码解析力不够强，经常会返回一个空的密钥对象，但是在我们APP内频繁测试没有发现这个问题(如果读到这里能为我解答这个疑问，麻烦评论留言一下吧，多谢)</p>
-</li>
-<li><p>调用相应的函数，实现功能</p>
-<figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 使用私钥生成数字签名</span></span><br><span class="line">OSStatus SecKeyRawSign(SecKeyRef key, SecPadding padding, <span class="keyword">const</span> uint8_t *dataToSign, size_t dataToSignLen, uint8_t *sig, size_t *sigLen);</span><br><span class="line"><span class="comment">// 使用公钥对数字签名进行验证</span></span><br><span class="line">OSStatus SecKeyRawVerify(SecKeyRef key, SecPadding padding, <span class="keyword">const</span> uint8_t *signedData, size_t signedDataLen, <span class="keyword">const</span> uint8_t *sig, size_t sigLen);</span><br><span class="line"></span><br><span class="line"><span class="comment">// 使用公钥对数据加密</span></span><br><span class="line">OSStatus SecKeyEncrypt(SecKeyRef key, SecPadding padding, <span class="keyword">const</span> uint8_t *plainText, size_t plainTextLen, uint8_t *cipherText, size_t *cipherTextLen);</span><br><span class="line"><span class="comment">// 使用私钥对数据解密</span></span><br><span class="line">OSStatus SecKeyDecrypt(SecKeyRef key, SecPadding padding, <span class="keyword">const</span> uint8_t *cipherText, size_t cipherTextLen, uint8_t *plainText, size_t *plainTextLen)</span><br></pre></td></tr></table></figure>
-<p>从上面的函数可以看到，函数参数并不复杂，将1中生成SecKeyRef对象传入，数据传输两端确定padding填充方式即可。<strong>要确认两边使用的签名算法设置参数一致</strong>；详细代码看demo即可</p>
-<figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// digest message with sha1</span></span><br><span class="line">+ (<span class="built_in">NSData</span> *)sha1:(<span class="built_in">NSString</span> *)str</span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">const</span> <span class="type">void</span> *data = [str cStringUsingEncoding:<span class="built_in">NSUTF8StringEncoding</span>];</span><br><span class="line">    CC_LONG len = (CC_LONG)strlen(data);</span><br><span class="line">    uint8_t * md = malloc( CC_SHA1_DIGEST_LENGTH * <span class="keyword">sizeof</span>(uint8_t) );;</span><br><span class="line">    CC_SHA1(data, len, md);</span><br><span class="line">    <span class="keyword">return</span> [<span class="built_in">NSData</span> dataWithBytes:md length:CC_SHA1_DIGEST_LENGTH];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+<ol start="2">
+<li>调用相应的函数，实现功能<figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 使用私钥生成数字签名</span></span><br><span class="line">OSStatus SecKeyRawSign(SecKeyRef key, SecPadding padding, <span class="keyword">const</span> uint8_t *dataToSign, size_t dataToSignLen, uint8_t *sig, size_t *sigLen);</span><br><span class="line"><span class="comment">// 使用公钥对数字签名进行验证</span></span><br><span class="line">OSStatus SecKeyRawVerify(SecKeyRef key, SecPadding padding, <span class="keyword">const</span> uint8_t *signedData, size_t signedDataLen, <span class="keyword">const</span> uint8_t *sig, size_t sigLen);</span><br><span class="line"></span><br><span class="line"><span class="comment">// 使用公钥对数据加密</span></span><br><span class="line">OSStatus SecKeyEncrypt(SecKeyRef key, SecPadding padding, <span class="keyword">const</span> uint8_t *plainText, size_t plainTextLen, uint8_t *cipherText, size_t *cipherTextLen);</span><br><span class="line"><span class="comment">// 使用私钥对数据解密</span></span><br><span class="line">OSStatus SecKeyDecrypt(SecKeyRef key, SecPadding padding, <span class="keyword">const</span> uint8_t *cipherText, size_t cipherTextLen, uint8_t *plainText, size_t *plainTextLen)</span><br></pre></td></tr></table></figure>
+从上面的函数可以看到，函数参数并不复杂，将1中生成SecKeyRef对象传入，数据传输两端确定padding填充方式即可。<strong>要确认两边使用的签名算法设置参数一致</strong>；详细代码看demo即可<figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// digest message with sha1</span></span><br><span class="line">+ (<span class="built_in">NSData</span> *)sha1:(<span class="built_in">NSString</span> *)str</span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">const</span> <span class="type">void</span> *data = [str cStringUsingEncoding:<span class="built_in">NSUTF8StringEncoding</span>];</span><br><span class="line">    CC_LONG len = (CC_LONG)strlen(data);</span><br><span class="line">    uint8_t * md = malloc( CC_SHA1_DIGEST_LENGTH * <span class="keyword">sizeof</span>(uint8_t) );;</span><br><span class="line">    CC_SHA1(data, len, md);</span><br><span class="line">    <span class="keyword">return</span> [<span class="built_in">NSData</span> dataWithBytes:md length:CC_SHA1_DIGEST_LENGTH];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
 </ol>
 <h2 id="六、常见问题"><a href="#六、常见问题" class="headerlink" title="六、常见问题"></a>六、常见问题</h2><h3 id="6-1-为什么RSA公钥加密使用PKCS1填充每次生成结果都不一样？"><a href="#6-1-为什么RSA公钥加密使用PKCS1填充每次生成结果都不一样？" class="headerlink" title="6.1 为什么RSA公钥加密使用PKCS1填充每次生成结果都不一样？"></a>6.1 为什么RSA公钥加密使用PKCS1填充每次生成结果都不一样？</h3><p>在<a href="https://tenloy.github.io/2021/12/09/pki.html#PKCS1%E5%A1%AB%E5%85%85%E6%96%B9%E5%BC%8F">上一篇博客 — 常见的PKI标准(X.509、PKCS)</a> 中已经介绍过PKCS1填充方式的过程,不再赘述，总结一下：</p>
 <ul>
@@ -604,7 +606,7 @@ height:40vh;
             <p>Author：<a href="https://tenloy.github.io">Tenloy</a>
             <p>原文链接：<a href="https://tenloy.github.io/2020/12/20/asymmetric.html">https://tenloy.github.io/2020/12/20/asymmetric.html</a>
             <p>发表日期：2020.12.20 , 5:49 AM</p>
-            <p>更新日期：2023.03.30 , 7:36 PM</p>
+            <p>更新日期：2023.10.19 , 1:09 PM</p>
             <p>版权声明：本文采用<a rel="license noopener" target="_blank" href="http://creativecommons.org/licenses/by-nc/4.0/">Crative Commons 4.0 许可协议</a>进行许可</p>
         </div>
     
@@ -804,24 +806,6 @@ top:40vh;
 </div>
           <div class="sidebar-panel-archives">
     <!-- 在ejs中将archive按照时间排序 -->
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
     
     
     
@@ -2295,31 +2279,31 @@ top:40vh;
     
         <span class="sidebar-tag-name" data-tags="Shell"><span class="iconfont-archer">&#xe606;</span>Shell</span>
     
-        <span class="sidebar-tag-name" data-tags="多线程"><span class="iconfont-archer">&#xe606;</span>多线程</span>
+        <span class="sidebar-tag-name" data-tags="Docker"><span class="iconfont-archer">&#xe606;</span>Docker</span>
     
         <span class="sidebar-tag-name" data-tags="ARM64"><span class="iconfont-archer">&#xe606;</span>ARM64</span>
     
-        <span class="sidebar-tag-name" data-tags="Docker"><span class="iconfont-archer">&#xe606;</span>Docker</span>
-    
-        <span class="sidebar-tag-name" data-tags="协程"><span class="iconfont-archer">&#xe606;</span>协程</span>
+        <span class="sidebar-tag-name" data-tags="多线程"><span class="iconfont-archer">&#xe606;</span>多线程</span>
     
         <span class="sidebar-tag-name" data-tags="DSL"><span class="iconfont-archer">&#xe606;</span>DSL</span>
+    
+        <span class="sidebar-tag-name" data-tags="协程"><span class="iconfont-archer">&#xe606;</span>协程</span>
     
         <span class="sidebar-tag-name" data-tags="Fiber"><span class="iconfont-archer">&#xe606;</span>Fiber</span>
     
         <span class="sidebar-tag-name" data-tags="dp"><span class="iconfont-archer">&#xe606;</span>dp</span>
     
+        <span class="sidebar-tag-name" data-tags="RunLoop"><span class="iconfont-archer">&#xe606;</span>RunLoop</span>
+    
         <span class="sidebar-tag-name" data-tags="SwiftUI"><span class="iconfont-archer">&#xe606;</span>SwiftUI</span>
     
         <span class="sidebar-tag-name" data-tags="Swift-Syntax"><span class="iconfont-archer">&#xe606;</span>Swift-Syntax</span>
     
-        <span class="sidebar-tag-name" data-tags="RunLoop"><span class="iconfont-archer">&#xe606;</span>RunLoop</span>
-    
-        <span class="sidebar-tag-name" data-tags="Log"><span class="iconfont-archer">&#xe606;</span>Log</span>
-    
         <span class="sidebar-tag-name" data-tags="LagMonitor"><span class="iconfont-archer">&#xe606;</span>LagMonitor</span>
     
         <span class="sidebar-tag-name" data-tags="CrashMonitor"><span class="iconfont-archer">&#xe606;</span>CrashMonitor</span>
+    
+        <span class="sidebar-tag-name" data-tags="Log"><span class="iconfont-archer">&#xe606;</span>Log</span>
     
         <span class="sidebar-tag-name" data-tags="AFN"><span class="iconfont-archer">&#xe606;</span>AFN</span>
     
