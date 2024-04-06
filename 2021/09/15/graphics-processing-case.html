@@ -1,0 +1,2299 @@
+<!DOCTYPE html>
+<html lang="en">
+    <!-- title -->
+
+
+
+
+<!-- keywords -->
+
+
+
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" >
+    <meta name="author" content="Tenloy">
+    <meta name="renderer" content="webkit">
+    <meta name="copyright" content="Tenloy">
+    
+    <meta name="keywords" content="Tenloy,iOS,Swift">
+    
+    <meta name="description" content="学习 生活 记录 回忆">
+    <meta name="description" content="在项目中因为性能原因，最好不要叠加太多UIView，CALayer层级的显示；但是很多情况又必须使用到图片的合成或是像素、滤镜处理。这里针这些常用的图片处理使用不同图形处理框架进行相关编码实践。原文链接 — iOS图片处理实践、项目代码。 一、图片手动解码写在前面：图片编码解码理论见上上篇 场景：适用于需要快速显示图片的地方，例如tableCell，先把图片进行bitmap解码操作加入缓存。同时如">
+<meta property="og:type" content="article">
+<meta property="og:title" content="图形处理(三) - 图形处理实践案例">
+<meta property="og:url" content="https://tenloy.github.io/2021/09/15/graphics-processing-case.html">
+<meta property="og:site_name" content="Tenloy&#39;s Blog">
+<meta property="og:description" content="在项目中因为性能原因，最好不要叠加太多UIView，CALayer层级的显示；但是很多情况又必须使用到图片的合成或是像素、滤镜处理。这里针这些常用的图片处理使用不同图形处理框架进行相关编码实践。原文链接 — iOS图片处理实践、项目代码。 一、图片手动解码写在前面：图片编码解码理论见上上篇 场景：适用于需要快速显示图片的地方，例如tableCell，先把图片进行bitmap解码操作加入缓存。同时如">
+<meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2021-09-15T07:54:07.000Z">
+<meta property="article:modified_time" content="2024-04-06T04:00:22.203Z">
+<meta property="article:author" content="Tenloy">
+<meta property="article:tag" content="Tenloy, iOS, Tenloy Blog, 博客，Swift, 编译, 计算机">
+<meta name="twitter:card" content="summary">
+    <meta http-equiv="Cache-control" content="no-cache">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"/>
+    
+    <title>图形处理(三) - 图形处理实践案例 · Tenloy&#39;s Blog</title>
+    <style type="text/css">
+    @font-face {
+        font-family: 'Oswald-Regular';
+        src: url("/font/Oswald-Regular.ttf");
+    }
+
+    body {
+        margin: 0;
+    }
+
+    header,
+    footer,
+    .back-top,
+    .sidebar,
+    .container,
+    .site-intro-meta,
+    .toc-wrapper {
+        display: none;
+    }
+
+    .site-intro {
+        position: relative;
+        z-index: 3;
+        width: 100%;
+        /* height: 50vh; */
+        overflow: hidden;
+    }
+
+    .site-intro-placeholder {
+        position: absolute;
+        z-index: -2;
+        top: 0;
+        left: 0;
+        width: calc(100% + 300px);
+        height: 100%;
+        background: repeating-linear-gradient(-45deg, #444 0, #444 80px, #333 80px, #333 160px);
+        background-position: center center;
+        transform: translate3d(-226px, 0, 0);
+        animation: gradient-move 2.5s ease-out 0s infinite;
+    }
+
+    @keyframes gradient-move {
+        0% {
+            transform: translate3d(-226px, 0, 0);
+        }
+        100% {
+            transform: translate3d(0, 0, 0);
+        }
+    }
+
+</style>
+
+    <link rel="preload" href= "/css/style.css?v=20180824" as="style" onload="this.onload=null;this.rel='stylesheet'" />
+    <link rel="stylesheet" href= "/css/mobile.css?v=20180824" media="(max-width: 980px)">
+    
+    <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.2.5/jquery.fancybox.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'" />
+    
+    <!-- /*! loadCSS. [c]2017 Filament Group, Inc. MIT License */
+/* This file is meant as a standalone workflow for
+- testing support for link[rel=preload]
+- enabling async CSS loading in browsers that do not support rel=preload
+- applying rel preload css once loaded, whether supported or not.
+*/ -->
+<script>
+(function( w ){
+	"use strict";
+	// rel=preload support test
+	if( !w.loadCSS ){
+		w.loadCSS = function(){};
+	}
+	// define on the loadCSS obj
+	var rp = loadCSS.relpreload = {};
+	// rel=preload feature support test
+	// runs once and returns a function for compat purposes
+	rp.support = (function(){
+		var ret;
+		try {
+			ret = w.document.createElement( "link" ).relList.supports( "preload" );
+		} catch (e) {
+			ret = false;
+		}
+		return function(){
+			return ret;
+		};
+	})();
+
+	// if preload isn't supported, get an asynchronous load by using a non-matching media attribute
+	// then change that media back to its intended value on load
+	rp.bindMediaToggle = function( link ){
+		// remember existing media attr for ultimate state, or default to 'all'
+		var finalMedia = link.media || "all";
+
+		function enableStylesheet(){
+			link.media = finalMedia;
+		}
+
+		// bind load handlers to enable media
+		if( link.addEventListener ){
+			link.addEventListener( "load", enableStylesheet );
+		} else if( link.attachEvent ){
+			link.attachEvent( "onload", enableStylesheet );
+		}
+
+		// Set rel and non-applicable media type to start an async request
+		// note: timeout allows this to happen async to let rendering continue in IE
+		setTimeout(function(){
+			link.rel = "stylesheet";
+			link.media = "only x";
+		});
+		// also enable media after 3 seconds,
+		// which will catch very old browsers (android 2.x, old firefox) that don't support onload on link
+		setTimeout( enableStylesheet, 3000 );
+	};
+
+	// loop through link elements in DOM
+	rp.poly = function(){
+		// double check this to prevent external calls from running
+		if( rp.support() ){
+			return;
+		}
+		var links = w.document.getElementsByTagName( "link" );
+		for( var i = 0; i < links.length; i++ ){
+			var link = links[ i ];
+			// qualify links to those with rel=preload and as=style attrs
+			if( link.rel === "preload" && link.getAttribute( "as" ) === "style" && !link.getAttribute( "data-loadcss" ) ){
+				// prevent rerunning on link
+				link.setAttribute( "data-loadcss", true );
+				// bind listeners to toggle media back
+				rp.bindMediaToggle( link );
+			}
+		}
+	};
+
+	// if unsupported, run the polyfill
+	if( !rp.support() ){
+		// run once at least
+		rp.poly();
+
+		// rerun poly on an interval until onload
+		var run = w.setInterval( rp.poly, 500 );
+		if( w.addEventListener ){
+			w.addEventListener( "load", function(){
+				rp.poly();
+				w.clearInterval( run );
+			} );
+		} else if( w.attachEvent ){
+			w.attachEvent( "onload", function(){
+				rp.poly();
+				w.clearInterval( run );
+			} );
+		}
+	}
+
+
+	// commonjs
+	if( typeof exports !== "undefined" ){
+		exports.loadCSS = loadCSS;
+	}
+	else {
+		w.loadCSS = loadCSS;
+	}
+}( typeof global !== "undefined" ? global : this ) );
+</script>
+
+    <link rel="icon" href= "/assets/favicon.ico" />
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.min.js" as="script" />
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js" as="script" />
+    <link rel="preload" href="/scripts/main.js" as="script" />
+    <link rel="preload" as="font" href="/font/Oswald-Regular.ttf" crossorigin>
+    <link rel="preload" as="font" href="https://at.alicdn.com/t/font_327081_1dta1rlogw17zaor.woff" crossorigin>
+    
+        <!-- algolia -->
+        <script>
+            
+            var hits = JSON.parse('{"per_page":10}')
+            var labels = JSON.parse('{"input_placeholder":"Search for Posts","hits_empty":"没有找到任何搜索结果: ${query}","hits_stats":"找到约${hits}条结果（用时${time}ms）"}')
+
+            var algolia = {
+                applicationID: 'V0HYXBS9FB',
+                apiKey: '6550d5de786935564142097c3e78c380',
+                indexName: 'law_blog_index',
+                hits: hits,
+                labels: labels
+            }
+        </script>
+    
+    <!-- fancybox -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.2.5/jquery.fancybox.min.js" defer></script>
+    <!-- 百度统计  -->
+    
+    <!-- 谷歌统计  -->
+    
+<meta name="generator" content="Hexo 5.4.0"><link rel="alternate" href="/atom.xml" title="Tenloy's Blog" type="application/atom+xml">
+</head>
+
+    
+        <body class="post-body">
+    
+    
+<header class="header">
+
+    <div class="read-progress"></div>
+    <div class="header-sidebar-menu">&#xe775;</div>
+    <!-- post页的toggle banner  -->
+    
+    <div class="banner">
+            <div class="blog-title">
+                <a href="/" >Tenloy&#39;s Blog</a>
+            </div>
+            <div class="post-title">
+                <a href="#" class="post-name">图形处理(三) - 图形处理实践案例</a>
+            </div>
+    </div>
+    
+    <!-- 将home-link的操作改为应用到header-top-right上 -->
+    <div class="header-top-right">
+        <!-- search  -->
+        
+            <div class="site-search popup-trigger tl-search">
+                <span class="iconfont-jian tl-search-icon">&#xe7fc;搜索</span>
+            </div>
+            
+        <a class="home-link" href=/>Tenloy's Blog</a>
+    </div>
+</header>
+    <div class="wrapper">
+        <div class="site-intro" style="
+
+
+
+
+
+
+
+height:40vh;
+">
+    
+    <!-- 主页  -->
+    
+    
+    <!-- 404页  -->
+            
+    <div class="site-intro-placeholder"></div>
+    <div class="site-intro-img" style="background-image: url(/intro/post-bg.jpg)"></div>
+    <div class="site-intro-meta">
+        <!-- 标题  -->
+        <h1 class="intro-title">
+            <!-- 主页  -->
+            
+            图形处理(三) - 图形处理实践案例
+            <!-- 404 -->
+            
+        </h1>
+        <!-- 副标题 -->
+        <p class="intro-subtitle">
+            <!-- 主页副标题  -->
+            
+            
+            <!-- 404 -->
+            
+        </p>
+        <!-- 文章页meta -->
+        
+            <div class="post-intros">
+                <!-- 文章页标签  -->
+                
+                
+                    <div class="post-intro-read">
+                        <span>Word count: <span class="post-count word-count">4.1k</span>Reading time: <span class="post-count reading-time">19 min</span></span>
+                    </div>
+                
+                <div class="post-intro-meta">
+                    <span class="post-intro-calander iconfont-archer">&#xe676;</span>
+                    <span class="post-intro-time">2021/09/15</span>
+                    
+                    <span id="busuanzi_container_page_pv" class="busuanzi-pv">
+                        <span class="iconfont-archer">&#xe602;</span>
+                        <span id="busuanzi_value_page_pv"></span>
+                    </span>
+                    
+                    <span class="shareWrapper">
+                        <span class="iconfont-archer shareIcon">&#xe71d;</span>
+                        <span class="shareText">Share</span>
+                        <ul class="shareList">
+                            <li class="iconfont-archer share-qr" data-type="qr">&#xe75b;
+                                <div class="share-qrcode"></div>
+                            </li>
+                            <li class="iconfont-archer" data-type="weibo">&#xe619;</li>
+                            <li class="iconfont-archer" data-type="qzone">&#xe62e;</li>
+                            <li class="iconfont-archer" data-type="twitter">&#xe634;</li>
+                            <li class="iconfont-archer" data-type="facebook">&#xe67a;</li>
+                        </ul>
+                    </span>
+                </div>
+            </div>
+        
+    </div>
+</div>
+        <script>
+ 
+  // get user agent
+  var browser = {
+    versions: function () {
+      var u = window.navigator.userAgent;
+      return {
+        userAgent: u,
+        trident: u.indexOf('Trident') > -1, //IE内核
+        presto: u.indexOf('Presto') > -1, //opera内核
+        webKit: u.indexOf('AppleWebKit') > -1, //苹果、谷歌内核
+        gecko: u.indexOf('Gecko') > -1 && u.indexOf('KHTML') == -1, //火狐内核
+        mobile: !!u.match(/AppleWebKit.*Mobile.*/), //是否为移动终端
+        ios: !!u.match(/\(i[^;]+;( U;)? CPU.+Mac OS X/), //ios终端
+        android: u.indexOf('Android') > -1 || u.indexOf('Linux') > -1, //android终端或者uc浏览器
+        iPhone: u.indexOf('iPhone') > -1 || u.indexOf('Mac') > -1, //是否为iPhone或者安卓QQ浏览器
+        iPad: u.indexOf('iPad') > -1, //是否为iPad
+        webApp: u.indexOf('Safari') == -1, //是否为web应用程序，没有头部与底部
+        weixin: u.indexOf('MicroMessenger') == -1, //是否为微信浏览器
+        uc: u.indexOf('UCBrowser') > -1 //是否为android下的UC浏览器
+      };
+    }()
+  }
+  console.log("userAgent:" + browser.versions.userAgent);
+
+  // callback
+  function fontLoaded() {
+    console.log('font loaded');
+    if (document.getElementsByClassName('site-intro-meta')) {
+      document.getElementsByClassName('intro-title')[0].classList.add('intro-fade-in');
+      document.getElementsByClassName('intro-subtitle')[0].classList.add('intro-fade-in');
+      var postIntros = document.getElementsByClassName('post-intros')[0]
+      if (postIntros) {
+        postIntros.classList.add('post-fade-in');
+      }
+    }
+  }
+
+  // UC不支持跨域，所以直接显示
+  function asyncCb(){
+    if (browser.versions.uc) {
+      console.log("UCBrowser");
+      fontLoaded();
+    } else {
+      WebFont.load({
+        custom: {
+          families: ['Oswald-Regular']
+        },
+        loading: function () {  //所有字体开始加载
+          // console.log('loading');
+        },
+        active: function () {  //所有字体已渲染
+          fontLoaded();
+        },
+        inactive: function () { //字体预加载失败，无效字体或浏览器不支持加载
+          console.log('inactive: timeout');
+          fontLoaded();
+        },
+        timeout: 5000 // Set the timeout to two seconds
+      });
+    }
+  }
+
+  function asyncErr(){
+    console.warn('script load from CDN failed, will load local script')
+  }
+
+  // load webfont-loader async, and add callback function
+  function async(u, cb, err) {
+    var d = document, t = 'script',
+      o = d.createElement(t),
+      s = d.getElementsByTagName(t)[0];
+    o.src = u;
+    if (cb) { o.addEventListener('load', function (e) { cb(null, e); }, false); }
+    if (err) { o.addEventListener('error', function (e) { err(null, e); }, false); }
+    s.parentNode.insertBefore(o, s);
+  }
+
+  var asyncLoadWithFallBack = function(arr, success, reject) {
+      var currReject = function(){
+        reject()
+        arr.shift()
+        if(arr.length)
+          async(arr[0], success, currReject)
+        }
+
+      async(arr[0], success, currReject)
+  }
+
+  asyncLoadWithFallBack([
+    "https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.min.js", 
+    "https://cdn.bootcss.com/webfont/1.6.28/webfontloader.js",
+    "/lib/webfontloader.min.js"
+  ], asyncCb, asyncErr)
+</script>        
+        <img class="loading" src="/assets/loading.svg" style="display: block; margin: 6rem auto 0 auto; width: 6rem; height: 6rem;" />
+        <div class="container container-unloaded">
+            <main class="main post-page">
+    <article class="article-entry">
+        <p>在项目中因为性能原因，最好不要叠加太多UIView，CALayer层级的显示；但是很多情况又必须使用到图片的合成或是像素、滤镜处理。这里针这些常用的图片处理使用不同图形处理框架进行相关编码实践。<a target="_blank" rel="noopener" href="https://juejin.cn/post/6846687599591948301">原文链接 — iOS图片处理实践</a>、<a href="https://link.juejin.cn/?target=https://github.com/EricStone1900/ImageOperate-OC">项目代码</a>。</p>
+<h2 id="一、图片手动解码"><a href="#一、图片手动解码" class="headerlink" title="一、图片手动解码"></a>一、图片手动解码</h2><p>写在前面：图片编码解码理论见上上篇</p>
+<p>场景：适用于需要快速显示图片的地方，例如tableCell，先把图片进行bitmap解码操作加入缓存。同时如果是超大图可以和下面第三节的图片压缩方法搭配使用。</p>
+<p>解决方案：通过CGBitmapContextCreate 重绘图片，这种压缩的图片等于手动进行了一次解码，可以加快图片的展示</p>
+<figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//图片处理-强制解压缩操作-把元数据绘制到当前的上下文-压缩图片</span></span><br><span class="line">- (<span class="built_in">UIImage</span> *)compressWithBitmap:(<span class="built_in">CGFloat</span>)scale &#123;</span><br><span class="line">   <span class="comment">//获取当前图片数据源</span></span><br><span class="line">   <span class="built_in">CGImageRef</span> imageRef = <span class="keyword">self</span>.CGImage;</span><br><span class="line">   <span class="comment">//设置大小改变压缩图片</span></span><br><span class="line">   <span class="built_in">NSUInteger</span> width = <span class="built_in">CGImageGetWidth</span>(imageRef)*scale;</span><br><span class="line">   <span class="built_in">NSUInteger</span> height = <span class="built_in">CGImageGetHeight</span>(imageRef)*scale;</span><br><span class="line">   <span class="comment">//创建颜色空间</span></span><br><span class="line">   <span class="built_in">CGColorSpaceRef</span> colorSpace = <span class="built_in">CGImageGetColorSpace</span>(imageRef);</span><br><span class="line">   <span class="comment">/*</span></span><br><span class="line"><span class="comment">    创建绘制当前图片的上下文</span></span><br><span class="line"><span class="comment">    CGBitmapContextCreate(void * __nullable data,</span></span><br><span class="line"><span class="comment">     size_t width, size_t height, size_t bitsPerComponent, size_t bytesPerRow,</span></span><br><span class="line"><span class="comment">     CGColorSpaceRef cg_nullable space, uint32_t bitmapInfo)</span></span><br><span class="line"><span class="comment">     data：所需要的内存空间 传nil会自动分配</span></span><br><span class="line"><span class="comment">     width/height：当前画布的大小</span></span><br><span class="line"><span class="comment">     bitsPerComponent：每个颜色分量的大小 RGBA 每一个分量占1个字节</span></span><br><span class="line"><span class="comment">     bytesPerRow：每一行使用的字节数 4*width</span></span><br><span class="line"><span class="comment">     bitmapInfo：RGBA绘制的顺序</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">   <span class="built_in">CGContextRef</span> contextRef =</span><br><span class="line">   <span class="built_in">CGBitmapContextCreate</span>(<span class="literal">nil</span>,</span><br><span class="line">                         width,</span><br><span class="line">                         height,</span><br><span class="line">                         <span class="number">8</span>,</span><br><span class="line">                         <span class="number">4</span>*width,</span><br><span class="line">                         colorSpace,</span><br><span class="line">                         kCGImageAlphaNoneSkipLast);</span><br><span class="line">   <span class="comment">//根据数据源在上下文（画板）绘制图片</span></span><br><span class="line">   <span class="built_in">CGContextDrawImage</span>(contextRef, <span class="built_in">CGRectMake</span>(<span class="number">0</span>, <span class="number">0</span>, width, height), imageRef);</span><br><span class="line">   </span><br><span class="line">   imageRef = <span class="built_in">CGBitmapContextCreateImage</span>(contextRef);</span><br><span class="line">   <span class="built_in">CGContextRelease</span>(contextRef);</span><br><span class="line">   <span class="keyword">return</span> [<span class="built_in">UIImage</span> imageWithCGImage:imageRef scale:<span class="keyword">self</span>.scale orientation:<span class="built_in">UIImageOrientationUp</span>];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="二、大图在本地的高效显示"><a href="#二、大图在本地的高效显示" class="headerlink" title="二、大图在本地的高效显示"></a>二、大图在本地的高效显示</h2><p>项目场景：1、下载大图后需要显示在屏幕上；2、本地读取大图显示在屏幕上。特别是对性能和图片要求较高的时候。</p>
+<p>最佳解决方案：WWDC2018 苹果给的方案，见上上篇最后一节。</p>
+<h2 id="三、图片压缩"><a href="#三、图片压缩" class="headerlink" title="三、图片压缩"></a>三、图片压缩</h2><p>写在前面：首先介绍两种最简单最常见的压缩方式，下面复杂的压缩方式也是在此之上的扩展，可以根据实际情况进行调整；</p>
+<p>关于质量的压缩，苹果提供了一个方法：</p>
+<figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">UIImageJPEGRepresentation</span>(image, compression);</span><br></pre></td></tr></table></figure>
+
+<p>关于这个方法，理论上值越小表示图片质量越低，图片文件自然越小。但是并不是 compression 取 0，就是0b大小，取 1 就是原图。而且如果你是一张很大的图，即使compression = 0.0001等或更小，图片压缩到一定大小后，都无法再被压缩下去。</p>
+<h3 id="3-1-按照指定压缩比例压缩图片"><a href="#3-1-按照指定压缩比例压缩图片" class="headerlink" title="3.1 按照指定压缩比例压缩图片"></a>3.1 按照指定压缩比例压缩图片</h3><figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//按照质量压缩</span></span><br><span class="line"><span class="comment">//主要弊端：如果有大图按这个方法，尺寸有可能依然很大</span></span><br><span class="line">- (<span class="built_in">UIImage</span> *)compressWithQuality:(<span class="built_in">CGFloat</span>)rate &#123;</span><br><span class="line">   <span class="built_in">NSData</span> *data = <span class="built_in">UIImageJPEGRepresentation</span>(<span class="keyword">self</span>, rate);</span><br><span class="line">   <span class="built_in">UIImage</span> *resultImage = [<span class="built_in">UIImage</span> imageWithData:data];</span><br><span class="line">   <span class="keyword">return</span> resultImage;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="3-2-按照指定尺寸压缩图片"><a href="#3-2-按照指定尺寸压缩图片" class="headerlink" title="3.2 按照指定尺寸压缩图片"></a>3.2 按照指定尺寸压缩图片</h3><figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 按照尺寸压缩</span></span><br><span class="line"><span class="comment">// 主要弊端：图片可能会变形，质量也无法保证</span></span><br><span class="line">- (<span class="built_in">UIImage</span> *)compressWithSize:(<span class="built_in">CGSize</span>)size &#123;</span><br><span class="line">   <span class="built_in">UIGraphicsBeginImageContext</span>(size);</span><br><span class="line">   [<span class="keyword">self</span> drawInRect:<span class="built_in">CGRectMake</span>(<span class="number">0</span>, <span class="number">0</span>, size.width, size.height)];</span><br><span class="line">   <span class="built_in">UIImage</span> *resultImage = <span class="built_in">UIGraphicsGetImageFromCurrentImageContext</span>();</span><br><span class="line">   <span class="built_in">UIGraphicsEndImageContext</span>();</span><br><span class="line">   <span class="keyword">return</span> resultImage;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="3-3-具体的应用场景分析"><a href="#3-3-具体的应用场景分析" class="headerlink" title="3.3 具体的应用场景分析"></a>3.3 具体的应用场景分析</h3><h4 id="1-上传或存储有大小要求的图片"><a href="#1-上传或存储有大小要求的图片" class="headerlink" title="1. 上传或存储有大小要求的图片"></a>1. 上传或存储有大小要求的图片</h4><p>循环逐渐减小图片尺寸，直到图片稍小于指定大小，这样做的好处是可以在我们限定图片大小后，图片尺寸也是此时最大的。问题是循环次数多，效率低，耗时长。可以用二分法来提高效率：</p>
+<figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 循环逐渐减小图片尺寸，直到图片稍小于指定大小</span></span><br><span class="line"><span class="comment">// 同样的问题是循环次数多，效率低，耗时长。可以用二分法来提高效率，具体代码省略。这里介绍另外一种方法，比二分法更好，压缩次数少，而且可以使图片压缩后刚好小于指定大小(不只是 &lt; maxLength， &gt; maxLength * 0.9)。</span></span><br><span class="line">- (<span class="built_in">UIImage</span> *)compressWithCycleSize:(<span class="built_in">NSInteger</span>)maxLength &#123;</span><br><span class="line">   <span class="built_in">UIImage</span> *resultImage = <span class="keyword">self</span>;</span><br><span class="line">   <span class="built_in">NSData</span> *data = <span class="built_in">UIImageJPEGRepresentation</span>(resultImage, <span class="number">1</span>);</span><br><span class="line">   <span class="built_in">NSUInteger</span> lastDataLength = <span class="number">0</span>;</span><br><span class="line">   <span class="keyword">while</span> (data.length &gt; maxLength &amp;&amp; data.length != lastDataLength) &#123;</span><br><span class="line">       lastDataLength = data.length;</span><br><span class="line">       <span class="built_in">CGFloat</span> ratio = (<span class="built_in">CGFloat</span>)maxLength / data.length;</span><br><span class="line">       <span class="built_in">CGSize</span> size = <span class="built_in">CGSizeMake</span>((<span class="built_in">NSUInteger</span>)(resultImage.size.width * sqrtf(ratio)),</span><br><span class="line">                                (<span class="built_in">NSUInteger</span>)(resultImage.size.height * sqrtf(ratio))); <span class="comment">// Use NSUInteger to prevent white blank</span></span><br><span class="line">       <span class="built_in">UIGraphicsBeginImageContext</span>(size);</span><br><span class="line">       <span class="comment">// Use image to draw (drawInRect:), image is larger but more compression time</span></span><br><span class="line">       <span class="comment">// Use result image to draw, image is smaller but less compression time</span></span><br><span class="line">       [resultImage drawInRect:<span class="built_in">CGRectMake</span>(<span class="number">0</span>, <span class="number">0</span>, size.width, size.height)];</span><br><span class="line">       resultImage = <span class="built_in">UIGraphicsGetImageFromCurrentImageContext</span>();</span><br><span class="line">       <span class="built_in">UIGraphicsEndImageContext</span>();</span><br><span class="line">       data = <span class="built_in">UIImageJPEGRepresentation</span>(resultImage, <span class="number">1</span>);</span><br><span class="line">   &#125;</span><br><span class="line">   <span class="keyword">return</span> resultImage;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="2-上传或存储有质量要求的图片"><a href="#2-上传或存储有质量要求的图片" class="headerlink" title="2. 上传或存储有质量要求的图片"></a>2. 上传或存储有质量要求的图片</h4><p>循环压缩图片质量直到图片稍小于指定大小，默认循环6次，循环太多次后面也再也压不下去，当然这个次数可以自行配置。好处就是最大限度的保证了图片质量。同样用二分法来提高效率。</p>
+<figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 循环压缩图片质量直到图片稍小于指定大小。</span></span><br><span class="line"><span class="comment">// ⚠️：注意：当图片质量低于一定程度时，继续压缩没有效果。默认压缩最多6次,通过二分法来优化循环次数多</span></span><br><span class="line"><span class="comment">// 压缩图片质量的优点在于，尽可能保留图片清晰度，图片不会明显模糊；缺点在于，不能保证图片压缩后小于指定大小。</span></span><br><span class="line">- (<span class="built_in">UIImage</span> *)compressWithCycleQulity:(<span class="built_in">NSInteger</span>)maxLength &#123;</span><br><span class="line">    <span class="built_in">CGFloat</span> compression = <span class="number">1</span>;</span><br><span class="line">    <span class="built_in">NSData</span> *data = <span class="built_in">UIImageJPEGRepresentation</span>(<span class="keyword">self</span>, compression);</span><br><span class="line">    <span class="keyword">if</span> (data.length &lt; maxLength) <span class="keyword">return</span> <span class="keyword">self</span>;</span><br><span class="line">    <span class="built_in">CGFloat</span> max = <span class="number">1</span>;</span><br><span class="line">    <span class="built_in">CGFloat</span> min = <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; <span class="number">6</span>; ++i) &#123;</span><br><span class="line">        compression = (max + min) / <span class="number">2</span>;</span><br><span class="line">        data = <span class="built_in">UIImageJPEGRepresentation</span>(<span class="keyword">self</span>, compression);</span><br><span class="line">        <span class="keyword">if</span> (data.length &lt; maxLength * <span class="number">0.9</span>) &#123;</span><br><span class="line">            min = compression;</span><br><span class="line">        &#125; <span class="keyword">else</span> <span class="keyword">if</span> (data.length &gt; maxLength) &#123;</span><br><span class="line">            max = compression;</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line">       &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="built_in">UIImage</span> *resultImage = [<span class="built_in">UIImage</span> imageWithData:data];</span><br><span class="line">    <span class="keyword">return</span> resultImage;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="3-在大小有上限的情况下尽量保证质量"><a href="#3-在大小有上限的情况下尽量保证质量" class="headerlink" title="3. 在大小有上限的情况下尽量保证质量"></a>3. 在大小有上限的情况下尽量保证质量</h4><p>两种图片压缩方法结合 尽量兼顾质量和大小。以确保大小合适为标准。好处就是在大小限定的情况下最大保证了质量和尺寸。</p>
+<figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br></pre></td><td class="code"><pre><span class="line">- (<span class="built_in">UIImage</span> *)compressWithQulitySize:(<span class="built_in">NSInteger</span>)maxLength &#123;</span><br><span class="line">    <span class="comment">// Compress by quality</span></span><br><span class="line">    <span class="built_in">CGFloat</span> compression = <span class="number">1</span>;</span><br><span class="line">    <span class="built_in">NSData</span> *data = <span class="built_in">UIImageJPEGRepresentation</span>(<span class="keyword">self</span>, compression);</span><br><span class="line">    <span class="keyword">if</span> (data.length &lt; maxLength) <span class="keyword">return</span> <span class="keyword">self</span>;</span><br><span class="line">    </span><br><span class="line">    <span class="built_in">CGFloat</span> max = <span class="number">1</span>;</span><br><span class="line">    <span class="built_in">CGFloat</span> min = <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; <span class="number">6</span>; ++i) &#123;</span><br><span class="line">        compression = (max + min) / <span class="number">2</span>;</span><br><span class="line">        data = <span class="built_in">UIImageJPEGRepresentation</span>(<span class="keyword">self</span>, compression);</span><br><span class="line">        <span class="keyword">if</span> (data.length &lt; maxLength * <span class="number">0.9</span>) &#123;</span><br><span class="line">            min = compression;</span><br><span class="line">        &#125; <span class="keyword">else</span> <span class="keyword">if</span> (data.length &gt; maxLength) &#123;</span><br><span class="line">            max = compression;</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="built_in">UIImage</span> *resultImage = [<span class="built_in">UIImage</span> imageWithData:data];</span><br><span class="line">    <span class="keyword">if</span> (data.length &lt; maxLength) <span class="keyword">return</span> resultImage;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// Compress by size</span></span><br><span class="line">    <span class="built_in">NSUInteger</span> lastDataLength = <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">while</span> (data.length &gt; maxLength &amp;&amp; data.length != lastDataLength) &#123;</span><br><span class="line">        lastDataLength = data.length;</span><br><span class="line">        <span class="built_in">CGFloat</span> ratio = (<span class="built_in">CGFloat</span>)maxLength / data.length;</span><br><span class="line">        <span class="built_in">CGSize</span> size = <span class="built_in">CGSizeMake</span>((<span class="built_in">NSUInteger</span>)(resultImage.size.width * sqrtf(ratio)),</span><br><span class="line">                                 (<span class="built_in">NSUInteger</span>)(resultImage.size.height * sqrtf(ratio))); <span class="comment">// Use NSUInteger to prevent white blank</span></span><br><span class="line">        <span class="built_in">UIGraphicsBeginImageContext</span>(size);</span><br><span class="line">        [resultImage drawInRect:<span class="built_in">CGRectMake</span>(<span class="number">0</span>, <span class="number">0</span>, size.width, size.height)];</span><br><span class="line">        resultImage = <span class="built_in">UIGraphicsGetImageFromCurrentImageContext</span>();</span><br><span class="line">        <span class="built_in">UIGraphicsEndImageContext</span>();</span><br><span class="line">        data = <span class="built_in">UIImageJPEGRepresentation</span>(resultImage, compression);</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">return</span> resultImage;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="四、图片像素修改操作"><a href="#四、图片像素修改操作" class="headerlink" title="四、图片像素修改操作"></a>四、图片像素修改操作</h2><p>写在前面：这部分的理论都是通过图片重绘来修改修该图片位图中的像素值，从而达到图片的修改。</p>
+<h3 id="4-1-图片灰度图-黑白图"><a href="#4-1-图片灰度图-黑白图" class="headerlink" title="4.1 图片灰度图(黑白图)"></a>4.1 图片灰度图(黑白图)</h3><p>灰度图的三种颜色转换算法：</p>
+<ol>
+<li><p>浮点算法：R = G = B = 0.3<em>R + 0.59</em>G + 0.11*B</p>
+</li>
+<li><p>平均值法：R = G = B = (R+G+B)/3</p>
+</li>
+<li><p>任取一个分量色：R = G = B = R或G或B</p>
+</li>
+</ol>
+<figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br></pre></td><td class="code"><pre><span class="line">- (<span class="built_in">UIImage</span> *)imageToGray:(<span class="built_in">NSInteger</span>)type &#123;</span><br><span class="line">   <span class="built_in">CGImageRef</span> imageRef = <span class="keyword">self</span>.CGImage;</span><br><span class="line">    <span class="comment">//1、获取图片宽高</span></span><br><span class="line">    <span class="built_in">NSUInteger</span> width = <span class="built_in">CGImageGetWidth</span>(imageRef);</span><br><span class="line">    <span class="built_in">NSUInteger</span> height = <span class="built_in">CGImageGetHeight</span>(imageRef);</span><br><span class="line">    <span class="comment">//2、创建颜色空间</span></span><br><span class="line">    <span class="built_in">CGColorSpaceRef</span> colorSpaceRef = <span class="built_in">CGColorSpaceCreateDeviceRGB</span>();</span><br><span class="line">    <span class="comment">//3、根据像素点个数创建一个所需要的空间</span></span><br><span class="line">    <span class="built_in">UInt32</span> *imagePiexl = (<span class="built_in">UInt32</span> *)calloc(width*height, <span class="keyword">sizeof</span>(<span class="built_in">UInt32</span>));</span><br><span class="line">    <span class="built_in">CGContextRef</span> contextRef = <span class="built_in">CGBitmapContextCreate</span>(imagePiexl, width, height, <span class="number">8</span>, <span class="number">4</span>*width, colorSpaceRef, kCGImageAlphaNoneSkipLast);</span><br><span class="line">   </span><br><span class="line">    <span class="comment">//4、根据图片数据源绘制上下文</span></span><br><span class="line">    <span class="built_in">CGContextDrawImage</span>(contextRef, <span class="built_in">CGRectMake</span>(<span class="number">0</span>, <span class="number">0</span>, width, height), <span class="keyword">self</span>.CGImage);</span><br><span class="line">    <span class="comment">//5、将彩色图片像素点重新设置颜色</span></span><br><span class="line">    <span class="comment">//取平均值 R=G=B=(R+G+B)/3</span></span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> y=<span class="number">0</span>; y&lt;height; y++) &#123;</span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> x=<span class="number">0</span>; x&lt;width; x++) &#123;</span><br><span class="line">            <span class="comment">//计算平均值重新存储像素点-直接操作像素点</span></span><br><span class="line">            uint8_t *rgbPiexl = (uint8_t *)&amp;imagePiexl[y*width+x];</span><br><span class="line">            <span class="comment">//rgbPiexl[0],rgbPiexl[1],rgbPiexl[2];</span></span><br><span class="line">            <span class="comment">//(rgbPiexl[0]+rgbPiexl[1]+rgbPiexl[2])/3;</span></span><br><span class="line">            uint32_t gray = rgbPiexl[<span class="number">0</span>]*<span class="number">0.3</span>+rgbPiexl[<span class="number">1</span>]*<span class="number">0.59</span>+rgbPiexl[<span class="number">2</span>]*<span class="number">0.11</span>;</span><br><span class="line">            <span class="keyword">if</span> (type == <span class="number">0</span>) &#123;</span><br><span class="line">                gray = rgbPiexl[<span class="number">1</span>];</span><br><span class="line">            &#125;<span class="keyword">else</span> <span class="keyword">if</span>(type == <span class="number">1</span>) &#123;</span><br><span class="line">                gray = (rgbPiexl[<span class="number">0</span>]+rgbPiexl[<span class="number">1</span>]+rgbPiexl[<span class="number">2</span>])/<span class="number">3</span>;</span><br><span class="line">            &#125;<span class="keyword">else</span> <span class="keyword">if</span> (type == <span class="number">2</span>) &#123;</span><br><span class="line">                gray = rgbPiexl[<span class="number">0</span>]*<span class="number">0.3</span>+rgbPiexl[<span class="number">1</span>]*<span class="number">0.59</span>+rgbPiexl[<span class="number">2</span>]*<span class="number">0.11</span>;</span><br><span class="line">            &#125;</span><br><span class="line">            rgbPiexl[<span class="number">0</span>] = gray;</span><br><span class="line">            rgbPiexl[<span class="number">1</span>] = gray;</span><br><span class="line">            rgbPiexl[<span class="number">2</span>] = gray;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">//根据上下文绘制</span></span><br><span class="line">    <span class="built_in">CGImageRef</span> finalRef = <span class="built_in">CGBitmapContextCreateImage</span>(contextRef);</span><br><span class="line">    <span class="comment">//释放用过的内存</span></span><br><span class="line">    <span class="built_in">CGContextRelease</span>(contextRef);</span><br><span class="line">    <span class="built_in">CGColorSpaceRelease</span>(colorSpaceRef);</span><br><span class="line">    free(imagePiexl);</span><br><span class="line">    <span class="keyword">return</span> [<span class="built_in">UIImage</span> imageWithCGImage:finalRef scale:<span class="keyword">self</span>.scale orientation:<span class="built_in">UIImageOrientationUp</span>];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="4-2-修改图片的RGB值"><a href="#4-2-修改图片的RGB值" class="headerlink" title="4.2 修改图片的RGB值"></a>4.2 修改图片的RGB值</h3><p>通过修改图片的RGB值来控制图片的颜色显示。或者替换某种颜色。</p>
+<figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><span class="line">- (<span class="built_in">UIImage</span> *)imageToRGB:(<span class="built_in">CGFloat</span>)rk g:(<span class="built_in">CGFloat</span>)gk b:(<span class="built_in">CGFloat</span>)bk &#123;</span><br><span class="line">   <span class="built_in">CGImageRef</span> imageRef = <span class="keyword">self</span>.CGImage;</span><br><span class="line">   <span class="comment">//1、获取图片宽高</span></span><br><span class="line">   <span class="built_in">NSUInteger</span> width = <span class="built_in">CGImageGetWidth</span>(imageRef);</span><br><span class="line">   <span class="built_in">NSUInteger</span> height = <span class="built_in">CGImageGetHeight</span>(imageRef);</span><br><span class="line">   <span class="comment">//2、创建颜色空间</span></span><br><span class="line">   <span class="built_in">CGColorSpaceRef</span> colorSpaceRef = <span class="built_in">CGColorSpaceCreateDeviceRGB</span>();</span><br><span class="line">   <span class="comment">//3、根据像素点个数创建一个所需要的空间</span></span><br><span class="line">   <span class="built_in">UInt32</span> *imagePiexl = (<span class="built_in">UInt32</span> *)calloc(width*height, <span class="keyword">sizeof</span>(<span class="built_in">UInt32</span>));</span><br><span class="line">   <span class="built_in">CGContextRef</span> contextRef = <span class="built_in">CGBitmapContextCreate</span>(imagePiexl, width, height, <span class="number">8</span>, <span class="number">4</span>*width, colorSpaceRef, kCGImageAlphaNoneSkipLast);</span><br><span class="line">   <span class="comment">//4、根据图片数据源绘制上下文</span></span><br><span class="line">   <span class="built_in">CGContextDrawImage</span>(contextRef, <span class="built_in">CGRectMake</span>(<span class="number">0</span>, <span class="number">0</span>, width, height), imageRef);</span><br><span class="line">   <span class="comment">//5、将彩色图片像素点重新设置颜色</span></span><br><span class="line">   <span class="comment">//取平均值 R=G=B=(R+G+B)/3</span></span><br><span class="line">   <span class="keyword">for</span> (<span class="keyword">int</span> y=<span class="number">0</span>; y&lt;height; y++) &#123;</span><br><span class="line">       <span class="keyword">for</span> (<span class="keyword">int</span> x=<span class="number">0</span>; x&lt;width; x++) &#123;</span><br><span class="line">           <span class="comment">//操作像素点</span></span><br><span class="line">           uint8_t *rgbPiexl = (uint8_t *)&amp;imagePiexl[y*width+x];</span><br><span class="line">           <span class="comment">//该色值下不做处理</span></span><br><span class="line">           <span class="keyword">if</span> (rgbPiexl[<span class="number">0</span>]&gt;<span class="number">245</span>&amp;&amp;rgbPiexl[<span class="number">1</span>]&gt;<span class="number">245</span>&amp;&amp;rgbPiexl[<span class="number">2</span>]&gt;<span class="number">245</span>) &#123;</span><br><span class="line">               <span class="built_in">NSLog</span>(<span class="string">@&quot;该色值下不做处理&quot;</span>);</span><br><span class="line">           &#125;<span class="keyword">else</span>&#123;</span><br><span class="line">               rgbPiexl[<span class="number">0</span>] = rgbPiexl[<span class="number">0</span>]*rk;</span><br><span class="line">               rgbPiexl[<span class="number">1</span>] = rgbPiexl[<span class="number">1</span>]*gk;</span><br><span class="line">               rgbPiexl[<span class="number">2</span>] = rgbPiexl[<span class="number">2</span>]*bk;</span><br><span class="line">           &#125;</span><br><span class="line">       &#125;</span><br><span class="line">   &#125;</span><br><span class="line">   <span class="comment">//根据上下文绘制</span></span><br><span class="line">   <span class="built_in">CGImageRef</span> finalRef = <span class="built_in">CGBitmapContextCreateImage</span>(contextRef);</span><br><span class="line">   <span class="comment">//释放用过的内存</span></span><br><span class="line">   <span class="built_in">CGContextRelease</span>(contextRef);</span><br><span class="line">   <span class="built_in">CGColorSpaceRelease</span>(colorSpaceRef);</span><br><span class="line">   free(imagePiexl);</span><br><span class="line">   <span class="keyword">return</span> [<span class="built_in">UIImage</span> imageWithCGImage:finalRef scale:<span class="keyword">self</span>.scale orientation:<span class="built_in">UIImageOrientationUp</span>];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="4-3-图片打码"><a href="#4-3-图片打码" class="headerlink" title="4.3 图片打码"></a>4.3 图片打码</h3><p>马赛克就是让图片看上去模糊不清。将特定区域的像素点设置为同一种颜色，整体就会变得模糊，区域块越大越模糊，越小越接近于原始像素。</p>
+<figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//设置马赛克</span></span><br><span class="line"><span class="comment">//马赛克就是让图片看上去模糊不清。将特定区域的像素点设置为同一种颜色，整体就会变得模糊，区域块越大越模糊，越小越接近于原始像素。</span></span><br><span class="line"><span class="comment">//同样使用强制解压缩操作，操作像素点，马赛克部分实际操作</span></span><br><span class="line"><span class="comment">//1、设置区域大小；</span></span><br><span class="line"><span class="comment">//2、在该区域获取一个像素点（第一个）作为整个区域的取色；</span></span><br><span class="line"><span class="comment">//3、将取色设置到区域中；</span></span><br><span class="line"><span class="comment">//4、取下一个区域同上去色设置区域</span></span><br><span class="line">- (<span class="built_in">UIImage</span> *)imageToMosaic:(<span class="built_in">NSInteger</span>)size; &#123;</span><br><span class="line">    <span class="built_in">CGImageRef</span> imageRef = <span class="keyword">self</span>.CGImage;</span><br><span class="line">    <span class="comment">//1、获取图片宽高</span></span><br><span class="line">    <span class="built_in">NSUInteger</span> width = <span class="built_in">CGImageGetWidth</span>(imageRef);</span><br><span class="line">    <span class="built_in">NSUInteger</span> height = <span class="built_in">CGImageGetHeight</span>(imageRef);</span><br><span class="line">    <span class="comment">//2、创建颜色空间</span></span><br><span class="line">    <span class="built_in">CGColorSpaceRef</span> colorSpaceRef = <span class="built_in">CGColorSpaceCreateDeviceRGB</span>();</span><br><span class="line">    <span class="comment">//3、根据像素点个数创建一个所需要的空间</span></span><br><span class="line">    <span class="built_in">UInt32</span> *imagePiexl = (<span class="built_in">UInt32</span> *)calloc(width*height, <span class="keyword">sizeof</span>(<span class="built_in">UInt32</span>));</span><br><span class="line">    <span class="built_in">CGContextRef</span> contextRef = <span class="built_in">CGBitmapContextCreate</span>(imagePiexl, width, height, <span class="number">8</span>, <span class="number">4</span>*width, colorSpaceRef, kCGImageAlphaNoneSkipLast);</span><br><span class="line">    <span class="comment">//4、根据图片数据源绘制上下文</span></span><br><span class="line">    <span class="built_in">CGContextDrawImage</span>(contextRef, <span class="built_in">CGRectMake</span>(<span class="number">0</span>, <span class="number">0</span>, width, height), imageRef);</span><br><span class="line">    <span class="comment">//5、获取像素数组</span></span><br><span class="line">    <span class="built_in">UInt8</span> *bitmapPixels = <span class="built_in">CGBitmapContextGetData</span>(contextRef);</span><br><span class="line">    <span class="built_in">UInt8</span> *pixels[<span class="number">4</span>] = &#123;<span class="number">0</span>&#125;;</span><br><span class="line">    <span class="built_in">NSUInteger</span> currentPixels = <span class="number">0</span>;<span class="comment">//当前的像素点</span></span><br><span class="line">    <span class="built_in">NSUInteger</span> preCurrentPiexls = <span class="number">0</span>;<span class="comment">//</span></span><br><span class="line">    <span class="built_in">NSUInteger</span> mosaicSize = size;<span class="comment">//马赛克尺寸</span></span><br><span class="line">    <span class="keyword">if</span> (size == <span class="number">0</span>) <span class="keyword">return</span> <span class="keyword">self</span>;</span><br><span class="line">    <span class="keyword">for</span> (<span class="built_in">NSUInteger</span> i = <span class="number">0</span>;  i &lt; height - <span class="number">1</span>; i++) &#123;</span><br><span class="line">        <span class="keyword">for</span> (<span class="built_in">NSUInteger</span> j = <span class="number">0</span> ; j &lt; width - <span class="number">1</span>; j++) &#123;</span><br><span class="line">            currentPixels = i * width + j;</span><br><span class="line">            <span class="keyword">if</span> (i % mosaicSize == <span class="number">0</span>) &#123;</span><br><span class="line">                <span class="keyword">if</span> (j % mosaicSize == <span class="number">0</span>) &#123;</span><br><span class="line">                    memcpy(pixels, bitmapPixels + <span class="number">4</span> * currentPixels, <span class="number">4</span>);</span><br><span class="line">                &#125;<span class="keyword">else</span>&#123;</span><br><span class="line">                    memcpy(bitmapPixels + <span class="number">4</span> * currentPixels, pixels, <span class="number">4</span>);</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;<span class="keyword">else</span>&#123;</span><br><span class="line">                preCurrentPiexls = (i - <span class="number">1</span>) * width + j;</span><br><span class="line">                memcpy(bitmapPixels + <span class="number">4</span> * currentPixels, bitmapPixels + <span class="number">4</span> * preCurrentPiexls, <span class="number">4</span>);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">//根据上下文创建图片数据源</span></span><br><span class="line">    <span class="built_in">CGImageRef</span> finalRef = <span class="built_in">CGBitmapContextCreateImage</span>(contextRef);</span><br><span class="line">    <span class="comment">//释放用过的内存</span></span><br><span class="line">    <span class="built_in">CGContextRelease</span>(contextRef);</span><br><span class="line">    <span class="built_in">CGColorSpaceRelease</span>(colorSpaceRef);</span><br><span class="line">    free(imagePiexl);</span><br><span class="line">    <span class="keyword">return</span> [<span class="built_in">UIImage</span> imageWithCGImage:finalRef scale:<span class="keyword">self</span>.scale orientation:<span class="built_in">UIImageOrientationUp</span>];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="五、图形框架合成图片"><a href="#五、图形框架合成图片" class="headerlink" title="五、图形框架合成图片"></a>五、图形框架合成图片</h2><p>使用不同图形框架合成图片，添加滤镜水印等。</p>
+<p>写在前面：理论和上面像素修改一样，通过操作像素达到修改图片的目的，但是这里使用了系统提供的不同框架和第三方GPUImage。不同框架效率也有所不一样。这里每段代码都加入了对应像素（黑白处理），只是为了学习，后面可以根据需求在对应代码块添加或替换对应对像素的操作，亦可后面加入参数进行封装。</p>
+<h3 id="5-1-直接绘图合成"><a href="#5-1-直接绘图合成" class="headerlink" title="5.1 直接绘图合成"></a>5.1 直接绘图合成</h3><p>此方案原理上就是通过绘图，将多张图片的像素按照自己的设计绘制在一张图片上。</p>
+<figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br></pre></td><td class="code"><pre><span class="line">- (<span class="built_in">UIImage</span> *)processUsingPixels:(<span class="built_in">UIImage</span> *)backImage frontImage:(<span class="built_in">UIImage</span> *)frontImage; &#123;</span><br><span class="line">   <span class="comment">// 1. Get the raw pixels of the image</span></span><br><span class="line">   <span class="built_in">UInt32</span> * backPixels;</span><br><span class="line"></span><br><span class="line">   <span class="built_in">CGImageRef</span> backCGImage = [backImage <span class="built_in">CGImage</span>];</span><br><span class="line">   <span class="built_in">NSUInteger</span> backWidth = <span class="built_in">CGImageGetWidth</span>(backCGImage);</span><br><span class="line">   <span class="built_in">NSUInteger</span> backHeight = <span class="built_in">CGImageGetHeight</span>(backCGImage);</span><br><span class="line"></span><br><span class="line">   <span class="built_in">CGColorSpaceRef</span> colorSpace = <span class="built_in">CGColorSpaceCreateDeviceRGB</span>();</span><br><span class="line"></span><br><span class="line">   <span class="built_in">NSUInteger</span> bytesPerPixel = <span class="number">4</span>;</span><br><span class="line">   <span class="built_in">NSUInteger</span> bitsPerComponent = <span class="number">8</span>;</span><br><span class="line"></span><br><span class="line">   <span class="built_in">NSUInteger</span> backBytesPerRow = bytesPerPixel * backWidth;</span><br><span class="line"></span><br><span class="line">   backPixels = (<span class="built_in">UInt32</span> *)calloc(backHeight * backWidth, <span class="keyword">sizeof</span>(<span class="built_in">UInt32</span>));</span><br><span class="line"></span><br><span class="line">   <span class="built_in">CGContextRef</span> context = <span class="built_in">CGBitmapContextCreate</span>(backPixels, backWidth, backHeight,</span><br><span class="line">                                                bitsPerComponent, backBytesPerRow, colorSpace,</span><br><span class="line">                                                kCGImageAlphaPremultipliedLast | kCGBitmapByteOrder32Big);</span><br><span class="line"></span><br><span class="line">   <span class="built_in">CGContextDrawImage</span>(context, <span class="built_in">CGRectMake</span>(<span class="number">0</span>, <span class="number">0</span>, backWidth, backHeight), backCGImage);</span><br><span class="line"></span><br><span class="line">   <span class="comment">// 2. Blend the pattern onto the image</span></span><br><span class="line">   <span class="built_in">CGImageRef</span> frontCGImage = [frontImage <span class="built_in">CGImage</span>];</span><br><span class="line"></span><br><span class="line">   <span class="comment">// 2.1 Calculate the size &amp; position of the pattern</span></span><br><span class="line">   <span class="built_in">CGFloat</span> frontImageAspectRatio = frontImage.size.width / frontImage.size.height;</span><br><span class="line">   <span class="built_in">NSInteger</span> targetFrontWidth = backWidth * <span class="number">0.25</span>;</span><br><span class="line">   <span class="built_in">CGSize</span> frontSize = <span class="built_in">CGSizeMake</span>(targetFrontWidth, targetFrontWidth / frontImageAspectRatio);</span><br><span class="line"> <span class="comment">//    CGPoint frontOrigin = CGPointMake(backWidth * 0.5, backHeight * 0.2);</span></span><br><span class="line">       <span class="built_in">CGPoint</span> frontOrigin = <span class="built_in">CGPointMake</span>(<span class="number">0</span>, <span class="number">0</span>);</span><br><span class="line"></span><br><span class="line">   <span class="comment">// 2.2 Scale &amp; Get pixels of the pattern</span></span><br><span class="line">   <span class="built_in">NSUInteger</span> frontBytesPerRow = bytesPerPixel * frontSize.width;</span><br><span class="line"></span><br><span class="line">   <span class="built_in">UInt32</span> *frontPixels = (<span class="built_in">UInt32</span> *)calloc(frontSize.width * frontSize.height, <span class="keyword">sizeof</span>(<span class="built_in">UInt32</span>));</span><br><span class="line"></span><br><span class="line">   <span class="built_in">CGContextRef</span> frontContext = <span class="built_in">CGBitmapContextCreate</span>(frontPixels, frontSize.width, frontSize.height,</span><br><span class="line">                                                     bitsPerComponent, frontBytesPerRow, colorSpace,</span><br><span class="line">                                                     kCGImageAlphaPremultipliedLast | kCGBitmapByteOrder32Big);</span><br><span class="line"></span><br><span class="line">   <span class="built_in">CGContextDrawImage</span>(frontContext, <span class="built_in">CGRectMake</span>(<span class="number">0</span>, <span class="number">0</span>, frontSize.width, frontSize.height),frontCGImage);</span><br><span class="line"></span><br><span class="line">   <span class="comment">// 2.3 Blend each pixel</span></span><br><span class="line">   <span class="built_in">NSUInteger</span> offsetPixelCountForInput = frontOrigin.y * backWidth + frontOrigin.x;</span><br><span class="line">   <span class="keyword">for</span> (<span class="built_in">NSUInteger</span> j = <span class="number">0</span>; j &lt; frontSize.height; j++) &#123;</span><br><span class="line">       <span class="keyword">for</span> (<span class="built_in">NSUInteger</span> i = <span class="number">0</span>; i &lt; frontSize.width; i++) &#123;</span><br><span class="line">           <span class="built_in">UInt32</span> *backPixel = backPixels + j * backWidth + i + offsetPixelCountForInput;</span><br><span class="line">           <span class="built_in">UInt32</span> backColor = *backPixel;</span><br><span class="line"></span><br><span class="line">           <span class="built_in">UInt32</span> * frontPixel = frontPixels + j * (<span class="keyword">int</span>)frontSize.width + i;</span><br><span class="line">           <span class="built_in">UInt32</span> frontColor = *frontPixel;</span><br><span class="line"></span><br><span class="line">           <span class="comment">// Blend the pattern with 50% alpha</span></span><br><span class="line"><span class="comment">//            CGFloat frontAlpha = 0.5f * (A(frontColor) / 255.0);</span></span><br><span class="line">           <span class="built_in">CGFloat</span> frontAlpha = <span class="number">1.0</span>f * (A(frontColor) / <span class="number">255.0</span>);</span><br><span class="line">           <span class="built_in">UInt32</span> newR = R(backColor) * (<span class="number">1</span> - frontAlpha) + R(frontColor) * frontAlpha;</span><br><span class="line">           <span class="built_in">UInt32</span> newG = G(backColor) * (<span class="number">1</span> - frontAlpha) + G(frontColor) * frontAlpha;</span><br><span class="line">           <span class="built_in">UInt32</span> newB = B(backColor) * (<span class="number">1</span> - frontAlpha) + B(frontColor) * frontAlpha;</span><br><span class="line"></span><br><span class="line">           <span class="comment">//Clamp, not really useful here :p</span></span><br><span class="line">           newR = MAX(<span class="number">0</span>,MIN(<span class="number">255</span>, newR));</span><br><span class="line">           newG = MAX(<span class="number">0</span>,MIN(<span class="number">255</span>, newG));</span><br><span class="line">           newB = MAX(<span class="number">0</span>,MIN(<span class="number">255</span>, newB));</span><br><span class="line"></span><br><span class="line">           *backPixel = RGBAMake(newR, newG, newB, A(backColor));</span><br><span class="line">       &#125;</span><br><span class="line">   &#125;</span><br><span class="line"></span><br><span class="line">   <span class="comment">// 3. Convert the image to Black &amp; White</span></span><br><span class="line">   <span class="keyword">for</span> (<span class="built_in">NSUInteger</span> j = <span class="number">0</span>; j &lt; backHeight; j++) &#123;</span><br><span class="line">       <span class="keyword">for</span> (<span class="built_in">NSUInteger</span> i = <span class="number">0</span>; i &lt; backWidth; i++) &#123;</span><br><span class="line">           <span class="built_in">UInt32</span> * currentPixel = backPixels + (j * backWidth) + i;</span><br><span class="line">           <span class="built_in">UInt32</span> color = *currentPixel;</span><br><span class="line"></span><br><span class="line">           <span class="comment">// Average of RGB = greyscale</span></span><br><span class="line">           <span class="built_in">UInt32</span> averageColor = (R(color) + G(color) + B(color)) / <span class="number">3.0</span>;</span><br><span class="line"></span><br><span class="line">           *currentPixel = RGBAMake(averageColor, averageColor, averageColor, A(color));</span><br><span class="line">       &#125;</span><br><span class="line">   &#125;</span><br><span class="line"></span><br><span class="line">   <span class="comment">// 4. Create a new UIImage</span></span><br><span class="line">   <span class="built_in">CGImageRef</span> newCGImage = <span class="built_in">CGBitmapContextCreateImage</span>(context);</span><br><span class="line">   <span class="built_in">UIImage</span> * processedImage = [<span class="built_in">UIImage</span> imageWithCGImage:newCGImage];</span><br><span class="line"></span><br><span class="line">   <span class="comment">// 5. Cleanup!</span></span><br><span class="line">   <span class="built_in">CGColorSpaceRelease</span>(colorSpace);</span><br><span class="line">   <span class="built_in">CGContextRelease</span>(context);</span><br><span class="line">   <span class="built_in">CGContextRelease</span>(frontContext);</span><br><span class="line">   free(backPixels);</span><br><span class="line">   free(frontPixels);</span><br><span class="line"></span><br><span class="line">   <span class="keyword">return</span> processedImage;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="5-2-CoreGraphics-框架合成图片"><a href="#5-2-CoreGraphics-框架合成图片" class="headerlink" title="5.2 CoreGraphics 框架合成图片"></a>5.2 CoreGraphics 框架合成图片</h3><p>使用CoreGraphics框架合成图片</p>
+<figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br></pre></td><td class="code"><pre><span class="line">- (<span class="built_in">UIImage</span> *)processUsingCoreGraphics:(<span class="built_in">UIImage</span> *)backImage frontImage:(<span class="built_in">UIImage</span> *)frontImage; &#123;</span><br><span class="line"> <span class="built_in">CGRect</span> imageRect = &#123;<span class="built_in">CGPointZero</span>,backImage.size&#125;;</span><br><span class="line"> <span class="built_in">NSInteger</span> backWidth = <span class="built_in">CGRectGetWidth</span>(imageRect);</span><br><span class="line"> <span class="built_in">NSInteger</span> backHeight = <span class="built_in">CGRectGetHeight</span>(imageRect);</span><br><span class="line"> </span><br><span class="line"> <span class="comment">// 1. Blend the pattern onto our image</span></span><br><span class="line"> <span class="built_in">CGFloat</span> frontImageAspectRatio = frontImage.size.width / frontImage.size.height;</span><br><span class="line"> </span><br><span class="line"> <span class="built_in">NSInteger</span> targetFrontWidth = backWidth * <span class="number">0.25</span>;</span><br><span class="line"> <span class="built_in">CGSize</span> frontSize = <span class="built_in">CGSizeMake</span>(targetFrontWidth, targetFrontWidth / frontImageAspectRatio);</span><br><span class="line"><span class="comment">//  CGPoint frontOrigin = CGPointMake(backWidth * 0.5, backHeight * 0.2);</span></span><br><span class="line"> <span class="built_in">CGPoint</span> frontOrigin = <span class="built_in">CGPointMake</span>(<span class="number">0</span>, <span class="number">0</span>);</span><br><span class="line"> </span><br><span class="line"> <span class="built_in">CGRect</span> frontRect = &#123;frontOrigin, frontSize&#125;;</span><br><span class="line"> </span><br><span class="line"> <span class="built_in">UIGraphicsBeginImageContext</span>(backImage.size);</span><br><span class="line"> <span class="built_in">CGContextRef</span> context = <span class="built_in">UIGraphicsGetCurrentContext</span>();</span><br><span class="line"></span><br><span class="line"> <span class="comment">// flip drawing context</span></span><br><span class="line"> <span class="built_in">CGAffineTransform</span> flip = <span class="built_in">CGAffineTransformMakeScale</span>(<span class="number">1.0</span>, <span class="number">-1.0</span>);</span><br><span class="line"> <span class="built_in">CGAffineTransform</span> flipThenShift = <span class="built_in">CGAffineTransformTranslate</span>(flip,<span class="number">0</span>,-backHeight);</span><br><span class="line"> <span class="built_in">CGContextConcatCTM</span>(context, flipThenShift);</span><br><span class="line"> </span><br><span class="line"> <span class="comment">// 1.1 Draw our image into a new CGContext</span></span><br><span class="line"> <span class="built_in">CGContextDrawImage</span>(context, imageRect, [backImage <span class="built_in">CGImage</span>]);</span><br><span class="line"> </span><br><span class="line"> <span class="comment">// 1.2 Set Alpha to 0.5 and draw our pattern on</span></span><br><span class="line"> <span class="built_in">CGContextSetBlendMode</span>(context, kCGBlendModeSourceAtop);</span><br><span class="line"> <span class="built_in">CGContextSetAlpha</span>(context,<span class="number">0.5</span>);</span><br><span class="line"> <span class="built_in">CGRect</span> transformedpatternRect = <span class="built_in">CGRectApplyAffineTransform</span>(frontRect, flipThenShift);</span><br><span class="line"> <span class="built_in">CGContextDrawImage</span>(context, transformedpatternRect, [frontImage <span class="built_in">CGImage</span>]);</span><br><span class="line"> </span><br><span class="line"> <span class="built_in">UIImage</span> * imageWithFront = <span class="built_in">UIGraphicsGetImageFromCurrentImageContext</span>();</span><br><span class="line"> <span class="built_in">UIGraphicsEndImageContext</span>();</span><br><span class="line">   </span><br><span class="line"> <span class="comment">// 2. Convert our image to Black and White</span></span><br><span class="line"> </span><br><span class="line"> <span class="comment">// 2.1 Create a new context with a gray color space</span></span><br><span class="line"> <span class="built_in">CGColorSpaceRef</span> colorSpace = <span class="built_in">CGColorSpaceCreateDeviceGray</span>();</span><br><span class="line"> context = <span class="built_in">CGBitmapContextCreate</span>(<span class="literal">nil</span>, backWidth, backHeight,</span><br><span class="line">                          <span class="number">8</span>, <span class="number">0</span>, colorSpace, (<span class="built_in">CGBitmapInfo</span>)kCGImageAlphaNone);</span><br><span class="line"></span><br><span class="line"> <span class="comment">// 2.2 Draw our image into the new context</span></span><br><span class="line"> <span class="built_in">CGContextDrawImage</span>(context, imageRect, [imageWithFront <span class="built_in">CGImage</span>]);</span><br><span class="line"> </span><br><span class="line"> <span class="comment">// 2.3 Get our new B&amp;W Image</span></span><br><span class="line"> <span class="built_in">CGImageRef</span> imageRef = <span class="built_in">CGBitmapContextCreateImage</span>(context);</span><br><span class="line"> <span class="built_in">UIImage</span> * finalImage = [<span class="built_in">UIImage</span> imageWithCGImage:imageRef];</span><br><span class="line"> </span><br><span class="line"> <span class="comment">// Cleanup</span></span><br><span class="line"> <span class="built_in">CGColorSpaceRelease</span>(colorSpace);</span><br><span class="line"> <span class="built_in">CGContextRelease</span>(context);</span><br><span class="line"> <span class="built_in">CFRelease</span>(imageRef);</span><br><span class="line"> </span><br><span class="line"> <span class="keyword">return</span> finalImage;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="5-3-CoreImage-框架合成图片"><a href="#5-3-CoreImage-框架合成图片" class="headerlink" title="5.3 CoreImage 框架合成图片"></a>5.3 CoreImage 框架合成图片</h3><p>使用CoreImage 框架以添加滤镜形式合成图片</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br></pre></td><td class="code"><pre><span class="line">- (UIImage *)processUsingCoreImage:(UIImage *)backImage frontImage:(UIImage *)frontImage &#123;</span><br><span class="line">  CIImage * backCIImage &#x3D; [[CIImage alloc] initWithImage:backImage];</span><br><span class="line">  </span><br><span class="line">  &#x2F;&#x2F; 1. Create a grayscale filter</span><br><span class="line">  CIFilter * grayFilter &#x3D; [CIFilter filterWithName:@&quot;CIColorControls&quot;];</span><br><span class="line">  [grayFilter setValue:@(0) forKeyPath:@&quot;inputSaturation&quot;];</span><br><span class="line">  </span><br><span class="line">  &#x2F;&#x2F; 2. Create our pattern filter</span><br><span class="line">  </span><br><span class="line">  &#x2F;&#x2F; Cheat: create a larger pattern image</span><br><span class="line">  UIImage * patternFrontImage &#x3D; [self createPaddedPatternImageWithSize:backImage.size pattern:frontImage];</span><br><span class="line">  CIImage * frontCIImage &#x3D; [[CIImage alloc] initWithImage:patternFrontImage];</span><br><span class="line"></span><br><span class="line">  CIFilter * alphaFilter &#x3D; [CIFilter filterWithName:@&quot;CIColorMatrix&quot;];</span><br><span class="line">&#x2F;&#x2F;  CIVector * alphaVector &#x3D; [CIVector vectorWithX:0 Y:0 Z:0.5 W:0];</span><br><span class="line">     CIVector * alphaVector &#x3D; [CIVector vectorWithX:0 Y:0 Z:1.0 W:0];</span><br><span class="line">  [alphaFilter setValue:alphaVector forKeyPath:@&quot;inputAVector&quot;];</span><br><span class="line">  </span><br><span class="line">  CIFilter * blendFilter &#x3D; [CIFilter filterWithName:@&quot;CISourceAtopCompositing&quot;];</span><br><span class="line">  </span><br><span class="line">  &#x2F;&#x2F; 3. Apply our filters</span><br><span class="line">  [alphaFilter setValue:frontCIImage forKeyPath:@&quot;inputImage&quot;];</span><br><span class="line">  frontCIImage &#x3D; [alphaFilter outputImage];</span><br><span class="line"></span><br><span class="line">  [blendFilter setValue:frontCIImage forKeyPath:@&quot;inputImage&quot;];</span><br><span class="line">  [blendFilter setValue:backCIImage forKeyPath:@&quot;inputBackgroundImage&quot;];</span><br><span class="line">  CIImage * blendOutput &#x3D; [blendFilter outputImage];</span><br><span class="line">  </span><br><span class="line">  [grayFilter setValue:blendOutput forKeyPath:@&quot;inputImage&quot;];</span><br><span class="line">  CIImage * outputCIImage &#x3D; [grayFilter outputImage];</span><br><span class="line">  </span><br><span class="line">  &#x2F;&#x2F; 4. Render our output image</span><br><span class="line">  CIContext * context &#x3D; [CIContext contextWithOptions:nil];</span><br><span class="line">  CGImageRef outputCGImage &#x3D; [context createCGImage:outputCIImage fromRect:[outputCIImage extent]];</span><br><span class="line">  UIImage * outputImage &#x3D; [UIImage imageWithCGImage:outputCGImage];</span><br><span class="line">  CGImageRelease(outputCGImage);</span><br><span class="line">  </span><br><span class="line">  return outputImage;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>createPaddedPatternImageWithSize 这是个生成滤镜图案的代码块具体请看<a href="https://link.juejin.cn/?target=https://github.com/EricStone1900/ImageOperate-OC">DEMO</a></p>
+<h3 id="5-4-GPUImage-框架合成图片"><a href="#5-4-GPUImage-框架合成图片" class="headerlink" title="5.4 GPUImage 框架合成图片"></a>5.4 GPUImage 框架合成图片</h3><p>使用GPUImage 框架以添加滤镜形式合成图片</p>
+<figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line">- (<span class="built_in">UIImage</span> *)processUsingGPUImage:(<span class="built_in">UIImage</span> *)backImage frontImage:(<span class="built_in">UIImage</span> *)frontImage &#123;</span><br><span class="line">   </span><br><span class="line">   <span class="comment">// 1. Create our GPUImagePictures</span></span><br><span class="line">   GPUImagePicture * backGPUImage = [[GPUImagePicture alloc] initWithImage:backImage];</span><br><span class="line">   </span><br><span class="line">   <span class="built_in">UIImage</span> *fliterImage = [<span class="keyword">self</span> createPaddedPatternImageWithSize:backImage.size pattern:frontImage];</span><br><span class="line">   GPUImagePicture * frontGPUImage = [[GPUImagePicture alloc] initWithImage:fliterImage];</span><br><span class="line">   </span><br><span class="line">   <span class="comment">// 2. Setup our filter chain</span></span><br><span class="line">   GPUImageAlphaBlendFilter * alphaBlendFilter = [[GPUImageAlphaBlendFilter alloc] init];</span><br><span class="line">   alphaBlendFilter.mix = <span class="number">0.5</span>;</span><br><span class="line">   </span><br><span class="line">   [backGPUImage addTarget:alphaBlendFilter atTextureLocation:<span class="number">0</span>];</span><br><span class="line">   [frontGPUImage addTarget:alphaBlendFilter atTextureLocation:<span class="number">1</span>];</span><br><span class="line">   </span><br><span class="line">   GPUImageGrayscaleFilter * grayscaleFilter = [[GPUImageGrayscaleFilter alloc] init];</span><br><span class="line">   </span><br><span class="line">   [alphaBlendFilter addTarget:grayscaleFilter];</span><br><span class="line">   </span><br><span class="line">   <span class="comment">// 3. Process &amp; grab output image</span></span><br><span class="line">   [backGPUImage processImage];</span><br><span class="line">   [frontGPUImage processImage];</span><br><span class="line">   [grayscaleFilter useNextFrameForImageCapture];</span><br><span class="line">   </span><br><span class="line">   <span class="built_in">UIImage</span> * output = [grayscaleFilter imageFromCurrentFramebuffer];</span><br><span class="line">   </span><br><span class="line">   <span class="keyword">return</span> output;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="5-5-对比总结"><a href="#5-5-对比总结" class="headerlink" title="5.5 对比总结"></a>5.5 对比总结</h3><ul>
+<li>从代码量来看：明显1直接绘图合成的代码量明显高出许多。CoreImage，和GPUImage的方案要自己加入pattern图，其实代码量也不算少。因此仅从合成图这个功能来看。代码量上 CoreGraphic方案最优。</li>
+<li>从性能来看：本地测试，CoreGraphic，直接绘图合成，速度最快。GPUImage也差不多，CoreImage添加滤镜方案最慢。</li>
+<li>从可控多样性需求来说：GPUImage本来就提供很多滤镜，同时开源。无疑当前最佳，但是其他的都可以自己进行对应功能封装。</li>
+</ul>
+<p>总的来说还是要看项目需求，个人觉得一般性添加水印，合成图片什么如果要直接用CoreGraphic是个不错的选择，以后有时间可以基于CoreGraphic封装功能。</p>
+<h2 id="六、参考文档"><a href="#六、参考文档" class="headerlink" title="六、参考文档"></a>六、参考文档</h2><ul>
+<li><a href="https://link.juejin.cn/?target=https://www.jianshu.com/p/822841145b52">iOS图片压缩</a></li>
+<li><a href="https://link.juejin.cn/?target=https://www.raywenderlich.com/sessions/new?return_path=/2335-image-processing-in-ios-part-1-raw-bitmap-modification">Image-Processing</a></li>
+</ul>
+
+    </article>
+    <!-- license  -->
+    
+        <div class="license-wrapper">
+            <p>Author：<a href="https://tenloy.github.io">Tenloy</a>
+            <p>原文链接：<a href="https://tenloy.github.io/2021/09/15/graphics-processing-case.html">https://tenloy.github.io/2021/09/15/graphics-processing-case.html</a>
+            <p>发表日期：2021.09.15 , 3:54 PM</p>
+            <p>更新日期：2024.04.06 , 12:00 PM</p>
+            <p>版权声明：本文采用<a rel="license noopener" target="_blank" href="http://creativecommons.org/licenses/by-nc/4.0/">Crative Commons 4.0 许可协议</a>进行许可</p>
+        </div>
+    
+    <!-- paginator  -->
+    <ul class="post-paginator">
+        <li class="next">
+            
+                <div class="nextSlogan">Next Post</div>
+                <a href= "/2021/09/20/program-thought.html" title= "常见的编程范式">
+                    <div class="nextTitle">常见的编程范式</div>
+                </a>
+            
+        </li>
+        <li class="previous">
+            
+                <div class="prevSlogan">Previous Post</div>
+                <a href= "/2021/09/15/graphics-processing.html" title= "图形处理(二) - 图形与视频处理相关的框架">
+                    <div class="prevTitle">图形处理(二) - 图形与视频处理相关的框架</div>
+                </a>
+            
+        </li>
+    </ul>
+    <!-- 评论插件 -->
+    <!-- 来必力City版安装代码 -->
+
+<!-- City版安装代码已完成 -->
+    
+    
+    <!-- gitalk评论 -->
+
+    <!-- utteranc评论 -->
+
+    <!-- partial('_partial/comment/changyan') -->
+    <!--PC版-->
+
+
+    
+    
+
+    <!-- 评论 -->
+</main>
+            <!-- profile -->
+            
+        </div>
+        <footer class="footer footer-unloaded">
+    <!-- social  -->
+    
+    <div class="social">
+        
+    
+        
+            
+                <a href="mailto:luotengoto@163.com" class="iconfont-archer email" title=email ></a>
+            
+        
+    
+        
+            
+                <a href="//github.com/Tenloy" class="iconfont-archer github" target="_blank" title=github></a>
+            
+        
+    
+        
+            
+                <a href="https://www.jianshu.com/u/8db1bc12db9f" class="iconfont-jian jianshu" target="_blank" title=jianshu></a>
+            
+        
+    
+        
+            
+                <a href="/atom.xml" class="iconfont-archer rss" target="_blank" title=rss></a>
+            
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+
+    </div>
+    
+    <!-- powered by Hexo  -->
+    <div class="copyright">
+        <span id="hexo-power">Powered by <a href="https://hexo.io/" target="_blank">Hexo</a></span><span class="iconfont-archer power">&#xe635;</span><span id="theme-info">theme <a href="https://github.com/fi3ework/hexo-theme-archer" target="_blank">Archer</a></span>
+    </div>
+    <!-- 不蒜子  -->
+    
+    <div class="busuanzi-container">
+    
+     
+    <span id="busuanzi_container_site_pv">PV: <span id="busuanzi_value_site_pv"></span> :)</span>
+    
+    </div>
+    
+</footer>
+    </div>
+    <!-- toc -->
+    
+    <div class="toc-wrapper" style=
+    
+
+
+
+
+
+
+
+top:40vh;
+
+    >
+        <div class="toc-catalog">
+            <span class="iconfont-archer catalog-icon">&#xe613;</span><span>CATALOG</span>
+        </div>
+        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E3%80%81%E5%9B%BE%E7%89%87%E6%89%8B%E5%8A%A8%E8%A7%A3%E7%A0%81"><span class="toc-text">一、图片手动解码</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8C%E3%80%81%E5%A4%A7%E5%9B%BE%E5%9C%A8%E6%9C%AC%E5%9C%B0%E7%9A%84%E9%AB%98%E6%95%88%E6%98%BE%E7%A4%BA"><span class="toc-text">二、大图在本地的高效显示</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%89%E3%80%81%E5%9B%BE%E7%89%87%E5%8E%8B%E7%BC%A9"><span class="toc-text">三、图片压缩</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#3-1-%E6%8C%89%E7%85%A7%E6%8C%87%E5%AE%9A%E5%8E%8B%E7%BC%A9%E6%AF%94%E4%BE%8B%E5%8E%8B%E7%BC%A9%E5%9B%BE%E7%89%87"><span class="toc-text">3.1 按照指定压缩比例压缩图片</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-2-%E6%8C%89%E7%85%A7%E6%8C%87%E5%AE%9A%E5%B0%BA%E5%AF%B8%E5%8E%8B%E7%BC%A9%E5%9B%BE%E7%89%87"><span class="toc-text">3.2 按照指定尺寸压缩图片</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-3-%E5%85%B7%E4%BD%93%E7%9A%84%E5%BA%94%E7%94%A8%E5%9C%BA%E6%99%AF%E5%88%86%E6%9E%90"><span class="toc-text">3.3 具体的应用场景分析</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#1-%E4%B8%8A%E4%BC%A0%E6%88%96%E5%AD%98%E5%82%A8%E6%9C%89%E5%A4%A7%E5%B0%8F%E8%A6%81%E6%B1%82%E7%9A%84%E5%9B%BE%E7%89%87"><span class="toc-text">1. 上传或存储有大小要求的图片</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2-%E4%B8%8A%E4%BC%A0%E6%88%96%E5%AD%98%E5%82%A8%E6%9C%89%E8%B4%A8%E9%87%8F%E8%A6%81%E6%B1%82%E7%9A%84%E5%9B%BE%E7%89%87"><span class="toc-text">2. 上传或存储有质量要求的图片</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3-%E5%9C%A8%E5%A4%A7%E5%B0%8F%E6%9C%89%E4%B8%8A%E9%99%90%E7%9A%84%E6%83%85%E5%86%B5%E4%B8%8B%E5%B0%BD%E9%87%8F%E4%BF%9D%E8%AF%81%E8%B4%A8%E9%87%8F"><span class="toc-text">3. 在大小有上限的情况下尽量保证质量</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9B%9B%E3%80%81%E5%9B%BE%E7%89%87%E5%83%8F%E7%B4%A0%E4%BF%AE%E6%94%B9%E6%93%8D%E4%BD%9C"><span class="toc-text">四、图片像素修改操作</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#4-1-%E5%9B%BE%E7%89%87%E7%81%B0%E5%BA%A6%E5%9B%BE-%E9%BB%91%E7%99%BD%E5%9B%BE"><span class="toc-text">4.1 图片灰度图(黑白图)</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-2-%E4%BF%AE%E6%94%B9%E5%9B%BE%E7%89%87%E7%9A%84RGB%E5%80%BC"><span class="toc-text">4.2 修改图片的RGB值</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-3-%E5%9B%BE%E7%89%87%E6%89%93%E7%A0%81"><span class="toc-text">4.3 图片打码</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%94%E3%80%81%E5%9B%BE%E5%BD%A2%E6%A1%86%E6%9E%B6%E5%90%88%E6%88%90%E5%9B%BE%E7%89%87"><span class="toc-text">五、图形框架合成图片</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#5-1-%E7%9B%B4%E6%8E%A5%E7%BB%98%E5%9B%BE%E5%90%88%E6%88%90"><span class="toc-text">5.1 直接绘图合成</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-2-CoreGraphics-%E6%A1%86%E6%9E%B6%E5%90%88%E6%88%90%E5%9B%BE%E7%89%87"><span class="toc-text">5.2 CoreGraphics 框架合成图片</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-3-CoreImage-%E6%A1%86%E6%9E%B6%E5%90%88%E6%88%90%E5%9B%BE%E7%89%87"><span class="toc-text">5.3 CoreImage 框架合成图片</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-4-GPUImage-%E6%A1%86%E6%9E%B6%E5%90%88%E6%88%90%E5%9B%BE%E7%89%87"><span class="toc-text">5.4 GPUImage 框架合成图片</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-5-%E5%AF%B9%E6%AF%94%E6%80%BB%E7%BB%93"><span class="toc-text">5.5 对比总结</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%AD%E3%80%81%E5%8F%82%E8%80%83%E6%96%87%E6%A1%A3"><span class="toc-text">六、参考文档</span></a></li></ol>
+    </div>
+    
+    <div class="back-top iconfont-archer">&#xe639;</div>
+    <div class="sidebar sidebar-hide">
+    <ul class="sidebar-tabs sidebar-tabs-active-0">
+        <li class="sidebar-tab-categories"><span class="iconfont-archer">&#xe666;</span><span class="tab-name">Cate</span></li>
+        <li class="sidebar-tab-archives"><span class="iconfont-archer">&#xe67d;</span><span class="tab-name">Archive</span></li>
+        <li class="sidebar-tab-tags"><span class="iconfont-archer">&#xe61b;</span><span class="tab-name">Tag</span></li>
+    </ul>
+    <div class="sidebar-content sidebar-content-show-archive">
+        <div class="sidebar-panel-categories">
+    <div class="sidebar-categories-name">
+    
+    
+    
+    
+    
+        <span class="sidebar-category-name" data-categories="数据结构与算法"><span class="iconfont-archer">&#xe60a;</span>数据结构与算法</span>
+    
+        <span class="sidebar-category-name" data-categories="计算机组成原理"><span class="iconfont-archer">&#xe60a;</span>计算机组成原理</span>
+    
+        <span class="sidebar-category-name" data-categories="计算机网络"><span class="iconfont-archer">&#xe60a;</span>计算机网络</span>
+    
+        <span class="sidebar-category-name" data-categories="汇编语言"><span class="iconfont-archer">&#xe60a;</span>汇编语言</span>
+    
+        <span class="sidebar-category-name" data-categories="数据的存储与传输"><span class="iconfont-archer">&#xe60a;</span>数据的存储与传输</span>
+    
+        <span class="sidebar-category-name" data-categories="操作系统"><span class="iconfont-archer">&#xe60a;</span>操作系统</span>
+    
+        <span class="sidebar-category-name" data-categories="互联网标准RFC"><span class="iconfont-archer">&#xe60a;</span>互联网标准RFC</span>
+    
+        <span class="sidebar-category-name" data-categories="编译链接与装载"><span class="iconfont-archer">&#xe60a;</span>编译链接与装载</span>
+    
+        <span class="sidebar-category-name" data-categories="iOS"><span class="iconfont-archer">&#xe60a;</span>iOS</span>
+    
+        <span class="sidebar-category-name" data-categories="架构与设计模式"><span class="iconfont-archer">&#xe60a;</span>架构与设计模式</span>
+    
+        <span class="sidebar-category-name" data-categories="图形处理与渲染"><span class="iconfont-archer">&#xe60a;</span>图形处理与渲染</span>
+    
+        <span class="sidebar-category-name" data-categories="软件工程"><span class="iconfont-archer">&#xe60a;</span>软件工程</span>
+    
+        <span class="sidebar-category-name" data-categories="音视频处理"><span class="iconfont-archer">&#xe60a;</span>音视频处理</span>
+    
+        <span class="sidebar-category-name" data-categories="DSL"><span class="iconfont-archer">&#xe60a;</span>DSL</span>
+    
+        <span class="sidebar-category-name" data-categories="Swift"><span class="iconfont-archer">&#xe60a;</span>Swift</span>
+    
+        <span class="sidebar-category-name" data-categories="Git"><span class="iconfont-archer">&#xe60a;</span>Git</span>
+    
+        <span class="sidebar-category-name" data-categories="Web"><span class="iconfont-archer">&#xe60a;</span>Web</span>
+    
+    </div>
+    <div class="iconfont-archer sidebar-categories-empty">&#xe678;</div>
+    <div class="sidebar-categories-list"></div>
+</div>
+          <div class="sidebar-panel-archives">
+    <!-- 在ejs中将archive按照时间排序 -->
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    <div class="total-and-search">
+        <div class="total-archive">
+        Total : 76
+        </div>
+        <!-- search  -->
+        
+            <div class="site-search popup-trigger tl-side-search"> 
+                <span class="iconfont-jian search-icon">&#xe7fc;搜索</span>
+            </div>
+        
+    </div>
+    
+    <div class="post-archive">
+    
+    
+    
+    
+    <div class="archive-year"> 2022 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/05</span><a class="archive-post-title" href= "/2022/05/05/sqlite.html" >iOS SQLite的使用与优化</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/28</span><a class="archive-post-title" href= "/2022/04/28/mmap.html" >内存映射mmap函数的原理与应用</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/18</span><a class="archive-post-title" href= "/2022/03/18/avfoundation.html" >AVFoundation Programming Guide(译)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/17</span><a class="archive-post-title" href= "/2022/03/17/avframework.html" >iOS音视频库概述</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/09</span><a class="archive-post-title" href= "/2022/02/09/OAuth.html" >[转] OAuth 2.0简述</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/18</span><a class="archive-post-title" href= "/2022/01/18/wkwebview-buges.html" >WKWebView使用过程中遇到的坑</a>
+        </li>
+    
+    
+    
+    
+    
+        </ul>
+    
+    <div class="archive-year"> 2021 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/22</span><a class="archive-post-title" href= "/2021/11/22/bit-calculation.html" >[转] 位运算实现加、减、乘、除运算</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/10</span><a class="archive-post-title" href= "/2021/11/10/git-use.html" >Git的使用总结</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/21</span><a class="archive-post-title" href= "/2021/10/21/dyld-objc.html" >(七) dyld与Objc—_objc_init、map_images、load_images</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/18</span><a class="archive-post-title" href= "/2021/10/18/compile-dynamic-link.html" >(六) Mach-O 文件的动态链接、库、Dyld(含dlopen)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/14</span><a class="archive-post-title" href= "/2021/10/14/compile-vm-asrl.html" >(五) Mach-O 文件之进程(虚拟)地址空间、ASLR</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/10</span><a class="archive-post-title" href= "/2021/10/10/compile-load.html" >(四) Mach-O 文件的装载</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/08</span><a class="archive-post-title" href= "/2021/10/08/compile-static-link.html" >(三) Mach-O 文件的静态链接</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/06</span><a class="archive-post-title" href= "/2021/10/06/compile-macho.html" >(二) Mach-O 文件结构</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/05</span><a class="archive-post-title" href= "/2021/10/05/compile-clang-llvm.html" >(一) Clang/LLVM 介绍、OC 程序的编译过程</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/02</span><a class="archive-post-title" href= "/2021/10/02/makefile.html" >[转] Make 命令的使用与NodeJS案例</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/28</span><a class="archive-post-title" href= "/2021/09/28/architectural-pattern.html" >常见架构模式: MVC、MVP、MVVM、VIPER</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/25</span><a class="archive-post-title" href= "/2021/09/25/design-pattern.html" >常见的设计模式</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/20</span><a class="archive-post-title" href= "/2021/09/20/program-thought.html" >常见的编程范式</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/15</span><a class="archive-post-title" href= "/2021/09/15/graphics-processing-case.html" >图形处理(三) - 图形处理实践案例</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/15</span><a class="archive-post-title" href= "/2021/09/15/graphics-processing.html" >图形处理(二) - 图形与视频处理相关的框架</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/13</span><a class="archive-post-title" href= "/2021/09/13/image-encode-decode.html" >图形处理(一) - 图片的加载与编解码</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/12</span><a class="archive-post-title" href= "/2021/09/12/iOS-Render.html" >[转] iOS离屏渲染原理及优化</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/11</span><a class="archive-post-title" href= "/2021/09/11/core-animation03.html" >Core-Animation(三) - 渲染流程探究及性能分析</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/09</span><a class="archive-post-title" href= "/2021/09/09/core-animation02.html" >Core Animation(二) - 隐式动画、CATransaction与CAAction</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/07</span><a class="archive-post-title" href= "/2021/09/07/core-animation01.html" >Core Animation(一) - UIView与CALayer、布局与绘制</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/05</span><a class="archive-post-title" href= "/2021/09/05/AFN-Analyse.html" >[转] AFN框架实现解析</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/04</span><a class="archive-post-title" href= "/2021/09/04/nrl-session.html" >NSURLSession概述</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/02</span><a class="archive-post-title" href= "/2021/09/02/Log.html" >移动端日志库设计</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/01</span><a class="archive-post-title" href= "/2021/08/01/Crash-Monitor.html" >iOS崩溃监控与分析</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/30</span><a class="archive-post-title" href= "/2021/07/30/Lag-Monitor.html" >iOS卡顿监控</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/29</span><a class="archive-post-title" href= "/2021/07/29/SwiftUI.html" >SwiftUI</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/29</span><a class="archive-post-title" href= "/2021/07/29/Swift-Version-History.html" >Swift版本更新API介绍</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/26</span><a class="archive-post-title" href= "/2021/07/26/RunLoop-Reposted-From-ibireme.html" >[转] 深入理解RunLoop—ibireme</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/25</span><a class="archive-post-title" href= "/2021/07/25/Protocol-Buffer.html" >Protocol Buffer的基本介绍</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/24</span><a class="archive-post-title" href= "/2021/07/24/base64.html" >Base64编码及iOS中的Base64</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/23</span><a class="archive-post-title" href= "/2021/07/23/chinese-encode.html" >[转] 彻底弄懂常见的7种中文字符编码</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/10</span><a class="archive-post-title" href= "/2021/07/10/p-npc-np.html" >P问题、NP问题、NPC、NP-Hard、P=NP?</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/30</span><a class="archive-post-title" href= "/2021/06/30/probability.html" >(六) 概率算法</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/28</span><a class="archive-post-title" href= "/2021/06/28/branch-bound.html" >(五) 分支限界算法</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/26</span><a class="archive-post-title" href= "/2021/06/26/back-track.html" >(四) 回溯法(试探算法)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/24</span><a class="archive-post-title" href= "/2021/06/24/greed.html" >(三) 贪心算法</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/22</span><a class="archive-post-title" href= "/2021/06/22/dynamic-programming.html" >(二) 动态规划算法</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/20</span><a class="archive-post-title" href= "/2021/06/20/divide-and-conquer.html" >(一) 分治算法及减治、变治算法</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/18</span><a class="archive-post-title" href= "/2021/06/18/several-programming.html" >穷举、递推、迭代(辗转法)、递归算法</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/15</span><a class="archive-post-title" href= "/2021/06/15/datastruction-overview.html" >数据结构与算法概述</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/06</span><a class="archive-post-title" href= "/2021/06/06/Web-Module.html" >前端各种模块化方案总结</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/27</span><a class="archive-post-title" href= "/2021/05/27/Fiber.html" >[转] 最通俗的 React Fiber(时间分片)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/27</span><a class="archive-post-title" href= "/2021/05/27/Coroutine.html" >[转] 什么是协程</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/19</span><a class="archive-post-title" href= "/2021/05/19/DSL.html" >[转] 谈谈DSL以及DSL的应用（以CocoaPods 为例）</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/03</span><a class="archive-post-title" href= "/2021/05/03/iOS-private-pod.html" >私有Pod库部署</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/29</span><a class="archive-post-title" href= "/2021/04/29/iOS-ComRouter.html" >[转] iOS的组件化方案</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/27</span><a class="archive-post-title" href= "/2021/04/27/iOS-CI.html" >iOS的持续集成</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/26</span><a class="archive-post-title" href= "/2021/04/26/Containers.html" >常见的容器概念：Linux容器、Docker容器、服务器容器</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/24</span><a class="archive-post-title" href= "/2021/04/24/Dock-Reprinted-from-RuanYIFeng.html" >[转] Docker入门教程</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/20</span><a class="archive-post-title" href= "/2021/04/20/Sync-Async.html" >同步和异步解读及编程中的使用场景</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/17</span><a class="archive-post-title" href= "/2021/04/17/Arm64-Handbook.html" >ARM64指令简易手册</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/16</span><a class="archive-post-title" href= "/2021/04/16/Arm64-Introduce.html" >iOS需要了解的ARM64汇编</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/13</span><a class="archive-post-title" href= "/2021/04/13/Command-Line.html" >CLI Shell、Terminal、脚本(语言)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/10</span><a class="archive-post-title" href= "/2021/04/10/Ins-SysCall-Kernel-Shell.html" >指令、系统调用、库、Shell、APP的层次关系</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/08</span><a class="archive-post-title" href= "/2021/04/08/ISA-Microarch-Soc.html" >指令集、微架构、手机芯片(Soc)及ARM的介绍</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/02</span><a class="archive-post-title" href= "/2021/04/02/Engineering.html" >工程化、动态化、容器化、组件化</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/01</span><a class="archive-post-title" href= "/2021/04/01/GithubPages-Hexo.html" >使用Hexo+Github Pages搭建个人博客</a>
+        </li>
+    
+    
+    
+    
+    
+        </ul>
+    
+    <div class="archive-year"> 2020 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/22</span><a class="archive-post-title" href= "/2020/12/22/aes.html" >数据加密 — 对称加密(以AES为例)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/21</span><a class="archive-post-title" href= "/2020/12/21/aes-standard.html" >[转] AES标准及Rijndael算法解析</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/20</span><a class="archive-post-title" href= "/2020/12/20/asymmetric.html" >数据加密 — 非对称加密(加签/加密，以RSA为例)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/09</span><a class="archive-post-title" href= "/2020/12/09/pki.html" >常见的PKI标准(X.509、PKCS)及证书相关介绍</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/28</span><a class="archive-post-title" href= "/2020/10/28/runtime-data-structure.html" >Objc Runtime总结</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/11</span><a class="archive-post-title" href= "/2020/09/11/GCD.html" >Objective-C — 深入浅出GCD常用API</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/06</span><a class="archive-post-title" href= "/2020/09/06/oc-block.html" >Objective-C — Block</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/26</span><a class="archive-post-title" href= "/2020/08/26/AutoreleasePool.html" >AutoreleasePool</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/24</span><a class="archive-post-title" href= "/2020/08/24/oc-memory-manage.html" >Objective-C — 内存管理</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/01</span><a class="archive-post-title" href= "/2020/08/01/ui-navigation-bar.html" >[转] 导航栏的架构介绍及使用</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/15</span><a class="archive-post-title" href= "/2020/07/15/symbol-decl.html" >变量声明、函数声明的作用</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/01</span><a class="archive-post-title" href= "/2020/07/01/ios-apns.html" >iOS APNS接收逻辑梳理</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/13</span><a class="archive-post-title" href= "/2020/06/13/ios-vest.html" >iOS制作马甲总结</a>
+        </li>
+    
+    </div>
+  </div>
+        <div class="sidebar-panel-tags">
+    <div class="sidebar-tags-name">
+    
+        <span class="sidebar-tag-name" data-tags="AutoreleasePool"><span class="iconfont-archer">&#xe606;</span>AutoreleasePool</span>
+    
+        <span class="sidebar-tag-name" data-tags="GCD"><span class="iconfont-archer">&#xe606;</span>GCD</span>
+    
+        <span class="sidebar-tag-name" data-tags="hexo"><span class="iconfont-archer">&#xe606;</span>hexo</span>
+    
+        <span class="sidebar-tag-name" data-tags="ISA"><span class="iconfont-archer">&#xe606;</span>ISA</span>
+    
+        <span class="sidebar-tag-name" data-tags="Microarch"><span class="iconfont-archer">&#xe606;</span>Microarch</span>
+    
+        <span class="sidebar-tag-name" data-tags="Soc"><span class="iconfont-archer">&#xe606;</span>Soc</span>
+    
+        <span class="sidebar-tag-name" data-tags="CLI"><span class="iconfont-archer">&#xe606;</span>CLI</span>
+    
+        <span class="sidebar-tag-name" data-tags="Shell"><span class="iconfont-archer">&#xe606;</span>Shell</span>
+    
+        <span class="sidebar-tag-name" data-tags="ARM64"><span class="iconfont-archer">&#xe606;</span>ARM64</span>
+    
+        <span class="sidebar-tag-name" data-tags="多线程"><span class="iconfont-archer">&#xe606;</span>多线程</span>
+    
+        <span class="sidebar-tag-name" data-tags="Docker"><span class="iconfont-archer">&#xe606;</span>Docker</span>
+    
+        <span class="sidebar-tag-name" data-tags="DSL"><span class="iconfont-archer">&#xe606;</span>DSL</span>
+    
+        <span class="sidebar-tag-name" data-tags="协程"><span class="iconfont-archer">&#xe606;</span>协程</span>
+    
+        <span class="sidebar-tag-name" data-tags="Fiber"><span class="iconfont-archer">&#xe606;</span>Fiber</span>
+    
+        <span class="sidebar-tag-name" data-tags="dp"><span class="iconfont-archer">&#xe606;</span>dp</span>
+    
+        <span class="sidebar-tag-name" data-tags="RunLoop"><span class="iconfont-archer">&#xe606;</span>RunLoop</span>
+    
+        <span class="sidebar-tag-name" data-tags="SwiftUI"><span class="iconfont-archer">&#xe606;</span>SwiftUI</span>
+    
+        <span class="sidebar-tag-name" data-tags="Swift-Syntax"><span class="iconfont-archer">&#xe606;</span>Swift-Syntax</span>
+    
+        <span class="sidebar-tag-name" data-tags="LagMonitor"><span class="iconfont-archer">&#xe606;</span>LagMonitor</span>
+    
+        <span class="sidebar-tag-name" data-tags="CrashMonitor"><span class="iconfont-archer">&#xe606;</span>CrashMonitor</span>
+    
+        <span class="sidebar-tag-name" data-tags="Log"><span class="iconfont-archer">&#xe606;</span>Log</span>
+    
+        <span class="sidebar-tag-name" data-tags="AFN"><span class="iconfont-archer">&#xe606;</span>AFN</span>
+    
+    </div>
+    <div class="iconfont-archer sidebar-tags-empty">&#xe678;</div>
+    <div class="tag-load-fail" style="display: none; color: #ccc; font-size: 0.6rem;">
+    缺失模块。<br/>
+    1、请确保node版本大于6.2<br/>
+    2、在博客根目录（注意不是archer根目录）执行以下命令：<br/>
+    <span style="color: #f75357; font-size: 1rem; line-height: 2rem;">npm i hexo-generator-json-content --save</span><br/>
+    3、在根目录_config.yml里添加配置：
+    <pre style="color: #787878; font-size: 0.6rem;">
+jsonContent:
+  meta: false
+  pages: false
+  posts:
+    title: true
+    date: true
+    path: true
+    text: false
+    raw: false
+    content: false
+    slug: false
+    updated: false
+    comments: false
+    link: false
+    permalink: false
+    excerpt: false
+    categories: true
+    tags: true</pre>
+    </div> 
+    <div class="sidebar-tags-list"></div>
+</div>
+    </div>
+</div> 
+    <script>
+    var siteMeta = {
+        root: "/",
+        author: "Tenloy"
+    }
+</script>
+    <!-- CDN failover -->
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js"></script>
+    <script type="text/javascript">
+        if (typeof window.$ === 'undefined')
+        {
+            console.warn('jquery load from jsdelivr failed, will load local script')
+            document.write('<script src="/lib/jquery.min.js">\x3C/script>')
+        }
+    </script>
+    <script src="/scripts/main.js"></script>
+    <!-- algolia -->
+    
+        <div class="site-search">
+  <div class="algolia-popup popup">
+    <div class="algolia-search">
+      <div class="algolia-search-input-icon">
+        <i class="fa fa-search"></i>
+      </div>
+      <div class="algolia-search-input" id="algolia-search-input"></div>
+    </div>
+
+    <div class="algolia-results">
+      <div id="algolia-stats"></div>
+      <div id="algolia-hits"></div>
+      <div id="algolia-pagination" class="algolia-pagination"></div>
+    </div>
+
+    <span class="popup-btn-close">
+      <i class="iconfont-archer">&#xe609;</i>
+    </span>
+  </div>
+</div>
+        <script src="https://cdn.jsdelivr.net/npm/instantsearch.js@2.8.0/dist/instantsearch.min.js" defer></script>
+        <script src="/scripts/search.js" defer></script>
+    
+    <!-- busuanzi  -->
+    
+    <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    
+    <!-- CNZZ  -->
+    
+    </div>
+    <!-- async load share.js -->
+    
+        <script src="/scripts/share.js" async></script>    
+     
+    </body>
+</html>
+
+

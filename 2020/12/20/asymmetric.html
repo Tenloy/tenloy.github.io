@@ -1,0 +1,2395 @@
+<!DOCTYPE html>
+<html lang="en">
+    <!-- title -->
+
+
+
+
+<!-- keywords -->
+
+
+
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" >
+    <meta name="author" content="Tenloy">
+    <meta name="renderer" content="webkit">
+    <meta name="copyright" content="Tenloy">
+    
+    <meta name="keywords" content="Tenloy,iOS,Swift">
+    
+    <meta name="description" content="学习 生活 记录 回忆">
+    <meta name="description" content="一、概述1.1 非对称加密(公钥加密)公开密钥密码学（Public-key cryptography）也称非对称式密码学（Asymmetric cryptography）是密码学的一种算法。  它需要两个密钥，一个是公开密钥，另一个是私有密钥；公钥用作加密，私钥则用作解密。由于加密和解密需要两个不同的密钥，故被称为非对称加密；不同于加密和解密都使用同一个密钥的对称加密。 公钥可以公开，可任意向外发">
+<meta property="og:type" content="article">
+<meta property="og:title" content="数据加密 — 非对称加密(加签&#x2F;加密，以RSA为例)">
+<meta property="og:url" content="https://tenloy.github.io/2020/12/20/asymmetric.html">
+<meta property="og:site_name" content="Tenloy&#39;s Blog">
+<meta property="og:description" content="一、概述1.1 非对称加密(公钥加密)公开密钥密码学（Public-key cryptography）也称非对称式密码学（Asymmetric cryptography）是密码学的一种算法。  它需要两个密钥，一个是公开密钥，另一个是私有密钥；公钥用作加密，私钥则用作解密。由于加密和解密需要两个不同的密钥，故被称为非对称加密；不同于加密和解密都使用同一个密钥的对称加密。 公钥可以公开，可任意向外发">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://tenloy.github.io/images/encrypt/01.jpg">
+<meta property="article:published_time" content="2020-12-19T21:49:12.000Z">
+<meta property="article:modified_time" content="2024-04-06T04:00:22.192Z">
+<meta property="article:author" content="Tenloy">
+<meta property="article:tag" content="Tenloy, iOS, Tenloy Blog, 博客，Swift, 编译, 计算机">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://tenloy.github.io/images/encrypt/01.jpg">
+    <meta http-equiv="Cache-control" content="no-cache">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"/>
+    
+    <title>数据加密 — 非对称加密(加签/加密，以RSA为例) · Tenloy&#39;s Blog</title>
+    <style type="text/css">
+    @font-face {
+        font-family: 'Oswald-Regular';
+        src: url("/font/Oswald-Regular.ttf");
+    }
+
+    body {
+        margin: 0;
+    }
+
+    header,
+    footer,
+    .back-top,
+    .sidebar,
+    .container,
+    .site-intro-meta,
+    .toc-wrapper {
+        display: none;
+    }
+
+    .site-intro {
+        position: relative;
+        z-index: 3;
+        width: 100%;
+        /* height: 50vh; */
+        overflow: hidden;
+    }
+
+    .site-intro-placeholder {
+        position: absolute;
+        z-index: -2;
+        top: 0;
+        left: 0;
+        width: calc(100% + 300px);
+        height: 100%;
+        background: repeating-linear-gradient(-45deg, #444 0, #444 80px, #333 80px, #333 160px);
+        background-position: center center;
+        transform: translate3d(-226px, 0, 0);
+        animation: gradient-move 2.5s ease-out 0s infinite;
+    }
+
+    @keyframes gradient-move {
+        0% {
+            transform: translate3d(-226px, 0, 0);
+        }
+        100% {
+            transform: translate3d(0, 0, 0);
+        }
+    }
+
+</style>
+
+    <link rel="preload" href= "/css/style.css?v=20180824" as="style" onload="this.onload=null;this.rel='stylesheet'" />
+    <link rel="stylesheet" href= "/css/mobile.css?v=20180824" media="(max-width: 980px)">
+    
+    <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.2.5/jquery.fancybox.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'" />
+    
+    <!-- /*! loadCSS. [c]2017 Filament Group, Inc. MIT License */
+/* This file is meant as a standalone workflow for
+- testing support for link[rel=preload]
+- enabling async CSS loading in browsers that do not support rel=preload
+- applying rel preload css once loaded, whether supported or not.
+*/ -->
+<script>
+(function( w ){
+	"use strict";
+	// rel=preload support test
+	if( !w.loadCSS ){
+		w.loadCSS = function(){};
+	}
+	// define on the loadCSS obj
+	var rp = loadCSS.relpreload = {};
+	// rel=preload feature support test
+	// runs once and returns a function for compat purposes
+	rp.support = (function(){
+		var ret;
+		try {
+			ret = w.document.createElement( "link" ).relList.supports( "preload" );
+		} catch (e) {
+			ret = false;
+		}
+		return function(){
+			return ret;
+		};
+	})();
+
+	// if preload isn't supported, get an asynchronous load by using a non-matching media attribute
+	// then change that media back to its intended value on load
+	rp.bindMediaToggle = function( link ){
+		// remember existing media attr for ultimate state, or default to 'all'
+		var finalMedia = link.media || "all";
+
+		function enableStylesheet(){
+			link.media = finalMedia;
+		}
+
+		// bind load handlers to enable media
+		if( link.addEventListener ){
+			link.addEventListener( "load", enableStylesheet );
+		} else if( link.attachEvent ){
+			link.attachEvent( "onload", enableStylesheet );
+		}
+
+		// Set rel and non-applicable media type to start an async request
+		// note: timeout allows this to happen async to let rendering continue in IE
+		setTimeout(function(){
+			link.rel = "stylesheet";
+			link.media = "only x";
+		});
+		// also enable media after 3 seconds,
+		// which will catch very old browsers (android 2.x, old firefox) that don't support onload on link
+		setTimeout( enableStylesheet, 3000 );
+	};
+
+	// loop through link elements in DOM
+	rp.poly = function(){
+		// double check this to prevent external calls from running
+		if( rp.support() ){
+			return;
+		}
+		var links = w.document.getElementsByTagName( "link" );
+		for( var i = 0; i < links.length; i++ ){
+			var link = links[ i ];
+			// qualify links to those with rel=preload and as=style attrs
+			if( link.rel === "preload" && link.getAttribute( "as" ) === "style" && !link.getAttribute( "data-loadcss" ) ){
+				// prevent rerunning on link
+				link.setAttribute( "data-loadcss", true );
+				// bind listeners to toggle media back
+				rp.bindMediaToggle( link );
+			}
+		}
+	};
+
+	// if unsupported, run the polyfill
+	if( !rp.support() ){
+		// run once at least
+		rp.poly();
+
+		// rerun poly on an interval until onload
+		var run = w.setInterval( rp.poly, 500 );
+		if( w.addEventListener ){
+			w.addEventListener( "load", function(){
+				rp.poly();
+				w.clearInterval( run );
+			} );
+		} else if( w.attachEvent ){
+			w.attachEvent( "onload", function(){
+				rp.poly();
+				w.clearInterval( run );
+			} );
+		}
+	}
+
+
+	// commonjs
+	if( typeof exports !== "undefined" ){
+		exports.loadCSS = loadCSS;
+	}
+	else {
+		w.loadCSS = loadCSS;
+	}
+}( typeof global !== "undefined" ? global : this ) );
+</script>
+
+    <link rel="icon" href= "/assets/favicon.ico" />
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.min.js" as="script" />
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js" as="script" />
+    <link rel="preload" href="/scripts/main.js" as="script" />
+    <link rel="preload" as="font" href="/font/Oswald-Regular.ttf" crossorigin>
+    <link rel="preload" as="font" href="https://at.alicdn.com/t/font_327081_1dta1rlogw17zaor.woff" crossorigin>
+    
+        <!-- algolia -->
+        <script>
+            
+            var hits = JSON.parse('{"per_page":10}')
+            var labels = JSON.parse('{"input_placeholder":"Search for Posts","hits_empty":"没有找到任何搜索结果: ${query}","hits_stats":"找到约${hits}条结果（用时${time}ms）"}')
+
+            var algolia = {
+                applicationID: 'V0HYXBS9FB',
+                apiKey: '6550d5de786935564142097c3e78c380',
+                indexName: 'law_blog_index',
+                hits: hits,
+                labels: labels
+            }
+        </script>
+    
+    <!-- fancybox -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.2.5/jquery.fancybox.min.js" defer></script>
+    <!-- 百度统计  -->
+    
+    <!-- 谷歌统计  -->
+    
+<meta name="generator" content="Hexo 5.4.0"><link rel="alternate" href="/atom.xml" title="Tenloy's Blog" type="application/atom+xml">
+</head>
+
+    
+        <body class="post-body">
+    
+    
+<header class="header">
+
+    <div class="read-progress"></div>
+    <div class="header-sidebar-menu">&#xe775;</div>
+    <!-- post页的toggle banner  -->
+    
+    <div class="banner">
+            <div class="blog-title">
+                <a href="/" >Tenloy&#39;s Blog</a>
+            </div>
+            <div class="post-title">
+                <a href="#" class="post-name">数据加密 — 非对称加密(加签/加密，以RSA为例)</a>
+            </div>
+    </div>
+    
+    <!-- 将home-link的操作改为应用到header-top-right上 -->
+    <div class="header-top-right">
+        <!-- search  -->
+        
+            <div class="site-search popup-trigger tl-search">
+                <span class="iconfont-jian tl-search-icon">&#xe7fc;搜索</span>
+            </div>
+            
+        <a class="home-link" href=/>Tenloy's Blog</a>
+    </div>
+</header>
+    <div class="wrapper">
+        <div class="site-intro" style="
+
+
+
+
+
+
+
+height:40vh;
+">
+    
+    <!-- 主页  -->
+    
+    
+    <!-- 404页  -->
+            
+    <div class="site-intro-placeholder"></div>
+    <div class="site-intro-img" style="background-image: url(/intro/post-bg.jpg)"></div>
+    <div class="site-intro-meta">
+        <!-- 标题  -->
+        <h1 class="intro-title">
+            <!-- 主页  -->
+            
+            数据加密 — 非对称加密(加签/加密，以RSA为例)
+            <!-- 404 -->
+            
+        </h1>
+        <!-- 副标题 -->
+        <p class="intro-subtitle">
+            <!-- 主页副标题  -->
+            
+            
+            <!-- 404 -->
+            
+        </p>
+        <!-- 文章页meta -->
+        
+            <div class="post-intros">
+                <!-- 文章页标签  -->
+                
+                
+                    <div class="post-intro-read">
+                        <span>Word count: <span class="post-count word-count">4.3k</span>Reading time: <span class="post-count reading-time">16 min</span></span>
+                    </div>
+                
+                <div class="post-intro-meta">
+                    <span class="post-intro-calander iconfont-archer">&#xe676;</span>
+                    <span class="post-intro-time">2020/12/20</span>
+                    
+                    <span id="busuanzi_container_page_pv" class="busuanzi-pv">
+                        <span class="iconfont-archer">&#xe602;</span>
+                        <span id="busuanzi_value_page_pv"></span>
+                    </span>
+                    
+                    <span class="shareWrapper">
+                        <span class="iconfont-archer shareIcon">&#xe71d;</span>
+                        <span class="shareText">Share</span>
+                        <ul class="shareList">
+                            <li class="iconfont-archer share-qr" data-type="qr">&#xe75b;
+                                <div class="share-qrcode"></div>
+                            </li>
+                            <li class="iconfont-archer" data-type="weibo">&#xe619;</li>
+                            <li class="iconfont-archer" data-type="qzone">&#xe62e;</li>
+                            <li class="iconfont-archer" data-type="twitter">&#xe634;</li>
+                            <li class="iconfont-archer" data-type="facebook">&#xe67a;</li>
+                        </ul>
+                    </span>
+                </div>
+            </div>
+        
+    </div>
+</div>
+        <script>
+ 
+  // get user agent
+  var browser = {
+    versions: function () {
+      var u = window.navigator.userAgent;
+      return {
+        userAgent: u,
+        trident: u.indexOf('Trident') > -1, //IE内核
+        presto: u.indexOf('Presto') > -1, //opera内核
+        webKit: u.indexOf('AppleWebKit') > -1, //苹果、谷歌内核
+        gecko: u.indexOf('Gecko') > -1 && u.indexOf('KHTML') == -1, //火狐内核
+        mobile: !!u.match(/AppleWebKit.*Mobile.*/), //是否为移动终端
+        ios: !!u.match(/\(i[^;]+;( U;)? CPU.+Mac OS X/), //ios终端
+        android: u.indexOf('Android') > -1 || u.indexOf('Linux') > -1, //android终端或者uc浏览器
+        iPhone: u.indexOf('iPhone') > -1 || u.indexOf('Mac') > -1, //是否为iPhone或者安卓QQ浏览器
+        iPad: u.indexOf('iPad') > -1, //是否为iPad
+        webApp: u.indexOf('Safari') == -1, //是否为web应用程序，没有头部与底部
+        weixin: u.indexOf('MicroMessenger') == -1, //是否为微信浏览器
+        uc: u.indexOf('UCBrowser') > -1 //是否为android下的UC浏览器
+      };
+    }()
+  }
+  console.log("userAgent:" + browser.versions.userAgent);
+
+  // callback
+  function fontLoaded() {
+    console.log('font loaded');
+    if (document.getElementsByClassName('site-intro-meta')) {
+      document.getElementsByClassName('intro-title')[0].classList.add('intro-fade-in');
+      document.getElementsByClassName('intro-subtitle')[0].classList.add('intro-fade-in');
+      var postIntros = document.getElementsByClassName('post-intros')[0]
+      if (postIntros) {
+        postIntros.classList.add('post-fade-in');
+      }
+    }
+  }
+
+  // UC不支持跨域，所以直接显示
+  function asyncCb(){
+    if (browser.versions.uc) {
+      console.log("UCBrowser");
+      fontLoaded();
+    } else {
+      WebFont.load({
+        custom: {
+          families: ['Oswald-Regular']
+        },
+        loading: function () {  //所有字体开始加载
+          // console.log('loading');
+        },
+        active: function () {  //所有字体已渲染
+          fontLoaded();
+        },
+        inactive: function () { //字体预加载失败，无效字体或浏览器不支持加载
+          console.log('inactive: timeout');
+          fontLoaded();
+        },
+        timeout: 5000 // Set the timeout to two seconds
+      });
+    }
+  }
+
+  function asyncErr(){
+    console.warn('script load from CDN failed, will load local script')
+  }
+
+  // load webfont-loader async, and add callback function
+  function async(u, cb, err) {
+    var d = document, t = 'script',
+      o = d.createElement(t),
+      s = d.getElementsByTagName(t)[0];
+    o.src = u;
+    if (cb) { o.addEventListener('load', function (e) { cb(null, e); }, false); }
+    if (err) { o.addEventListener('error', function (e) { err(null, e); }, false); }
+    s.parentNode.insertBefore(o, s);
+  }
+
+  var asyncLoadWithFallBack = function(arr, success, reject) {
+      var currReject = function(){
+        reject()
+        arr.shift()
+        if(arr.length)
+          async(arr[0], success, currReject)
+        }
+
+      async(arr[0], success, currReject)
+  }
+
+  asyncLoadWithFallBack([
+    "https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.min.js", 
+    "https://cdn.bootcss.com/webfont/1.6.28/webfontloader.js",
+    "/lib/webfontloader.min.js"
+  ], asyncCb, asyncErr)
+</script>        
+        <img class="loading" src="/assets/loading.svg" style="display: block; margin: 6rem auto 0 auto; width: 6rem; height: 6rem;" />
+        <div class="container container-unloaded">
+            <main class="main post-page">
+    <article class="article-entry">
+        <h2 id="一、概述"><a href="#一、概述" class="headerlink" title="一、概述"></a>一、概述</h2><h3 id="1-1-非对称加密-公钥加密"><a href="#1-1-非对称加密-公钥加密" class="headerlink" title="1.1 非对称加密(公钥加密)"></a>1.1 非对称加密(公钥加密)</h3><p>公开密钥密码学（Public-key cryptography）也称非对称式密码学（Asymmetric cryptography）是密码学的一种算法。</p>
+<ul>
+<li>它需要两个密钥，一个是公开密钥，另一个是私有密钥；公钥用作加密，私钥则用作解密。由于加密和解密需要两个不同的密钥，故被称为非对称加密；不同于加密和解密都使用同一个密钥的对称加密。</li>
+<li>公钥可以公开，可任意向外发布；<strong>私钥不可以公开，必须由用户自行严格秘密保管</strong>，绝不透过任何途径向任何人提供，也不会透露给被信任的要通信的另一方。</li>
+<li>应用：<ul>
+<li><strong>公钥加密，私钥加密</strong>：使用公钥把明文加密后所得的密文，只能用相对应的私钥才能解密并得到原本的明文，最初用来加密的公钥不能用作解密。</li>
+<li><strong>私钥签名，公钥验签</strong>：基于非对称加密的特性，它还能提供<a target="_blank" rel="noopener" href="https://zh.wikipedia.org/wiki/%E6%95%B8%E4%BD%8D%E7%B0%BD%E7%AB%A0">数字签名</a>的功能，使电子文件可以得到如同在纸本文件上亲笔签署的效果。</li>
+</ul>
+</li>
+<li>优点：<ul>
+<li>安全：不论给出多少份明文和对应的密文，也无法根据已知的明文和密文的对应关系，破译出下一份密文。</li>
+<li>灵活：可以产生很多的公钥E和私钥D的组合给不同的加密者</li>
+</ul>
+</li>
+<li>缺点：运算速度慢。</li>
+</ul>
+<h3 id="1-2-RSA算法"><a href="#1-2-RSA算法" class="headerlink" title="1.2 RSA算法"></a>1.2 RSA算法</h3><p><strong>RSA加密算法</strong>是一种非对称加密算法。</p>
+<p>RSA在相关应用的时候，是需要有一些标准的 — PKI(public key infrastructure)标准(见上篇)。最常用的是pkcs。现在的各种程序中，基本都是遵循这个标准来使用RSA的。</p>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://www.rsa.com/">RSA官网</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.rfc-editor.org/search/rfc_search_detail.php?title=pkcs&pubstatus%5B%5D=Any&pub_date_type=any">标准的查看</a></li>
+</ul>
+<p>公钥加密标准(The Public-Key Cryptography Standards, PKCS)是由美国RSA数据安全公司及其合作伙伴制定的一组公钥密码学标准，其中包括证书申请、证书更新、证书作废表发布、扩展证书内容以及数字签名、数字信封的格式等方面的一系列相关协议。</p>
+<h3 id="1-3-密钥、明文、密文长度"><a href="#1-3-密钥、明文、密文长度" class="headerlink" title="1.3 密钥、明文、密文长度"></a>1.3 密钥、明文、密文长度</h3><p><a target="_blank" rel="noopener" href="https://cloud.tencent.com/developer/article/1199963">原文链接：RSA密钥长度、明文长度和密文长度</a></p>
+<p>RSA的三个重要大数：公钥指数e、私钥指数d和模值n。</p>
+<h4 id="1-3-1-密钥长度"><a href="#1-3-1-密钥长度" class="headerlink" title="1.3.1 密钥长度"></a>1.3.1 密钥长度</h4><ul>
+<li>密钥指谁？密钥长度指谁？模值的位长度。<ul>
+<li>由于RSA密钥是（公钥+模值）、（私钥+模值）分组分发的，单独给对方一个公钥或私钥是没有任何用处，所以我们说的“密钥”其实是它们两者中的其中一组。但我们说的“密钥长度”一般只是指模值的位长度。目前主流可选值：1024、2048、3072、4096…</li>
+</ul>
+</li>
+<li>模值 n 主流长度是多少？<ul>
+<li>目前主流密钥长度至少都是1024bits以上，低于1024bit的密钥已经不建议使用（安全问题）。那么上限在哪里？没有上限，多大都可以使用。</li>
+</ul>
+</li>
+<li>公钥指数 e 如何确定？<ul>
+<li>公钥指数是随意选的，但目前行业上公钥指数普遍选的都是65537（0x10001，5bits），该值是除了1、3、5、17、257之外的最小素数，为什么不选的大一点？当然可以，只是考虑到既要满足相对安全、又想运算的快一点（加密时），PKCS#1的一个建议值而已。</li>
+</ul>
+</li>
+<li>私钥指数 d 如何确定？<ul>
+<li>公钥指数随意选，那么私钥就不能再随意选了，只能根据算法公式（<code>ed%k=1，k=(p-1)(q-1)</code>）进行运算出来。那么私钥指数会是多少位？根据ed关系，私钥 <code>d=(x*k+1)/e</code>，所以单看这个公式，私钥指数似乎也不是唯一结果，可能大于也可能小于1024bits的，但我们习惯上也是指某个小于1024bits的大整数。</li>
+<li>包括前文的公钥指数，在实际运算和存储时为方便一般都是按照标准位长进行使用，前面不足部分补0填充，所以，使用保存和转换这些密钥需要注意统一缓冲区的长度。</li>
+</ul>
+</li>
+</ul>
+<h4 id="1-3-2-明文长度"><a href="#1-3-2-明文长度" class="headerlink" title="1.3.2 明文长度"></a>1.3.2 明文长度</h4><p>网上有说<strong>明文长度小于等于密钥长度（Bytes）-11</strong>，这说法本身不太准确，会给人感觉RSA  1024只能加密117字节长度明文。实际上，<strong>RSA算法本身要求加密内容也就是明文长度m必须</strong> <code>0 &lt; m &lt; n</code>，也就是说内容这个大整数不能超过n，否则就出错。那么如果m=0是什么结果？普遍RSA加密器会直接返回全0结果。如果m&gt;n，运算就会出错？！那怎么办？且听下文分解。</p>
+<p>所以，RSA实际可加密的明文长度最大也是1024bits，但问题就来了：</p>
+<p>如果小于这个长度怎么办？就需要进行padding，因为如果没有padding，用户无法确分解密后内容的真实长度，字符串之类的内容问题还不大，以0作为结束符，但对二进制数据就很难理解，因为不确定后面的0是内容还是内容结束符。</p>
+<p>只要用到padding，那么就要占用实际的明文长度，于是才有117字节的说法。我们一般使用的padding标准有NoPPadding、OAEPPadding、PKCS1Padding等，<strong>其中PKCS#1建议的padding就占用了11个字节</strong>。</p>
+<p>如果大于这个长度怎么办？很多算法的padding往往是在后边的，但PKCS的padding则是在前面的，此为有意设计，有意的把第一个字节置0以确保m的值小于n。</p>
+<p>这样，128字节（1024bits）-减去11字节正好是117字节，但对于RSA加密来讲，padding也是参与加密的，所以，依然按照1024bits去理解，但实际的明文只有117字节了。</p>
+<p>关于PKCS#1 padding规范可参考：RFC2313 chapter  8.1，<strong>我们在把明文送给RSA加密器前，要确认这个值是不是大于n，也就是如果接近n位长，那么需要先padding再分段加密。</strong>除非我们是“定长定量自己可控可理解”的加密不需要padding。</p>
+<h4 id="1-3-3-密文长度"><a href="#1-3-3-密文长度" class="headerlink" title="1.3.3 密文长度"></a>1.3.3 密文长度</h4><p>密文长度就是给定符合条件的明文加密出来的结果位长，这个可以确定，<strong>加密后的密文位长跟密钥的位长度是相同的</strong>，因为加密公式：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">C &#x3D; (P^e) % n</span><br></pre></td></tr></table></figure>
+
+<p>所以，C最大值就是n-1，所以不可能超过n的位数。<strong>尽管可能小于n的位数，但从传输和存储角度，仍然是按照标准位长来进行的</strong>，所以，即使我们加密一字节的明文，运算出来的结果也要按照标准位长来使用（当然了，除非我们能再采取措施区分真实的位长，一般不在考虑）。</p>
+<p>至于明文分片多次加密，自然密文长度成倍增长，但已不属于一次加密的问题，不能放到一起考虑。</p>
+<h4 id="1-3-4-常见的RSA密钥长度"><a href="#1-3-4-常见的RSA密钥长度" class="headerlink" title="1.3.4 常见的RSA密钥长度"></a>1.3.4 常见的RSA密钥长度</h4><table>
+<thead>
+<tr>
+<th align="left">位数</th>
+<th align="left">私钥长度(X509 PEM格式)</th>
+<th align="left">公钥长度(X509 PEM格式)</th>
+<th align="left">明文长度</th>
+<th align="left">密文长度(非Base64)</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left">512</td>
+<td align="left">428</td>
+<td align="left">128</td>
+<td align="left">1~53</td>
+<td align="left">54</td>
+</tr>
+<tr>
+<td align="left">1024</td>
+<td align="left">812</td>
+<td align="left">216</td>
+<td align="left">1~117</td>
+<td align="left">128</td>
+</tr>
+<tr>
+<td align="left">2048</td>
+<td align="left">1588</td>
+<td align="left">392</td>
+<td align="left">1~245</td>
+<td align="left">256</td>
+</tr>
+</tbody></table>
+<h2 id="二、加密、解密"><a href="#二、加密、解密" class="headerlink" title="二、加密、解密"></a>二、加密、解密</h2><p>加密的目的是实现只有指定个体才能打开发送方发出的数据，所以<strong>公钥加密</strong>(使用指定接受者的公钥来加密)，<strong>私钥解密</strong>，常用的加密算法如RSA</p>
+<h2 id="三、加签、验签"><a href="#三、加签、验签" class="headerlink" title="三、加签、验签"></a>三、加签、验签</h2><p>接收方可以通过签名来确认发送方的身份，并可进行数据完整性检查。由RSA加密算法的规则可知，一个安全个体的私钥只有自己才知道，公钥则是可以被多方知道，所以要起到签名的效果，需要<strong>私钥签名，公钥验签</strong>。</p>
+<img src="/images/encrypt/01.jpg" alt="01" style="zoom:70%;" />
+
+<p><strong>步骤</strong>：</p>
+<ul>
+<li>将原始数据哈希运算，得出标记，用 A 的私钥进行一次非对称加密算法处理。（<strong>注意：签名是由原始数据的哈希值生成的，而不是原始数据本身。后者的体积可能很大，所以不可取。</strong>）</li>
+<li>B用A的公钥进行解密：<ul>
+<li>如果能解出来，表示：确实是 A 发的。</li>
+<li>如果解出来的值与收到的原始文本算出的哈希值相同，表示：数据传输途中未被修改。</li>
+</ul>
+</li>
+</ul>
+<p><strong>过程中出现的算法</strong>：</p>
+<ul>
+<li>哈希算法：将任意长度的消息M映射成一个固定长度的散列值h(也称为消息摘要)，常见的比如MD4、MD5、SHA-1、SHA-256、SHA-384、SHA-512</li>
+<li>签名算法：RSA、DSA。其中RSA既能当做加密算法，也能当做签名算法来用，正反逆运算都是通的。<strong>DSA只能用作签名</strong> </li>
+<li>本文代码签名算法为SHA1+RSA，Java中称 <code>SHA1WithRSA</code></li>
+</ul>
+<h2 id="四、OpenSSL-常用操作命令"><a href="#四、OpenSSL-常用操作命令" class="headerlink" title="四、OpenSSL 常用操作命令"></a>四、OpenSSL 常用操作命令</h2><h3 id="4-1-Private-Key操作命令"><a href="#4-1-Private-Key操作命令" class="headerlink" title="4.1 Private Key操作命令"></a>4.1 Private Key操作命令</h3><h4 id="4-1-1-私钥创建"><a href="#4-1-1-私钥创建" class="headerlink" title="4.1.1 私钥创建"></a>4.1.1 私钥创建</h4><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 生成PKCS1格式RSA Private Key. 密钥长度为2048</span></span><br><span class="line">$ openssl genrsa -out private-key.p1.pem 2048</span><br></pre></td></tr></table></figure>
+
+<h4 id="4-1-2-私钥检查"><a href="#4-1-2-私钥检查" class="headerlink" title="4.1.2 私钥检查"></a>4.1.2 私钥检查</h4><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 校验私钥文件</span></span><br><span class="line">$ openssl rsa -<span class="keyword">in</span> private.pem -check</span><br></pre></td></tr></table></figure>
+
+<h4 id="4-1-3-私钥格式转换"><a href="#4-1-3-私钥格式转换" class="headerlink" title="4.1.3 私钥格式转换"></a>4.1.3 私钥格式转换</h4><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># PKCS #1 -&gt; Unencrypted PKCS #8</span></span><br><span class="line">openssl pkcs8 -topk8 -<span class="keyword">in</span> private-key.p1.pem -out private-key.p8.pem -nocrypt</span><br><span class="line"></span><br><span class="line"><span class="comment"># PKCS #1 -&gt; Encrypted PKCS #8</span></span><br><span class="line"><span class="comment"># 过程中会让你输入密码，你至少得输入4位，所以PKCS #8相比PKCS #1更安全。</span></span><br><span class="line">openssl pkcs8 -topk8 -<span class="keyword">in</span> private-key.p1.pem -out private-key.p8.pem</span><br><span class="line"></span><br><span class="line"><span class="comment"># PKCS #8 -&gt; PKCS #1</span></span><br><span class="line"><span class="comment"># 如果这个PKCS #8是加密的，那么你得输入密码。</span></span><br><span class="line">openssl rsa -<span class="keyword">in</span> private-key.p8.pem -out private-key.p1.pem</span><br></pre></td></tr></table></figure>
+
+<h3 id="4-2-Public-Key操作命令"><a href="#4-2-Public-Key操作命令" class="headerlink" title="4.2 Public Key操作命令"></a>4.2 Public Key操作命令</h3><h4 id="4-2-1-从PKCS-1、-8私钥中提取公钥"><a href="#4-2-1-从PKCS-1、-8私钥中提取公钥" class="headerlink" title="4.2.1 从PKCS #1、#8私钥中提取公钥"></a>4.2.1 从PKCS #1、#8私钥中提取公钥</h4><p>提取指的是从Private Key中提取Public Key，<code>openssl rsa</code>同时支持PKCS #1和PKCS #8的RSA Private Key，唯一的区别是如果PKCS #8是加密的，会要求你输入密码。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 提取X.509格式RSA Public Key</span></span><br><span class="line">openssl rsa -<span class="keyword">in</span> private-key.p1.pem -pubout -out public-key.x509.pem</span><br><span class="line"></span><br><span class="line"><span class="comment"># 提取PKCS #1格式RSA Public Key</span></span><br><span class="line">openssl rsa -<span class="keyword">in</span> private-key.p1.pem -out public-key.p1.pem -RSAPublicKey_out</span><br></pre></td></tr></table></figure>
+
+<p>x509 格式的公钥长度比 pkcs#1 格式的长一些，以RSA1024为例，前者的长度为216，后者的长度为188。（都是base64编码格式）。</p>
+<h4 id="4-2-2-从X-509证书提取公钥"><a href="#4-2-2-从X-509证书提取公钥" class="headerlink" title="4.2.2 从X.509证书提取公钥"></a>4.2.2 从X.509证书提取公钥</h4><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">openssl x509 -<span class="keyword">in</span> cert.crt -pubkey -noout &gt; public-key.x509.pem</span><br></pre></td></tr></table></figure>
+
+<h4 id="4-2-4-公钥格式转换"><a href="#4-2-4-公钥格式转换" class="headerlink" title="4.2.4 公钥格式转换"></a>4.2.4 公钥格式转换</h4><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># X.509 RSA Public Key -&gt; PKCS #1 RSA Public Key</span></span><br><span class="line">openssl rsa -pubin -<span class="keyword">in</span> public-key.x509.pem -RSAPublicKey_out -out public-key.p1.pem</span><br><span class="line"></span><br><span class="line"><span class="comment"># PKCS #1 RSA Public Key -&gt; X.509 RSA Public Key</span></span><br><span class="line">openssl rsa -RSAPublicKey_in -<span class="keyword">in</span> public-key.p1.pem -pubout -out public-key.x509.pem</span><br></pre></td></tr></table></figure>
+
+<h3 id="4-3-证书操作命令"><a href="#4-3-证书操作命令" class="headerlink" title="4.3 证书操作命令"></a>4.3 证书操作命令</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 生成私钥</span></span><br><span class="line">openssl genrsa -out ca.key 1024</span><br><span class="line"></span><br><span class="line"><span class="comment"># 创建证书请求</span></span><br><span class="line">openssl req -new -key ca.key -out rsacert.csr</span><br><span class="line"></span><br><span class="line"><span class="comment"># 生成证书并签名，有效期10年</span></span><br><span class="line">openssl x509 -req -days 3650 -<span class="keyword">in</span> rsacert.csr -signkey ca.key -out rsacert.crt</span><br><span class="line"></span><br><span class="line"><span class="comment"># 将x509证书转 DER 格式</span></span><br><span class="line">openssl x509 -<span class="keyword">in</span> rsacert.crt -out rsacert.der -outform der</span><br><span class="line"></span><br><span class="line"><span class="comment"># 导出P12文件</span></span><br><span class="line">openssl pkcs12 -<span class="built_in">export</span> -out p.p12 -inkey ca.key -<span class="keyword">in</span> rsacert.crt</span><br></pre></td></tr></table></figure>
+
+<h3 id="4-4-编码格式-PEM转DER"><a href="#4-4-编码格式-PEM转DER" class="headerlink" title="4.4 编码格式: PEM转DER"></a>4.4 编码格式: PEM转DER</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 将私钥转换成 DER 格式</span></span><br><span class="line">$ openssl rsa -<span class="keyword">in</span> private.pem -out private.der -outform der</span><br><span class="line"></span><br><span class="line"><span class="comment"># 将公钥转换成 DER 格式 (以RSA1024为例，216字节 -&gt; 162字节，符合base64编码后，长度增加3/1的规则)</span></span><br><span class="line">$ openssl rsa -<span class="keyword">in</span> public.x509.pem -out public.der -pubin -outform der</span><br></pre></td></tr></table></figure>
+
+<h3 id="4-5-加密、解密"><a href="#4-5-加密、解密" class="headerlink" title="4.5 加密、解密"></a>4.5 加密、解密</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 使用公钥加密小文件</span></span><br><span class="line">$ openssl rsautl -encrypt -pubin -inkey public.x509.pem -<span class="keyword">in</span> msg.txt -out msg.bin</span><br><span class="line"></span><br><span class="line"><span class="comment"># 使用私钥解密小文件</span></span><br><span class="line">$ openssl rsautl -decrypt -inkey private.pem -<span class="keyword">in</span> msg.bin -out a.txt</span><br></pre></td></tr></table></figure>
+
+<h3 id="4-6-其他"><a href="#4-6-其他" class="headerlink" title="4.6 其他"></a>4.6 其他</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 以纯文本格式输出私钥内容</span></span><br><span class="line">$ openssl rsa -<span class="keyword">in</span> private.pem -text -out private.txt</span><br><span class="line"></span><br><span class="line"><span class="comment"># 以纯文本格式输出公钥内容</span></span><br><span class="line">$ openssl rsa -<span class="keyword">in</span> public-key.x509.pem -out public.txt -pubin -pubout -text</span><br></pre></td></tr></table></figure>
+
+<h2 id="五、iOS中的RSA"><a href="#五、iOS中的RSA" class="headerlink" title="五、iOS中的RSA"></a>五、iOS中的RSA</h2><h3 id="5-1-编程中常见的公私钥格式"><a href="#5-1-编程中常见的公私钥格式" class="headerlink" title="5.1 编程中常见的公私钥格式"></a>5.1 编程中常见的公私钥格式</h3><p>在iOS中使用RSA加/验签、加/解密，首先需要拿到我们想要的公钥、私钥，在 <a href="%5Bhttps://www.jianshu.com/p/bc32cbfe49e7%5D(https://www.jianshu.com/p/bc32cbfe49e7)">上篇博客</a> 中已经介绍过：</p>
+<p>证书文件常见的两种编码方式：<strong>DER编码</strong>、<strong>PEM编码</strong>。</p>
+<p>在iOS中经常接触到的证书格式标准：<strong>PKCS#1</strong>、<strong>PKCS#8(java中经常使用)<strong>、</strong>PKCS#12</strong>，PKCS#12文件扩展名为**.p12或者.pfx**(可存储公钥+私钥)，此外常见的还有<code>.cer/.crt/.der</code> (存储的是公钥)。</p>
+<p>注意：</p>
+<ul>
+<li>加载 .p12 文件代码转换成私钥</li>
+<li>加载.cer .crt  .der文件代码转换成公钥</li>
+<li>直接将PEM编码格式的、PKCS#1格式的公钥、PKCS#1 / PKCS#8标准的私钥硬编码，写在代码里使用。</li>
+</ul>
+<p>以上都是可以的，但是首先需要先确定到底使用哪种方式，因为不同的数据加载方式、不同的证书格式，所要处理的过程是不一样的。详见下面代码。</p>
+<p>注意：iOS中的相关API，一般都是需要使用公钥/私钥的DER格式的数据，如果现有的是PEM格式的，可以事先用openssl 进行转换一下。</p>
+<h3 id="5-2-代码处理过程"><a href="#5-2-代码处理过程" class="headerlink" title="5.2 代码处理过程"></a>5.2 代码处理过程</h3><p>这里使用的是iOS SDK中的 Security.framework 库，非openssl库，多年以前苹果就弃用了 OpenSSL，转而推荐自有框架 Security 和 CommonCrypto。<a target="_blank" rel="noopener" href="https://developer.apple.com/library/ios/samplecode/CryptoExercise/CryptoExercise.zip">苹果官方示例程序</a>，这个程序是 Xcode 3.x 写的，是 MRC 的。</p>
+<p>当然你仍然可以使用 OpenSSL，比如说在 iOS 上使用开源库 <a target="_blank" rel="noopener" href="https://link.jianshu.com/?t=https://github.com/x2on/OpenSSL-for-iPhone">OpenSSL for iPhone</a>。</p>
+<p>分为两步(其实很简单)：</p>
+<ol>
+<li>将公私钥文件或者字符串转换成 SecKeyRef 对象， SecKeyRef 对象是一个密码学角度的抽象的密钥对象（也就是说它可以代表一个公钥、私钥或者某种对称加密的密钥）。无论是加解密还是签名，都会需要这个对象。<figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// pragma mark - &#x27;.der&#x27;公钥文件生成SecKeyRef对象(公钥)</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// pragma mark - PKCS#1、PKCS#8 PEM编码公钥生成SecKeyRef对象(公钥)</span></span><br><span class="line">  <span class="comment">// PKCS#8格式的证书如果在代码的处理上，比PKCS#1多了一步对header的处理，也就是demo中的stripPublicKeyHeader函数，如果是PKCS#1的证书，跳过这个函数即可</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// pragma mark - &#x27;.12&#x27;私钥文件生成SecKeyRef对象(私钥)</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// pragma mark - PKCS#1、PKCS#8 PEM编码公钥生成SecKeyRef对象(私钥)</span></span><br><span class="line">  <span class="comment">// 生成代码与公钥过程大致相同，有一些细微差别</span></span><br></pre></td></tr></table></figure>
+我们在 <a href="https://tenloy.github.io/2020/12/09/pki.html#4-7-RSA%E7%A7%81%E9%92%A5PKCS1%E4%B8%8EPKCS8%E6%A0%BC%E5%BC%8F%E5%8C%BA%E5%88%AB%EF%BC%9F">上一章4.7 RSA私钥PKCS1与PKCS8格式区别？</a> 中已经证明过 <strong>如果从后往前看的话，其实可以发现PKCS8仅比PKCS1多了一个26自己的头，剩余的内容均完全一致。</strong>所以我们在这里使用时，如果是pkcs8格式的公钥私钥就要多一步<strong>除去头部</strong>的步骤，如果是pkcs1则不用，区别仅仅只有这一点。</li>
+</ol>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">+ (<span class="built_in">NSData</span> *)stripPublicKeyHeader:(<span class="built_in">NSData</span> *)d_key;  <span class="comment">// 去掉pkcs8公钥的头</span></span><br><span class="line">+ (<span class="built_in">NSData</span> *)stripPrivateKeyHeader:(<span class="built_in">NSData</span> *)d_key; <span class="comment">//去掉pkcs8私钥的头</span></span><br></pre></td></tr></table></figure>
+
+<p>注意，上面的方法不能对pkcs1格式的公钥、私钥进行操作。前者能生成SecKeyRef，但后续操作失败code=-9809；后者去除头失败，返回处理后的私钥字符串为空，导致无法生成SecKeyRef。</p>
+<p>有兴趣可以看下<a target="_blank" rel="noopener" href="https://www.jianshu.com/p/783f2605f3e9">这篇文章 — iOS 生成 SecKeyRef 的正规方式</a>，文章有提到直接处理PEM编码格式的头时，由于对应的代码解析力不够强，经常会返回一个空的密钥对象，但是在我们APP内频繁测试没有发现这个问题(如果读到这里能为我解答这个疑问，麻烦评论留言一下吧，多谢)</p>
+<ol start="2">
+<li>调用相应的函数，实现功能<figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 使用私钥生成数字签名</span></span><br><span class="line">OSStatus SecKeyRawSign(SecKeyRef key, SecPadding padding, <span class="keyword">const</span> uint8_t *dataToSign, size_t dataToSignLen, uint8_t *sig, size_t *sigLen);</span><br><span class="line"><span class="comment">// 使用公钥对数字签名进行验证</span></span><br><span class="line">OSStatus SecKeyRawVerify(SecKeyRef key, SecPadding padding, <span class="keyword">const</span> uint8_t *signedData, size_t signedDataLen, <span class="keyword">const</span> uint8_t *sig, size_t sigLen);</span><br><span class="line"></span><br><span class="line"><span class="comment">// 使用公钥对数据加密</span></span><br><span class="line">OSStatus SecKeyEncrypt(SecKeyRef key, SecPadding padding, <span class="keyword">const</span> uint8_t *plainText, size_t plainTextLen, uint8_t *cipherText, size_t *cipherTextLen);</span><br><span class="line"><span class="comment">// 使用私钥对数据解密</span></span><br><span class="line">OSStatus SecKeyDecrypt(SecKeyRef key, SecPadding padding, <span class="keyword">const</span> uint8_t *cipherText, size_t cipherTextLen, uint8_t *plainText, size_t *plainTextLen)</span><br></pre></td></tr></table></figure>
+从上面的函数可以看到，函数参数并不复杂，将1中生成SecKeyRef对象传入，数据传输两端确定padding填充方式即可。<strong>要确认两边使用的签名算法设置参数一致</strong>；详细代码看demo即可<figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// digest message with sha1</span></span><br><span class="line">+ (<span class="built_in">NSData</span> *)sha1:(<span class="built_in">NSString</span> *)str</span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">const</span> <span class="keyword">void</span> *data = [str cStringUsingEncoding:<span class="built_in">NSUTF8StringEncoding</span>];</span><br><span class="line">    CC_LONG len = (CC_LONG)strlen(data);</span><br><span class="line">    uint8_t * md = malloc( CC_SHA1_DIGEST_LENGTH * <span class="keyword">sizeof</span>(uint8_t) );;</span><br><span class="line">    CC_SHA1(data, len, md);</span><br><span class="line">    <span class="keyword">return</span> [<span class="built_in">NSData</span> dataWithBytes:md length:CC_SHA1_DIGEST_LENGTH];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+</ol>
+<h2 id="六、常见问题"><a href="#六、常见问题" class="headerlink" title="六、常见问题"></a>六、常见问题</h2><h3 id="6-1-为什么RSA公钥加密使用PKCS1填充每次生成结果都不一样？"><a href="#6-1-为什么RSA公钥加密使用PKCS1填充每次生成结果都不一样？" class="headerlink" title="6.1 为什么RSA公钥加密使用PKCS1填充每次生成结果都不一样？"></a>6.1 为什么RSA公钥加密使用PKCS1填充每次生成结果都不一样？</h3><p>在<a href="https://tenloy.github.io/2021/12/09/pki.html#PKCS1%E5%A1%AB%E5%85%85%E6%96%B9%E5%BC%8F">上一篇博客 — 常见的PKI标准(X.509、PKCS)</a> 中已经介绍过PKCS1填充方式的过程,不再赘述，总结一下：</p>
+<ul>
+<li><strong>PKCS1填充格式：加密块EB</strong> = <strong>00 + 块类型BT + 填充字符PS + 00 + 数据D</strong>。</li>
+<li><strong>如果使用公钥操作，BT永远为02，而对于BT为02的，PS对应的填充字节的值随机产生但不能是0字节(非00)。</strong></li>
+<li>填充后，进行加密运算之前的数据不一致，得出的结果当然就不一样。</li>
+<li>(<a target="_blank" rel="noopener" href="https://blog.csdn.net/guyongqiangx/article/details/74930951">这篇博客</a>的作者一步步验证了这个现象，感兴趣的可以看下)</li>
+</ul>
+<h2 id="七、代码整理Demo"><a href="#七、代码整理Demo" class="headerlink" title="七、代码整理Demo"></a>七、代码整理Demo</h2><p>在<a target="_blank" rel="noopener" href="https://github.com/ideawu/Objective-C-RSA">Objective-C-RSA</a>项目代码的基础上，根据自己项目的使用场景，整理了一下代码，放在了 <a target="_blank" rel="noopener" href="https://github.com/Roten8/RSAHandle">GitHub - RSAHandle</a> 上，希望能有所帮助，有什么问题可以留言讨论。</p>
+
+    </article>
+    <!-- license  -->
+    
+        <div class="license-wrapper">
+            <p>Author：<a href="https://tenloy.github.io">Tenloy</a>
+            <p>原文链接：<a href="https://tenloy.github.io/2020/12/20/asymmetric.html">https://tenloy.github.io/2020/12/20/asymmetric.html</a>
+            <p>发表日期：2020.12.20 , 5:49 AM</p>
+            <p>更新日期：2024.04.06 , 12:00 PM</p>
+            <p>版权声明：本文采用<a rel="license noopener" target="_blank" href="http://creativecommons.org/licenses/by-nc/4.0/">Crative Commons 4.0 许可协议</a>进行许可</p>
+        </div>
+    
+    <!-- paginator  -->
+    <ul class="post-paginator">
+        <li class="next">
+            
+                <div class="nextSlogan">Next Post</div>
+                <a href= "/2020/12/21/aes-standard.html" title= "[转] AES标准及Rijndael算法解析">
+                    <div class="nextTitle">[转] AES标准及Rijndael算法解析</div>
+                </a>
+            
+        </li>
+        <li class="previous">
+            
+                <div class="prevSlogan">Previous Post</div>
+                <a href= "/2020/12/09/pki.html" title= "常见的PKI标准(X.509、PKCS)及证书相关介绍">
+                    <div class="prevTitle">常见的PKI标准(X.509、PKCS)及证书相关介绍</div>
+                </a>
+            
+        </li>
+    </ul>
+    <!-- 评论插件 -->
+    <!-- 来必力City版安装代码 -->
+
+<!-- City版安装代码已完成 -->
+    
+    
+    <!-- gitalk评论 -->
+
+    <!-- utteranc评论 -->
+
+    <!-- partial('_partial/comment/changyan') -->
+    <!--PC版-->
+
+
+    
+    
+
+    <!-- 评论 -->
+</main>
+            <!-- profile -->
+            
+        </div>
+        <footer class="footer footer-unloaded">
+    <!-- social  -->
+    
+    <div class="social">
+        
+    
+        
+            
+                <a href="mailto:luotengoto@163.com" class="iconfont-archer email" title=email ></a>
+            
+        
+    
+        
+            
+                <a href="//github.com/Tenloy" class="iconfont-archer github" target="_blank" title=github></a>
+            
+        
+    
+        
+            
+                <a href="https://www.jianshu.com/u/8db1bc12db9f" class="iconfont-jian jianshu" target="_blank" title=jianshu></a>
+            
+        
+    
+        
+            
+                <a href="/atom.xml" class="iconfont-archer rss" target="_blank" title=rss></a>
+            
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+
+    </div>
+    
+    <!-- powered by Hexo  -->
+    <div class="copyright">
+        <span id="hexo-power">Powered by <a href="https://hexo.io/" target="_blank">Hexo</a></span><span class="iconfont-archer power">&#xe635;</span><span id="theme-info">theme <a href="https://github.com/fi3ework/hexo-theme-archer" target="_blank">Archer</a></span>
+    </div>
+    <!-- 不蒜子  -->
+    
+    <div class="busuanzi-container">
+    
+     
+    <span id="busuanzi_container_site_pv">PV: <span id="busuanzi_value_site_pv"></span> :)</span>
+    
+    </div>
+    
+</footer>
+    </div>
+    <!-- toc -->
+    
+    <div class="toc-wrapper" style=
+    
+
+
+
+
+
+
+
+top:40vh;
+
+    >
+        <div class="toc-catalog">
+            <span class="iconfont-archer catalog-icon">&#xe613;</span><span>CATALOG</span>
+        </div>
+        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E3%80%81%E6%A6%82%E8%BF%B0"><span class="toc-text">一、概述</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-1-%E9%9D%9E%E5%AF%B9%E7%A7%B0%E5%8A%A0%E5%AF%86-%E5%85%AC%E9%92%A5%E5%8A%A0%E5%AF%86"><span class="toc-text">1.1 非对称加密(公钥加密)</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-2-RSA%E7%AE%97%E6%B3%95"><span class="toc-text">1.2 RSA算法</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-3-%E5%AF%86%E9%92%A5%E3%80%81%E6%98%8E%E6%96%87%E3%80%81%E5%AF%86%E6%96%87%E9%95%BF%E5%BA%A6"><span class="toc-text">1.3 密钥、明文、密文长度</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#1-3-1-%E5%AF%86%E9%92%A5%E9%95%BF%E5%BA%A6"><span class="toc-text">1.3.1 密钥长度</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#1-3-2-%E6%98%8E%E6%96%87%E9%95%BF%E5%BA%A6"><span class="toc-text">1.3.2 明文长度</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#1-3-3-%E5%AF%86%E6%96%87%E9%95%BF%E5%BA%A6"><span class="toc-text">1.3.3 密文长度</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#1-3-4-%E5%B8%B8%E8%A7%81%E7%9A%84RSA%E5%AF%86%E9%92%A5%E9%95%BF%E5%BA%A6"><span class="toc-text">1.3.4 常见的RSA密钥长度</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8C%E3%80%81%E5%8A%A0%E5%AF%86%E3%80%81%E8%A7%A3%E5%AF%86"><span class="toc-text">二、加密、解密</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%89%E3%80%81%E5%8A%A0%E7%AD%BE%E3%80%81%E9%AA%8C%E7%AD%BE"><span class="toc-text">三、加签、验签</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9B%9B%E3%80%81OpenSSL-%E5%B8%B8%E7%94%A8%E6%93%8D%E4%BD%9C%E5%91%BD%E4%BB%A4"><span class="toc-text">四、OpenSSL 常用操作命令</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#4-1-Private-Key%E6%93%8D%E4%BD%9C%E5%91%BD%E4%BB%A4"><span class="toc-text">4.1 Private Key操作命令</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#4-1-1-%E7%A7%81%E9%92%A5%E5%88%9B%E5%BB%BA"><span class="toc-text">4.1.1 私钥创建</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#4-1-2-%E7%A7%81%E9%92%A5%E6%A3%80%E6%9F%A5"><span class="toc-text">4.1.2 私钥检查</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#4-1-3-%E7%A7%81%E9%92%A5%E6%A0%BC%E5%BC%8F%E8%BD%AC%E6%8D%A2"><span class="toc-text">4.1.3 私钥格式转换</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-2-Public-Key%E6%93%8D%E4%BD%9C%E5%91%BD%E4%BB%A4"><span class="toc-text">4.2 Public Key操作命令</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#4-2-1-%E4%BB%8EPKCS-1%E3%80%81-8%E7%A7%81%E9%92%A5%E4%B8%AD%E6%8F%90%E5%8F%96%E5%85%AC%E9%92%A5"><span class="toc-text">4.2.1 从PKCS #1、#8私钥中提取公钥</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#4-2-2-%E4%BB%8EX-509%E8%AF%81%E4%B9%A6%E6%8F%90%E5%8F%96%E5%85%AC%E9%92%A5"><span class="toc-text">4.2.2 从X.509证书提取公钥</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#4-2-4-%E5%85%AC%E9%92%A5%E6%A0%BC%E5%BC%8F%E8%BD%AC%E6%8D%A2"><span class="toc-text">4.2.4 公钥格式转换</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-3-%E8%AF%81%E4%B9%A6%E6%93%8D%E4%BD%9C%E5%91%BD%E4%BB%A4"><span class="toc-text">4.3 证书操作命令</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-4-%E7%BC%96%E7%A0%81%E6%A0%BC%E5%BC%8F-PEM%E8%BD%ACDER"><span class="toc-text">4.4 编码格式: PEM转DER</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-5-%E5%8A%A0%E5%AF%86%E3%80%81%E8%A7%A3%E5%AF%86"><span class="toc-text">4.5 加密、解密</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-6-%E5%85%B6%E4%BB%96"><span class="toc-text">4.6 其他</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%94%E3%80%81iOS%E4%B8%AD%E7%9A%84RSA"><span class="toc-text">五、iOS中的RSA</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#5-1-%E7%BC%96%E7%A8%8B%E4%B8%AD%E5%B8%B8%E8%A7%81%E7%9A%84%E5%85%AC%E7%A7%81%E9%92%A5%E6%A0%BC%E5%BC%8F"><span class="toc-text">5.1 编程中常见的公私钥格式</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-2-%E4%BB%A3%E7%A0%81%E5%A4%84%E7%90%86%E8%BF%87%E7%A8%8B"><span class="toc-text">5.2 代码处理过程</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%AD%E3%80%81%E5%B8%B8%E8%A7%81%E9%97%AE%E9%A2%98"><span class="toc-text">六、常见问题</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#6-1-%E4%B8%BA%E4%BB%80%E4%B9%88RSA%E5%85%AC%E9%92%A5%E5%8A%A0%E5%AF%86%E4%BD%BF%E7%94%A8PKCS1%E5%A1%AB%E5%85%85%E6%AF%8F%E6%AC%A1%E7%94%9F%E6%88%90%E7%BB%93%E6%9E%9C%E9%83%BD%E4%B8%8D%E4%B8%80%E6%A0%B7%EF%BC%9F"><span class="toc-text">6.1 为什么RSA公钥加密使用PKCS1填充每次生成结果都不一样？</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%83%E3%80%81%E4%BB%A3%E7%A0%81%E6%95%B4%E7%90%86Demo"><span class="toc-text">七、代码整理Demo</span></a></li></ol>
+    </div>
+    
+    <div class="back-top iconfont-archer">&#xe639;</div>
+    <div class="sidebar sidebar-hide">
+    <ul class="sidebar-tabs sidebar-tabs-active-0">
+        <li class="sidebar-tab-categories"><span class="iconfont-archer">&#xe666;</span><span class="tab-name">Cate</span></li>
+        <li class="sidebar-tab-archives"><span class="iconfont-archer">&#xe67d;</span><span class="tab-name">Archive</span></li>
+        <li class="sidebar-tab-tags"><span class="iconfont-archer">&#xe61b;</span><span class="tab-name">Tag</span></li>
+    </ul>
+    <div class="sidebar-content sidebar-content-show-archive">
+        <div class="sidebar-panel-categories">
+    <div class="sidebar-categories-name">
+    
+    
+    
+    
+    
+        <span class="sidebar-category-name" data-categories="数据结构与算法"><span class="iconfont-archer">&#xe60a;</span>数据结构与算法</span>
+    
+        <span class="sidebar-category-name" data-categories="计算机组成原理"><span class="iconfont-archer">&#xe60a;</span>计算机组成原理</span>
+    
+        <span class="sidebar-category-name" data-categories="计算机网络"><span class="iconfont-archer">&#xe60a;</span>计算机网络</span>
+    
+        <span class="sidebar-category-name" data-categories="汇编语言"><span class="iconfont-archer">&#xe60a;</span>汇编语言</span>
+    
+        <span class="sidebar-category-name" data-categories="数据的存储与传输"><span class="iconfont-archer">&#xe60a;</span>数据的存储与传输</span>
+    
+        <span class="sidebar-category-name" data-categories="操作系统"><span class="iconfont-archer">&#xe60a;</span>操作系统</span>
+    
+        <span class="sidebar-category-name" data-categories="互联网标准RFC"><span class="iconfont-archer">&#xe60a;</span>互联网标准RFC</span>
+    
+        <span class="sidebar-category-name" data-categories="编译链接与装载"><span class="iconfont-archer">&#xe60a;</span>编译链接与装载</span>
+    
+        <span class="sidebar-category-name" data-categories="iOS"><span class="iconfont-archer">&#xe60a;</span>iOS</span>
+    
+        <span class="sidebar-category-name" data-categories="架构与设计模式"><span class="iconfont-archer">&#xe60a;</span>架构与设计模式</span>
+    
+        <span class="sidebar-category-name" data-categories="图形处理与渲染"><span class="iconfont-archer">&#xe60a;</span>图形处理与渲染</span>
+    
+        <span class="sidebar-category-name" data-categories="软件工程"><span class="iconfont-archer">&#xe60a;</span>软件工程</span>
+    
+        <span class="sidebar-category-name" data-categories="音视频处理"><span class="iconfont-archer">&#xe60a;</span>音视频处理</span>
+    
+        <span class="sidebar-category-name" data-categories="DSL"><span class="iconfont-archer">&#xe60a;</span>DSL</span>
+    
+        <span class="sidebar-category-name" data-categories="Swift"><span class="iconfont-archer">&#xe60a;</span>Swift</span>
+    
+        <span class="sidebar-category-name" data-categories="Git"><span class="iconfont-archer">&#xe60a;</span>Git</span>
+    
+        <span class="sidebar-category-name" data-categories="Web"><span class="iconfont-archer">&#xe60a;</span>Web</span>
+    
+    </div>
+    <div class="iconfont-archer sidebar-categories-empty">&#xe678;</div>
+    <div class="sidebar-categories-list"></div>
+</div>
+          <div class="sidebar-panel-archives">
+    <!-- 在ejs中将archive按照时间排序 -->
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    <div class="total-and-search">
+        <div class="total-archive">
+        Total : 76
+        </div>
+        <!-- search  -->
+        
+            <div class="site-search popup-trigger tl-side-search"> 
+                <span class="iconfont-jian search-icon">&#xe7fc;搜索</span>
+            </div>
+        
+    </div>
+    
+    <div class="post-archive">
+    
+    
+    
+    
+    <div class="archive-year"> 2022 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/05</span><a class="archive-post-title" href= "/2022/05/05/sqlite.html" >iOS SQLite的使用与优化</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/28</span><a class="archive-post-title" href= "/2022/04/28/mmap.html" >内存映射mmap函数的原理与应用</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/18</span><a class="archive-post-title" href= "/2022/03/18/avfoundation.html" >AVFoundation Programming Guide(译)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/17</span><a class="archive-post-title" href= "/2022/03/17/avframework.html" >iOS音视频库概述</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/09</span><a class="archive-post-title" href= "/2022/02/09/OAuth.html" >[转] OAuth 2.0简述</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/18</span><a class="archive-post-title" href= "/2022/01/18/wkwebview-buges.html" >WKWebView使用过程中遇到的坑</a>
+        </li>
+    
+    
+    
+    
+    
+        </ul>
+    
+    <div class="archive-year"> 2021 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/22</span><a class="archive-post-title" href= "/2021/11/22/bit-calculation.html" >[转] 位运算实现加、减、乘、除运算</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/10</span><a class="archive-post-title" href= "/2021/11/10/git-use.html" >Git的使用总结</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/21</span><a class="archive-post-title" href= "/2021/10/21/dyld-objc.html" >(七) dyld与Objc—_objc_init、map_images、load_images</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/18</span><a class="archive-post-title" href= "/2021/10/18/compile-dynamic-link.html" >(六) Mach-O 文件的动态链接、库、Dyld(含dlopen)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/14</span><a class="archive-post-title" href= "/2021/10/14/compile-vm-asrl.html" >(五) Mach-O 文件之进程(虚拟)地址空间、ASLR</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/10</span><a class="archive-post-title" href= "/2021/10/10/compile-load.html" >(四) Mach-O 文件的装载</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/08</span><a class="archive-post-title" href= "/2021/10/08/compile-static-link.html" >(三) Mach-O 文件的静态链接</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/06</span><a class="archive-post-title" href= "/2021/10/06/compile-macho.html" >(二) Mach-O 文件结构</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/05</span><a class="archive-post-title" href= "/2021/10/05/compile-clang-llvm.html" >(一) Clang/LLVM 介绍、OC 程序的编译过程</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/02</span><a class="archive-post-title" href= "/2021/10/02/makefile.html" >[转] Make 命令的使用与NodeJS案例</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/28</span><a class="archive-post-title" href= "/2021/09/28/architectural-pattern.html" >常见架构模式: MVC、MVP、MVVM、VIPER</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/25</span><a class="archive-post-title" href= "/2021/09/25/design-pattern.html" >常见的设计模式</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/20</span><a class="archive-post-title" href= "/2021/09/20/program-thought.html" >常见的编程范式</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/15</span><a class="archive-post-title" href= "/2021/09/15/graphics-processing-case.html" >图形处理(三) - 图形处理实践案例</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/15</span><a class="archive-post-title" href= "/2021/09/15/graphics-processing.html" >图形处理(二) - 图形与视频处理相关的框架</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/13</span><a class="archive-post-title" href= "/2021/09/13/image-encode-decode.html" >图形处理(一) - 图片的加载与编解码</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/12</span><a class="archive-post-title" href= "/2021/09/12/iOS-Render.html" >[转] iOS离屏渲染原理及优化</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/11</span><a class="archive-post-title" href= "/2021/09/11/core-animation03.html" >Core-Animation(三) - 渲染流程探究及性能分析</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/09</span><a class="archive-post-title" href= "/2021/09/09/core-animation02.html" >Core Animation(二) - 隐式动画、CATransaction与CAAction</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/07</span><a class="archive-post-title" href= "/2021/09/07/core-animation01.html" >Core Animation(一) - UIView与CALayer、布局与绘制</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/05</span><a class="archive-post-title" href= "/2021/09/05/AFN-Analyse.html" >[转] AFN框架实现解析</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/04</span><a class="archive-post-title" href= "/2021/09/04/nrl-session.html" >NSURLSession概述</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/02</span><a class="archive-post-title" href= "/2021/09/02/Log.html" >移动端日志库设计</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/01</span><a class="archive-post-title" href= "/2021/08/01/Crash-Monitor.html" >iOS崩溃监控与分析</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/30</span><a class="archive-post-title" href= "/2021/07/30/Lag-Monitor.html" >iOS卡顿监控</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/29</span><a class="archive-post-title" href= "/2021/07/29/SwiftUI.html" >SwiftUI</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/29</span><a class="archive-post-title" href= "/2021/07/29/Swift-Version-History.html" >Swift版本更新API介绍</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/26</span><a class="archive-post-title" href= "/2021/07/26/RunLoop-Reposted-From-ibireme.html" >[转] 深入理解RunLoop—ibireme</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/25</span><a class="archive-post-title" href= "/2021/07/25/Protocol-Buffer.html" >Protocol Buffer的基本介绍</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/24</span><a class="archive-post-title" href= "/2021/07/24/base64.html" >Base64编码及iOS中的Base64</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/23</span><a class="archive-post-title" href= "/2021/07/23/chinese-encode.html" >[转] 彻底弄懂常见的7种中文字符编码</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/10</span><a class="archive-post-title" href= "/2021/07/10/p-npc-np.html" >P问题、NP问题、NPC、NP-Hard、P=NP?</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/30</span><a class="archive-post-title" href= "/2021/06/30/probability.html" >(六) 概率算法</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/28</span><a class="archive-post-title" href= "/2021/06/28/branch-bound.html" >(五) 分支限界算法</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/26</span><a class="archive-post-title" href= "/2021/06/26/back-track.html" >(四) 回溯法(试探算法)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/24</span><a class="archive-post-title" href= "/2021/06/24/greed.html" >(三) 贪心算法</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/22</span><a class="archive-post-title" href= "/2021/06/22/dynamic-programming.html" >(二) 动态规划算法</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/20</span><a class="archive-post-title" href= "/2021/06/20/divide-and-conquer.html" >(一) 分治算法及减治、变治算法</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/18</span><a class="archive-post-title" href= "/2021/06/18/several-programming.html" >穷举、递推、迭代(辗转法)、递归算法</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/15</span><a class="archive-post-title" href= "/2021/06/15/datastruction-overview.html" >数据结构与算法概述</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/06</span><a class="archive-post-title" href= "/2021/06/06/Web-Module.html" >前端各种模块化方案总结</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/27</span><a class="archive-post-title" href= "/2021/05/27/Fiber.html" >[转] 最通俗的 React Fiber(时间分片)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/27</span><a class="archive-post-title" href= "/2021/05/27/Coroutine.html" >[转] 什么是协程</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/19</span><a class="archive-post-title" href= "/2021/05/19/DSL.html" >[转] 谈谈DSL以及DSL的应用（以CocoaPods 为例）</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/03</span><a class="archive-post-title" href= "/2021/05/03/iOS-private-pod.html" >私有Pod库部署</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/29</span><a class="archive-post-title" href= "/2021/04/29/iOS-ComRouter.html" >[转] iOS的组件化方案</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/27</span><a class="archive-post-title" href= "/2021/04/27/iOS-CI.html" >iOS的持续集成</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/26</span><a class="archive-post-title" href= "/2021/04/26/Containers.html" >常见的容器概念：Linux容器、Docker容器、服务器容器</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/24</span><a class="archive-post-title" href= "/2021/04/24/Dock-Reprinted-from-RuanYIFeng.html" >[转] Docker入门教程</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/20</span><a class="archive-post-title" href= "/2021/04/20/Sync-Async.html" >同步和异步解读及编程中的使用场景</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/17</span><a class="archive-post-title" href= "/2021/04/17/Arm64-Handbook.html" >ARM64指令简易手册</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/16</span><a class="archive-post-title" href= "/2021/04/16/Arm64-Introduce.html" >iOS需要了解的ARM64汇编</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/13</span><a class="archive-post-title" href= "/2021/04/13/Command-Line.html" >CLI Shell、Terminal、脚本(语言)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/10</span><a class="archive-post-title" href= "/2021/04/10/Ins-SysCall-Kernel-Shell.html" >指令、系统调用、库、Shell、APP的层次关系</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/08</span><a class="archive-post-title" href= "/2021/04/08/ISA-Microarch-Soc.html" >指令集、微架构、手机芯片(Soc)及ARM的介绍</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/02</span><a class="archive-post-title" href= "/2021/04/02/Engineering.html" >工程化、动态化、容器化、组件化</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/01</span><a class="archive-post-title" href= "/2021/04/01/GithubPages-Hexo.html" >使用Hexo+Github Pages搭建个人博客</a>
+        </li>
+    
+    
+    
+    
+    
+        </ul>
+    
+    <div class="archive-year"> 2020 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/22</span><a class="archive-post-title" href= "/2020/12/22/aes.html" >数据加密 — 对称加密(以AES为例)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/21</span><a class="archive-post-title" href= "/2020/12/21/aes-standard.html" >[转] AES标准及Rijndael算法解析</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/20</span><a class="archive-post-title" href= "/2020/12/20/asymmetric.html" >数据加密 — 非对称加密(加签/加密，以RSA为例)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/09</span><a class="archive-post-title" href= "/2020/12/09/pki.html" >常见的PKI标准(X.509、PKCS)及证书相关介绍</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/28</span><a class="archive-post-title" href= "/2020/10/28/runtime-data-structure.html" >Objc Runtime总结</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/11</span><a class="archive-post-title" href= "/2020/09/11/GCD.html" >Objective-C — 深入浅出GCD常用API</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/06</span><a class="archive-post-title" href= "/2020/09/06/oc-block.html" >Objective-C — Block</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/26</span><a class="archive-post-title" href= "/2020/08/26/AutoreleasePool.html" >AutoreleasePool</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/24</span><a class="archive-post-title" href= "/2020/08/24/oc-memory-manage.html" >Objective-C — 内存管理</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/01</span><a class="archive-post-title" href= "/2020/08/01/ui-navigation-bar.html" >[转] 导航栏的架构介绍及使用</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/15</span><a class="archive-post-title" href= "/2020/07/15/symbol-decl.html" >变量声明、函数声明的作用</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/01</span><a class="archive-post-title" href= "/2020/07/01/ios-apns.html" >iOS APNS接收逻辑梳理</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/13</span><a class="archive-post-title" href= "/2020/06/13/ios-vest.html" >iOS制作马甲总结</a>
+        </li>
+    
+    </div>
+  </div>
+        <div class="sidebar-panel-tags">
+    <div class="sidebar-tags-name">
+    
+        <span class="sidebar-tag-name" data-tags="AutoreleasePool"><span class="iconfont-archer">&#xe606;</span>AutoreleasePool</span>
+    
+        <span class="sidebar-tag-name" data-tags="GCD"><span class="iconfont-archer">&#xe606;</span>GCD</span>
+    
+        <span class="sidebar-tag-name" data-tags="hexo"><span class="iconfont-archer">&#xe606;</span>hexo</span>
+    
+        <span class="sidebar-tag-name" data-tags="ISA"><span class="iconfont-archer">&#xe606;</span>ISA</span>
+    
+        <span class="sidebar-tag-name" data-tags="Microarch"><span class="iconfont-archer">&#xe606;</span>Microarch</span>
+    
+        <span class="sidebar-tag-name" data-tags="Soc"><span class="iconfont-archer">&#xe606;</span>Soc</span>
+    
+        <span class="sidebar-tag-name" data-tags="CLI"><span class="iconfont-archer">&#xe606;</span>CLI</span>
+    
+        <span class="sidebar-tag-name" data-tags="Shell"><span class="iconfont-archer">&#xe606;</span>Shell</span>
+    
+        <span class="sidebar-tag-name" data-tags="ARM64"><span class="iconfont-archer">&#xe606;</span>ARM64</span>
+    
+        <span class="sidebar-tag-name" data-tags="多线程"><span class="iconfont-archer">&#xe606;</span>多线程</span>
+    
+        <span class="sidebar-tag-name" data-tags="Docker"><span class="iconfont-archer">&#xe606;</span>Docker</span>
+    
+        <span class="sidebar-tag-name" data-tags="DSL"><span class="iconfont-archer">&#xe606;</span>DSL</span>
+    
+        <span class="sidebar-tag-name" data-tags="协程"><span class="iconfont-archer">&#xe606;</span>协程</span>
+    
+        <span class="sidebar-tag-name" data-tags="Fiber"><span class="iconfont-archer">&#xe606;</span>Fiber</span>
+    
+        <span class="sidebar-tag-name" data-tags="dp"><span class="iconfont-archer">&#xe606;</span>dp</span>
+    
+        <span class="sidebar-tag-name" data-tags="RunLoop"><span class="iconfont-archer">&#xe606;</span>RunLoop</span>
+    
+        <span class="sidebar-tag-name" data-tags="SwiftUI"><span class="iconfont-archer">&#xe606;</span>SwiftUI</span>
+    
+        <span class="sidebar-tag-name" data-tags="Swift-Syntax"><span class="iconfont-archer">&#xe606;</span>Swift-Syntax</span>
+    
+        <span class="sidebar-tag-name" data-tags="LagMonitor"><span class="iconfont-archer">&#xe606;</span>LagMonitor</span>
+    
+        <span class="sidebar-tag-name" data-tags="CrashMonitor"><span class="iconfont-archer">&#xe606;</span>CrashMonitor</span>
+    
+        <span class="sidebar-tag-name" data-tags="Log"><span class="iconfont-archer">&#xe606;</span>Log</span>
+    
+        <span class="sidebar-tag-name" data-tags="AFN"><span class="iconfont-archer">&#xe606;</span>AFN</span>
+    
+    </div>
+    <div class="iconfont-archer sidebar-tags-empty">&#xe678;</div>
+    <div class="tag-load-fail" style="display: none; color: #ccc; font-size: 0.6rem;">
+    缺失模块。<br/>
+    1、请确保node版本大于6.2<br/>
+    2、在博客根目录（注意不是archer根目录）执行以下命令：<br/>
+    <span style="color: #f75357; font-size: 1rem; line-height: 2rem;">npm i hexo-generator-json-content --save</span><br/>
+    3、在根目录_config.yml里添加配置：
+    <pre style="color: #787878; font-size: 0.6rem;">
+jsonContent:
+  meta: false
+  pages: false
+  posts:
+    title: true
+    date: true
+    path: true
+    text: false
+    raw: false
+    content: false
+    slug: false
+    updated: false
+    comments: false
+    link: false
+    permalink: false
+    excerpt: false
+    categories: true
+    tags: true</pre>
+    </div> 
+    <div class="sidebar-tags-list"></div>
+</div>
+    </div>
+</div> 
+    <script>
+    var siteMeta = {
+        root: "/",
+        author: "Tenloy"
+    }
+</script>
+    <!-- CDN failover -->
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js"></script>
+    <script type="text/javascript">
+        if (typeof window.$ === 'undefined')
+        {
+            console.warn('jquery load from jsdelivr failed, will load local script')
+            document.write('<script src="/lib/jquery.min.js">\x3C/script>')
+        }
+    </script>
+    <script src="/scripts/main.js"></script>
+    <!-- algolia -->
+    
+        <div class="site-search">
+  <div class="algolia-popup popup">
+    <div class="algolia-search">
+      <div class="algolia-search-input-icon">
+        <i class="fa fa-search"></i>
+      </div>
+      <div class="algolia-search-input" id="algolia-search-input"></div>
+    </div>
+
+    <div class="algolia-results">
+      <div id="algolia-stats"></div>
+      <div id="algolia-hits"></div>
+      <div id="algolia-pagination" class="algolia-pagination"></div>
+    </div>
+
+    <span class="popup-btn-close">
+      <i class="iconfont-archer">&#xe609;</i>
+    </span>
+  </div>
+</div>
+        <script src="https://cdn.jsdelivr.net/npm/instantsearch.js@2.8.0/dist/instantsearch.min.js" defer></script>
+        <script src="/scripts/search.js" defer></script>
+    
+    <!-- busuanzi  -->
+    
+    <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    
+    <!-- CNZZ  -->
+    
+    </div>
+    <!-- async load share.js -->
+    
+        <script src="/scripts/share.js" async></script>    
+     
+    </body>
+</html>
+
+

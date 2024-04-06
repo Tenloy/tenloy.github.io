@@ -1,0 +1,2566 @@
+<!DOCTYPE html>
+<html lang="en">
+    <!-- title -->
+
+
+
+
+<!-- keywords -->
+
+
+
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" >
+    <meta name="author" content="Tenloy">
+    <meta name="renderer" content="webkit">
+    <meta name="copyright" content="Tenloy">
+    
+    <meta name="keywords" content="Tenloy,iOS,Swift">
+    
+    <meta name="description" content="学习 生活 记录 回忆">
+    <meta name="description" content="Core Animation其实是一个令人误解的命名。你可能认为它只是用来做动画的，但实际上它是从一个叫做Layer Kit这么一个不怎么和动画有关的名字演变而来。 Core Animation是一个复合引擎，它的职责就是尽可能快地组合屏幕上不同的可视内容，这个内容是被分解成独立的图层，存储在一个叫做图层树的体系之中。于是这个树形成了UIKit以及在iOS应用程序当中你所能在屏幕上看见的一切的基础">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Core Animation(一) - UIView与CALayer、布局与绘制">
+<meta property="og:url" content="https://tenloy.github.io/2021/09/07/core-animation01.html">
+<meta property="og:site_name" content="Tenloy&#39;s Blog">
+<meta property="og:description" content="Core Animation其实是一个令人误解的命名。你可能认为它只是用来做动画的，但实际上它是从一个叫做Layer Kit这么一个不怎么和动画有关的名字演变而来。 Core Animation是一个复合引擎，它的职责就是尽可能快地组合屏幕上不同的可视内容，这个内容是被分解成独立的图层，存储在一个叫做图层树的体系之中。于是这个树形成了UIKit以及在iOS应用程序当中你所能在屏幕上看见的一切的基础">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://tenloy.github.io/images/caa/7.5.png">
+<meta property="og:image" content="https://tenloy.github.io/images/caa/updatecycle.jpg">
+<meta property="og:image" content="https://tenloy.github.io/images/caa/layoutSubviews.png">
+<meta property="og:image" content="https://tenloy.github.io/images/caa/drawRect.png">
+<meta property="og:image" content="https://tenloy.github.io/images/caa/viewdraw.png">
+<meta property="og:image" content="https://tenloy.github.io/images/caa/viewdrawasync.png">
+<meta property="og:image" content="https://tenloy.github.io/images/caa/layoutdraw.png">
+<meta property="og:image" content="https://tenloy.github.io/images/caa/layoutdraw2.png">
+<meta property="og:image" content="https://tenloy.github.io/images/caa/7ca0e14ef02231c9aba7cb49c7e9271c.webp">
+<meta property="article:published_time" content="2021-09-07T06:50:38.000Z">
+<meta property="article:modified_time" content="2024-04-06T04:00:22.202Z">
+<meta property="article:author" content="Tenloy">
+<meta property="article:tag" content="Tenloy, iOS, Tenloy Blog, 博客，Swift, 编译, 计算机">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://tenloy.github.io/images/caa/7.5.png">
+    <meta http-equiv="Cache-control" content="no-cache">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"/>
+    
+    <title>Core Animation(一) - UIView与CALayer、布局与绘制 · Tenloy&#39;s Blog</title>
+    <style type="text/css">
+    @font-face {
+        font-family: 'Oswald-Regular';
+        src: url("/font/Oswald-Regular.ttf");
+    }
+
+    body {
+        margin: 0;
+    }
+
+    header,
+    footer,
+    .back-top,
+    .sidebar,
+    .container,
+    .site-intro-meta,
+    .toc-wrapper {
+        display: none;
+    }
+
+    .site-intro {
+        position: relative;
+        z-index: 3;
+        width: 100%;
+        /* height: 50vh; */
+        overflow: hidden;
+    }
+
+    .site-intro-placeholder {
+        position: absolute;
+        z-index: -2;
+        top: 0;
+        left: 0;
+        width: calc(100% + 300px);
+        height: 100%;
+        background: repeating-linear-gradient(-45deg, #444 0, #444 80px, #333 80px, #333 160px);
+        background-position: center center;
+        transform: translate3d(-226px, 0, 0);
+        animation: gradient-move 2.5s ease-out 0s infinite;
+    }
+
+    @keyframes gradient-move {
+        0% {
+            transform: translate3d(-226px, 0, 0);
+        }
+        100% {
+            transform: translate3d(0, 0, 0);
+        }
+    }
+
+</style>
+
+    <link rel="preload" href= "/css/style.css?v=20180824" as="style" onload="this.onload=null;this.rel='stylesheet'" />
+    <link rel="stylesheet" href= "/css/mobile.css?v=20180824" media="(max-width: 980px)">
+    
+    <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.2.5/jquery.fancybox.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'" />
+    
+    <!-- /*! loadCSS. [c]2017 Filament Group, Inc. MIT License */
+/* This file is meant as a standalone workflow for
+- testing support for link[rel=preload]
+- enabling async CSS loading in browsers that do not support rel=preload
+- applying rel preload css once loaded, whether supported or not.
+*/ -->
+<script>
+(function( w ){
+	"use strict";
+	// rel=preload support test
+	if( !w.loadCSS ){
+		w.loadCSS = function(){};
+	}
+	// define on the loadCSS obj
+	var rp = loadCSS.relpreload = {};
+	// rel=preload feature support test
+	// runs once and returns a function for compat purposes
+	rp.support = (function(){
+		var ret;
+		try {
+			ret = w.document.createElement( "link" ).relList.supports( "preload" );
+		} catch (e) {
+			ret = false;
+		}
+		return function(){
+			return ret;
+		};
+	})();
+
+	// if preload isn't supported, get an asynchronous load by using a non-matching media attribute
+	// then change that media back to its intended value on load
+	rp.bindMediaToggle = function( link ){
+		// remember existing media attr for ultimate state, or default to 'all'
+		var finalMedia = link.media || "all";
+
+		function enableStylesheet(){
+			link.media = finalMedia;
+		}
+
+		// bind load handlers to enable media
+		if( link.addEventListener ){
+			link.addEventListener( "load", enableStylesheet );
+		} else if( link.attachEvent ){
+			link.attachEvent( "onload", enableStylesheet );
+		}
+
+		// Set rel and non-applicable media type to start an async request
+		// note: timeout allows this to happen async to let rendering continue in IE
+		setTimeout(function(){
+			link.rel = "stylesheet";
+			link.media = "only x";
+		});
+		// also enable media after 3 seconds,
+		// which will catch very old browsers (android 2.x, old firefox) that don't support onload on link
+		setTimeout( enableStylesheet, 3000 );
+	};
+
+	// loop through link elements in DOM
+	rp.poly = function(){
+		// double check this to prevent external calls from running
+		if( rp.support() ){
+			return;
+		}
+		var links = w.document.getElementsByTagName( "link" );
+		for( var i = 0; i < links.length; i++ ){
+			var link = links[ i ];
+			// qualify links to those with rel=preload and as=style attrs
+			if( link.rel === "preload" && link.getAttribute( "as" ) === "style" && !link.getAttribute( "data-loadcss" ) ){
+				// prevent rerunning on link
+				link.setAttribute( "data-loadcss", true );
+				// bind listeners to toggle media back
+				rp.bindMediaToggle( link );
+			}
+		}
+	};
+
+	// if unsupported, run the polyfill
+	if( !rp.support() ){
+		// run once at least
+		rp.poly();
+
+		// rerun poly on an interval until onload
+		var run = w.setInterval( rp.poly, 500 );
+		if( w.addEventListener ){
+			w.addEventListener( "load", function(){
+				rp.poly();
+				w.clearInterval( run );
+			} );
+		} else if( w.attachEvent ){
+			w.attachEvent( "onload", function(){
+				rp.poly();
+				w.clearInterval( run );
+			} );
+		}
+	}
+
+
+	// commonjs
+	if( typeof exports !== "undefined" ){
+		exports.loadCSS = loadCSS;
+	}
+	else {
+		w.loadCSS = loadCSS;
+	}
+}( typeof global !== "undefined" ? global : this ) );
+</script>
+
+    <link rel="icon" href= "/assets/favicon.ico" />
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.min.js" as="script" />
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js" as="script" />
+    <link rel="preload" href="/scripts/main.js" as="script" />
+    <link rel="preload" as="font" href="/font/Oswald-Regular.ttf" crossorigin>
+    <link rel="preload" as="font" href="https://at.alicdn.com/t/font_327081_1dta1rlogw17zaor.woff" crossorigin>
+    
+        <!-- algolia -->
+        <script>
+            
+            var hits = JSON.parse('{"per_page":10}')
+            var labels = JSON.parse('{"input_placeholder":"Search for Posts","hits_empty":"没有找到任何搜索结果: ${query}","hits_stats":"找到约${hits}条结果（用时${time}ms）"}')
+
+            var algolia = {
+                applicationID: 'V0HYXBS9FB',
+                apiKey: '6550d5de786935564142097c3e78c380',
+                indexName: 'law_blog_index',
+                hits: hits,
+                labels: labels
+            }
+        </script>
+    
+    <!-- fancybox -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.2.5/jquery.fancybox.min.js" defer></script>
+    <!-- 百度统计  -->
+    
+    <!-- 谷歌统计  -->
+    
+<meta name="generator" content="Hexo 5.4.0"><link rel="alternate" href="/atom.xml" title="Tenloy's Blog" type="application/atom+xml">
+</head>
+
+    
+        <body class="post-body">
+    
+    
+<header class="header">
+
+    <div class="read-progress"></div>
+    <div class="header-sidebar-menu">&#xe775;</div>
+    <!-- post页的toggle banner  -->
+    
+    <div class="banner">
+            <div class="blog-title">
+                <a href="/" >Tenloy&#39;s Blog</a>
+            </div>
+            <div class="post-title">
+                <a href="#" class="post-name">Core Animation(一) - UIView与CALayer、布局与绘制</a>
+            </div>
+    </div>
+    
+    <!-- 将home-link的操作改为应用到header-top-right上 -->
+    <div class="header-top-right">
+        <!-- search  -->
+        
+            <div class="site-search popup-trigger tl-search">
+                <span class="iconfont-jian tl-search-icon">&#xe7fc;搜索</span>
+            </div>
+            
+        <a class="home-link" href=/>Tenloy's Blog</a>
+    </div>
+</header>
+    <div class="wrapper">
+        <div class="site-intro" style="
+
+
+
+
+
+
+
+height:40vh;
+">
+    
+    <!-- 主页  -->
+    
+    
+    <!-- 404页  -->
+            
+    <div class="site-intro-placeholder"></div>
+    <div class="site-intro-img" style="background-image: url(/intro/post-bg.jpg)"></div>
+    <div class="site-intro-meta">
+        <!-- 标题  -->
+        <h1 class="intro-title">
+            <!-- 主页  -->
+            
+            Core Animation(一) - UIView与CALayer、布局与绘制
+            <!-- 404 -->
+            
+        </h1>
+        <!-- 副标题 -->
+        <p class="intro-subtitle">
+            <!-- 主页副标题  -->
+            
+            
+            <!-- 404 -->
+            
+        </p>
+        <!-- 文章页meta -->
+        
+            <div class="post-intros">
+                <!-- 文章页标签  -->
+                
+                
+                    <div class="post-intro-read">
+                        <span>Word count: <span class="post-count word-count">11.5k</span>Reading time: <span class="post-count reading-time">42 min</span></span>
+                    </div>
+                
+                <div class="post-intro-meta">
+                    <span class="post-intro-calander iconfont-archer">&#xe676;</span>
+                    <span class="post-intro-time">2021/09/07</span>
+                    
+                    <span id="busuanzi_container_page_pv" class="busuanzi-pv">
+                        <span class="iconfont-archer">&#xe602;</span>
+                        <span id="busuanzi_value_page_pv"></span>
+                    </span>
+                    
+                    <span class="shareWrapper">
+                        <span class="iconfont-archer shareIcon">&#xe71d;</span>
+                        <span class="shareText">Share</span>
+                        <ul class="shareList">
+                            <li class="iconfont-archer share-qr" data-type="qr">&#xe75b;
+                                <div class="share-qrcode"></div>
+                            </li>
+                            <li class="iconfont-archer" data-type="weibo">&#xe619;</li>
+                            <li class="iconfont-archer" data-type="qzone">&#xe62e;</li>
+                            <li class="iconfont-archer" data-type="twitter">&#xe634;</li>
+                            <li class="iconfont-archer" data-type="facebook">&#xe67a;</li>
+                        </ul>
+                    </span>
+                </div>
+            </div>
+        
+    </div>
+</div>
+        <script>
+ 
+  // get user agent
+  var browser = {
+    versions: function () {
+      var u = window.navigator.userAgent;
+      return {
+        userAgent: u,
+        trident: u.indexOf('Trident') > -1, //IE内核
+        presto: u.indexOf('Presto') > -1, //opera内核
+        webKit: u.indexOf('AppleWebKit') > -1, //苹果、谷歌内核
+        gecko: u.indexOf('Gecko') > -1 && u.indexOf('KHTML') == -1, //火狐内核
+        mobile: !!u.match(/AppleWebKit.*Mobile.*/), //是否为移动终端
+        ios: !!u.match(/\(i[^;]+;( U;)? CPU.+Mac OS X/), //ios终端
+        android: u.indexOf('Android') > -1 || u.indexOf('Linux') > -1, //android终端或者uc浏览器
+        iPhone: u.indexOf('iPhone') > -1 || u.indexOf('Mac') > -1, //是否为iPhone或者安卓QQ浏览器
+        iPad: u.indexOf('iPad') > -1, //是否为iPad
+        webApp: u.indexOf('Safari') == -1, //是否为web应用程序，没有头部与底部
+        weixin: u.indexOf('MicroMessenger') == -1, //是否为微信浏览器
+        uc: u.indexOf('UCBrowser') > -1 //是否为android下的UC浏览器
+      };
+    }()
+  }
+  console.log("userAgent:" + browser.versions.userAgent);
+
+  // callback
+  function fontLoaded() {
+    console.log('font loaded');
+    if (document.getElementsByClassName('site-intro-meta')) {
+      document.getElementsByClassName('intro-title')[0].classList.add('intro-fade-in');
+      document.getElementsByClassName('intro-subtitle')[0].classList.add('intro-fade-in');
+      var postIntros = document.getElementsByClassName('post-intros')[0]
+      if (postIntros) {
+        postIntros.classList.add('post-fade-in');
+      }
+    }
+  }
+
+  // UC不支持跨域，所以直接显示
+  function asyncCb(){
+    if (browser.versions.uc) {
+      console.log("UCBrowser");
+      fontLoaded();
+    } else {
+      WebFont.load({
+        custom: {
+          families: ['Oswald-Regular']
+        },
+        loading: function () {  //所有字体开始加载
+          // console.log('loading');
+        },
+        active: function () {  //所有字体已渲染
+          fontLoaded();
+        },
+        inactive: function () { //字体预加载失败，无效字体或浏览器不支持加载
+          console.log('inactive: timeout');
+          fontLoaded();
+        },
+        timeout: 5000 // Set the timeout to two seconds
+      });
+    }
+  }
+
+  function asyncErr(){
+    console.warn('script load from CDN failed, will load local script')
+  }
+
+  // load webfont-loader async, and add callback function
+  function async(u, cb, err) {
+    var d = document, t = 'script',
+      o = d.createElement(t),
+      s = d.getElementsByTagName(t)[0];
+    o.src = u;
+    if (cb) { o.addEventListener('load', function (e) { cb(null, e); }, false); }
+    if (err) { o.addEventListener('error', function (e) { err(null, e); }, false); }
+    s.parentNode.insertBefore(o, s);
+  }
+
+  var asyncLoadWithFallBack = function(arr, success, reject) {
+      var currReject = function(){
+        reject()
+        arr.shift()
+        if(arr.length)
+          async(arr[0], success, currReject)
+        }
+
+      async(arr[0], success, currReject)
+  }
+
+  asyncLoadWithFallBack([
+    "https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.min.js", 
+    "https://cdn.bootcss.com/webfont/1.6.28/webfontloader.js",
+    "/lib/webfontloader.min.js"
+  ], asyncCb, asyncErr)
+</script>        
+        <img class="loading" src="/assets/loading.svg" style="display: block; margin: 6rem auto 0 auto; width: 6rem; height: 6rem;" />
+        <div class="container container-unloaded">
+            <main class="main post-page">
+    <article class="article-entry">
+        <p>Core Animation其实是一个令人误解的命名。你可能认为它只是用来做动画的，但实际上它是从一个叫做<em>Layer Kit</em>这么一个不怎么和动画有关的名字演变而来。</p>
+<p>Core Animation是一个<em>复合引擎</em>，它的职责就是尽可能快地组合屏幕上不同的可视内容，这个内容是被分解成独立的<em>图层</em>，存储在一个叫做<strong>图层树</strong>的体系之中。于是这个树形成了<strong>UIKit</strong>以及在iOS应用程序当中你所能在屏幕上看见的一切的基础。</p>
+<h1 id="一、View与Layer"><a href="#一、View与Layer" class="headerlink" title="一、View与Layer"></a>一、View与Layer</h1><h2 id="1-1-CALayer图层"><a href="#1-1-CALayer图层" class="headerlink" title="1.1 CALayer图层"></a>1.1 CALayer图层</h2><blockquote>
+<p>CALayer： 管理基于图像的内容，并允许你对该内容执行动画</p>
+</blockquote>
+<p>在 iOS 中，所有的 view 都是由一个底层的 layer 来驱动的。view 和它的 layer 之间有着紧密的联系：</p>
+<ul>
+<li>view 其实直接从 layer 对象中获取了绝大多数它所需要的数据。</li>
+<li>layer给view提供了基础设施，使得绘制内容和呈现更高效动画更容易、更低耗；layer不参与view的事件处理、不参与响应链。</li>
+</ul>
+<img src="/images/caa/7.5.png" alt="" style="zoom:100%;" />
+
+<p>UIKit 中的每个视图都有自己的 CALayer 。 这个图层通常有一个缓存区/后备存储(Backing Store)，它是像素位图。这个后备存储实际上是渲染到显示器上的。</p>
+<blockquote>
+<p>术语“后备存储”通常用于图形用户界面的上下文中。 是一块存储着窗口图像的内存块。如果窗口被覆盖（甚至部分覆盖）然后被发现，则后备存储用于重绘。</p>
+</blockquote>
+<blockquote>
+<p>测试：分别修改、打印MyView与.layer的backgroundColor，可以看到这两者是同步变化的。<strong>所以其实UIView的背景色就是CALayer的背景色。</strong></p>
+</blockquote>
+<p>为什么iOS要基于<code>UIView</code>和<code>CALayer</code>提供两个平行的层级关系呢？为什么不用一个简单的层级来处理所有事情呢？原因在于要做职责分离，这样也能避免很多重复代码。</p>
+<ul>
+<li>在iOS和Mac OS两个平台上，事件和用户交互有很多地方的不同，基于多点触控的用户界面和基于鼠标键盘有着本质的区别，这就是为什么iOS有UIKit和<code>UIView</code>，但是Mac OS有AppKit和<code>NSView</code>的原因。他们功能上很相似，但是在实现上有着显著的区别。</li>
+<li>绘图，布局和动画，相比之下就是类似Mac笔记本和桌面系列一样应用于iPhone和iPad触屏的概念。把这种功能的逻辑分开并应用到独立的Core Animation框架，苹果就能够在iOS和Mac OS之间共享代码，使得对苹果自己的OS开发团队和第三方开发者去开发两个平台的应用更加便捷。</li>
+</ul>
+<h2 id="1-2-四个层级关系"><a href="#1-2-四个层级关系" class="headerlink" title="1.2 四个层级关系"></a>1.2 四个层级关系</h2><p>在整个Core Animation机制中，存在4个层级关系：</p>
+<h3 id="1-2-1-视图层级"><a href="#1-2-1-视图层级" class="headerlink" title="1.2.1 视图层级"></a>1.2.1 视图层级</h3><p>视图在层级关系中可以互相嵌套，一个视图可以管理它的所有子视图的位置。</p>
+<h3 id="1-2-2-图层树"><a href="#1-2-2-图层树" class="headerlink" title="1.2.2 图层树"></a>1.2.2 图层树</h3><p>每一个<code>UIView</code>都有一个<code>CALayer</code>实例的图层属性，也就是所谓的<em>backing layer</em>，视图的职责就是创建并管理这个图层，以确保当子视图在层级关系中添加或者被移除的时候，他们关联的图层也同样对应在层级关系树当中有相同的操作</p>
+<h3 id="1-2-3-呈现树"><a href="#1-2-3-呈现树" class="headerlink" title="1.2.3 呈现树"></a>1.2.3 呈现树</h3><p>在iOS中，屏幕每秒钟重绘60次。如果动画时长比60分之一秒要长，Core Animation就需要在设置一次新值和新值生效之间，对屏幕上的图层进行重新组织。这意味着<code>CALayer</code>除了“真实”值（就是你设置的值）之外，必须要知道当前<em>显示</em>在屏幕上的属性值的记录。</p>
+<p>每个图层属性的显示值都被存储在一个叫做<em>呈现图层</em>的独立图层当中，他可以通过<code>-presentationLayer</code>方法来访问。这个呈现图层实际上是模型图层（上面的图层树？）的复制，但是它的属性值代表了在任何指定时刻当前外观效果。换句话说，你可以通过呈现图层的值来获取当前屏幕上真正显示出来的值。</p>
+<p>呈现树通过图层树中所有图层的呈现图层所形成。注意呈现图层仅仅当图层首次被<em>提交</em>（就是首次第一次在屏幕上显示）的时候创建，所以在那之前调用<code>-presentationLayer</code>将会返回<code>nil</code>。</p>
+<h3 id="1-2-4-渲染树"><a href="#1-2-4-渲染树" class="headerlink" title="1.2.4 渲染树"></a>1.2.4 渲染树</h3><p>详见<a href="https://tenloy.github.io/2021/09/11/core-animation03.html">下下篇 iOS渲染流程探究</a></p>
+<p>图层树的改动会在Application这一层以事务的形式完成打包提交，一旦打包的图层和动画到达渲染服务进程，他们会被反序列化来形成另一个叫做<em>渲染树</em>的图层树。使用这个树状结构，渲染服务对动画的每一帧做出如下工作：</p>
+<ul>
+<li>对所有的图层属性计算中间值，设置OpenGL几何形状（纹理化的三角形）来执行渲染</li>
+<li>在屏幕上渲染可见的三角形</li>
+</ul>
+<h1 id="二、View的绘制"><a href="#二、View的绘制" class="headerlink" title="二、View的绘制"></a>二、View的绘制</h1><blockquote>
+<p>苹果文档 —— <a target="_blank" rel="noopener" href="https://developer.apple.com/library/archive/documentation/WindowsViews/Conceptual/ViewPG_iPhoneOS/WindowsandViews/WindowsandViews.html">The View Drawing Cycle</a></p>
+</blockquote>
+<h2 id="2-1-绘制机制"><a href="#2-1-绘制机制" class="headerlink" title="2.1 绘制机制"></a>2.1 绘制机制</h2><p>UIView 类使用按需绘制模型来呈现内容。</p>
+<ul>
+<li>当一个视图第一次出现在屏幕上时，系统要求它绘制它的内容。系统捕获此内容的快照并将该快照用作视图的视觉表示。</li>
+<li>如果您从不更改视图的内容，则视图的绘制代码可能永远不会被再次调用。大多数涉及视图的操作都会重复使用快照图像。</li>
+<li>如果您确实更改了内容，则会通知系统视图已更改。然后视图重复绘制视图和捕获新结果的快照的过程。</li>
+</ul>
+<p>当视图的内容发生更改时，不要直接重绘这些更改。可以使用 setNeedsDisplay 或 setNeedsDisplayInRect: 方法使视图无效。这些方法告诉系统视图的内容发生了变化，需要在下一次重绘。</p>
+<h2 id="2-2-绘制周期-当前runloop结束"><a href="#2-2-绘制周期-当前runloop结束" class="headerlink" title="2.2 绘制周期(当前runloop结束)"></a>2.2 绘制周期(当前runloop结束)</h2><p><strong>系统会等到当前 run loop 执行结束(一个loop也就是一个绘制周期)，才启动任何绘图操作</strong>。这种延迟使您有机会一次性使多个视图无效、在层次结构中添加或删除视图、隐藏视图、调整视图大小和重新定位视图。然后，所做的所有更改都会同时反映出来。苹果通过这种高性能的机制保障了视图渲染的流畅性（毕竟渲染比较消耗性能）。</p>
+<blockquote>
+<p>参考链接 — <a target="_blank" rel="noopener" href="https://sq.sf.163.com/blog/article/200743376636538880">[译] 揭秘 iOS 布局</a></p>
+</blockquote>
+<p>Update cycle 是当应用完成了你的所有事件处理代码后控制流回到主 RunLoop 时的那个时间点。正是在这个时间点上系统开始更新布局、显示和设置约束。如果你在处理事件的代码中请求修改了一个 view，那么系统就会把这个 view 标记为需要重画（redraw）。在接下来的 Update cycle 中，系统就会执行这些 view 上的更改。</p>
+<p>用户交互和布局更新间的延迟几乎不会被用户察觉到。iOS 应用一般以 60 fps 的速度展示动画，就是说每个更新周期只需要 1/60 秒。这个更新的过程很快，所以用户在和应用交互时感觉不到 UI 中的更新延迟。</p>
+<p>但是由于在处理事件和对应 view 重画间存在着一个间隔，RunLoop 中的某时刻的 view 更新可能不是你想要的那样。如果你的代码中的某些计算依赖于当下的 view 内容或者是布局，那么就有在过时 view 信息上操作的风险。</p>
+<p>理解 RunLoop、update cycle 和 <code>UIView</code> 中具体的方法可以帮助避免或者可以调试这类问题。</p>
+<p>下面的图展示出了 update cycle 发生在 RunLoop 的尾部。</p>
+<img src="/images/caa/updatecycle.jpg" alt="updatecycle" style="zoom:75%;" />
+
+<p><em>可以通过监听RunLoop的状态、layoutSubviews的调用情况验证</em>：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">2022-02-24 17:05:55.552069 &#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;休眠中&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;</span><br><span class="line">2022-02-24 17:05:55.624499 kCFRunLoopAfterWaiting</span><br><span class="line">2022-02-24 17:05:55.624638 kCFRunLoopBeforeTimers</span><br><span class="line">2022-02-24 17:05:55.624754 kCFRunLoopBeforeSources</span><br><span class="line">2022-02-24 17:05:55.626445 kCFRunLoopBeforeWaiting</span><br><span class="line">2022-02-24 17:05:55.627835 layoutSubviews调用</span><br></pre></td></tr></table></figure>
+
+<img src="/images/caa/layoutSubviews.png" style="zoom:90%;" />
+
+<p>从上图中可以看到：</p>
+<ul>
+<li><code>runloop</code>的<code>observer</code>回调 </li>
+<li>=&gt; <code>CoreAnimation</code>渲染引擎一次事务的提交 </li>
+<li>=&gt; <code>CoreAnimation</code>递归查询图层是否有布局上的更新</li>
+<li>=&gt; <code>CALayer</code> <code>layoutSublayers</code></li>
+<li>=&gt; <code>UIView</code> <code>layoutSubviews</code> 这样一个调用的流程。</li>
+</ul>
+<p>从这里也可以看到<code>UIView</code>其实就是相当于<code>CALayer</code>的代理。</p>
+<img src="/images/caa/drawRect.png" style="zoom:90%;" />
+
+<p>顺便看一眼<code>drawRect</code>方法的调用栈，从<code>CA::Layer::layout_and_display_if_needed</code>方法之前都是一样的。</p>
+<h2 id="2-3-Custom-Drawing"><a href="#2-3-Custom-Drawing" class="headerlink" title="2.3 Custom Drawing"></a>2.3 Custom Drawing</h2><blockquote>
+<p>寄宿图：CALayer类除了简单的设置背景颜色外，还能够包含一张图片。又称CALayer的寄宿图（即图层中包含的图）。</p>
+</blockquote>
+<p>当需要渲染视图的内容时，实际的绘制过程取决于视图及其配置。系统视图通常实现私有绘图方法来呈现其内容。这些相同的系统视图经常公开接口，您可以使用这些接口来配置视图的实际外观。</p>
+<ul>
+<li>直接设置layer的contents属性</li>
+<li>对于自定义 UIView 子类，可以重写 drawRect: 方法并使用该方法绘制视图的内容。（最常用）</li>
+</ul>
+<h3 id="2-3-1-contents属性"><a href="#2-3-1-contents属性" class="headerlink" title="2.3.1 contents属性"></a>2.3.1 contents属性</h3><p>CALayer 有一个属性叫做<code>contents</code>，这个属性的类型被定义为id，意味着它可以是任何类型的对象。在这种情况下，你可以给<code>contents</code>属性赋任何值，你的app都能够编译通过。但是，在实践中，如果你给<code>contents</code>赋的不是CGImage，那么你得到的图层将是空白的。</p>
+<p><code>contents</code>这个奇怪的表现是由Mac OS的历史原因造成的。它之所以被定义为id类型，是因为在Mac OS系统上，这个属性对CGImage和NSImage类型的值都起作用。如果你试图在iOS平台上将UIImage的值赋给它，只能得到一个空白的图层。一些初识Core Animation的iOS开发者可能会对这个感到困惑。</p>
+<p>头疼的不仅仅是我们刚才提到的这个问题。事实上，你真正要赋值的类型应该是CGImageRef，它是一个指向CGImage结构的指针。UIImage有一个CGImage属性，它返回一个”CGImageRef”，如果你想把这个值直接赋值给CALayer的<code>contents</code>，那你将会得到一个编译错误。因为CGImageRef并不是一个真正的Cocoa对象，而是一个Core Foundation类型。</p>
+<p>尽管Core Foundation类型跟Cocoa对象在运行时貌似很像（被称作toll-free bridging），它们并不是类型兼容的，不过你可以通过bridged关键字转换。如果要给图层的寄宿图赋值，你可以按照以下这个方法：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">layer.contents &#x3D; (__bridge id)image.CGImage;</span><br></pre></td></tr></table></figure>
+
+<p>如果你没有使用ARC（自动引用计数），你就不需要__bridge这部分。但是，你干嘛不用ARC？！</p>
+<h3 id="2-3-2-drawRect"><a href="#2-3-2-drawRect" class="headerlink" title="2.3.2 drawRect"></a>2.3.2 drawRect</h3><p><code>-drawRect:</code> 方法没有默认的实现，因为对UIView来说，寄宿图并不是必须的，它不在意那到底是单调的颜色还是有一个图片的实例。如果UIView检测到<code>-drawRect:</code> 方法被调用了，它就会为视图分配一个寄宿图，这个寄宿图的像素尺寸等于视图大小乘以 <code>contentsScale</code>的值。</p>
+<p>如果你不需要寄宿图，那就不要创建这个方法了，这会造成CPU资源和内存的浪费，这也是为什么苹果建议：<strong>如果没有自定义绘制的任务就不要在子类中写一个空的-drawRect:方法</strong>。</p>
+<p>当视图在屏幕上出现的时候 <code>-drawRect:</code>方法就会被自动调用。<code>-drawRect:</code>方法里面的代码利用Core Graphics去绘制一个寄宿图，然后<strong>内容就会被缓存起来直到它需要被更新</strong>（比如手动调用了<code>-setNeedsDisplay</code>方法。当影响到表现效果的属性值被更改时，一些视图类型会被自动重绘，如<code>bounds</code>属性）。虽然<code>-drawRect:</code>方法是一个UIView方法，事实上都是底层的CALayer安排了重绘工作和保存了因此产生的图片。</p>
+<p>CALayer有一个可选的<code>delegate</code>属性，实现了<code>CALayerDelegate</code>协议，当CALayer需要一个内容特定的信息时，就会从协议中请求。CALayerDelegate是一个非正式协议，其实就是说没有CALayerDelegate @protocol可以让你在类里面引用啦。你只需要调用你想调用的方法，CALayer会帮你做剩下的。（<code>delegate</code>属性被声明为id类型，所有的代理方法都是可选的）。</p>
+<p>当需要被重绘时，CALayer会请求它的代理给它一个寄宿图来显示。它通过调用下面这个方法做到的:</p>
+<figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">(<span class="keyword">void</span>)displayLayer:(<span class="built_in">CALayer</span> *)layer;</span><br></pre></td></tr></table></figure>
+
+<p>趁着这个机会，如果代理想直接设置<code>contents</code>属性的话，它就可以这么做，不然没有别的方法可以调用了。如果代理不实现<code>-displayLayer:</code>方法，CALayer就会转而尝试调用下面这个方法：</p>
+<figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">- (<span class="keyword">void</span>)drawLayer:(<span class="built_in">CALayer</span> *)layer inContext:(<span class="built_in">CGContextRef</span>)ctx;</span><br></pre></td></tr></table></figure>
+
+<p>在调用这个方法之前，CALayer创建了一个合适尺寸的空寄宿图（尺寸由<code>bounds</code>和<code>contentsScale</code>决定）和一个Core Graphics的绘制上下文环境，为绘制寄宿图做准备，它作为ctx参数传入。</p>
+<p>现在你理解了CALayerDelegate，并知道怎么使用它。但是除非你创建了一个单独的图层，你几乎没有机会用到CALayerDelegate协议。因为当UIView创建了它的宿主图层时，它就会自动地把图层的delegate设置为它自己，并提供了一个<code>-displayLayer:</code>的实现，那所有的问题就都没了。</p>
+<p>当使用寄宿了视图的图层的时候，你也不必实现<code>-displayLayer:</code>和<code>-drawLayer:inContext:</code>方法来绘制你的寄宿图。通常做法是实现UIView的<code>-drawRect:</code>方法，UIView就会帮你做完剩下的工作，包括在需要重绘的时候调用<code>-display</code>方法。</p>
+<h1 id="三、布局-绘制流程"><a href="#三、布局-绘制流程" class="headerlink" title="三、布局-绘制流程"></a>三、布局-绘制流程</h1><h2 id="3-1-绘制-显示流程图"><a href="#3-1-绘制-显示流程图" class="headerlink" title="3.1 绘制/显示流程图"></a>3.1 绘制/显示流程图</h2><p>写在前面：注意：<strong>更改视图的几何形状不会自动导致系统重绘视图的内容</strong>。视图的内容模式(contentMode)属性决定了如何解释视图几何的变化。大多数content modes会在视图边界内拉伸或重新定位现有快照，并且不会创建新快照。有关内容模式如何影响视图的绘制周期的更多信息，请参阅<a target="_blank" rel="noopener" href="https://developer.apple.com/library/archive/documentation/WindowsViews/Conceptual/ViewPG_iPhoneOS/WindowsandViews/WindowsandViews.html">Content Modes</a>。</p>
+<p>先来看一下<strong>更新-绘制流程图</strong>，然后梳理一下其中的重要方法</p>
+<img src="/images/caa/viewdraw.png" alt="viewredraw" style="zoom:80%;" />
+
+<ul>
+<li>当我们调用 <code>[UIView setNeedsDisplay]</code> 这个方法时，其实并没有立即进行绘制工作，系统会立刻调用CALayer的同名方法，并且<strong>会在当前layer上打上一个标记，然后会在当前runloop将要结束的时候（下一个绘制周期）</strong>调用 <code>[CALayer display]</code> 这个方法，然后进入我们视图的真正绘制过程。</li>
+<li>无论是哪个分支，<strong>最终都会由CALayer上传对应的backing store(寄宿图，也即位图bitmap)给GPU</strong>。</li>
+</ul>
+<h2 id="3-2-异步绘制"><a href="#3-2-异步绘制" class="headerlink" title="3.2 异步绘制"></a>3.2 异步绘制</h2><p>因为UIKit不是线程安全的，所以官方建议我们只在主线程操作。那么就无法利用cpu多核的优势，当大量且频繁的绘制任务，以及各种业务逻辑同时放在主线程上完成时，便有可能造成界面卡顿，丢帧现象。</p>
+<p>但通过对UIView绘制原理的了解我们知道，异步绘制是有理论基础的。</p>
+<p>异步绘制的原理：我们不能在非主线程将内容绘制到layer的context上，但是我们可以将需要绘制的内容绘制在一个自己创建的跑private_context上。通过<code>CGBitmapContextCreate()</code>可以创建一个<code>CGCentextRef</code>，在异步线程使用这个context进行绘制，最后通过<code>CGBitmapContextCreateImage()</code>创建一个<code>CGImageRef</code>，并在主线程设置给layer的contents，完成异步绘制。</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">- (<span class="keyword">void</span>)display &#123;</span><br><span class="line">    <span class="comment">// 由于 CoreGraphic 方法通常都是线程安全的，所以图像的绘制可以很容易的放到后台线程进行。</span></span><br><span class="line">    <span class="built_in">dispatch_async</span>(backgroundQueue, ^&#123;</span><br><span class="line">        <span class="built_in">CGContextRef</span> ctx = <span class="built_in">CGBitmapContextCreate</span>(...);</span><br><span class="line">        <span class="comment">// draw in context...</span></span><br><span class="line">        <span class="built_in">CGImageRef</span> img = <span class="built_in">CGBitmapContextCreateImage</span>(ctx);</span><br><span class="line">        <span class="built_in">CFRelease</span>(ctx);</span><br><span class="line">        <span class="built_in">dispatch_async</span>(mainQueue, ^&#123;</span><br><span class="line">            layer.contents = img;</span><br><span class="line">        &#125;);</span><br><span class="line">    &#125;);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>所以，异步绘制/渲染就是在子线程进行绘制，然后拿到主线程显示。</p>
+<img src="/images/caa/viewdrawasync.png" alt="viewdrawasync" style="zoom:70%;" />
+
+<p>参考链接：<a target="_blank" rel="noopener" href="https://blog.ibireme.com/2015/11/12/smooth_user_interfaces_for_ios/">iOS 保持界面流畅的技巧 - ibireme</a>、<a target="_blank" rel="noopener" href="https://github.com/ibireme/YYAsyncLayer/tree/master/YYAsyncLayer">YYKit异步渲染的基础 — YYAsyncLayer</a></p>
+<h2 id="3-3-布局计算-—-layoutSubxxxs"><a href="#3-3-布局计算-—-layoutSubxxxs" class="headerlink" title="3.3 布局计算 — layoutSubxxxs"></a>3.3 布局计算 — layoutSubxxxs</h2><p>一个视图的布局指的是它在屏幕上的的大小和位置。每个 view 都有一个 frame 属性，用来表示在父 view 坐标系中的位置和具体的大小。</p>
+<p><code>UIView</code> 给你提供了用来通知系统某个 view 布局发生变化的方法(<em>setNeedsLayout</em>)。也提供了在 view 布局重新计算(<em>layoutSubviews</em>)后调用的可重写的方法(<em>viewDidLayoutSubviews</em>)。</p>
+<h3 id="3-3-1-UIView方法"><a href="#3-3-1-UIView方法" class="headerlink" title="3.3.1 UIView方法"></a>3.3.1 UIView方法</h3><h4 id="1-layoutSubviews"><a href="#1-layoutSubviews" class="headerlink" title="1. -layoutSubviews"></a>1. -layoutSubviews</h4><h5 id="1-概述"><a href="#1-概述" class="headerlink" title="1) 概述"></a>1) 概述</h5><p>默认实现使用您设置的任何约束来确定每一个子视图的大小和位置。</p>
+<p>这个 <code>UIView</code> 方法处理对视图（view）及其所有子视图（subview）的重新定位和大小调整。它负责给出当前 view 和每个子 view 的位置和大小。这个方法很开销很大，因为它会在每个子视图上起作用并且调用它们相应的 <code>layoutSubviews</code> 方法。</p>
+<p>使用场景：</p>
+<ul>
+<li>子类可以根据需要覆盖此方法以对其子视图执行更精确的布局。 仅当子视图的自动调整大小和基于约束的行为不提供您想要的行为时，您才应该覆盖此方法。 您可以使用您的实现直接设置子视图的框架矩形。</li>
+</ul>
+<p>您<strong>不应直接调用</strong>此方法。 如果要强制更新布局，请在下一次绘图更新之前调用 setNeedsLayout 方法。 如果您想立即更新视图的布局，请调用 layoutIfNeeded 方法。</p>
+<h5 id="2-layoutSubviews的自动触发"><a href="#2-layoutSubviews的自动触发" class="headerlink" title="2) layoutSubviews的自动触发"></a>2) layoutSubviews的自动触发</h5><p><strong>layoutSubViews的自动触发 — 下一轮RunLoop结束前调用layoutSubViews。</strong></p>
+<p>系统会在任何它需要重新计算视图的 frame 的时候调用这个方法，所以你应该在需要更新 frame 来重新定位或更改大小时重载它。</p>
+<p>然而你不应该在代码中显式调用这个方法。相反，有许多可以在 RunLoop 的不同时间点触发 <code>layoutSubviews</code> 调用的机制，这些触发机制比直接调用 <code>layoutSubviews</code> 的资源消耗要小得多。</p>
+<p><strong>更新布局总会重新触发<code>layoutSubviews</code>方法</strong>。</p>
+<p>有许多事件会<strong>自动给视图打上 “update layout” 标记</strong>，因此 <code>layoutSubviews</code> 会在下一个周期中被调用，而不需要开发者手动操作。这些自动通知系统 view 的布局发生变化的方式有：</p>
+<ul>
+<li>修改 view 的大小<ul>
+<li>设置/修改view的frame.size、bounds.size、bounds.origin都会触发superView和自己view的layoutSubviews方法(父类在前)。当然前提是设置前后值发生了变化。修改frame.origin不会触发。</li>
+</ul>
+</li>
+<li>新增 subview</li>
+<li>用户在 <code>UIScrollView</code> 上滚动（<code>layoutSubviews</code> 会在 <code>UIScrollView</code> 和它的父 view 上被调用）</li>
+<li>用户旋转设备</li>
+<li>更新视图的 constraints</li>
+</ul>
+<p>注意：</p>
+<ul>
+<li>init初始化不会触发layoutSubviews（view 的创建并不被标记为需要刷新的，只有设置了一个不为CGRectZero的frame才会触发。可能初始化时view的frame默认被系统设置CGRectZero吧 ）。</li>
+<li>view必须得显示，才会调用layoutSubviews。否则，假如创建了，但最后没有被addSubview，那是不会调用的。</li>
+</ul>
+<p>上面的方式都会告知系统 view 的位置需要被重新计算，继而会自动转化为一个最终的 <code>layoutSubviews</code> 调用。当然，也有直接触发 <code>layoutSubviews</code> 的方法。</p>
+<h5 id="3-layoutSubviews的手动触发"><a href="#3-layoutSubviews的手动触发" class="headerlink" title="3) layoutSubviews的手动触发"></a>3) layoutSubviews的手动触发</h5><p><strong>setNeedsLayout手动标记 — 下一轮RunLoop结束前调用layoutSubviews。</strong></p>
+<ul>
+<li>标记为需要重新布局。调用这个方法代表向系统表示视图的布局需要重新计算。</li>
+<li><code>setNeedsLayout</code> 方法会立刻执行并返回，但在返回前不会真正更新视图。视图会在下一个update cycle(<em>下一轮runloop结束前</em>)中通过调用视图们以及他们的所有子视图的 <code>layoutSubviews</code> ，来更新。对于这一轮<code>runloop</code>之内的所有布局和UI上的更新只会刷新一次。</li>
+<li>即从 <code>setNeedsLayout</code> 返回后到视图被重新绘制并布局之间有一段任意时间的间隔，但是这个延迟不会对用户造成影响，因为永远不会长到对界面造成卡顿。</li>
+<li><strong><code>layoutSubviews</code>一定会被调用（有延迟，在下一轮runloop结束前）</strong>。</li>
+</ul>
+<p><strong>layoutIfNeeded — 不一定会调用，若满足条件，则立即调用layoutSubviews。</strong></p>
+<ul>
+<li>如果有需要刷新的标记，立即调用<code>layoutSubviews</code>进行布局。如果没有标记，不会调用<code>layoutSubviews</code>。即<strong>不一定会调用layoutSubviews方法</strong>。</li>
+<li>使用 <code>layoutIfNeeded</code>，则布局和重绘会立即发生并在函数返回之前完成（除非有正在运行中的动画）。</li>
+<li>这个方法在你需要依赖新布局，无法等到下一次 update cycle 的时候会比 <code>setNeedsLayout</code> 有用。除非是这种情况，否则你更应该使用 <code>setNeedsLayout</code>，这样在每次 run loop 中都只会更新一次布局。</li>
+<li>当对希望通过修改 constraint 进行动画时，这个方法特别有用。你需要在 animation block 之前对 self.view 调用 <code>layoutIfNeeded</code>，以确保在动画开始之前传播所有的布局更新。在 animation block 中设置新 constrait 后，需要再次调用 <code>layoutIfNeeded</code> 来动画到新的状态。</li>
+</ul>
+<p>如果想在当前<code>runloop</code>中立即刷新，调用顺序应该是</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">[<span class="keyword">self</span> setNeedsLayout];</span><br><span class="line">[<span class="keyword">self</span> layoutIfNeeded];</span><br><span class="line"><span class="comment">// 注意：修改了当前视图的size(origin不算)，默认会被系统标记setNeedsLayout的，所以有时候会出现，没有调用setNeedsLayout标记，直接调用layoutIfNeeded，也触发了layoutSubviews调用。</span></span><br></pre></td></tr></table></figure>
+
+<p>反之可能会出现布局错误的问题。</p>
+<h5 id="4-viewDidLayoutSubviews"><a href="#4-viewDidLayoutSubviews" class="headerlink" title="4) viewDidLayoutSubviews"></a>4) viewDidLayoutSubviews</h5><p>当 <code>layoutSubviews</code> 完成后，在 view 的所有者 view controller 上，会触发 <code>viewDidLayoutSubviews</code> 调用。因为 <code>viewDidLayoutSubviews</code> 是 view 布局更新后会被唯一可靠调用的方法，所以你应该把所有依赖于布局或者大小的代码放在 <code>viewDidLayoutSubviews</code> 中，而不是放在 <code>viewDidLoad</code> 或者 <code>viewDidAppear</code> 中。这是避免使用过时的布局或者位置变量的唯一方法。</p>
+<h4 id="2-setNeedsLayout-做标记"><a href="#2-setNeedsLayout-做标记" class="headerlink" title="2. -setNeedsLayout(做标记)"></a>2. -setNeedsLayout(做标记)</h4><p>使当前布局无效并在下一个更新周期触发布局更新。</p>
+<p>当您想要调整视图子视图的布局时，请<strong>在应用程序的主线程上调用此方法</strong>。此方法记录请求并立即返回。</p>
+<p>由于此方法不会强制立即更新，而是等待下一个更新周期，因此您可以使用它在更新任何视图之前使多个视图的布局无效。此行为<strong>允许您将所有布局更新合并到一个更新周期，这通常对性能更好</strong>。</p>
+<h4 id="3-layoutIfNeeded-立即"><a href="#3-layoutIfNeeded-立即" class="headerlink" title="3. -layoutIfNeeded(立即)"></a>3. -layoutIfNeeded(立即)</h4><p>如果有待办的(pending)布局更新，则立即布局子视图。</p>
+<p>使用此方法强制视图立即更新其布局。使用“自动布局”时，布局引擎会根据需要更新视图的位置，以满足约束的更改。用接收此消息的视图作为根视图开始布局视图子树。</p>
+<p>如果没有待处理的布局更新，则此方法退出而不修改布局或调用任何与布局相关的回调。</p>
+<h3 id="3-3-2-CALayer方法"><a href="#3-3-2-CALayer方法" class="headerlink" title="3.3.2 CALayer方法"></a>3.3.2 CALayer方法</h3><h4 id="1-layoutSublayers"><a href="#1-layoutSublayers" class="headerlink" title="1. -layoutSublayers"></a>1. -layoutSublayers</h4><p>告诉图层更新其布局 </p>
+<p>子类可以覆盖此方法并使用它来实现自己的布局算法。您的实现必须设置每个子层的frame。</p>
+<p>此方法的默认实现：</p>
+<ul>
+<li>如果 layer 有delegate对象，且实现了 layoutSublayersOfLayer: 方法，调用它。</li>
+<li>否则，该方法调用 layoutManager 属性对象(Mac OS API)的 layoutSublayersOfLayer: 方法。 </li>
+</ul>
+<h4 id="2-setNeedsLayout-做标记-1"><a href="#2-setNeedsLayout-做标记-1" class="headerlink" title="2. -setNeedsLayout(做标记)"></a>2. -setNeedsLayout(做标记)</h4><p>使图层的布局无效并将其标记为需要更新。会在下一个更新周期中触发布局更新。系统调用任何需要布局更新的图层的 layoutSublayers 方法。</p>
+<p>当图层的边界发生变化或添加或删除子图层时，系统通常会自动调用此方法。   </p>
+<h4 id="3-layoutIfNeeded-立即-1"><a href="#3-layoutIfNeeded-立即-1" class="headerlink" title="3. -layoutIfNeeded(立即)"></a>3. -layoutIfNeeded(立即)</h4><p> 如果需要，立即重新计算图层的布局。</p>
+<p> 收到此消息后，将遍历该图层的父图层，直到找到不需要布局的祖先图层。然后在该祖先下的整个层树上执行布局。</p>
+<h2 id="3-4-内容绘制-—-draw-display"><a href="#3-4-内容绘制-—-draw-display" class="headerlink" title="3.4 内容绘制 — draw | display"></a>3.4 内容绘制 — draw | display</h2><p>一个视图的显示包含了颜色、文本、图片和 Core Graphics 绘制等视图属性，不包括其本身和子视图的大小和位置。和<font color='red'>布局</font>的方法类似，<font color='red'>显示</font>也有触发更新的方法，它们由系统在检测到更新时被自动调用，或者我们可以手动调用直接刷新。</p>
+<h3 id="3-4-1-UIView方法-UIViewRendering分类"><a href="#3-4-1-UIView方法-UIViewRendering分类" class="headerlink" title="3.4.1 UIView方法 (UIViewRendering分类)"></a>3.4.1 UIView方法 (UIViewRendering分类)</h3><h4 id="1-drawRect"><a href="#1-drawRect" class="headerlink" title="1. drawRect:"></a>1. drawRect:</h4><h5 id="1-概述-1"><a href="#1-概述-1" class="headerlink" title="1) 概述"></a>1) 概述</h5><p>在传入的矩形内绘制接收者的图像。</p>
+<p>当这个方法被调用时，UIKit 已经为你的视图配置了合适的绘图环境，你可以简单地调用任何你需要的绘图方法和函数来渲染你的内容。具体来说，UIKit 创建和配置一个用于绘制的图形上下文，并调整该上下文的变换，使其原点与视图边界矩形的原点相匹配。您可以使用 UIGraphicsGetCurrentContext 函数获取对图形上下文的引用，但不要建立对图形上下文的强引用，因为它可以在对 drawRect: 方法的调用之间发生变化。</p>
+<p>当第一次显示视图或发生使视图的可见部分无效的事件时，将调用此方法。你永远不应该自己直接调用这个方法。要使视图的一部分无效，从而导致该部分被重绘，请调用 setNeedsDisplay 或 setNeedsDisplayInRect: 方法。</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">- (<span class="keyword">void</span>)drawRect:(<span class="built_in">CGRect</span>)rect;</span><br></pre></td></tr></table></figure>
+
+<p><code>UIView</code> 的 <code>drawRect</code>方法对视图内容显示的操作，类似于视图布局的 <code>layoutSubviews</code> ，但是不同于 <code>layoutSubviews</code>，<code>drawRect</code> 方法不会触发后续对视图的子视图方法的调用。同样，和 <code>layoutSubviews</code> 一样，你不应该直接调用 <code>drawRect</code> 方法，而应该通过调用触发方法，让系统在 run loop 中的不同结点自动调用。</p>
+<h5 id="2-自动触发"><a href="#2-自动触发" class="headerlink" title="2) 自动触发"></a>2) 自动触发</h5><p>在以下情况下会被调用：</p>
+<ol>
+<li>如果在UIView初始化时没有设置rect大小，将直接导致drawRect不被自动调用。drawRect 调用是在Controller-&gt;loadView, Controller-&gt;viewDidLoad 两方法之后调用的。所以不用担心在控制器中，这些View的drawRect就开始画了。这样可以在控制器中设置一些值给View(如果这些View draw的时候需要用到某些变量值)。</li>
+<li>该方法在调用sizeToFit后被调用，所以可以先调用sizeToFit计算出size。然后系统自动调用drawRect:方法。</li>
+<li>通过设置contentMode属性值为UIViewContentModeRedraw。那么将在每次设置或更改frame的时候自动调用drawRect:。</li>
+<li>直接调用setNeedsDisplay，或者setNeedsDisplayInRect:触发drawRect:，但是有个前提条件是rect不能为0。</li>
+</ol>
+<p><strong>以上1,2推荐；而3,4不提倡。</strong></p>
+<p>drawRect方法使用注意点：</p>
+<ol>
+<li>若使用UIView绘图，只能在drawRect: 方法中获取相应的contextRef并绘图。如果在其他方法中获取将获取到一个invalidate 的ref并且不能用于画图。</li>
+<li>drawRect：方法不能手动显示调用，必须通过调用setNeedsDisplay 或 者 setNeedsDisplayInRect，让系统自动调该方法。</li>
+<li>若使用calayer绘图，只能在drawInContext: 中（类似于drawRect）绘制，或者在delegate中的相应方法绘制。同样也是调用setNeedDisplay等间接调用以上方法。</li>
+<li>若要实时画图，不能使用gestureRecognizer，只能使用touchbegan等方法来调用setNeedsDisplay实时刷新屏幕。</li>
+</ol>
+<h4 id="2-setNeedsDisplay"><a href="#2-setNeedsDisplay" class="headerlink" title="2. -setNeedsDisplay"></a>2. -setNeedsDisplay</h4><p>通知系统你的视图内容需要重绘。此方法将指定的矩形添加到视图的当前无效矩形列表中并立即返回。直到下一个绘制周期才会真正重绘视图，此时所有无效的视图都会更新。</p>
+<p>你应该仅在视图的内容或外观发生更改时，使用此方法请求重绘视图。<strong>如果只是更改视图的几何形状，通常不会重新绘制视图，它的现有内容根据视图的 contentMode 属性中的值进行调整。</strong></p>
+<p> 注意：如果您的视图由 CAEAGLLayer 对象支持，则此方法无效。它仅适用于使用原生绘图技术（例如 UIKit 和 Core Graphics）来呈现其内容的视图。</p>
+<figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 重绘范围是整个边界矩形</span></span><br><span class="line">- (<span class="keyword">void</span>)setNeedsDisplay;</span><br><span class="line"><span class="comment">// 重绘范围是参数指定的矩形(应在接收器的坐标系中指定, 且只对该图层有效)</span></span><br><span class="line">- (<span class="keyword">void</span>)setNeedsDisplayInRect:(<span class="built_in">CGRect</span>)rect;</span><br></pre></td></tr></table></figure>
+
+<p>这个方法类似于布局中的 <code>setNeedsLayout</code> 。它会给有内容更新的视图设置一个内部的标记，但在视图重绘之前就会返回。然后在下一个 update cycle 中，系统会遍历所有已标标记的视图，并调用它们的 <code>draw</code> 方法。</p>
+<p>如果你只想在下次更新时重绘部分视图，你可以调用 <code>setNeedsDisplay(_:)</code>，并把需要重绘的矩形部分传进去（<code>setNeedsDisplayInRect</code> in OC)。</p>
+<p>大部分时候，在视图中更新任何 UI 组件都会把相应的视图标记为“<strong>dirty</strong>”，通过设置视图“内部更新标记”，在下一次 update cycle 中就会重绘，而<strong>不需要显式的 <code>setNeedsDisplay</code> 调用</strong>。然而<strong>如果你有一个属性没有绑定到 UI 组件，但需要在每次更新时重绘视图</strong>，你可以定义他的 <code>didSet</code> 属性，并且调用 <code>setNeedsDisplay</code> 来触发视图合适的更新。</p>
+<blockquote>
+<p>脏数据依据不同的分析目的有不同的定义：</p>
+<ul>
+<li>从广义上看，脏数据是指没有进行过数据预处理而直接接收到的、处于原始状态的数据；从狭义上看，是不符合研究要求，以及不能够对其直接进行相应的数据分析。在常见的数据挖掘工作中，脏数据是指不完整、含噪声、不一致的数据；在问卷分析中，脏数据则是指不符合问卷要求的数据。</li>
+<li>在一些编程场景中，脏数据可以看做是发生了改变的数据(Git中有些场合中，将有改动未commit的状态称为dirty，都commit了称为clean)</li>
+</ul>
+</blockquote>
+<p>有时候设置一个属性要求自定义绘制，这种情况下你需要重写 <code>drawRect</code> 方法。在下面的例子中，设置 <code>numberOfPoints</code> 会触发系统系统根据具体点数绘制视图。在这个例子中，你需要在 <code>drawRect</code> 方法中实现自定义绘制，并在 <code>numberOfPoints</code> 的 property observer 里调用 <code>setNeedsDisplay</code>。</p>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">MyView</span>: <span class="title">UIView</span> </span>&#123;</span><br><span class="line">    <span class="keyword">var</span> numberOfPoints <span class="operator">=</span> <span class="number">0</span> &#123;</span><br><span class="line">        <span class="keyword">didSet</span> &#123;</span><br><span class="line">            setNeedsDisplay()</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">override</span> <span class="function"><span class="keyword">func</span> <span class="title">draw</span>(<span class="keyword">_</span> <span class="params">rect</span>: <span class="type">CGRect</span>)</span> &#123;</span><br><span class="line">        <span class="keyword">switch</span> numberOfPoints &#123;</span><br><span class="line">        <span class="keyword">case</span> <span class="number">0</span>:</span><br><span class="line">            <span class="keyword">return</span></span><br><span class="line">        <span class="keyword">case</span> <span class="number">1</span>:</span><br><span class="line">            drawPoint(rect)</span><br><span class="line">        <span class="keyword">case</span> <span class="number">2</span>:</span><br><span class="line">            drawLine(rect)</span><br><span class="line">        <span class="keyword">case</span> <span class="number">3</span>:</span><br><span class="line">            drawTriangle(rect)</span><br><span class="line">        <span class="keyword">case</span> <span class="number">4</span>:</span><br><span class="line">            drawRectangle(rect)</span><br><span class="line">        <span class="keyword">case</span> <span class="number">5</span>:</span><br><span class="line">            drawPentagon(rect)</span><br><span class="line">        <span class="keyword">default</span>:</span><br><span class="line">            drawEllipse(rect)</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>视图的显示方法里没有类似布局中的 <code>layoutIfNeeded</code> 这样可以触发立即更新的方法。通常情况下等到下一个更新周期再重新绘制视图也无所谓。</p>
+<h3 id="3-4-2-CALayer方法"><a href="#3-4-2-CALayer方法" class="headerlink" title="3.4.2 CALayer方法"></a>3.4.2 CALayer方法</h3><h4 id="1-display"><a href="#1-display" class="headerlink" title="1. -display"></a>1. -display</h4><blockquote>
+<p>Reload the content of this layer. 调用-drawInContext:方法，然后更新layer的’contents’属性。</p>
+</blockquote>
+<p>通常不要直接调用此方法。图层在适当的时候调用这个方法来更新图层的内容。</p>
+<ul>
+<li>如果layer有一个delegate对象，且实现了 displayLayer: 方法，那么就调用该方法来更新 layer 的内容。</li>
+<li>如果委托未实现 displayLayer: 方法，则此方法创建一个后备存储(Backing Store)并调用该layer的 drawInContext:方法以用内容填充该后备存储。新的后备存储替换了layer的先前contents。</li>
+</ul>
+<h4 id="2-drawInContext"><a href="#2-drawInContext" class="headerlink" title="2. -drawInContext:"></a>2. -drawInContext:</h4><figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/*</span></span><br><span class="line"><span class="comment"> * 使用指定的图形上下文绘制图层的内容。</span></span><br><span class="line"><span class="comment"> * @param ctx 在其中绘制内容的图形上下文。可以剪裁上下文以保护有效的层内容。</span></span><br><span class="line"><span class="comment"> * 						希望找到要绘制的实际区域的子类可以调用 CGContextGetClipBoundingBox。</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line">- (<span class="keyword">void</span>)drawInContext:(<span class="built_in">CGContextRef</span>)ctx;</span><br></pre></td></tr></table></figure>
+
+<p>此方法的默认实现本身不进行任何绘图。 如果图层的委托实现了 drawLayer:inContext: 方法，则调用该方法来进行实际绘制。</p>
+<p>子类可以覆盖此方法并使用它来绘制图层的内容。 绘制时，所有坐标都应在逻辑坐标空间中以点为单位指定。</p>
+<h4 id="3-setNeedsDisplay"><a href="#3-setNeedsDisplay" class="headerlink" title="3. -setNeedsDisplay"></a>3. -setNeedsDisplay</h4><p>将图层的内容标记为需要更新。</p>
+<p>调用此方法会导致图层重新缓存其内容。 这导致图层可能调用其委托的 displayLayer: 或 drawLayer:inContext: 方法。 删除图层 contents 属性中的现有内容，为新内容让路。</p>
+<figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 重绘范围是整个边界矩形</span></span><br><span class="line">- (<span class="keyword">void</span>)setNeedsDisplay;</span><br><span class="line"><span class="comment">// 重绘范围是参数指定的矩形(应在接收器的坐标系中指定, 且只对该图层有效)</span></span><br><span class="line">- (<span class="keyword">void</span>)setNeedsDisplayInRect:(<span class="built_in">CGRect</span>)rect;</span><br></pre></td></tr></table></figure>
+
+<h3 id="3-4-3-CALayerDelegate方法"><a href="#3-4-3-CALayerDelegate方法" class="headerlink" title="3.4.3 CALayerDelegate方法"></a>3.4.3 CALayerDelegate方法</h3><figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">@protocol</span> <span class="title">CALayerDelegate</span> &lt;<span class="title">NSObject</span>&gt;</span></span><br><span class="line"><span class="keyword">@optional</span></span><br><span class="line"><span class="comment">/* Tells the delegate to implement the display process(实现显示过程)</span></span><br><span class="line"><span class="comment">   如果实现了，则由layer的-display方法的默认实现调用，在这种情况下，它应该实现整个display过程(通常是通过设置&#x27;contents&#x27;属性)。*/</span></span><br><span class="line">- (<span class="keyword">void</span>)displayLayer:(<span class="built_in">CALayer</span> *)layer;</span><br><span class="line"></span><br><span class="line"><span class="comment">/* Tells the delegate to implement the display process using the layer&#x27;s CGContextRef.</span></span><br><span class="line"><span class="comment">   This method is not called if the delegate implements displayLayer:</span></span><br><span class="line"><span class="comment">   如果定义了，则由layer的-drawInContext的默认实现调用 */</span></span><br><span class="line">- (<span class="keyword">void</span>)drawLayer:(<span class="built_in">CALayer</span> *)layer inContext:(<span class="built_in">CGContextRef</span>)ctx;</span><br><span class="line"></span><br><span class="line"><span class="comment">/* 如果定义了，则由layer的-display方法的默认实现调用。</span></span><br><span class="line"><span class="comment">	 允许delegate在-drawLayer:InContext之前配置任何影响内容的图层状态，如&#x27;contentsFormat&#x27;和&#x27; opaque&#x27;。如果委托实现了-displayLayer，它将不会被调用。*/</span></span><br><span class="line">- (<span class="keyword">void</span>)layerWillDraw:(<span class="built_in">CALayer</span> *)layer</span><br><span class="line">  API_AVAILABLE(macos(<span class="number">10.12</span>), ios(<span class="number">10.0</span>), watchos(<span class="number">3.0</span>), tvos(<span class="number">10.0</span>));</span><br><span class="line"></span><br><span class="line"><span class="comment">/* 如果实现了，则由layer的-layoutSublayers方法的默认实现调用(在检查layoutManager之前)。</span></span><br><span class="line"><span class="comment">   注意，如果调用委托方法，布局管理器将被忽略。*/</span></span><br><span class="line">- (<span class="keyword">void</span>)layoutSublayersOfLayer:(<span class="built_in">CALayer</span> *)layer;</span><br><span class="line"></span><br><span class="line"><span class="comment">/* 隐式动画中用到的 */</span></span><br><span class="line">- (<span class="keyword">nullable</span> <span class="keyword">id</span>&lt;<span class="built_in">CAAction</span>&gt;)actionForLayer:(<span class="built_in">CALayer</span> *)layer forKey:(<span class="built_in">NSString</span> *)event;</span><br><span class="line"><span class="keyword">@end</span></span><br></pre></td></tr></table></figure>
+
+<h1 id="四、自动布局"><a href="#四、自动布局" class="headerlink" title="四、自动布局"></a>四、自动布局</h1><p>自动布局包含三步来布局和重绘视图。</p>
+<ul>
+<li>第一步是更新约束，系统会计算并给视图设置所有要求的约束。</li>
+<li>第二步是布局阶段，布局引擎计算视图和子视图的 frame 并且将它们布局。</li>
+<li>最后一步完成这一循环的是显示阶段，重绘视图的内容，如实现了 <code>draw</code> 方法则调用 <code>draw</code>。</li>
+</ul>
+<h2 id="4-1-约束更新的几个方法"><a href="#4-1-约束更新的几个方法" class="headerlink" title="4.1 约束更新的几个方法"></a>4.1 约束更新的几个方法</h2><figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">@interface</span> <span class="title">UIView</span> (<span class="title">UIConstraintBasedLayoutCoreMethods</span>) </span></span><br></pre></td></tr></table></figure>
+
+<h3 id="4-1-1-updateConstraints"><a href="#4-1-1-updateConstraints" class="headerlink" title="4.1.1 updateConstraints()"></a>4.1.1 updateConstraints()</h3><p>这个方法用来在自动布局中动态改变视图约束。和布局中的 <code>layoutSubviews()</code> 方法或者显示中的 <code>draw</code> 方法类似，<code>updateConstraints()</code> 只应该被重载，绝不要在代码中显式地调用。通常你只应该在 <code>updateConstraints</code> 方法中实现必须要更新的约束。静态的约束应该在 interface builder、视图的初始化方法或者 <code>viewDidLoad()</code> 方法中指定。</p>
+<p>通常情况下，设置或者解除约束、更改约束的优先级或者常量值，或者从视图层级中移除一个视图时都会设置一个内部的标记 “update constarints”，这个标记会在下一个更新周期中触发调用 <code>updateConstrains</code>。当然，也有手动给视图打上“update constarints” 标记的方法，如下。</p>
+<h3 id="4-1-2-setNeedsUpdateConstraints"><a href="#4-1-2-setNeedsUpdateConstraints" class="headerlink" title="4.1.2 setNeedsUpdateConstraints()"></a>4.1.2 setNeedsUpdateConstraints()</h3><p>调用 <code>setNeedsUpdateConstraints()</code> 会保证在下一次更新周期中更新约束。它通过标记“update constraints”来触发 <code>updateConstraints()</code>。这个方法和 <code>setNeedsDisplay()</code> 以及 <code>setNeedsLayout()</code> 方法的工作机制类似。</p>
+<h3 id="4-1-3-updateConstraintsIfNeeded"><a href="#4-1-3-updateConstraintsIfNeeded" class="headerlink" title="4.1.3 updateConstraintsIfNeeded()"></a>4.1.3 updateConstraintsIfNeeded()</h3><p>对于使用自动布局的视图来说，这个方法与 <code>layoutIfNeeded</code> 等价。它会检查 “update constraints”标记（可以被 <code>setNeedsUpdateConstraints</code> 或者 <code>invalidateInstrinsicContentSize</code>方法自动设置）。如果它认为这些约束需要被更新，它会立即触发 <code>updateConstraints()</code> ，而不会等到 run loop 的末尾。</p>
+<h3 id="4-1-4-invalidateIntrinsicContentSize"><a href="#4-1-4-invalidateIntrinsicContentSize" class="headerlink" title="4.1.4 invalidateIntrinsicContentSize()"></a>4.1.4 invalidateIntrinsicContentSize()</h3><p>自动布局中某些视图拥有 <code>intrinsicContentSize</code> 属性，这是视图根据它的内容得到的自然尺寸。一个视图的 <code>intrinsicContentSize</code> 通常由所包含的元素的约束决定，但也可以通过重载提供自定义行为。调用 <code>invalidateIntrinsicContentSize()</code> 会设置一个标记表示这个视图的 <code>intrinsicContentSize</code> 已经过期，需要在下一个布局阶段重新计算。</p>
+<h2 id="4-2-约束—布局—显示的流程"><a href="#4-2-约束—布局—显示的流程" class="headerlink" title="4.2 约束—布局—显示的流程"></a>4.2 约束—布局—显示的流程</h2><p>布局、显示和约束都遵循着相似的模式，例如他们更新的方式以及如何在 run loop 的不同时间点上强制更新。任一组件都有一个实际去更新的方法（<code>layoutSubviews</code>, <code>drawRect</code>, 和 <code>updateConstraints</code>），你可以重写来手动操作视图，但是任何情况下都不要显式调用。这个方法只在 run loop 的末端会被调用，如果视图被标记了告诉系统该视图需要被更新的标记的话。</p>
+<p><strong>有一些操作会自动设置这个标志</strong>，但是也有一些方法允许您显式地设置它。对于布局和约束相关的更新，如果你等不到在 run loop 末端才更新（例如：其他行为依赖于新布局），有方法可以让你<strong>立即更新，并保证 “update layout” 标记被正确标记</strong>。下面的表格列出了任意组件会怎样更新及其对应方法。</p>
+<p>下面的流程图总结了 update cycle 和 event loop 之间的交互，并指出了上文提到的方法在 run loop 运行期间的位置。</p>
+<img src="/images/caa/layoutdraw.png" alt="layoutdraw" style="zoom:70%;" />
+
+<p>你可以在 run loop 中的任意一点显式地调用 layoutIfNeeded 或者 updateConstraintsIfNeeded，需要记住，这开销会很大。在循环的末端是 update cycle，如果视图被设置了特定的 “update constraints”，“update layout” 或者 “needs display” 标记，在这节点会更新约束、布局以及展示。一旦这些更新结束，runloop 会重新启动。</p>
+<img src="/images/caa/layoutdraw2.png" alt="layoutdraw2" style="zoom:90%;" />
+
+<h2 id="4-3-约束的实现原理"><a href="#4-3-约束的实现原理" class="headerlink" title="4.3 约束的实现原理"></a>4.3 约束的实现原理</h2><p>Auto Layout 不只有布局算法 Cassowary，还包含了布局在运行时的生命周期等一整套布局引擎系统，用来统一管理布局的创建、更新和销毁。了解 Auto Layout 的生命周期，是理解它的性能相关话题的基础。这样，在遇到问题，特别是性能问题时，我们才能从根儿上找到原因，从而避免或改进类似的问题。</p>
+<p>这一整套布局引擎系统叫作 Layout Engine ，是 Auto Layout 的核心，主导着整个界面布局。</p>
+<p>每个视图在得到自己的布局之前，Layout Engine 会将视图、约束、优先级、固定大小通过计算转换成最终的大小和位置。在 Layout Engine 里，每当约束发生变化，就会触发 Deffered Layout Pass，完成后进入监听约束变化的状态。当再次监听到约束变化，即进入下一轮循环中。Layout Engine 界面布局过程如下图所示：</p>
+<img src="/images/caa/7ca0e14ef02231c9aba7cb49c7e9271c.webp" style="zoom:50%;" />
+
+<p>图中：</p>
+<ul>
+<li>Constraints Change 表示的就是约束变化，添加、删除视图时会触发约束变化。Activating 或 Deactivating，设置 Constant 或 Priority 时也会触发约束变化。</li>
+<li>Layout Engine 在碰到约束变化后会重新计算布局，获取到布局后调用 superview.setNeedLayout()，然后进入 Deferred Layout Pass。</li>
+<li>Deferred Layout Pass 的主要作用是做容错处理。如果有些视图在更新约束时没有确定或缺失布局声明的话，会先在这里做容错处理。</li>
+<li>接下来，Layout Engine 会从上到下调用 layoutSubviews() ，通过 Cassowary 算法计算各个子视图的位置，算出来后将子视图的 frame 从 Layout Engine 里拷贝出来。</li>
+<li>在这之后的处理，就和手写布局的绘制、渲染过程一样了。</li>
+</ul>
+<p>所以，使用 Auto Layout 和手写布局的区别，就是多了布局上的这个计算过程。</p>
+<h2 id="4-4-自动布局的性能"><a href="#4-4-自动布局的性能" class="headerlink" title="4.4 自动布局的性能"></a>4.4 自动布局的性能</h2><p>iOS12之前：</p>
+<ul>
+<li>如果兄弟视图间有关系的话，在视图遍历时会不断处理和兄弟视图间的关系，这时会有修改更新计算。此时，<strong>视图嵌套的数量对性能的影响是呈指数级增长的</strong>。</li>
+<li>兄弟视图之间没有关系时，呈线性增长。这就表示 Cassowary 算法在添加时是高效的。</li>
+</ul>
+<p>这个锅应该由 Cassowary 算法来背吗？</p>
+<p>在 1997 年时，Cassowary 是以高效的界面线性方程求解算法被提出来的。它解决的是界面的线性规划问题，而线性规划问题的解法是 Simplex 算法。单从 Simplex 算法的复杂度来看，多数情况下是没有指数时间复杂度的。而 Cassowary 算法又是在 Simplex 算法基础上对界面关系方程进行了高效的添加、修改更新操作，不会带来时间复杂度呈指数级增长的问题。</p>
+<p>那么，如果 Cassowary 算法本身没有问题的话，问题就只可能是苹果公司在 iOS 12 之前在某些情况下没有用好这个算法。</p>
+<p>实际情况是，iOS 12 之前，很多约束变化时都会重新创建一个计算引擎 NSISEnginer 将约束关系重新加进来，然后重新计算。结果就是，涉及到的约束关系变多时，新的计算引擎需要重新计算，最终导致计算量呈指数级增加。</p>
+<p>更详细的讲解，你可以参考 WWDC 2018 中 202 Session 的内容，里面完整地分析了以前的问题，以及 iOS12 的解法。</p>
+<p>总体来说，<strong>iOS12 的 Auto Layout 更多地利用了 Cassowary 算法的界面更新策略，使其真正完成了高效的界面线性策略计算。iOS 12使得 Auto Layout 具有了和手写布局几乎相同的高性能</strong>，可以放心地使用 Auto Layout 了呢。</p>
+<h2 id="4-5-autolayout两个优先级"><a href="#4-5-autolayout两个优先级" class="headerlink" title="4.5 autolayout两个优先级"></a>4.5 autolayout两个优先级</h2><blockquote>
+<p>使用 Auto Layout 一定要注意多使用 Compression Resistance Priority 和 Hugging Priority，利用优先级的设置，让布局更加灵活，代码更少，更易于维护。</p>
+</blockquote>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">@interface</span> <span class="title">UIView</span> (<span class="title">UIConstraintBasedLayoutLayering</span>)</span></span><br><span class="line"></span><br><span class="line"><span class="comment">/* 具有instrinsic content size的控件，比如UILabel，UIButton，选择控件，进度条和分段等等，可以根据设置的内容，来自己计算自己的大小，比如label设置text和font后大小是可以计算得到的。 </span></span><br><span class="line"><span class="comment">*/</span></span><br><span class="line"><span class="keyword">@property</span>(<span class="keyword">nonatomic</span>, <span class="keyword">readonly</span>) <span class="built_in">CGSize</span> intrinsicContentSize API_AVAILABLE(ios(<span class="number">6.0</span>));</span><br><span class="line"></span><br><span class="line"><span class="comment">// 属性对有intrinsic content size的控件（例如button，label）非常重要.</span></span><br><span class="line"></span><br><span class="line"><span class="comment">/* 抗拉伸优先级。</span></span><br><span class="line"><span class="comment">   用途：可以通过设置Hugging priority让这些控件不要大于某个设定的值。</span></span><br><span class="line"><span class="comment">   默认优先级为250。值越小，视图越容易被拉伸 */</span></span><br><span class="line">- (<span class="keyword">void</span>)setContentHuggingPriority:(<span class="built_in">UILayoutPriority</span>)priority forAxis:(<span class="built_in">UILayoutConstraintAxis</span>)axis API_AVAILABLE(ios(<span class="number">6.0</span>));</span><br><span class="line"><span class="comment">/* 抗压缩优先级,</span></span><br><span class="line"><span class="comment">   用途：可以通过设置Content Compression Resistance就是让控件不要小于某个设定的值。</span></span><br><span class="line"><span class="comment">   默认优先级为750。值越小，视图越容易被压缩 */</span></span><br><span class="line">- (<span class="keyword">void</span>)setContentCompressionResistancePriority:(<span class="built_in">UILayoutPriority</span>)priority forAxis:(<span class="built_in">UILayoutConstraintAxis</span>)axis API_AVAILABLE(ios(<span class="number">6.0</span>));</span><br><span class="line"><span class="keyword">@end</span></span><br></pre></td></tr></table></figure>
+
+<p>使用场景：当父视图宽高已定，两个子控件label左右排列：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">左label约束:上<span class="number">0</span>,左<span class="number">0</span>,下<span class="number">0</span>       <span class="comment">//左侧与父控件左侧对齐</span></span><br><span class="line">右label约束:上<span class="number">0</span>,左<span class="number">0</span>,下<span class="number">0</span>,右<span class="number">0</span>   <span class="comment">//右侧与父控件右侧对齐。即两个子控件宽度充满父控件</span></span><br></pre></td></tr></table></figure>
+
+<p>都没设置宽度，宽度由label文字多少自己决定，此时你会发现：</p>
+<ul>
+<li>当两个label的内容不能充满父控件宽度时：约束报错：</li>
+</ul>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">labels Set horizontal hugging priority to <span class="number">251</span>/<span class="number">249.</span> </span><br><span class="line"><span class="comment">//意思是两个子控件，抗拉伸优先级不能一样，不能都是250，得有个高低，谁的低就去拉伸谁，以达到总宽度能拉伸到父控件宽度</span></span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>当两个label的内容超出了父控件宽度时：约束报错：</li>
+</ul>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">labels Set horizontal compression resistance priority to <span class="number">751</span>/<span class="number">749.</span> </span><br><span class="line"><span class="comment">//意思是两个子控件，抗压缩优先级不能一样，不能都是750，得有个高低，谁的低就去压缩谁，以达到总宽度能压缩到父控件宽度</span></span><br></pre></td></tr></table></figure>
+
+<p>设置：</p>
+<ul>
+<li>xib中，有右侧尺寸检查器中，有此选项</li>
+<li>代码中：<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">static</span> <span class="keyword">const</span> <span class="built_in">UILayoutPriority</span> <span class="built_in">UILayoutPriorityRequired</span> = <span class="number">1000</span>;</span><br><span class="line"><span class="keyword">static</span> <span class="keyword">const</span> <span class="built_in">UILayoutPriority</span> <span class="built_in">UILayoutPriorityDefaultHigh</span> = <span class="number">750</span>;</span><br><span class="line"><span class="keyword">static</span> <span class="keyword">const</span> <span class="built_in">UILayoutPriority</span> <span class="built_in">UILayoutPriorityDragThatCanResizeScene</span> = <span class="number">510</span>;</span><br><span class="line"><span class="keyword">static</span> <span class="keyword">const</span> <span class="built_in">UILayoutPriority</span> <span class="built_in">UILayoutPrioritySceneSizeStayPut</span> = <span class="number">500</span>;</span><br><span class="line"><span class="keyword">static</span> <span class="keyword">const</span> <span class="built_in">UILayoutPriority</span> <span class="built_in">UILayoutPriorityDragThatCannotResizeScene</span> = <span class="number">490</span>; </span><br><span class="line"><span class="keyword">static</span> <span class="keyword">const</span> <span class="built_in">UILayoutPriority</span> <span class="built_in">UILayoutPriorityDefaultLow</span> = <span class="number">250</span>; </span><br><span class="line"><span class="keyword">static</span> <span class="keyword">const</span> <span class="built_in">UILayoutPriority</span> <span class="built_in">UILayoutPriorityFittingSizeLevel</span> = <span class="number">50</span>; </span><br><span class="line"><span class="comment">//content hugging 为1000</span></span><br><span class="line">[view setContentHuggingPriority:<span class="built_in">UILayoutPriorityRequired</span></span><br><span class="line">                           forAxis:<span class="built_in">UILayoutConstraintAxisHorizontal</span>];</span><br><span class="line"></span><br><span class="line"><span class="comment">//content compression 为250</span></span><br><span class="line">[view setContentCompressionResistancePriority:<span class="built_in">UILayoutPriorityDefaultLow</span></span><br><span class="line">                                         forAxis:<span class="built_in">UILayoutConstraintAxisHorizontal</span>];</span><br></pre></td></tr></table></figure></li>
+</ul>
+<h2 id="4-6-自动、手动布局选型"><a href="#4-6-自动、手动布局选型" class="headerlink" title="4.6 自动、手动布局选型"></a>4.6 自动、手动布局选型</h2><blockquote>
+<p>手动布局的方式，原始落后、界面开发维护效率低，对从事过前端开发的人来说更是难以适应。所以，苹果需要提供更好的界面引擎来提升开发者的体验，Auto Layout 随之出现。</p>
+</blockquote>
+<h2 id="4-7-示例-cell-里面-label的高度自适应问题"><a href="#4-7-示例-cell-里面-label的高度自适应问题" class="headerlink" title="4.7 示例: cell 里面 label的高度自适应问题"></a>4.7 示例: cell 里面 label的高度自适应问题</h2><p>我把相关内容截取到这里  主要是UILabel的高度会有变化，所以这里主要是说说label变化时如何处理，设置UILabel的时候注意要设置preferredMaxLayoutWidth这个宽度，还有ContentHuggingPriority为UILayoutPriorityRequried  </p>
+<figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">CGFloat</span> maxWidth = [<span class="built_in">UIScreen</span> mainScreen].bounds.size.width - <span class="number">10</span> * <span class="number">2</span>;</span><br><span class="line">textLabel = [<span class="built_in">UILabel</span> new];</span><br><span class="line">textLabel.numberOfLines = <span class="number">0</span>;</span><br><span class="line">textLabel.preferredMaxLayoutWidth = maxWidth;</span><br><span class="line">[<span class="keyword">self</span>.contentView addSubview:textLabel];</span><br><span class="line"></span><br><span class="line">[textLabel mas_makeConstraints:^(MASConstraintMaker *make) &#123;</span><br><span class="line">  make.top.equalTo(statusView.mas_bottom).with.offset(<span class="number">10</span>);</span><br><span class="line">  make.left.equalTo(<span class="keyword">self</span>.contentView).with.offset(<span class="number">10</span>);</span><br><span class="line">  make.right.equalTo(<span class="keyword">self</span>.contentView).with.offset(<span class="number">-10</span>);</span><br><span class="line">  make.bottom.equalTo(<span class="keyword">self</span>.contentView).with.offset(<span class="number">-10</span>);</span><br><span class="line">&#125;];</span><br><span class="line">[_contentLabel setContentHuggingPriority:<span class="built_in">UILayoutPriorityRequired</span> forAxis:<span class="built_in">UILayoutConstraintAxisVertical</span>];</span><br></pre></td></tr></table></figure>
+
+<p>如果版本支持最低版本为iOS 8以上的话可以直接利用UITableViewAutomaticDimension在tableview的heightForRowAtIndexPath直接返回即可。</p>
+<figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">tableView.rowHeight = <span class="built_in">UITableViewAutomaticDimension</span>;</span><br><span class="line">tableView.estimatedRowHeight = <span class="number">80</span>; <span class="comment">//减少第一次计算量，iOS7后支持</span></span><br><span class="line"></span><br><span class="line">- (<span class="built_in">CGFloat</span>)tableView:(<span class="built_in">UITableView</span> *)tableView heightForRowAtIndexPath:(<span class="built_in">NSIndexPath</span> *)indexPath &#123;</span><br><span class="line">  <span class="comment">// 只用返回这个！</span></span><br><span class="line">  <span class="keyword">return</span> <span class="built_in">UITableViewAutomaticDimension</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>  但如果需要兼容iOS 8之前版本的话，就要回到老路子上了，主要是用systemLayoutSizeFittingSize来取高。</p>
+<p>步骤是先在数据model中添加一个height的属性用来缓存高，然后在table view的heightForRowAtIndexPath代理里static一个只初始化一次的Cell实例，然后根据model内容填充数据，最后根据cell的contentView的systemLayoutSizeFittingSize的方法获取到cell的高。具体代码如下</p>
+<figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//在model中添加属性缓存高度</span></span><br><span class="line"><span class="class"><span class="keyword">@interface</span> <span class="title">DataModel</span> : <span class="title">NSObject</span></span></span><br><span class="line"><span class="keyword">@property</span> (<span class="keyword">copy</span>, <span class="keyword">nonatomic</span>) <span class="built_in">NSString</span> *text;</span><br><span class="line"><span class="keyword">@property</span> (<span class="keyword">assign</span>, <span class="keyword">nonatomic</span>) <span class="built_in">CGFloat</span> cellHeight; <span class="comment">//缓存高度</span></span><br><span class="line"><span class="keyword">@end</span></span><br><span class="line"></span><br><span class="line">- (<span class="built_in">CGFloat</span>)tableView:(<span class="built_in">UITableView</span> *)tableView heightForRowAtIndexPath:(<span class="built_in">NSIndexPath</span> *)indexPath &#123;</span><br><span class="line">    <span class="keyword">static</span> CustomCell *cell;</span><br><span class="line">    <span class="comment">//只初始化一次cell</span></span><br><span class="line">    <span class="keyword">static</span> <span class="built_in">dispatch_once_t</span> onceToken;</span><br><span class="line">    <span class="built_in">dispatch_once</span>(&amp;onceToken, ^&#123;</span><br><span class="line">        cell = [tableView dequeueReusableCellWithIdentifier:<span class="built_in">NSStringFromClass</span>([CustomCell <span class="keyword">class</span>])];</span><br><span class="line">    &#125;);</span><br><span class="line">    DataModel *model = <span class="keyword">self</span>.dataArray[(<span class="built_in">NSUInteger</span>) indexPath.row];</span><br><span class="line">    [cell makeupData:model];</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (model.cellHeight &lt;= <span class="number">0</span>) &#123;</span><br><span class="line">        <span class="comment">//使用systemLayoutSizeFittingSize获取高度</span></span><br><span class="line">        model.cellHeight = [cell.contentView systemLayoutSizeFittingSize:<span class="built_in">UILayoutFittingCompressedSize</span>].height + <span class="number">1</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> model.cellHeight;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+    </article>
+    <!-- license  -->
+    
+        <div class="license-wrapper">
+            <p>Author：<a href="https://tenloy.github.io">Tenloy</a>
+            <p>原文链接：<a href="https://tenloy.github.io/2021/09/07/core-animation01.html">https://tenloy.github.io/2021/09/07/core-animation01.html</a>
+            <p>发表日期：2021.09.07 , 2:50 PM</p>
+            <p>更新日期：2024.04.06 , 12:00 PM</p>
+            <p>版权声明：本文采用<a rel="license noopener" target="_blank" href="http://creativecommons.org/licenses/by-nc/4.0/">Crative Commons 4.0 许可协议</a>进行许可</p>
+        </div>
+    
+    <!-- paginator  -->
+    <ul class="post-paginator">
+        <li class="next">
+            
+                <div class="nextSlogan">Next Post</div>
+                <a href= "/2021/09/09/core-animation02.html" title= "Core Animation(二) - 隐式动画、CATransaction与CAAction">
+                    <div class="nextTitle">Core Animation(二) - 隐式动画、CATransaction与CAAction</div>
+                </a>
+            
+        </li>
+        <li class="previous">
+            
+                <div class="prevSlogan">Previous Post</div>
+                <a href= "/2021/09/05/AFN-Analyse.html" title= "[转] AFN框架实现解析">
+                    <div class="prevTitle">[转] AFN框架实现解析</div>
+                </a>
+            
+        </li>
+    </ul>
+    <!-- 评论插件 -->
+    <!-- 来必力City版安装代码 -->
+
+<!-- City版安装代码已完成 -->
+    
+    
+    <!-- gitalk评论 -->
+
+    <!-- utteranc评论 -->
+
+    <!-- partial('_partial/comment/changyan') -->
+    <!--PC版-->
+
+
+    
+    
+
+    <!-- 评论 -->
+</main>
+            <!-- profile -->
+            
+        </div>
+        <footer class="footer footer-unloaded">
+    <!-- social  -->
+    
+    <div class="social">
+        
+    
+        
+            
+                <a href="mailto:luotengoto@163.com" class="iconfont-archer email" title=email ></a>
+            
+        
+    
+        
+            
+                <a href="//github.com/Tenloy" class="iconfont-archer github" target="_blank" title=github></a>
+            
+        
+    
+        
+            
+                <a href="https://www.jianshu.com/u/8db1bc12db9f" class="iconfont-jian jianshu" target="_blank" title=jianshu></a>
+            
+        
+    
+        
+            
+                <a href="/atom.xml" class="iconfont-archer rss" target="_blank" title=rss></a>
+            
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+
+    </div>
+    
+    <!-- powered by Hexo  -->
+    <div class="copyright">
+        <span id="hexo-power">Powered by <a href="https://hexo.io/" target="_blank">Hexo</a></span><span class="iconfont-archer power">&#xe635;</span><span id="theme-info">theme <a href="https://github.com/fi3ework/hexo-theme-archer" target="_blank">Archer</a></span>
+    </div>
+    <!-- 不蒜子  -->
+    
+    <div class="busuanzi-container">
+    
+     
+    <span id="busuanzi_container_site_pv">PV: <span id="busuanzi_value_site_pv"></span> :)</span>
+    
+    </div>
+    
+</footer>
+    </div>
+    <!-- toc -->
+    
+    <div class="toc-wrapper" style=
+    
+
+
+
+
+
+
+
+top:40vh;
+
+    >
+        <div class="toc-catalog">
+            <span class="iconfont-archer catalog-icon">&#xe613;</span><span>CATALOG</span>
+        </div>
+        <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%B8%80%E3%80%81View%E4%B8%8ELayer"><span class="toc-text">一、View与Layer</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-1-CALayer%E5%9B%BE%E5%B1%82"><span class="toc-text">1.1 CALayer图层</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#1-2-%E5%9B%9B%E4%B8%AA%E5%B1%82%E7%BA%A7%E5%85%B3%E7%B3%BB"><span class="toc-text">1.2 四个层级关系</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-2-1-%E8%A7%86%E5%9B%BE%E5%B1%82%E7%BA%A7"><span class="toc-text">1.2.1 视图层级</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-2-2-%E5%9B%BE%E5%B1%82%E6%A0%91"><span class="toc-text">1.2.2 图层树</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-2-3-%E5%91%88%E7%8E%B0%E6%A0%91"><span class="toc-text">1.2.3 呈现树</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-2-4-%E6%B8%B2%E6%9F%93%E6%A0%91"><span class="toc-text">1.2.4 渲染树</span></a></li></ol></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%BA%8C%E3%80%81View%E7%9A%84%E7%BB%98%E5%88%B6"><span class="toc-text">二、View的绘制</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#2-1-%E7%BB%98%E5%88%B6%E6%9C%BA%E5%88%B6"><span class="toc-text">2.1 绘制机制</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-2-%E7%BB%98%E5%88%B6%E5%91%A8%E6%9C%9F-%E5%BD%93%E5%89%8Drunloop%E7%BB%93%E6%9D%9F"><span class="toc-text">2.2 绘制周期(当前runloop结束)</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-3-Custom-Drawing"><span class="toc-text">2.3 Custom Drawing</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#2-3-1-contents%E5%B1%9E%E6%80%A7"><span class="toc-text">2.3.1 contents属性</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-3-2-drawRect"><span class="toc-text">2.3.2 drawRect</span></a></li></ol></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%B8%89%E3%80%81%E5%B8%83%E5%B1%80-%E7%BB%98%E5%88%B6%E6%B5%81%E7%A8%8B"><span class="toc-text">三、布局-绘制流程</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#3-1-%E7%BB%98%E5%88%B6-%E6%98%BE%E7%A4%BA%E6%B5%81%E7%A8%8B%E5%9B%BE"><span class="toc-text">3.1 绘制&#x2F;显示流程图</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-2-%E5%BC%82%E6%AD%A5%E7%BB%98%E5%88%B6"><span class="toc-text">3.2 异步绘制</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-3-%E5%B8%83%E5%B1%80%E8%AE%A1%E7%AE%97-%E2%80%94-layoutSubxxxs"><span class="toc-text">3.3 布局计算 — layoutSubxxxs</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#3-3-1-UIView%E6%96%B9%E6%B3%95"><span class="toc-text">3.3.1 UIView方法</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#1-layoutSubviews"><span class="toc-text">1. -layoutSubviews</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#1-%E6%A6%82%E8%BF%B0"><span class="toc-text">1) 概述</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#2-layoutSubviews%E7%9A%84%E8%87%AA%E5%8A%A8%E8%A7%A6%E5%8F%91"><span class="toc-text">2) layoutSubviews的自动触发</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#3-layoutSubviews%E7%9A%84%E6%89%8B%E5%8A%A8%E8%A7%A6%E5%8F%91"><span class="toc-text">3) layoutSubviews的手动触发</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#4-viewDidLayoutSubviews"><span class="toc-text">4) viewDidLayoutSubviews</span></a></li></ol></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2-setNeedsLayout-%E5%81%9A%E6%A0%87%E8%AE%B0"><span class="toc-text">2. -setNeedsLayout(做标记)</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3-layoutIfNeeded-%E7%AB%8B%E5%8D%B3"><span class="toc-text">3. -layoutIfNeeded(立即)</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-3-2-CALayer%E6%96%B9%E6%B3%95"><span class="toc-text">3.3.2 CALayer方法</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#1-layoutSublayers"><span class="toc-text">1. -layoutSublayers</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2-setNeedsLayout-%E5%81%9A%E6%A0%87%E8%AE%B0-1"><span class="toc-text">2. -setNeedsLayout(做标记)</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3-layoutIfNeeded-%E7%AB%8B%E5%8D%B3-1"><span class="toc-text">3. -layoutIfNeeded(立即)</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-4-%E5%86%85%E5%AE%B9%E7%BB%98%E5%88%B6-%E2%80%94-draw-display"><span class="toc-text">3.4 内容绘制 — draw | display</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#3-4-1-UIView%E6%96%B9%E6%B3%95-UIViewRendering%E5%88%86%E7%B1%BB"><span class="toc-text">3.4.1 UIView方法 (UIViewRendering分类)</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#1-drawRect"><span class="toc-text">1. drawRect:</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#1-%E6%A6%82%E8%BF%B0-1"><span class="toc-text">1) 概述</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#2-%E8%87%AA%E5%8A%A8%E8%A7%A6%E5%8F%91"><span class="toc-text">2) 自动触发</span></a></li></ol></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2-setNeedsDisplay"><span class="toc-text">2. -setNeedsDisplay</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-4-2-CALayer%E6%96%B9%E6%B3%95"><span class="toc-text">3.4.2 CALayer方法</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#1-display"><span class="toc-text">1. -display</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2-drawInContext"><span class="toc-text">2. -drawInContext:</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3-setNeedsDisplay"><span class="toc-text">3. -setNeedsDisplay</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-4-3-CALayerDelegate%E6%96%B9%E6%B3%95"><span class="toc-text">3.4.3 CALayerDelegate方法</span></a></li></ol></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%9B%9B%E3%80%81%E8%87%AA%E5%8A%A8%E5%B8%83%E5%B1%80"><span class="toc-text">四、自动布局</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#4-1-%E7%BA%A6%E6%9D%9F%E6%9B%B4%E6%96%B0%E7%9A%84%E5%87%A0%E4%B8%AA%E6%96%B9%E6%B3%95"><span class="toc-text">4.1 约束更新的几个方法</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#4-1-1-updateConstraints"><span class="toc-text">4.1.1 updateConstraints()</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-1-2-setNeedsUpdateConstraints"><span class="toc-text">4.1.2 setNeedsUpdateConstraints()</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-1-3-updateConstraintsIfNeeded"><span class="toc-text">4.1.3 updateConstraintsIfNeeded()</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-1-4-invalidateIntrinsicContentSize"><span class="toc-text">4.1.4 invalidateIntrinsicContentSize()</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-2-%E7%BA%A6%E6%9D%9F%E2%80%94%E5%B8%83%E5%B1%80%E2%80%94%E6%98%BE%E7%A4%BA%E7%9A%84%E6%B5%81%E7%A8%8B"><span class="toc-text">4.2 约束—布局—显示的流程</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-3-%E7%BA%A6%E6%9D%9F%E7%9A%84%E5%AE%9E%E7%8E%B0%E5%8E%9F%E7%90%86"><span class="toc-text">4.3 约束的实现原理</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-4-%E8%87%AA%E5%8A%A8%E5%B8%83%E5%B1%80%E7%9A%84%E6%80%A7%E8%83%BD"><span class="toc-text">4.4 自动布局的性能</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-5-autolayout%E4%B8%A4%E4%B8%AA%E4%BC%98%E5%85%88%E7%BA%A7"><span class="toc-text">4.5 autolayout两个优先级</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-6-%E8%87%AA%E5%8A%A8%E3%80%81%E6%89%8B%E5%8A%A8%E5%B8%83%E5%B1%80%E9%80%89%E5%9E%8B"><span class="toc-text">4.6 自动、手动布局选型</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-7-%E7%A4%BA%E4%BE%8B-cell-%E9%87%8C%E9%9D%A2-label%E7%9A%84%E9%AB%98%E5%BA%A6%E8%87%AA%E9%80%82%E5%BA%94%E9%97%AE%E9%A2%98"><span class="toc-text">4.7 示例: cell 里面 label的高度自适应问题</span></a></li></ol></li></ol>
+    </div>
+    
+    <div class="back-top iconfont-archer">&#xe639;</div>
+    <div class="sidebar sidebar-hide">
+    <ul class="sidebar-tabs sidebar-tabs-active-0">
+        <li class="sidebar-tab-categories"><span class="iconfont-archer">&#xe666;</span><span class="tab-name">Cate</span></li>
+        <li class="sidebar-tab-archives"><span class="iconfont-archer">&#xe67d;</span><span class="tab-name">Archive</span></li>
+        <li class="sidebar-tab-tags"><span class="iconfont-archer">&#xe61b;</span><span class="tab-name">Tag</span></li>
+    </ul>
+    <div class="sidebar-content sidebar-content-show-archive">
+        <div class="sidebar-panel-categories">
+    <div class="sidebar-categories-name">
+    
+    
+    
+    
+    
+        <span class="sidebar-category-name" data-categories="数据结构与算法"><span class="iconfont-archer">&#xe60a;</span>数据结构与算法</span>
+    
+        <span class="sidebar-category-name" data-categories="计算机组成原理"><span class="iconfont-archer">&#xe60a;</span>计算机组成原理</span>
+    
+        <span class="sidebar-category-name" data-categories="计算机网络"><span class="iconfont-archer">&#xe60a;</span>计算机网络</span>
+    
+        <span class="sidebar-category-name" data-categories="汇编语言"><span class="iconfont-archer">&#xe60a;</span>汇编语言</span>
+    
+        <span class="sidebar-category-name" data-categories="数据的存储与传输"><span class="iconfont-archer">&#xe60a;</span>数据的存储与传输</span>
+    
+        <span class="sidebar-category-name" data-categories="操作系统"><span class="iconfont-archer">&#xe60a;</span>操作系统</span>
+    
+        <span class="sidebar-category-name" data-categories="互联网标准RFC"><span class="iconfont-archer">&#xe60a;</span>互联网标准RFC</span>
+    
+        <span class="sidebar-category-name" data-categories="编译链接与装载"><span class="iconfont-archer">&#xe60a;</span>编译链接与装载</span>
+    
+        <span class="sidebar-category-name" data-categories="iOS"><span class="iconfont-archer">&#xe60a;</span>iOS</span>
+    
+        <span class="sidebar-category-name" data-categories="架构与设计模式"><span class="iconfont-archer">&#xe60a;</span>架构与设计模式</span>
+    
+        <span class="sidebar-category-name" data-categories="图形处理与渲染"><span class="iconfont-archer">&#xe60a;</span>图形处理与渲染</span>
+    
+        <span class="sidebar-category-name" data-categories="软件工程"><span class="iconfont-archer">&#xe60a;</span>软件工程</span>
+    
+        <span class="sidebar-category-name" data-categories="音视频处理"><span class="iconfont-archer">&#xe60a;</span>音视频处理</span>
+    
+        <span class="sidebar-category-name" data-categories="DSL"><span class="iconfont-archer">&#xe60a;</span>DSL</span>
+    
+        <span class="sidebar-category-name" data-categories="Swift"><span class="iconfont-archer">&#xe60a;</span>Swift</span>
+    
+        <span class="sidebar-category-name" data-categories="Git"><span class="iconfont-archer">&#xe60a;</span>Git</span>
+    
+        <span class="sidebar-category-name" data-categories="Web"><span class="iconfont-archer">&#xe60a;</span>Web</span>
+    
+    </div>
+    <div class="iconfont-archer sidebar-categories-empty">&#xe678;</div>
+    <div class="sidebar-categories-list"></div>
+</div>
+          <div class="sidebar-panel-archives">
+    <!-- 在ejs中将archive按照时间排序 -->
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    <div class="total-and-search">
+        <div class="total-archive">
+        Total : 76
+        </div>
+        <!-- search  -->
+        
+            <div class="site-search popup-trigger tl-side-search"> 
+                <span class="iconfont-jian search-icon">&#xe7fc;搜索</span>
+            </div>
+        
+    </div>
+    
+    <div class="post-archive">
+    
+    
+    
+    
+    <div class="archive-year"> 2022 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/05</span><a class="archive-post-title" href= "/2022/05/05/sqlite.html" >iOS SQLite的使用与优化</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/28</span><a class="archive-post-title" href= "/2022/04/28/mmap.html" >内存映射mmap函数的原理与应用</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/18</span><a class="archive-post-title" href= "/2022/03/18/avfoundation.html" >AVFoundation Programming Guide(译)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/17</span><a class="archive-post-title" href= "/2022/03/17/avframework.html" >iOS音视频库概述</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/09</span><a class="archive-post-title" href= "/2022/02/09/OAuth.html" >[转] OAuth 2.0简述</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/18</span><a class="archive-post-title" href= "/2022/01/18/wkwebview-buges.html" >WKWebView使用过程中遇到的坑</a>
+        </li>
+    
+    
+    
+    
+    
+        </ul>
+    
+    <div class="archive-year"> 2021 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/22</span><a class="archive-post-title" href= "/2021/11/22/bit-calculation.html" >[转] 位运算实现加、减、乘、除运算</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/10</span><a class="archive-post-title" href= "/2021/11/10/git-use.html" >Git的使用总结</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/21</span><a class="archive-post-title" href= "/2021/10/21/dyld-objc.html" >(七) dyld与Objc—_objc_init、map_images、load_images</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/18</span><a class="archive-post-title" href= "/2021/10/18/compile-dynamic-link.html" >(六) Mach-O 文件的动态链接、库、Dyld(含dlopen)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/14</span><a class="archive-post-title" href= "/2021/10/14/compile-vm-asrl.html" >(五) Mach-O 文件之进程(虚拟)地址空间、ASLR</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/10</span><a class="archive-post-title" href= "/2021/10/10/compile-load.html" >(四) Mach-O 文件的装载</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/08</span><a class="archive-post-title" href= "/2021/10/08/compile-static-link.html" >(三) Mach-O 文件的静态链接</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/06</span><a class="archive-post-title" href= "/2021/10/06/compile-macho.html" >(二) Mach-O 文件结构</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/05</span><a class="archive-post-title" href= "/2021/10/05/compile-clang-llvm.html" >(一) Clang/LLVM 介绍、OC 程序的编译过程</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/02</span><a class="archive-post-title" href= "/2021/10/02/makefile.html" >[转] Make 命令的使用与NodeJS案例</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/28</span><a class="archive-post-title" href= "/2021/09/28/architectural-pattern.html" >常见架构模式: MVC、MVP、MVVM、VIPER</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/25</span><a class="archive-post-title" href= "/2021/09/25/design-pattern.html" >常见的设计模式</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/20</span><a class="archive-post-title" href= "/2021/09/20/program-thought.html" >常见的编程范式</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/15</span><a class="archive-post-title" href= "/2021/09/15/graphics-processing-case.html" >图形处理(三) - 图形处理实践案例</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/15</span><a class="archive-post-title" href= "/2021/09/15/graphics-processing.html" >图形处理(二) - 图形与视频处理相关的框架</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/13</span><a class="archive-post-title" href= "/2021/09/13/image-encode-decode.html" >图形处理(一) - 图片的加载与编解码</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/12</span><a class="archive-post-title" href= "/2021/09/12/iOS-Render.html" >[转] iOS离屏渲染原理及优化</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/11</span><a class="archive-post-title" href= "/2021/09/11/core-animation03.html" >Core-Animation(三) - 渲染流程探究及性能分析</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/09</span><a class="archive-post-title" href= "/2021/09/09/core-animation02.html" >Core Animation(二) - 隐式动画、CATransaction与CAAction</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/07</span><a class="archive-post-title" href= "/2021/09/07/core-animation01.html" >Core Animation(一) - UIView与CALayer、布局与绘制</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/05</span><a class="archive-post-title" href= "/2021/09/05/AFN-Analyse.html" >[转] AFN框架实现解析</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/04</span><a class="archive-post-title" href= "/2021/09/04/nrl-session.html" >NSURLSession概述</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/02</span><a class="archive-post-title" href= "/2021/09/02/Log.html" >移动端日志库设计</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/01</span><a class="archive-post-title" href= "/2021/08/01/Crash-Monitor.html" >iOS崩溃监控与分析</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/30</span><a class="archive-post-title" href= "/2021/07/30/Lag-Monitor.html" >iOS卡顿监控</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/29</span><a class="archive-post-title" href= "/2021/07/29/SwiftUI.html" >SwiftUI</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/29</span><a class="archive-post-title" href= "/2021/07/29/Swift-Version-History.html" >Swift版本更新API介绍</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/26</span><a class="archive-post-title" href= "/2021/07/26/RunLoop-Reposted-From-ibireme.html" >[转] 深入理解RunLoop—ibireme</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/25</span><a class="archive-post-title" href= "/2021/07/25/Protocol-Buffer.html" >Protocol Buffer的基本介绍</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/24</span><a class="archive-post-title" href= "/2021/07/24/base64.html" >Base64编码及iOS中的Base64</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/23</span><a class="archive-post-title" href= "/2021/07/23/chinese-encode.html" >[转] 彻底弄懂常见的7种中文字符编码</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/10</span><a class="archive-post-title" href= "/2021/07/10/p-npc-np.html" >P问题、NP问题、NPC、NP-Hard、P=NP?</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/30</span><a class="archive-post-title" href= "/2021/06/30/probability.html" >(六) 概率算法</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/28</span><a class="archive-post-title" href= "/2021/06/28/branch-bound.html" >(五) 分支限界算法</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/26</span><a class="archive-post-title" href= "/2021/06/26/back-track.html" >(四) 回溯法(试探算法)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/24</span><a class="archive-post-title" href= "/2021/06/24/greed.html" >(三) 贪心算法</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/22</span><a class="archive-post-title" href= "/2021/06/22/dynamic-programming.html" >(二) 动态规划算法</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/20</span><a class="archive-post-title" href= "/2021/06/20/divide-and-conquer.html" >(一) 分治算法及减治、变治算法</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/18</span><a class="archive-post-title" href= "/2021/06/18/several-programming.html" >穷举、递推、迭代(辗转法)、递归算法</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/15</span><a class="archive-post-title" href= "/2021/06/15/datastruction-overview.html" >数据结构与算法概述</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/06</span><a class="archive-post-title" href= "/2021/06/06/Web-Module.html" >前端各种模块化方案总结</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/27</span><a class="archive-post-title" href= "/2021/05/27/Fiber.html" >[转] 最通俗的 React Fiber(时间分片)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/27</span><a class="archive-post-title" href= "/2021/05/27/Coroutine.html" >[转] 什么是协程</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/19</span><a class="archive-post-title" href= "/2021/05/19/DSL.html" >[转] 谈谈DSL以及DSL的应用（以CocoaPods 为例）</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/03</span><a class="archive-post-title" href= "/2021/05/03/iOS-private-pod.html" >私有Pod库部署</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/29</span><a class="archive-post-title" href= "/2021/04/29/iOS-ComRouter.html" >[转] iOS的组件化方案</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/27</span><a class="archive-post-title" href= "/2021/04/27/iOS-CI.html" >iOS的持续集成</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/26</span><a class="archive-post-title" href= "/2021/04/26/Containers.html" >常见的容器概念：Linux容器、Docker容器、服务器容器</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/24</span><a class="archive-post-title" href= "/2021/04/24/Dock-Reprinted-from-RuanYIFeng.html" >[转] Docker入门教程</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/20</span><a class="archive-post-title" href= "/2021/04/20/Sync-Async.html" >同步和异步解读及编程中的使用场景</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/17</span><a class="archive-post-title" href= "/2021/04/17/Arm64-Handbook.html" >ARM64指令简易手册</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/16</span><a class="archive-post-title" href= "/2021/04/16/Arm64-Introduce.html" >iOS需要了解的ARM64汇编</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/13</span><a class="archive-post-title" href= "/2021/04/13/Command-Line.html" >CLI Shell、Terminal、脚本(语言)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/10</span><a class="archive-post-title" href= "/2021/04/10/Ins-SysCall-Kernel-Shell.html" >指令、系统调用、库、Shell、APP的层次关系</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/08</span><a class="archive-post-title" href= "/2021/04/08/ISA-Microarch-Soc.html" >指令集、微架构、手机芯片(Soc)及ARM的介绍</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/02</span><a class="archive-post-title" href= "/2021/04/02/Engineering.html" >工程化、动态化、容器化、组件化</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/01</span><a class="archive-post-title" href= "/2021/04/01/GithubPages-Hexo.html" >使用Hexo+Github Pages搭建个人博客</a>
+        </li>
+    
+    
+    
+    
+    
+        </ul>
+    
+    <div class="archive-year"> 2020 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/22</span><a class="archive-post-title" href= "/2020/12/22/aes.html" >数据加密 — 对称加密(以AES为例)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/21</span><a class="archive-post-title" href= "/2020/12/21/aes-standard.html" >[转] AES标准及Rijndael算法解析</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/20</span><a class="archive-post-title" href= "/2020/12/20/asymmetric.html" >数据加密 — 非对称加密(加签/加密，以RSA为例)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/09</span><a class="archive-post-title" href= "/2020/12/09/pki.html" >常见的PKI标准(X.509、PKCS)及证书相关介绍</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/28</span><a class="archive-post-title" href= "/2020/10/28/runtime-data-structure.html" >Objc Runtime总结</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/11</span><a class="archive-post-title" href= "/2020/09/11/GCD.html" >Objective-C — 深入浅出GCD常用API</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/06</span><a class="archive-post-title" href= "/2020/09/06/oc-block.html" >Objective-C — Block</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/26</span><a class="archive-post-title" href= "/2020/08/26/AutoreleasePool.html" >AutoreleasePool</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/24</span><a class="archive-post-title" href= "/2020/08/24/oc-memory-manage.html" >Objective-C — 内存管理</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/01</span><a class="archive-post-title" href= "/2020/08/01/ui-navigation-bar.html" >[转] 导航栏的架构介绍及使用</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/15</span><a class="archive-post-title" href= "/2020/07/15/symbol-decl.html" >变量声明、函数声明的作用</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/01</span><a class="archive-post-title" href= "/2020/07/01/ios-apns.html" >iOS APNS接收逻辑梳理</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/13</span><a class="archive-post-title" href= "/2020/06/13/ios-vest.html" >iOS制作马甲总结</a>
+        </li>
+    
+    </div>
+  </div>
+        <div class="sidebar-panel-tags">
+    <div class="sidebar-tags-name">
+    
+        <span class="sidebar-tag-name" data-tags="AutoreleasePool"><span class="iconfont-archer">&#xe606;</span>AutoreleasePool</span>
+    
+        <span class="sidebar-tag-name" data-tags="GCD"><span class="iconfont-archer">&#xe606;</span>GCD</span>
+    
+        <span class="sidebar-tag-name" data-tags="hexo"><span class="iconfont-archer">&#xe606;</span>hexo</span>
+    
+        <span class="sidebar-tag-name" data-tags="ISA"><span class="iconfont-archer">&#xe606;</span>ISA</span>
+    
+        <span class="sidebar-tag-name" data-tags="Microarch"><span class="iconfont-archer">&#xe606;</span>Microarch</span>
+    
+        <span class="sidebar-tag-name" data-tags="Soc"><span class="iconfont-archer">&#xe606;</span>Soc</span>
+    
+        <span class="sidebar-tag-name" data-tags="CLI"><span class="iconfont-archer">&#xe606;</span>CLI</span>
+    
+        <span class="sidebar-tag-name" data-tags="Shell"><span class="iconfont-archer">&#xe606;</span>Shell</span>
+    
+        <span class="sidebar-tag-name" data-tags="ARM64"><span class="iconfont-archer">&#xe606;</span>ARM64</span>
+    
+        <span class="sidebar-tag-name" data-tags="多线程"><span class="iconfont-archer">&#xe606;</span>多线程</span>
+    
+        <span class="sidebar-tag-name" data-tags="Docker"><span class="iconfont-archer">&#xe606;</span>Docker</span>
+    
+        <span class="sidebar-tag-name" data-tags="DSL"><span class="iconfont-archer">&#xe606;</span>DSL</span>
+    
+        <span class="sidebar-tag-name" data-tags="协程"><span class="iconfont-archer">&#xe606;</span>协程</span>
+    
+        <span class="sidebar-tag-name" data-tags="Fiber"><span class="iconfont-archer">&#xe606;</span>Fiber</span>
+    
+        <span class="sidebar-tag-name" data-tags="dp"><span class="iconfont-archer">&#xe606;</span>dp</span>
+    
+        <span class="sidebar-tag-name" data-tags="RunLoop"><span class="iconfont-archer">&#xe606;</span>RunLoop</span>
+    
+        <span class="sidebar-tag-name" data-tags="SwiftUI"><span class="iconfont-archer">&#xe606;</span>SwiftUI</span>
+    
+        <span class="sidebar-tag-name" data-tags="Swift-Syntax"><span class="iconfont-archer">&#xe606;</span>Swift-Syntax</span>
+    
+        <span class="sidebar-tag-name" data-tags="LagMonitor"><span class="iconfont-archer">&#xe606;</span>LagMonitor</span>
+    
+        <span class="sidebar-tag-name" data-tags="CrashMonitor"><span class="iconfont-archer">&#xe606;</span>CrashMonitor</span>
+    
+        <span class="sidebar-tag-name" data-tags="Log"><span class="iconfont-archer">&#xe606;</span>Log</span>
+    
+        <span class="sidebar-tag-name" data-tags="AFN"><span class="iconfont-archer">&#xe606;</span>AFN</span>
+    
+    </div>
+    <div class="iconfont-archer sidebar-tags-empty">&#xe678;</div>
+    <div class="tag-load-fail" style="display: none; color: #ccc; font-size: 0.6rem;">
+    缺失模块。<br/>
+    1、请确保node版本大于6.2<br/>
+    2、在博客根目录（注意不是archer根目录）执行以下命令：<br/>
+    <span style="color: #f75357; font-size: 1rem; line-height: 2rem;">npm i hexo-generator-json-content --save</span><br/>
+    3、在根目录_config.yml里添加配置：
+    <pre style="color: #787878; font-size: 0.6rem;">
+jsonContent:
+  meta: false
+  pages: false
+  posts:
+    title: true
+    date: true
+    path: true
+    text: false
+    raw: false
+    content: false
+    slug: false
+    updated: false
+    comments: false
+    link: false
+    permalink: false
+    excerpt: false
+    categories: true
+    tags: true</pre>
+    </div> 
+    <div class="sidebar-tags-list"></div>
+</div>
+    </div>
+</div> 
+    <script>
+    var siteMeta = {
+        root: "/",
+        author: "Tenloy"
+    }
+</script>
+    <!-- CDN failover -->
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js"></script>
+    <script type="text/javascript">
+        if (typeof window.$ === 'undefined')
+        {
+            console.warn('jquery load from jsdelivr failed, will load local script')
+            document.write('<script src="/lib/jquery.min.js">\x3C/script>')
+        }
+    </script>
+    <script src="/scripts/main.js"></script>
+    <!-- algolia -->
+    
+        <div class="site-search">
+  <div class="algolia-popup popup">
+    <div class="algolia-search">
+      <div class="algolia-search-input-icon">
+        <i class="fa fa-search"></i>
+      </div>
+      <div class="algolia-search-input" id="algolia-search-input"></div>
+    </div>
+
+    <div class="algolia-results">
+      <div id="algolia-stats"></div>
+      <div id="algolia-hits"></div>
+      <div id="algolia-pagination" class="algolia-pagination"></div>
+    </div>
+
+    <span class="popup-btn-close">
+      <i class="iconfont-archer">&#xe609;</i>
+    </span>
+  </div>
+</div>
+        <script src="https://cdn.jsdelivr.net/npm/instantsearch.js@2.8.0/dist/instantsearch.min.js" defer></script>
+        <script src="/scripts/search.js" defer></script>
+    
+    <!-- busuanzi  -->
+    
+    <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    
+    <!-- CNZZ  -->
+    
+    </div>
+    <!-- async load share.js -->
+    
+        <script src="/scripts/share.js" async></script>    
+     
+    </body>
+</html>
+
+
