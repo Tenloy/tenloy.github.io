@@ -11,11 +11,16 @@ categories:
 
 ## 1.1 原则
 
-- 自己生成的对象，自己所持有
-- 非自己所生成的对象，自己也能持有
+- 自己生成的对象，自己所持有(retain)
+- 非自己所生成的对象，自己也能持有(retain)
 - 自己持有的对象自己释放
 - 非自己持有的对象无法释放
 
+> 总之，就三点：
+>
+> 1. 只要使用，就要让对象的引用计数器+1，不用时，就需要让其-1
+> 1. 谁创建，谁release
+> 1. 谁retain，谁release
 ## 1.2 核心
 
 **内存管理的核心即是引用计数，散列表管理**。
@@ -303,22 +308,27 @@ free(array);
 第一种：自己创建并持有
 
 ```objectivec
-id __strong obj = [[NSArray alloc] init]; 
+{
+  id __strong obj = [[NSArray alloc] init];   
+}
 
 /* 编译器的模拟代码*/
 id obj = obje msqSend (NSObject, @selector (alloc));
-objc_msgSend (obj, @selector (init));
-obic_release (obj);
+objc_msgSend(obj, @selector(init));
+obic_release(obj);
 ```
 
-第二种：非自己创建并持有，这种初始化方式，秉着谁创建谁释放的原则，返回值需要是一个autorelease对象才能配合调用方正确管理内存
+第二种：非自己创建并持有，这种初始化方式，秉着【谁创建谁释放，谁retain谁释放】的原则，返回值需要是一个autorelease对象才能配合调用方正确管理内存。*（array方法内部创建了，负责释放一次；array外部持有了，负责释放一次）*
 
 ```objectivec
-id __strong obj = [NSArray array]; 
+{
+  id __strong obj = [NSArray array];  
+}
 
 /* 编译器的模拟代码*/
 id obj = objc_msgSend (NSMutableArray, @selector (array)); //返回一个autorelease对象
 objc_retainAutoreleasedReturnValue (obj); //参数，应为autorelease对象。
+objc_release(obj);
 
 // 那么array方法中到底做了什么，返回了一个autorelease对象
 + (id) array {
@@ -333,7 +343,11 @@ objc_retainAutoreleasedReturnValue (obj); //参数，应为autorelease对象。
 - **内存管理方法命名规则规定：alloc/new/copy/mutableCopy开头之外的构造方法需要返回autorelease对象**。对于此类构造方法返回对象的实现，会利用 `objc_retainAutoreleasedReturnValue` 与 `objc_autoreleaseReturnValue` 搭配协作，实现最优化程序运行。
 - id类型与对象类型默认是__strong修饰符。
 
-### 4.1.2 objc_autoreleaseReturnValue和objc_retainAutoreleasedReturnValue
+### 4.1.2 (优化)objc_autoreleaseReturnValue和objc_retainAutoreleasedReturnValue
+
+> ARC自动引用计数机制中，编译器与运行期组件共同管理内存。前面已经介绍了编译器所做的一些工作，下面这个应该算是运行期组件，在运行时动态生效。(*运行时，objc_autoreleaseReturnValue方法检视方法返回后，是否要执行retain操作......从而进行性能优化*）
+
+> 注意：该优化并不是一定会生效的。五子棋的两篇参考文章：[Revisit iOS Autorelease 之不经意间可能被影响（从而不生效）的优化](https://satanwoo.github.io/2019/07/02/RevisitAutorelease/)、[Revisit iOS Autorelease（二）：为啥生成的优化没有了。](https://satanwoo.github.io/2019/07/07/RevisitAutorelease2/)
 
 两个函数的实现可以在 Objective-C [NSObject.mm](https://opensource.apple.com/source/objc4/objc4-723/runtime/NSObject.mm.auto.html) 的源码中找到：
 

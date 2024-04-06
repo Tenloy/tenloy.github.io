@@ -123,6 +123,7 @@ NSLog(@"name:%@ uid:%d email:%@",person2.name,person2.uid,person2.email);
 ### 4.1 编码/序列化
 
 - Protocol Buffer 序列化采用 Varint、Zigzag 方法，压缩 int 型整数和带符号的整数。对浮点型数字不做压缩（这里可以进一步的压缩，Protocol Buffer 还有提升空间）。
+  - Varint是一种使用一个或多个字节序列化整数的方法，会把整数编码为变长字节。对于32位整型数据经过Varint编码后需要1~5个字节，小的数字使用1个byte，大的数字使用5个bytes。64位整型数据编码后占用1~10个字节。在实际场景中小数字的使用率远远多于大数字，因此通过Varint编码对于大部分场景都可以起到很好的压缩效果。
 - 对 `.proto` 文件，会对 option 和 repeated 字段进行检查，若 optional 或 repeated 字段没有被设置字段值，那么该字段在序列化时的数据中是完全不存在的，即不进行序列化（少编码一个字段）。
 - 上面这两点做到了压缩数据，使得序列化工作量减少。
 - Protocol Buffer 是 Tag - Value (TLV)的编码方式的实现

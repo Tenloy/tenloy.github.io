@@ -225,6 +225,8 @@ iOS 8/Xcode 6 推出之后，允许开发者有条件地创建和使用动态库
 ### 3.1 dyld2与dyld3
 
 > [dyld](https://developer.apple.com/library/ios/documentation/System/Conceptual/ManPages_iPhoneOS/man3/dyld.3.html) 是 the dynamic link editor 的缩写，它是苹果的*动态链接器*。在系统内核做好程序准备工作之后，交由 dyld 负责余下的工作。
+>
+> （除了动态链接编辑器(dynamic link editor)，有的场景也翻译为动态加载器(dynamic loader)）
 
 在2017WWDC，Apple推出了Dyld3。在iOS 13系统中，iOS全面采用新的dyld 3以替代之前版本的dyld 2。dyld 3带来了可观的性能提升，减少了APP的启动时间。
 

@@ -59,11 +59,15 @@ $ make --file=rules.txt
 Makefile文件由一系列规则（rules）构成。每条规则的形式如下。
 
 ```bash
-<target> : <prerequisites> 
-[tab]  <commands>
+target[target...] : [prerequisite...] [;command]
+<Tab>command
 ```
 
-上面第一行冒号前面的部分，叫做"目标"（target），冒号后面的部分叫做"前置条件"（prerequisites）；第二行必须由一个tab键起首，后面跟着"命令"（commands）。
+- 上面第一行冒号前面的部分，叫做"目标"（target）
+- 冒号后面的部分叫做"前置条件"（prerequisites）
+- 分号后面的任何文本、Tab开头的所有后续行，均被视为用于更新目标的"命令"（commands）。当新行不以Tab 或 # 字符开头时，将开始新的Target定义。
+
+多个目标和先决条件用空格分隔。
 
 "目标"是必需的，不可省略；"前置条件"和"命令"都是可选的，但是两者之中必须至少存在一个。
 

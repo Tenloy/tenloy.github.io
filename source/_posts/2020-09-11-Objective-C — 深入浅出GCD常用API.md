@@ -591,15 +591,28 @@ struct dispatch_queue_static_s _dispatch_mgr_q = {
 - 全局队列是非overcommit的。
 - 主队列是overcommit的com.apple.root.default-qos.overcommit，不过它是串行队列，width=1，并且运行的这个线程只能是主线程。
 - 自定义串行队列是overcommit的，默认优先级则是 com.apple.root.default-qos.overcommit。**创建串行队列肯定会创建1个新的线程**。
-  - 最多可以创建512个，明显已经是灾难性的了，所以，**串行队列是开发中应该注意的**。【测试代码1，线程号是3-514】
+  - 最多可以创建512个，明显已经是灾难性的了，所以，**串行队列是开发中应该注意的**。【测试代码2，线程号是3-514】
 - 自定义并行队列则是非overcommit的。
-  - **创建并行队列不一定会新建线程，会从线程池中的64个线程中获取并使用。** 【测试代码2，线程号是3-66】
-  - 如果64个线程都在使用中，那么如果再调用需要【申请新的子线程资源】的API，那么会**进行等待状态，直到有可用子线程**。【测试代码3，注意如果64个线程一直得不到释放，那么会发生死等】
+  - **创建并行队列不一定会新建线程，会从线程池中的64个线程中获取并使用。** 【测试代码3，线程号是3-66】
+  - 如果64个线程都在使用中，那么如果再调用需要【申请新的子线程资源】的API，那么会**进行等待状态，直到有可用子线程**。【测试代码4，注意如果64个线程一直得不到释放，那么会发生死等】
 
 
 ```c++
 /**
- 测试1：串行队列肯定会创建新的线程
+ 测试1：使用一个串行队列，那始终只会在一个线程上执行
+ **/
+- (void)test2 {
+    dispatch_queue_attr_t attr = dispatch_queue_attr_make_with_qos_class(DISPATCH_QUEUE_SERIAL, QOS_CLASS_USER_INITIATED, -1);
+    dispatch_queue_t serialQueue = dispatch_queue_create("com.cmjstudio.dispatch", attr);
+    for (int i=0; i<1000; ++i) {
+        dispatch_async(serialQueue, ^{
+            NSLog(@"%@，%i",[NSThread currentThread],i); // 只有一个线程，线程num > 2 （3~66）
+        });
+    }
+}
+
+/**
+ 测试2：创建多个串行队列肯定会创建多个新的线程
  **/
 - (void)test1 {
     for (int i=1; i<=1000; ++i) {
@@ -612,19 +625,6 @@ struct dispatch_queue_static_s _dispatch_mgr_q = {
 }
 // 15:30:12.822417: LOG: 3, <NSThread: 0x282ce6240>{number = 3, name = (null)}
 // 15:30:12.858744: LOG: 641, <NSThread: 0x282cd85c0>{number = 514, name = (null)}
-
-/**
- 测试2
- **/
-- (void)test2 {
-    dispatch_queue_attr_t attr = dispatch_queue_attr_make_with_qos_class(DISPATCH_QUEUE_SERIAL, QOS_CLASS_USER_INITIATED, -1);
-    dispatch_queue_t serialQueue = dispatch_queue_create("com.cmjstudio.dispatch", attr);
-    for (int i=0; i<1000; ++i) {
-        dispatch_async(serialQueue, ^{
-            NSLog(@"%@，%i",[NSThread currentThread],i); // only one thread
-        });
-    }
-}
 
 /**
  测试3：不管优先级多高并行队列有最多有64个线程，线程num在3~66，在一次轮询中遇到高优先级的会先执行
@@ -643,7 +643,7 @@ struct dispatch_queue_static_s _dispatch_mgr_q = {
  **/
 - (void)test4 {
     dispatch_queue_t concurrentQueue = dispatch_queue_create("com.cmjstudio.dispatch", DISPATCH_QUEUE_CONCURRENT);
-    for (int i=1; i<65; ++i) {
+    for (int i=1; i<=65; ++i) {
         dispatch_async(concurrentQueue, ^{
             NSLog(@"%d, %@", i, [NSThread currentThread]);
             [NSThread sleepForTimeInterval:3];
