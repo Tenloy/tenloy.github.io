@@ -1,0 +1,2631 @@
+<!DOCTYPE html>
+<html lang="en">
+    <!-- title -->
+
+
+
+
+<!-- keywords -->
+
+
+
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" >
+    <meta name="author" content="Tenloy">
+    <meta name="renderer" content="webkit">
+    <meta name="copyright" content="Tenloy">
+    
+    <meta name="keywords" content="Tenloy,iOS,Swift">
+    
+    <meta name="description" content="学习 生活 记录 回忆">
+    <meta name="description" content="在学习组件化架构的过程中，从很多高质量的博客中学到不少东西，例如蘑菇街李忠、casatwy、bang的博客。在学习过程中也遇到一些问题，在微博和QQ上和一些做iOS的朋友进行了交流，非常感谢这些朋友的帮助。 本篇文章组件化架构漫谈主要针对于之前蘑菇街提出的组件化方案，以及casatwy提出的组件化方案进行分析，后面还会简单提到滴滴、淘宝、微信的组件化架构，最后会简单说一下我公司设计的组件化架构。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="[转] iOS的组件化方案">
+<meta property="og:url" content="https://tenloy.github.io/2021/04/29/iOS-ComRouter.html">
+<meta property="og:site_name" content="Tenloy&#39;s Blog">
+<meta property="og:description" content="在学习组件化架构的过程中，从很多高质量的博客中学到不少东西，例如蘑菇街李忠、casatwy、bang的博客。在学习过程中也遇到一些问题，在微博和QQ上和一些做iOS的朋友进行了交流，非常感谢这些朋友的帮助。 本篇文章组件化架构漫谈主要针对于之前蘑菇街提出的组件化方案，以及casatwy提出的组件化方案进行分析，后面还会简单提到滴滴、淘宝、微信的组件化架构，最后会简单说一下我公司设计的组件化架构。">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://p1-jj.byteimg.com/tos-cn-i-t2oaga2asx/gold-user-assets/2019/6/22/16b7f27cffdda550~tplv-t2oaga2asx-watermark.awebp">
+<meta property="og:image" content="https://p1-jj.byteimg.com/tos-cn-i-t2oaga2asx/gold-user-assets/2019/6/22/16b7f27cffe09fd2~tplv-t2oaga2asx-watermark.awebp">
+<meta property="og:image" content="https://p1-jj.byteimg.com/tos-cn-i-t2oaga2asx/gold-user-assets/2019/6/22/16b7f27d000e40c0~tplv-t2oaga2asx-watermark.awebp">
+<meta property="og:image" content="https://p1-jj.byteimg.com/tos-cn-i-t2oaga2asx/gold-user-assets/2019/6/22/16b7f27cfff801a2~tplv-t2oaga2asx-watermark.awebp">
+<meta property="og:image" content="https://p1-jj.byteimg.com/tos-cn-i-t2oaga2asx/gold-user-assets/2019/6/22/16b7f27d008f2985~tplv-t2oaga2asx-watermark.awebp">
+<meta property="og:image" content="https://p1-jj.byteimg.com/tos-cn-i-t2oaga2asx/gold-user-assets/2019/6/22/16b7f27d2a109f6b~tplv-t2oaga2asx-watermark.awebp">
+<meta property="og:image" content="https://p1-jj.byteimg.com/tos-cn-i-t2oaga2asx/gold-user-assets/2019/6/22/16b7f27d2acc9232~tplv-t2oaga2asx-watermark.awebp">
+<meta property="og:image" content="https://p1-jj.byteimg.com/tos-cn-i-t2oaga2asx/gold-user-assets/2019/6/22/16b7f27d2aceeae8~tplv-t2oaga2asx-watermark.awebp">
+<meta property="og:image" content="https://p1-jj.byteimg.com/tos-cn-i-t2oaga2asx/gold-user-assets/2019/6/22/16b7f27d2add2f98~tplv-t2oaga2asx-watermark.awebp">
+<meta property="og:image" content="https://p1-jj.byteimg.com/tos-cn-i-t2oaga2asx/gold-user-assets/2019/6/22/16b7f27d2b41d4ac~tplv-t2oaga2asx-watermark.awebp">
+<meta property="og:image" content="https://p1-jj.byteimg.com/tos-cn-i-t2oaga2asx/gold-user-assets/2019/6/22/16b7f27d30fc74fa~tplv-t2oaga2asx-watermark.awebp">
+<meta property="og:image" content="https://p1-jj.byteimg.com/tos-cn-i-t2oaga2asx/gold-user-assets/2019/6/22/16b7f27d5777af1f~tplv-t2oaga2asx-watermark.awebp">
+<meta property="og:image" content="https://p1-jj.byteimg.com/tos-cn-i-t2oaga2asx/gold-user-assets/2019/6/22/16b7f27d576bd77f~tplv-t2oaga2asx-watermark.awebp">
+<meta property="og:image" content="https://p1-jj.byteimg.com/tos-cn-i-t2oaga2asx/gold-user-assets/2019/6/22/16b7f27d5882ec38~tplv-t2oaga2asx-watermark.awebp">
+<meta property="og:image" content="https://p1-jj.byteimg.com/tos-cn-i-t2oaga2asx/gold-user-assets/2019/6/22/16b7f27d626abf68~tplv-t2oaga2asx-watermark.awebp">
+<meta property="article:published_time" content="2021-04-29T02:09:20.000Z">
+<meta property="article:modified_time" content="2024-04-07T11:24:50.646Z">
+<meta property="article:author" content="Tenloy">
+<meta property="article:tag" content="Tenloy, iOS, Tenloy Blog, 博客，Swift, 编译, 计算机">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://p1-jj.byteimg.com/tos-cn-i-t2oaga2asx/gold-user-assets/2019/6/22/16b7f27cffdda550~tplv-t2oaga2asx-watermark.awebp">
+    <meta http-equiv="Cache-control" content="no-cache">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"/>
+    
+    <title>[转] iOS的组件化方案 · Tenloy&#39;s Blog</title>
+    <style type="text/css">
+    @font-face {
+        font-family: 'Oswald-Regular';
+        src: url("/font/Oswald-Regular.ttf");
+    }
+
+    body {
+        margin: 0;
+    }
+
+    header,
+    footer,
+    .back-top,
+    .sidebar,
+    .container,
+    .site-intro-meta,
+    .toc-wrapper {
+        display: none;
+    }
+
+    .site-intro {
+        position: relative;
+        z-index: 3;
+        width: 100%;
+        /* height: 50vh; */
+        overflow: hidden;
+    }
+
+    .site-intro-placeholder {
+        position: absolute;
+        z-index: -2;
+        top: 0;
+        left: 0;
+        width: calc(100% + 300px);
+        height: 100%;
+        background: repeating-linear-gradient(-45deg, #444 0, #444 80px, #333 80px, #333 160px);
+        background-position: center center;
+        transform: translate3d(-226px, 0, 0);
+        animation: gradient-move 2.5s ease-out 0s infinite;
+    }
+
+    @keyframes gradient-move {
+        0% {
+            transform: translate3d(-226px, 0, 0);
+        }
+        100% {
+            transform: translate3d(0, 0, 0);
+        }
+    }
+
+</style>
+
+    <link rel="preload" href= "/css/style.css?v=20180824" as="style" onload="this.onload=null;this.rel='stylesheet'" />
+    <link rel="stylesheet" href= "/css/mobile.css?v=20180824" media="(max-width: 980px)">
+    
+    <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.2.5/jquery.fancybox.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'" />
+    
+    <!-- /*! loadCSS. [c]2017 Filament Group, Inc. MIT License */
+/* This file is meant as a standalone workflow for
+- testing support for link[rel=preload]
+- enabling async CSS loading in browsers that do not support rel=preload
+- applying rel preload css once loaded, whether supported or not.
+*/ -->
+<script>
+(function( w ){
+	"use strict";
+	// rel=preload support test
+	if( !w.loadCSS ){
+		w.loadCSS = function(){};
+	}
+	// define on the loadCSS obj
+	var rp = loadCSS.relpreload = {};
+	// rel=preload feature support test
+	// runs once and returns a function for compat purposes
+	rp.support = (function(){
+		var ret;
+		try {
+			ret = w.document.createElement( "link" ).relList.supports( "preload" );
+		} catch (e) {
+			ret = false;
+		}
+		return function(){
+			return ret;
+		};
+	})();
+
+	// if preload isn't supported, get an asynchronous load by using a non-matching media attribute
+	// then change that media back to its intended value on load
+	rp.bindMediaToggle = function( link ){
+		// remember existing media attr for ultimate state, or default to 'all'
+		var finalMedia = link.media || "all";
+
+		function enableStylesheet(){
+			link.media = finalMedia;
+		}
+
+		// bind load handlers to enable media
+		if( link.addEventListener ){
+			link.addEventListener( "load", enableStylesheet );
+		} else if( link.attachEvent ){
+			link.attachEvent( "onload", enableStylesheet );
+		}
+
+		// Set rel and non-applicable media type to start an async request
+		// note: timeout allows this to happen async to let rendering continue in IE
+		setTimeout(function(){
+			link.rel = "stylesheet";
+			link.media = "only x";
+		});
+		// also enable media after 3 seconds,
+		// which will catch very old browsers (android 2.x, old firefox) that don't support onload on link
+		setTimeout( enableStylesheet, 3000 );
+	};
+
+	// loop through link elements in DOM
+	rp.poly = function(){
+		// double check this to prevent external calls from running
+		if( rp.support() ){
+			return;
+		}
+		var links = w.document.getElementsByTagName( "link" );
+		for( var i = 0; i < links.length; i++ ){
+			var link = links[ i ];
+			// qualify links to those with rel=preload and as=style attrs
+			if( link.rel === "preload" && link.getAttribute( "as" ) === "style" && !link.getAttribute( "data-loadcss" ) ){
+				// prevent rerunning on link
+				link.setAttribute( "data-loadcss", true );
+				// bind listeners to toggle media back
+				rp.bindMediaToggle( link );
+			}
+		}
+	};
+
+	// if unsupported, run the polyfill
+	if( !rp.support() ){
+		// run once at least
+		rp.poly();
+
+		// rerun poly on an interval until onload
+		var run = w.setInterval( rp.poly, 500 );
+		if( w.addEventListener ){
+			w.addEventListener( "load", function(){
+				rp.poly();
+				w.clearInterval( run );
+			} );
+		} else if( w.attachEvent ){
+			w.attachEvent( "onload", function(){
+				rp.poly();
+				w.clearInterval( run );
+			} );
+		}
+	}
+
+
+	// commonjs
+	if( typeof exports !== "undefined" ){
+		exports.loadCSS = loadCSS;
+	}
+	else {
+		w.loadCSS = loadCSS;
+	}
+}( typeof global !== "undefined" ? global : this ) );
+</script>
+
+    <link rel="icon" href= "/assets/favicon.ico" />
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.min.js" as="script" />
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js" as="script" />
+    <link rel="preload" href="/scripts/main.js" as="script" />
+    <link rel="preload" as="font" href="/font/Oswald-Regular.ttf" crossorigin>
+    <link rel="preload" as="font" href="https://at.alicdn.com/t/font_327081_1dta1rlogw17zaor.woff" crossorigin>
+    
+        <!-- algolia -->
+        <script>
+            
+            var hits = JSON.parse('{"per_page":10}')
+            var labels = JSON.parse('{"input_placeholder":"Search for Posts","hits_empty":"没有找到任何搜索结果: ${query}","hits_stats":"找到约${hits}条结果（用时${time}ms）"}')
+
+            var algolia = {
+                applicationID: 'V0HYXBS9FB',
+                apiKey: '6550d5de786935564142097c3e78c380',
+                indexName: 'law_blog_index',
+                hits: hits,
+                labels: labels
+            }
+        </script>
+    
+    <!-- fancybox -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.2.5/jquery.fancybox.min.js" defer></script>
+    <!-- 百度统计  -->
+    
+    <!-- 谷歌统计  -->
+    
+<meta name="generator" content="Hexo 5.4.0"><link rel="alternate" href="/atom.xml" title="Tenloy's Blog" type="application/atom+xml">
+</head>
+
+    
+        <body class="post-body">
+    
+    
+<header class="header">
+
+    <div class="read-progress"></div>
+    <div class="header-sidebar-menu">&#xe775;</div>
+    <!-- post页的toggle banner  -->
+    
+    <div class="banner">
+            <div class="blog-title">
+                <a href="/" >Tenloy&#39;s Blog</a>
+            </div>
+            <div class="post-title">
+                <a href="#" class="post-name">[转] iOS的组件化方案</a>
+            </div>
+    </div>
+    
+    <!-- 将home-link的操作改为应用到header-top-right上 -->
+    <div class="header-top-right">
+        <!-- search  -->
+        
+            <div class="site-search popup-trigger tl-search">
+                <span class="iconfont-jian tl-search-icon">&#xe7fc;搜索</span>
+            </div>
+            
+        <a class="home-link" href=/>Tenloy's Blog</a>
+    </div>
+</header>
+    <div class="wrapper">
+        <div class="site-intro" style="
+
+
+
+
+
+
+
+height:40vh;
+">
+    
+    <!-- 主页  -->
+    
+    
+    <!-- 404页  -->
+            
+    <div class="site-intro-placeholder"></div>
+    <div class="site-intro-img" style="background-image: url(/intro/post-bg.jpg)"></div>
+    <div class="site-intro-meta">
+        <!-- 标题  -->
+        <h1 class="intro-title">
+            <!-- 主页  -->
+            
+            [转] iOS的组件化方案
+            <!-- 404 -->
+            
+        </h1>
+        <!-- 副标题 -->
+        <p class="intro-subtitle">
+            <!-- 主页副标题  -->
+            
+            
+            <!-- 404 -->
+            
+        </p>
+        <!-- 文章页meta -->
+        
+            <div class="post-intros">
+                <!-- 文章页标签  -->
+                
+                
+                    <div class="post-intro-read">
+                        <span>Word count: <span class="post-count word-count">14.2k</span>Reading time: <span class="post-count reading-time">50 min</span></span>
+                    </div>
+                
+                <div class="post-intro-meta">
+                    <span class="post-intro-calander iconfont-archer">&#xe676;</span>
+                    <span class="post-intro-time">2021/04/29</span>
+                    
+                    <span id="busuanzi_container_page_pv" class="busuanzi-pv">
+                        <span class="iconfont-archer">&#xe602;</span>
+                        <span id="busuanzi_value_page_pv"></span>
+                    </span>
+                    
+                    <span class="shareWrapper">
+                        <span class="iconfont-archer shareIcon">&#xe71d;</span>
+                        <span class="shareText">Share</span>
+                        <ul class="shareList">
+                            <li class="iconfont-archer share-qr" data-type="qr">&#xe75b;
+                                <div class="share-qrcode"></div>
+                            </li>
+                            <li class="iconfont-archer" data-type="weibo">&#xe619;</li>
+                            <li class="iconfont-archer" data-type="qzone">&#xe62e;</li>
+                            <li class="iconfont-archer" data-type="twitter">&#xe634;</li>
+                            <li class="iconfont-archer" data-type="facebook">&#xe67a;</li>
+                        </ul>
+                    </span>
+                </div>
+            </div>
+        
+    </div>
+</div>
+        <script>
+ 
+  // get user agent
+  var browser = {
+    versions: function () {
+      var u = window.navigator.userAgent;
+      return {
+        userAgent: u,
+        trident: u.indexOf('Trident') > -1, //IE内核
+        presto: u.indexOf('Presto') > -1, //opera内核
+        webKit: u.indexOf('AppleWebKit') > -1, //苹果、谷歌内核
+        gecko: u.indexOf('Gecko') > -1 && u.indexOf('KHTML') == -1, //火狐内核
+        mobile: !!u.match(/AppleWebKit.*Mobile.*/), //是否为移动终端
+        ios: !!u.match(/\(i[^;]+;( U;)? CPU.+Mac OS X/), //ios终端
+        android: u.indexOf('Android') > -1 || u.indexOf('Linux') > -1, //android终端或者uc浏览器
+        iPhone: u.indexOf('iPhone') > -1 || u.indexOf('Mac') > -1, //是否为iPhone或者安卓QQ浏览器
+        iPad: u.indexOf('iPad') > -1, //是否为iPad
+        webApp: u.indexOf('Safari') == -1, //是否为web应用程序，没有头部与底部
+        weixin: u.indexOf('MicroMessenger') == -1, //是否为微信浏览器
+        uc: u.indexOf('UCBrowser') > -1 //是否为android下的UC浏览器
+      };
+    }()
+  }
+  console.log("userAgent:" + browser.versions.userAgent);
+
+  // callback
+  function fontLoaded() {
+    console.log('font loaded');
+    if (document.getElementsByClassName('site-intro-meta')) {
+      document.getElementsByClassName('intro-title')[0].classList.add('intro-fade-in');
+      document.getElementsByClassName('intro-subtitle')[0].classList.add('intro-fade-in');
+      var postIntros = document.getElementsByClassName('post-intros')[0]
+      if (postIntros) {
+        postIntros.classList.add('post-fade-in');
+      }
+    }
+  }
+
+  // UC不支持跨域，所以直接显示
+  function asyncCb(){
+    if (browser.versions.uc) {
+      console.log("UCBrowser");
+      fontLoaded();
+    } else {
+      WebFont.load({
+        custom: {
+          families: ['Oswald-Regular']
+        },
+        loading: function () {  //所有字体开始加载
+          // console.log('loading');
+        },
+        active: function () {  //所有字体已渲染
+          fontLoaded();
+        },
+        inactive: function () { //字体预加载失败，无效字体或浏览器不支持加载
+          console.log('inactive: timeout');
+          fontLoaded();
+        },
+        timeout: 5000 // Set the timeout to two seconds
+      });
+    }
+  }
+
+  function asyncErr(){
+    console.warn('script load from CDN failed, will load local script')
+  }
+
+  // load webfont-loader async, and add callback function
+  function async(u, cb, err) {
+    var d = document, t = 'script',
+      o = d.createElement(t),
+      s = d.getElementsByTagName(t)[0];
+    o.src = u;
+    if (cb) { o.addEventListener('load', function (e) { cb(null, e); }, false); }
+    if (err) { o.addEventListener('error', function (e) { err(null, e); }, false); }
+    s.parentNode.insertBefore(o, s);
+  }
+
+  var asyncLoadWithFallBack = function(arr, success, reject) {
+      var currReject = function(){
+        reject()
+        arr.shift()
+        if(arr.length)
+          async(arr[0], success, currReject)
+        }
+
+      async(arr[0], success, currReject)
+  }
+
+  asyncLoadWithFallBack([
+    "https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.min.js", 
+    "https://cdn.bootcss.com/webfont/1.6.28/webfontloader.js",
+    "/lib/webfontloader.min.js"
+  ], asyncCb, asyncErr)
+</script>        
+        <img class="loading" src="/assets/loading.svg" style="display: block; margin: 6rem auto 0 auto; width: 6rem; height: 6rem;" />
+        <div class="container container-unloaded">
+            <main class="main post-page">
+    <article class="article-entry">
+        <blockquote>
+<p>在学习组件化架构的过程中，从很多高质量的博客中学到不少东西，例如<strong>蘑菇街李忠</strong>、<strong>casatwy</strong>、<strong>bang</strong>的博客。在学习过程中也遇到一些问题，<strong>在微博和QQ上和一些做<code>iOS</code>的朋友进行了交流</strong>，非常感谢这些朋友的帮助。</p>
+<p>本篇文章<a target="_blank" rel="noopener" href="https://juejin.cn/post/6844903873023311886">组件化架构漫谈</a>主要针对于之前蘑菇街提出的组件化方案，以及<strong>casatwy</strong>提出的组件化方案进行分析，后面还会简单提到滴滴、淘宝、微信的组件化架构，最后会简单说一下我公司设计的组件化架构。</p>
+</blockquote>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://limboy.me/posts/mgj-components/">《蘑菇街 App 的组件化之路》</a></li>
+<li><a target="_blank" rel="noopener" href="http://casatwy.com/iOS-Modulization.html">《iOS应用架构谈 组件化方案》 — casatwy</a></li>
+<li><a target="_blank" rel="noopener" href="https://limboy.me/posts/mgj-components-continued/">《蘑菇街 App 的组件化之路·续》</a></li>
+<li><a target="_blank" rel="noopener" href="http://blog.cnbang.net/tech/3080/">《iOS 组件化方案探索》 — Bang</a></li>
+</ul>
+<h1 id="一、组件化架构的由来"><a href="#一、组件化架构的由来" class="headerlink" title="一、组件化架构的由来"></a>一、组件化架构的由来</h1><p>随着移动互联网的不断发展，<strong>很多程序代码量和业务越来越多，现有架构已经不适合公司业务的发展速度了</strong>，很多都面临着重构的问题。</p>
+<p>在公司项目开发中，如果项目比较小，普通的<code>单工程+MVC架构</code>就可以满足大多数需求了。但是像淘宝、蘑菇街、微信这样的大型项目，原有的<strong>单工程架构</strong>就不足以满足架构需求了。</p>
+<p>就拿淘宝来说，淘宝在13年开启的<code>“All in 无线”</code>战略中，就将阿里系大多数业务都加入到手机淘宝中，使客户端出现了业务的爆发。在这种情况下，<strong>单工程架构则已经远远不能满足现有业务需求了</strong>。所以在这种情况下，淘宝在13年开启了<strong>插件化架构</strong>的重构，后来在14年迎来了手机淘宝有史以来最大规模的重构，将项目<strong>重构为组件化架构</strong>。</p>
+<h2 id="1-1-原因"><a href="#1-1-原因" class="headerlink" title="1.1 原因"></a>1.1 原因</h2><p>在一个项目越来越大，开发人员越来越多的情况下，项目会遇到很多问题。</p>
+<ul>
+<li>业务模块间划分不清晰，模块之间耦合度很大，非常难维护。</li>
+<li>所有模块代码都编写在一个项目中，<strong>测试某个模块或功能，需要编译运行整个项目</strong>。</li>
+</ul>
+<img src="https://p1-jj.byteimg.com/tos-cn-i-t2oaga2asx/gold-user-assets/2019/6/22/16b7f27cffdda550~tplv-t2oaga2asx-watermark.awebp" style="zoom:55%;" />
+
+<p>为了解决上面的问题，可以考虑加一个<strong>中间层</strong>来协调各个模块间的调用，<strong>所有的模块间的调用都会经过中间层中转。</strong></p>
+<img src="https://p1-jj.byteimg.com/tos-cn-i-t2oaga2asx/gold-user-assets/2019/6/22/16b7f27cffe09fd2~tplv-t2oaga2asx-watermark.awebp" style="zoom:55%;" />
+
+<p>但是发现增加这个中间层后，耦合还是存在的。中间层对被调用模块存在耦合，其他模块也需要耦合中间层才能发起调用。<strong>这样还是存在之前的相互耦合的问题</strong>，而且本质上比之前更麻烦了。</p>
+<h2 id="1-2-架构改进"><a href="#1-2-架构改进" class="headerlink" title="1.2 架构改进"></a>1.2 架构改进</h2><p>所以应该做的是，<strong>只让其他模块对中间层产生耦合关系，中间层不对其他模块发生耦合</strong>。 对于这个问题，<strong>可以采用组件化的架构，将每个模块作为一个组件</strong>。并且建立一个主项目，这个主项目负责集成所有组件。这样带来的好处是很多的：</p>
+<ul>
+<li>业务划分更佳清晰，新人接手更佳容易，可以按组件分配开发任务。</li>
+<li>项目可维护性更强，提高开发效率。</li>
+<li>更好排查问题，某个组件出现问题，直接对组件进行处理。</li>
+<li>开发测试过程中，可以只编译自己那部分代码，不需要编译整个项目代码。</li>
+<li>方便集成，项目需要哪个模块直接通过<code>CocoaPods</code>集成即可。</li>
+</ul>
+<img src="https://p1-jj.byteimg.com/tos-cn-i-t2oaga2asx/gold-user-assets/2019/6/22/16b7f27d000e40c0~tplv-t2oaga2asx-watermark.awebp" style="zoom:55%;" />
+
+<p>进行组件化开发后，<strong>可以把每个组件当做一个独立的app，每个组件甚至可以采取不同的架构</strong>，例如分别使用<code>MVVM</code>、<code>MVC</code>、<code>MVCS</code>等架构，根据自己的编程习惯做选择。</p>
+<h1 id="二、蘑菇街组件化架构方案"><a href="#二、蘑菇街组件化架构方案" class="headerlink" title="二、蘑菇街组件化架构方案"></a>二、蘑菇街组件化架构方案</h1><h2 id="2-1-MGJRouter方案"><a href="#2-1-MGJRouter方案" class="headerlink" title="2.1 MGJRouter方案"></a>2.1 MGJRouter方案</h2><p>蘑菇街通过<code>MGJRouter</code>实现中间层，由<code>MGJRouter</code>进行组件间的消息转发，从名字上来说更像是“路由器”。实现方式大致是，<strong>在提供服务的组件中提前注册 block</strong>，然后在调用方组件中通过<code>URL</code>调用<code>block</code>，下面是调用方式。</p>
+<h3 id="2-1-1-架构设计"><a href="#2-1-1-架构设计" class="headerlink" title="2.1.1 架构设计"></a>2.1.1 架构设计</h3><img src="https://p1-jj.byteimg.com/tos-cn-i-t2oaga2asx/gold-user-assets/2019/6/22/16b7f27cfff801a2~tplv-t2oaga2asx-watermark.awebp" alt="MGJRouter组件化架构" style="zoom:75%;" />
+
+<p><code>MGJRouter</code>是一个<strong>单例对象</strong>，在其内部维护着一个<code>“URL -&gt; block”</code>格式的注册表，通过这个注册表来<strong>保存服务方注册的 block <strong>，以及</strong>使调用方可以通过 URL 映射出 block</strong>，并通过<code>MGJRouter</code>对服务方发起调用。</p>
+<p><strong><code>MGJRouter</code>是所有组件的调度中心，负责所有组件的调用、切换、特殊处理等操作，可以用来处理一切组件间发生的关系</strong>。除了原生页面的解析外，还可以根据URL跳转H5页面。</p>
+<p>在服务方组件中都对外提供一个<code>PublicHeader</code>，在<code>PublicHeader</code>中声明当前组件所提供的所有功能，这样其他组件想知道当前组件有什么功能，直接看<code>PublicHeader</code>即可。每一个<code>block</code>都对应着一个<code>URL</code>，调用方可以通过<code>URL</code>对<code>block</code>发起调用。</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">ifndef</span> UserCenterPublicHeader_h</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> UserCenterPublicHeader_h</span></span><br><span class="line"></span><br><span class="line"><span class="comment">/** 跳转用户登录界面 */</span></span><br><span class="line"><span class="keyword">static</span> <span class="keyword">const</span> <span class="built_in">NSString</span> * <span class="built_in">CTBUCUserLogin</span> = <span class="string">@&quot;CTB://UserCenter/UserLogin&quot;</span>;</span><br><span class="line"><span class="comment">/** 跳转用户注册界面 */</span></span><br><span class="line"><span class="keyword">static</span> <span class="keyword">const</span> <span class="built_in">NSString</span> * <span class="built_in">CTBUCUserRegister</span> = <span class="string">@&quot;CTB://UserCenter/UserRegister&quot;</span>;</span><br><span class="line"><span class="comment">/** 获取用户状态 */</span></span><br><span class="line"><span class="keyword">static</span> <span class="keyword">const</span> <span class="built_in">NSString</span> * <span class="built_in">CTBUCUserStatus</span> = <span class="string">@&quot;CTB://UserCenter/UserStatus&quot;</span>;</span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="meta-keyword">endif</span></span></span><br></pre></td></tr></table></figure>
+
+<p>在组件内部实现<code>block</code>的注册工作，以及<code>block</code>对外提供服务的代码实现。在注册的时候需要注意注册时机，应该保证调用时<code>URL</code>对应的<code>block</code>已经注册。</p>
+<p>蘑菇街项目使用<code>git</code>作为版本控制工具，<strong>将每个组件都当做一个独立工程</strong>，并建立主项目来集成所有组件。集成方式是在主项目中通过<code>CocoaPods</code>来集成，将所有组件当做<strong>二方库</strong>集成到项目中。详细的集成技术点在下面“标准组件化架构设计”章节中会讲到。</p>
+<h3 id="2-1-2-组件调用及传参"><a href="#2-1-2-组件调用及传参" class="headerlink" title="2.1.2 组件调用及传参"></a>2.1.2 组件调用及传参</h3><p>下面代码模拟对详情页的注册、调用，在调用过程中传递<code>id</code>参数。参数传递可以有两种方式，类似于<strong>Get请求</strong>在<code>URL</code>后面拼接参数，以及通过字典传递参数。下面是注册的示例代码：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">[MGJRouter registerURLPattern:<span class="string">@&quot;mgj://detail&quot;</span> toHandler:^(<span class="built_in">NSDictionary</span> *routerParameters) &#123;</span><br><span class="line"> 	<span class="comment">// 下面可以在拿到参数后，为其他组件提供对应的服务</span></span><br><span class="line"> 	<span class="built_in">NSString</span> uid = routerParameters[<span class="string">@&quot;id&quot;</span>];</span><br><span class="line">&#125;];</span><br></pre></td></tr></table></figure>
+
+<p>通过<code>openURL:</code>方法传入的<code>URL</code>参数，对详情页已经注册的<code>block</code>方法发起调用。<strong>调用方式类似于<code>GET</code>请求</strong>，<code>URL</code>地址后面拼接参数。</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[MGJRouter openURL:<span class="string">@&quot;mgj://detail?id=404&quot;</span>];</span><br></pre></td></tr></table></figure>
+
+<p>也可以通过字典方式传参，<code>MGJRouter</code>提供了带有字典参数的方法，这样就<strong>可以传递非字符串之外的其他类型参数</strong>，例如对象类型参数。</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[MGJRouter openURL:<span class="string">@&quot;mgj://detail&quot;</span> withParam:@&#123;<span class="string">@&quot;id&quot;</span> : <span class="string">@&quot;404&quot;</span>&#125;];</span><br></pre></td></tr></table></figure>
+
+<h3 id="2-1-3-组件调用数据回返"><a href="#2-1-3-组件调用数据回返" class="headerlink" title="2.1.3 组件调用数据回返"></a>2.1.3 组件调用数据回返</h3><p>有的时候组件间调用过程中，需要服务方在完成调用后返回相应的参数。蘑菇街提供了另外的方法，专门来完成这个操作。</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">[MGJRouter registerURLPattern:<span class="string">@&quot;mgj://cart/ordercount&quot;</span> toObjectHandler:^<span class="keyword">id</span>(<span class="built_in">NSDictionary</span> *routerParamters)&#123;</span><br><span class="line"> 	<span class="keyword">return</span> @<span class="number">42</span>;</span><br><span class="line">&#125;];</span><br></pre></td></tr></table></figure>
+
+<p>通过下面的方式发起调用，并获取服务方返回的返回值，要做的就是传递正确的<code>URL</code>和参数即可。</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">NSNumber</span> *orderCount = [MGJRouter objectForURL:<span class="string">@&quot;mgj://cart/ordercount&quot;</span>];</span><br></pre></td></tr></table></figure>
+
+<h3 id="2-1-4-短链管理"><a href="#2-1-4-短链管理" class="headerlink" title="2.1.4 短链管理"></a>2.1.4 短链管理</h3><p>这时候会发现一个问题，在蘑菇街组件化架构中，<strong>存在了很多硬编码的URL和参数</strong>。在代码实现过程中<code>URL</code>编写出错会导致调用失败，而且参数是一个字典类型，调用方不知道服务方需要哪些参数，这些都是个问题。</p>
+<p>对于这些数据的管理，蘑菇街开发了一个<code>web</code>页面，这个<code>web</code>页面统一来管理所有的<code>URL</code>和参数，<code>Android</code>和<code>iOS</code>都使用这一套<code>URL</code>，可以保持统一性。</p>
+<h3 id="2-1-5-基础组件"><a href="#2-1-5-基础组件" class="headerlink" title="2.1.5 基础组件"></a>2.1.5 基础组件</h3><p>在项目中存在很多公共部分的东西，例如封装的网络请求、缓存、数据处理等功能，以及项目中所用到的资源文件。蘑菇街将这些部分也当做组件，划分为基础组件，位于业务组件下层。<strong>所有业务组件都使用同一套基础组件，也可以保证公共部分的统一性。</strong></p>
+<h2 id="2-2-Protocol方案"><a href="#2-2-Protocol方案" class="headerlink" title="2.2 Protocol方案"></a>2.2 Protocol方案</h2><h3 id="2-2-1-整体架构"><a href="#2-2-1-整体架构" class="headerlink" title="2.2.1 整体架构"></a>2.2.1 整体架构</h3><img src="https://p1-jj.byteimg.com/tos-cn-i-t2oaga2asx/gold-user-assets/2019/6/22/16b7f27d008f2985~tplv-t2oaga2asx-watermark.awebp" style="zoom:60%;" />
+
+<p>为了解决<code>MGJRouter</code>方案中 <strong><code>URL</code>硬编码</strong> ，以及 <strong>字典参数类型不明确</strong> 等问题，蘑菇街在原有组件化方案的基础上推出了<code>Protocol</code>方案。<code>Protocol</code>方案由两部分组成，进行组件间通信的<code>ModuleManager</code>类以及<code>MGJComponentProtocol</code>协议类。</p>
+<p>通过中间件<code>ModuleManager</code>进行消息的调用转发，在<code>ModuleManager</code>内部维护一张映射表，映射表由之前的<code>&quot;URL -&gt; block&quot;</code>变成<code>&quot;Protocol -&gt; Class&quot;</code>。</p>
+<p>在中间件中创建<code>MGJComponentProtocol</code>文件，服务方组件将可以用来调用的方法都定义在<code>Protocol</code>中，将所有服务方的<code>Protocol</code>都分别定义到<code>MGJComponentProtocol</code>文件中，如果协议比较多也可以分开几个文件定义。这样所有调用方依然是只依赖中间件，不需要依赖除中间件之外的其他组件。</p>
+<p><code>Protocol</code>方案中每个组件需要一个<strong>MGJModuleImplement</strong>，此类负责实现当前组件对应的协议方法，也就是对外提供服务的实现。在<strong>程序开始运行时将自身的<code>Class</code>注册到<code>ModuleManager</code>中</strong>，并将<code>Protocol</code>反射为字符串当做<code>key</code>。</p>
+<p><strong>Protocol方案依然需要提前注册服务</strong>，由于<code>Protocol</code>方案是返回一个<code>Class</code>，并将<code>Class</code>反射为对象再调用方法，这种方式不会直接调用类的内部逻辑。可以将<code>Protocol</code>方案的<code>Class</code>注册，都放在类对应的<code>MGJModuleImplement</code>中，或者专门建立一个<code>RegisterProtocol</code>类。</p>
+<h3 id="2-2-2-示例代码"><a href="#2-2-2-示例代码" class="headerlink" title="2.2.2 示例代码"></a>2.2.2 示例代码</h3><p>创建<code>MGJUserImpl</code>类当做<code>User</code>组件对外公开的类，并在<code>MGJComponentProtocol.h</code>中定义<code>MGJUserProtocol</code>协议，由<code>MGJUserImpl</code>类实现协议中定义的方法，完成对外提供服务的过程。下面是协议定义：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">@protocol</span> <span class="title">MGJUserProtocol</span> &lt;<span class="title">NSObject</span>&gt;</span></span><br><span class="line">- (<span class="built_in">NSString</span> *)getUserName;</span><br><span class="line"><span class="keyword">@end</span></span><br></pre></td></tr></table></figure>
+
+<p><code>Class</code>遵守协议并实现定义的方法，外界通过<code>Protocol</code>获取的<code>Class</code>并实例化为对象，调用服务方实现的协议方法。</p>
+<p><code>ModuleManager</code>的协议注册方法，注册时将<code>Protocol</code>反射为字符串当做存储的<code>key</code>，将实现协议的<code>Class</code>当做值存储。通过<code>Protocol</code>取<code>Class</code>的时候，就是通过<code>Protocol</code>从<code>ModuleManager</code>中将<code>Class</code>映射出来。</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[ModuleManager registerClass:MGJUserImpl forProtocol:<span class="class"><span class="keyword">@protocol</span>(<span class="title">MGJUserProtocol</span>)];</span></span><br></pre></td></tr></table></figure>
+
+<p>调用时通过<code>Protocol</code>从<code>ModuleManager</code>中映射出注册的<code>Class</code>，将获取到的<code>Class</code>实例化，并调用<code>Class</code>实现的协议方法完成服务调用。</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">Class cls = [[ModuleManager sharedInstance] classForProtocol:<span class="class"><span class="keyword">@protocol</span>(<span class="title">MGJUserProtocol</span>)];</span></span><br><span class="line"><span class="keyword">id</span> userComponent = [[cls alloc] init];</span><br><span class="line"><span class="built_in">NSString</span> *userName = [userComponent getUserName];</span><br></pre></td></tr></table></figure>
+
+<h2 id="2-3-蘑菇街的结合使用"><a href="#2-3-蘑菇街的结合使用" class="headerlink" title="2.3 蘑菇街的结合使用"></a>2.3 蘑菇街的结合使用</h2><p>蘑菇街是 <code>MGJRouter(openURL)</code> 和 <code>Protocol</code> 混用的方式：<a target="_blank" rel="noopener" href="https://limboy.me/posts/mgj-components-continued/">蘑菇街 App 的组件化之路·续</a>、<a target="_blank" rel="noopener" href="http://blog.cnbang.net/tech/3080/">《iOS 组件化方案探索》 — Bang</a></p>
+<ul>
+<li><code>openURL</code> 只是页面间的调用方式</li>
+<li>组件间的调用通过 protocol 来实现</li>
+</ul>
+<p>当有一些场景不适合用 URL 的方式时，就可以通过注册 protocol 来实现：</p>
+<ul>
+<li>组件对外提供的接口主要是模块间代码层面上的调用，我们先称为本地调用，而 URL 主要用于 APP 间通信，姑且称为远程调用。蘑菇街 <code>openUrl</code> 方法中，将两者混在一起有什么问题呢？</li>
+<li>如果是 URL 的形式，那组件对外提供接口时就要同时考虑本地调用和远程调用两种情况，而远程调用有个限制，传递的参数类型有限制，只能传能被字符串化的数据，或者说只能传能被转成 json 的数据，像 UIImage 这类对象是不行的，所以如果组件接口要考虑远程调用，这里的参数就不能是这类非常规对象，接口的定义就受限了。</li>
+<li>用理论的话来说就是，远程调用是本地调用的子集，这里混在一起导致组件只能提供子集功能，所以这个方案是天生有缺陷的，对于遗漏的这部分功能，蘑菇街使用了 <code>protocol-class</code> 方案补全。</li>
+</ul>
+<p>项目中 <code>openURL</code> 方案的使用流程：</p>
+<ol>
+<li>在进入程序后，先使用<code>MGJRouter</code>对服务方组件进行注册。每个<code>URL</code>对应一个<code>block</code>的实现，<strong>block 中的代码就是组件对外提供的服务</strong>，调用方可以通过<code>URL</code>调用这个服务。</li>
+<li>调用方通过<code>MGJRouter</code>调用<code>openURL:</code>方法，并将被调用代码对应的<code>URL</code>传入，<code>MGJRouter</code>会根据<code>URL</code>查找对应的<code>block</code>实现，从而调用组件的代码进行通信。</li>
+<li>调用和注册<code>block</code>时，<code>block</code>有一个字典用来传递参数。这样的优势就是参数类型和数量理论上是不受限制的，但是需要很多硬编码的<code>key</code>名在项目中。</li>
+</ol>
+<h2 id="2-4-内存管理"><a href="#2-4-内存管理" class="headerlink" title="2.4 内存管理"></a>2.4 内存管理</h2><p>蘑菇街组件化方案有两种，<code>Protocol</code>和<code>MGJRouter</code>的方式，但都需要进行<code>register</code>操作。<code>Protocol</code>注册的是<code>Class</code>，<code>MGJRouter</code>注册的是<code>Block</code>，注册表是一个<code>NSMutableDictionary</code>类型的字典，而字典的拥有者又是一个<strong>单例对象</strong>，这样会造成<strong>内存的常驻</strong>。</p>
+<p>下面是对两种实现方式内存消耗的分析：</p>
+<ul>
+<li>首先说一下<code>MGJRouter</code>方案可能导致的内存问题，由于<code>block</code>会对代码块内部对象进行持有，如果使用不当很容易造成内存泄漏的问题。 <code>block</code>自身实际上不会造成很大的内存泄漏，主要是内部引用的变量，所以在使用时就需要注意强引用的问题，并适当使用<code>weak</code>修饰对应的变量。以及在适当的时候，释放对应的变量。 除了对外部变量的引用，在<code>block</code>代码块内部尽量不要直接创建对象，应该通过方法调用中转一下。</li>
+<li>对于协议这种实现方式，和<code>block</code>内存常驻方式差不多。只是将存储的<code>block</code>对象换成<code>Class</code>对象。这实际上是存储的类对象，类对象本来就是单例模式，所以不会造成多余内存占用。</li>
+</ul>
+<h1 id="三、casatwy组件化架构方案"><a href="#三、casatwy组件化架构方案" class="headerlink" title="三、casatwy组件化架构方案"></a>三、casatwy组件化架构方案</h1><h2 id="3-1-整体架构"><a href="#3-1-整体架构" class="headerlink" title="3.1 整体架构"></a>3.1 整体架构</h2><p><strong>casatwy</strong>组件化方案可以处理两种方式的调用，<strong>远程调用和本地调用</strong>，对于两个不同的调用方式分别对应两个接口。</p>
+<ul>
+<li>远程调用通过<code>AppDelegate</code>代理方法传递到当前应用后，调用远程接口并在内部做一些处理，处理完成后会在远程接口内部调用本地接口，<strong>以实现本地调用为远程调用服务</strong>。</li>
+<li>本地调用由<code>performTarget:action:params:</code>方法负责，<strong>但调用方一般不直接调用<code>performTarget:</code>方法</strong>。<code>CTMediator</code>会对外提供明确参数和方法名的方法，在方法内部调用<code>performTarget:</code>方法和参数的转换。</li>
+</ul>
+<img src="https://p1-jj.byteimg.com/tos-cn-i-t2oaga2asx/gold-user-assets/2019/6/22/16b7f27d2a109f6b~tplv-t2oaga2asx-watermark.awebp" style="zoom:70%;" />
+
+<h2 id="3-2-架构设计思路"><a href="#3-2-架构设计思路" class="headerlink" title="3.2 架构设计思路"></a>3.2 架构设计思路</h2><p><strong>casatwy</strong>是通过<code>CTMediator</code>类实现组件化的，在此类中对外提供明确参数类型的接口，接口内部通过<code>performTarget</code>方法调用服务方组件的<code>Target</code>、<code>Action</code>。由于<code>CTMediator</code>类的调用是<strong>通过<code>runtime</code>主动发现服务</strong>的，所以服务方对此类是完全解耦的。</p>
+<p>但如果<code>CTMediator</code>类对外提供的方法都放在此类中，将会对<code>CTMediator</code>造成极大的负担和代码量。解决方法就是对每个服务方组件创建一个<code>CTMediator</code>的<code>Category</code>，并将对服务方的<code>performTarget</code>调用放在对应的<code>Category</code>中，这些<code>Category</code>都属于<code>CTMediator</code>中间件，从而实现了感官上的接口分离。</p>
+<img src="https://p1-jj.byteimg.com/tos-cn-i-t2oaga2asx/gold-user-assets/2019/6/22/16b7f27d2acc9232~tplv-t2oaga2asx-watermark.awebp" style="zoom:60%;" />
+
+<p>对于服务方的组件来说，每个组件都提供一个或多个<code>Target</code>类，在<code>Target</code>类中声明<code>Action</code>方法。<code>Target</code>类是当前组件对外提供的一个“服务类”，<code>Target</code>将当前组件中所有的服务都定义在里面，<strong>CTMediator 通过 runtime 主动发现服务</strong>。</p>
+<p>在<code>Target</code>中的所有<code>Action</code>方法，都只有一个字典参数，所以可以传递的参数很灵活，这也是<strong>casatwy</strong>提出的<strong>去<code>Model</code>化的概念</strong>。在<code>Action</code>的方法实现中，对传进来的字典参数进行解析，再调用组件内部的类和方法。</p>
+<h2 id="3-3-架构分析"><a href="#3-3-架构分析" class="headerlink" title="3.3 架构分析"></a>3.3 架构分析</h2><p><strong>casatwy</strong>为我们提供了一个<a href="https://link.juejin.cn/?target=https://github.com/casatwy/CTMediator">Demo</a>，通过这个<code>Demo</code>可以很好的理解<strong>casatwy</strong>的设计思路，下面按照我的理解讲解一下这个<code>Demo</code>。</p>
+<img src="https://p1-jj.byteimg.com/tos-cn-i-t2oaga2asx/gold-user-assets/2019/6/22/16b7f27d2aceeae8~tplv-t2oaga2asx-watermark.awebp" style="zoom:70%;" />
+
+<p>打开<code>Demo</code>后可以看到文件目录非常清楚，在上图中用蓝框框出来的就是中间件部分，红框框出来的就是业务组件部分。我对每个文件夹做了一个简单的注释，包含了其在架构中的职责。</p>
+<p><strong>在<code>CTMediator</code>中定义远程调用和本地调用的两个方法</strong>，其他业务相关的调用由<code>Category</code>完成。</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 远程App调用入口</span></span><br><span class="line">- (<span class="keyword">id</span>)performActionWithUrl:(<span class="built_in">NSURL</span> *)url completion:(<span class="keyword">void</span>(^)(<span class="built_in">NSDictionary</span> *info))completion;</span><br><span class="line"><span class="comment">// 本地组件调用入口</span></span><br><span class="line">- (<span class="keyword">id</span>)performTarget:(<span class="built_in">NSString</span> *)targetName action:(<span class="built_in">NSString</span> *)actionName params:(<span class="built_in">NSDictionary</span> *)params;</span><br></pre></td></tr></table></figure>
+
+<p>在<code>CTMediator</code>中定义的<code>ModuleA</code>的<code>Category</code>，为其他组件提供了一个获取控制器并跳转的功能，下面是代码实现。由于<strong>casatwy</strong>的方案中使用<code>performTarget</code>的方式进行调用，所以<strong>涉及到很多硬编码字符串的问题</strong>，<strong>casatwy</strong>采取定义常量字符串来解决这个问题，这样管理也更方便。</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#import <span class="meta-string">&quot;CTMediator+CTMediatorModuleAActions.h&quot;</span></span></span><br><span class="line"></span><br><span class="line"><span class="built_in">NSString</span> * <span class="keyword">const</span> kCTMediatorTargetA = <span class="string">@&quot;A&quot;</span>;</span><br><span class="line"><span class="built_in">NSString</span> * <span class="keyword">const</span> kCTMediatorActionNativFetchDetailViewController = <span class="string">@&quot;nativeFetchDetailViewController&quot;</span>;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">@implementation</span> <span class="title">CTMediator</span> (<span class="title">CTMediatorModuleAActions</span>)</span></span><br><span class="line"></span><br><span class="line">- (<span class="built_in">UIViewController</span> *)<span class="built_in">CTMediator_viewControllerForDetail</span> &#123;</span><br><span class="line">	<span class="built_in">UIViewController</span> *viewController = [<span class="keyword">self</span> performTarget:kCTMediatorTargetA</span><br><span class="line">                                                    action:kCTMediatorActionNativFetchDetailViewController</span><br><span class="line">                                                    params:@&#123;<span class="string">@&quot;key&quot;</span>:<span class="string">@&quot;value&quot;</span>&#125;];</span><br><span class="line">	<span class="keyword">if</span> ([viewController isKindOfClass:[<span class="built_in">UIViewController</span> <span class="keyword">class</span>]]) &#123;</span><br><span class="line">    	<span class="comment">// view controller 交付出去之后，可以由外界选择是push还是present</span></span><br><span class="line">    	<span class="keyword">return</span> viewController;</span><br><span class="line">	&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    	<span class="comment">// 这里处理异常场景，具体如何处理取决于产品逻辑</span></span><br><span class="line">    	<span class="keyword">return</span> [[<span class="built_in">UIViewController</span> alloc] init];</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>下面是<code>ModuleA</code>组件中提供的服务，被定义在<code>Target_A</code>类中，这些服务可以被<code>CTMediator</code>通过<code>runtime</code>的方式调用，<strong>这个过程就叫做发现服务</strong>。</p>
+<p>在<code>Target_A</code>中对传递的参数做了处理，以及内部的业务逻辑实现。方法是发生在<code>ModuleA</code>内部的，这样就可以保证组件内部的业务不受外部影响，<strong>对内部业务没有侵入性</strong>。</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">- (<span class="built_in">UIViewController</span> *)Action_nativeFetchDetailViewController:(<span class="built_in">NSDictionary</span> *)params &#123;</span><br><span class="line">	<span class="comment">// 对传过来的字典参数进行解析，并调用ModuleA内部的代码</span></span><br><span class="line">	DemoModuleADetailViewController *viewController = [[DemoModuleADetailViewController alloc] init];</span><br><span class="line">    viewController.valueLabel.text = params[<span class="string">@&quot;key&quot;</span>];</span><br><span class="line">	<span class="keyword">return</span> viewController;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="3-4-命名规范"><a href="#3-4-命名规范" class="headerlink" title="3.4 命名规范"></a>3.4 命名规范</h2><p>在大型项目中代码量比较大，需要避免命名冲突的问题。对于这个问题<strong>casatwy</strong>采取的是加前缀的方式，从<strong>casatwy</strong>的<code>Demo</code>中也可以看出，其组件<code>ModuleA</code>的<code>Target</code>命名为<code>Target_A</code>，可以区分各个组件的<code>Target</code>。被调用的<code>Action</code>命名为<code>Action_nativeFetchDetailViewController:</code>，可以区分组件内的方法与对外提供的方法。</p>
+<p><strong>casatwy</strong>将类和方法的命名，<strong>都统一按照其功能做区分当做前缀</strong>，这样很好的将组件相关和组件内部代码进行了划分。</p>
+<h1 id="四、对比分析"><a href="#四、对比分析" class="headerlink" title="四、对比分析"></a>四、对比分析</h1><h2 id="Protocol"><a href="#Protocol" class="headerlink" title="Protocol"></a>Protocol</h2><p>从我调研和使用的结果来说，并不推荐使用<code>Protocol</code>方案。首先<code>Protocol</code>方案的代码量就比<code>MGJRouter</code>方案的要多，调用和注册代码量很大，调用起来并不是很方便。</p>
+<p>本质上来说<code>Protocol</code>方案是通过类对象实例一个变量，并调用变量的方法，并没有真正意义上的改变组件之间的交互方案，但<code>MGJRouter</code>的方案却通过<code>URL Router</code>的方式改变和统一了组件间调用方式。</p>
+<p>并且<code>Protocol</code>没有对<code>Remote Router</code>的支持，不能直接处理来自<code>Push</code>的调用，在灵活性上就不如<code>MGJRouter</code>的方案。</p>
+<h2 id="CTMediator"><a href="#CTMediator" class="headerlink" title="CTMediator"></a>CTMediator</h2><p>我并不推荐<code>CTMediator</code>方案，这套方案实际上是一套很臃肿的方案。虽然为<code>CTMediator</code>提供了很多<code>Category</code>，<strong>但实际上组件间的调用逻辑都耦合在了中间件中。</strong>同样，和<code>Protocol</code>方案存在一个相同的问题，就是调用代码量很大，使用起来并不方便。</p>
+<p>在<code>CTMediator</code>方案中存在很多硬编码的问题，例如<code>target</code>、<code>action</code>以及参数名都是硬编码在中间件中的，这种调用方式并不灵活直接。</p>
+<p>但<strong>casatwy</strong>提出了去<code>Model</code>化的想法，我觉得这在组件化中传参来说，是非常灵活的，这点我比较认同。相对于<code>MGJRouter</code>的话，也采用了去<code>Model</code>化的传参方式，而不是直接传递模型对象。组件化传参并不适用传模型对象，但组件内部还是可以使用<code>Model</code>的。</p>
+<h2 id="MGJRouter"><a href="#MGJRouter" class="headerlink" title="MGJRouter"></a>MGJRouter</h2><p><code>MGJRouter</code>方案是一套非常轻量级的方案，其中间件代码总共也就两百行以内，非常简洁。在调用时直接通过<code>URL</code>调用，调用起来很简单，我推荐使用这套方案作为组件化架构的中间件。</p>
+<p><code>MGJRouter</code>最强大的一点在于，统一了远程调用和本地调用。这就使得可以通过<code>Push</code>的方式，进行任何允许的组件间调用，对项目运营是有很大帮助的。</p>
+<p>这三套方案都实现了组件间的解耦，<code>MGJRouter</code>和<code>Protocol</code>都是调用方对中间件的耦合，<code>CTMediator</code>是中间件对组件的耦合，都是单向耦合。</p>
+<h2 id="接口类"><a href="#接口类" class="headerlink" title="接口类"></a>接口类</h2><p>在三套方案中，服务方组件都对外提供一个<code>PublicHeader</code>或<code>Target</code>，<strong>在文件中统一定义对外提供的服务</strong>，组件间通信的实现代码大多数都在里面。</p>
+<p>但三套实现方案实现方式并不同，<strong>蘑菇街的两套方案都需要注册操作</strong>，无论是<code>Block</code>还是<code>Protocol</code>都需要注册后才可以提供服务。而<strong>casatwy</strong>的方案则不需要，直接通过<code>runtime</code>调用。</p>
+<h1 id="五、组件化架构设计"><a href="#五、组件化架构设计" class="headerlink" title="五、组件化架构设计"></a>五、组件化架构设计</h1><p>在上面文章中提到了<strong>casatwy</strong>方案的<code>CTMediator</code>，蘑菇街方案的<code>MGJRouter</code>和<code>ModuleManager</code>，之后将统称为中间件，下面让我们设计一套组件化架构。</p>
+<h2 id="5-1-整体架构"><a href="#5-1-整体架构" class="headerlink" title="5.1 整体架构"></a>5.1 整体架构</h2><p>组件化架构中，需要一个主工程，主工程负责集成所有组件。<strong>每个组件都是一个单独的工程</strong>，创建不同的<code>git</code>私有仓库来管理，每个组件都有对应的开发人员负责开发。开发人员只需要关注与其相关组件的代码，不用考虑其他组件，这样来新人也好上手。</p>
+<p>组件的划分需要注意组件粒度，粒度根据业务可大可小。组件划分可以将每个业务模块都划分为组件，对于网络、数据库等基础模块，也应该划分到组件中。项目中会用到很多资源文件、配置文件等，也应该划分到对应的组件中，避免重复的资源文件。项目实现完全的组件化。</p>
+<p>每个组件都需要对外提供调用，在对外公开的类或组件内部，注册对应的<code>URL</code>。组件处理中间件调用的代码应该对其他代码无侵入，只负责对传递过来的数据进行解析和组件内调用的功能。</p>
+<h2 id="5-2-组件集成"><a href="#5-2-组件集成" class="headerlink" title="5.2 组件集成"></a>5.2 组件集成</h2><h3 id="5-2-1-cocoapods管理"><a href="#5-2-1-cocoapods管理" class="headerlink" title="5.2.1 cocoapods管理"></a>5.2.1 cocoapods管理</h3><img src="https://p1-jj.byteimg.com/tos-cn-i-t2oaga2asx/gold-user-assets/2019/6/22/16b7f27d2add2f98~tplv-t2oaga2asx-watermark.awebp" style="zoom:75%;" />
+
+<p>每个组件都是一个单独的工程，在组件开发完成后上传到<code>git</code>仓库。主工程通过<code>Cocoapods</code>集成各个组件，集成和更新组件时只需要<code>pod update</code>即可。这样就是把每个组件当做第三方来管理，管理起来非常方便。</p>
+<p><code>Cocoapods</code>可以控制每个组件的版本，例如<strong>在主项目中回滚某个组件到特定版本</strong>，就可以通过修改<code>podfile</code>文件实现。选择<code>Cocoapods</code>主要因为其本身功能很强大，可以很方便的集成整个项目，<strong>也有利于代码的复用</strong>。通过这种集成方式，<strong>可以很好的避免在传统项目中代码冲突的问题</strong>。</p>
+<h3 id="5-2-2-集成方式"><a href="#5-2-2-集成方式" class="headerlink" title="5.2.2 集成方式"></a>5.2.2 集成方式</h3><p>对于组件化架构的集成方式，我在看完<strong>bang</strong>的博客后专门请教了一下<strong>bang</strong>。根据在微博上和<strong>bang</strong>的聊天以及其他博客中的学习，在主项目中集成组件主要分为两种方式——<strong>源码和 framework</strong>，但都是通过<code>CocoaPods</code>来集成。</p>
+<p>无论是用<code>CocoaPods</code>管理源码，还是直接管理<code>framework</code>，集成方式都是一样的，都是直接进行<code>pod update</code>等<code>CocoaPods</code>操作。</p>
+<p>这两种组件集成方案，实践中也是各有利弊。直接在主工程中集成代码文件，可以看到其内部实现源码，<strong>方便在主工程中进行调试</strong>。集成<code>framework</code>的方式，<strong>可以加快编译速度</strong>，而且<strong>对每个组件的代码有很好的保密性</strong>。如果公司对代码安全比较看重，可以考虑<code>framework</code>的形式。</p>
+<p>例如<strong>手机QQ</strong>或者<strong>支付宝</strong>这样的大型程序，一般都会采取<code>framework</code>的形式。而且一般这样的大公司，<strong>都会有自己的组件库</strong>，这个组件库往往可以代表一个大的功能或业务组件，直接添加项目中就可以使用。关于组件化库在后面讲淘宝组件化架构的时候会提到。</p>
+<h3 id="5-2-3-资源文件"><a href="#5-2-3-资源文件" class="headerlink" title="5.2.3 资源文件"></a>5.2.3 资源文件</h3><p>对于项目中图片的集成，<strong>可以把图片当做一个单独的组件，组件中只存在图片文件，没有任何代码</strong>。图片可以使用<code>Bundle</code>和<code>image assets</code>进行管理，如果是<code>Bundle</code>就针对不同业务模块建立不同的<code>Bundle</code>，如果是<code>image assets</code>，就按照不同的模块分类建立不同的<code>assets</code>，将所有资源放在同一个组件内。</p>
+<p><code>Bundle</code>和<code>image</code>、<code>assets</code>两者相比，<strong>我还是更推荐用<code>assets</code>的方式</strong>，因为<code>assets</code>自身提供很多功能(例如设置图片拉伸范围)，而且在打包之后图片会被打包在<code>.cer</code>文件中，不会被看到。(现在也可以通过工具对<code>.cer</code>文件进行解析，获取里面的图片)</p>
+<p>使用<code>Cocoapods</code>，所有的资源文件都放置在一个<code>podspec</code>中，主工程可以直接引用这个<code>podspec</code>，假设此<code>podspec</code>名为：<code>Assets</code>，而这个<code>Assets</code>的<code>podspec</code>里面配置信息可以写为：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">s.resources = <span class="string">&quot;Assets/Assets.xcassets/ ** / *.&#123;png&#125;&quot;</span></span><br></pre></td></tr></table></figure>
+
+<p>主工程则直接在<code>podfile</code>文件中加入：</p>
+<figure class="highlight ruby"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">pod <span class="string">&#x27;Assets&#x27;</span>, <span class="symbol">:path</span> =&gt; <span class="string">&#x27;../MainProject/Assets&#x27;</span>  <span class="comment"># 这种写法是访问本地的(Local Pods)，也可以换成远程仓库，比如git）</span></span><br></pre></td></tr></table></figure>
+
+<p>这样即可在主工程直接访问到<code>Assets</code>中的资源文件（不局限图片，<code>sqlite</code>、<code>js</code>、<code>html</code>亦可，在<code>s.resources</code>设置好配置信息即可）了。</p>
+<h2 id="5-3-优点"><a href="#5-3-优点" class="headerlink" title="5.3 优点"></a>5.3 优点</h2><ul>
+<li><strong>组件化开发可以很好的提升代码复用性，组件可以直接拿到其他项目中使用，</strong> 这个优点在下面淘宝架构中会着重讲一下。</li>
+<li>对于调试工作，可以放在每个组件中完成。<strong>单独的业务组件可以直接提交给测试使用</strong>，这样测试起来也比较方便。最后组件开发完成并测试通过后，再将所有组件更新到主项目，提交给测试进行集成测试即可。</li>
+<li>通过这样的组件划分，组件的开发进度不会受其他业务的影响，<strong>可以多个组件并行开发</strong>。组件间的通信都交给中间件来进行，需要通信的类只需要接触中间件，而中间件不需要耦合其他组件，这就实现了组件间的解耦。<strong>中间件负责处理所有组件之间的调度，在所有组件之间起到控制核心的作用</strong>。</li>
+<li>组件化框架清晰的划分了不同模块，从整体架构上来约束开发人员进行组件化开发，实现了组件间的物理隔离。<strong>组件化架构在各个模块之间天然形成了一道屏障</strong>，避免某个开发人员偷懒直接引用头文件，产生组件间的耦合，破坏整体架构。</li>
+<li>使用组件化架构进行开发时，因为每个人都负责自己的组件，代码提交也只提交自己负责模块的仓库，所以<strong>代码冲突的问题会变得很少</strong>。</li>
+<li>假设以后某个业务发生大的改变，需要对相关代码进行重构，可以在单个组件内进行重构。<strong>组件化架构降低了重构的风险，保证了代码的健壮性。</strong></li>
+</ul>
+<h2 id="5-4-架构分析"><a href="#5-4-架构分析" class="headerlink" title="5.4 架构分析"></a>5.4 架构分析</h2><p>在<code>MGJRouter</code>方案中，是通过调用<code>OpenURL:</code>方法并传入<code>URL</code>来发起调用的。鉴于<code>URL</code>协议名等固定格式，可以通过判断协议名的方式，<strong>使用配置表控制<code>H5</code>和<code>native</code>的切换</strong>，<strong>配置表可以从后台更新</strong>，只需要将协议名更改一下即可。</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">mgj:<span class="comment">//detail?id=123456</span></span><br><span class="line">http:<span class="comment">//www.mogujie.com/detail?id=123456</span></span><br></pre></td></tr></table></figure>
+
+<p>假设现在线上的<code>native</code>组件出现严重<code>bug</code>，<strong>在后台将配置文件中原有的本地<code>URL</code>换成<code>H5</code>的<code>URL</code>，并更新客户端配置文件</strong>。</p>
+<p>在调用<code>MGJRouter</code>时传入这个<code>H5</code>的<code>URL</code>即可完成切换，<code>MGJRouter</code>判断如果传进来的是一个<code>H5</code>的<code>URL</code>就直接跳转<code>webView</code>。而且<code>URL</code>可以传递参数给<code>MGJRouter</code>，只需要<code>MGJRouter</code>内部做参数截取即可。</p>
+<p>使用组件化架构开发，组件间的通信都是有成本的。所以尽量将业务封装在组件内部，对外只提供简单的接口。<strong>即“高内聚、低耦合”原则</strong>。</p>
+<p><strong>把握好组件划分粒度的细化程度，太细则项目过于分散，太大则项目组件臃肿</strong>。但是项目都是从小到大的一个发展过程，所以<strong>不断进行重构是掌握这个组件的细化程度最好的方式</strong>。</p>
+<h2 id="5-5-注意点"><a href="#5-5-注意点" class="headerlink" title="5.5 注意点"></a>5.5 注意点</h2><p>如果通过<code>framework</code>等二进制形式，将组件集成到主项目中，<strong>需要注意预编译指令的使用</strong>。组件项目中<strong>预编译指令在其打包为<code>framework</code>的时候，就已经被预处理了</strong>。之后，framework就是固定的二进制数据，其不会再受主项目编译参数的影响。</p>
+<h1 id="六、我公司架构"><a href="#六、我公司架构" class="headerlink" title="六、我公司架构"></a>六、我公司架构</h1><p>对于项目架构来说，<strong>一定要建立于业务之上来设计架构</strong>。不同的项目业务不同，组件化方案的设计也会不同，应该设计最适合公司业务的架构。</p>
+<h2 id="6-1-架构设计"><a href="#6-1-架构设计" class="headerlink" title="6.1 架构设计"></a>6.1 架构设计</h2><p>我公司项目是一个地图导航应用，业务层之下的核心模块和基础模块占比较大，涉及到地图SDK、算路、语音等模块。且基础模块相对比较独立，对外提供了很多调用接口。由此可以看出，公司项目是一个重逻辑的项目，不像电商等<code>App</code>偏展示。</p>
+<p>项目整体的架构设计是：<strong>层级架构+组件化架构</strong>，对于具体的实现细节会在下面详细讲解。采取这种结构混合的方式进行整体架构，对于组件的管理和层级划分比较有利，符合公司业务需求。</p>
+<img src="https://p1-jj.byteimg.com/tos-cn-i-t2oaga2asx/gold-user-assets/2019/6/22/16b7f27d2b41d4ac~tplv-t2oaga2asx-watermark.awebp" style="zoom:70%;" />
+
+<p>在设计架构时，我们将整个项目都拆分为组件，组件化程度相当高。用到哪个组件就在工程中通过<code>Podfile</code>进行集成，并通过<code>URLRouter</code>统一所有组件间的通信。</p>
+<p>组件化架构是项目的整体框架，而对于框架中每个业务模块的实现，可以是任意方式的架构，<code>MVVM</code>、<code>MVC</code>、<code>MVCS</code>等都是可以的，只要通过<code>MGJRouter</code>将组件间的通信方式统一即可。</p>
+<h2 id="6-2-分层架构"><a href="#6-2-分层架构" class="headerlink" title="6.2 分层架构"></a>6.2 分层架构</h2><p>组件化架构在物理结构上来说是不分层次的，只有组件与组件之间的划分关系。但是在组件化架构的基础上，<strong>应该根据项目和业务设计自己的层次架构，这套层次架构可以用来区分组件所处的层次及职责</strong>，所以我们设计了<strong>层级架构+组件化架构</strong>的整体架构。</p>
+<h3 id="6-2-1-层次的设计"><a href="#6-2-1-层次的设计" class="headerlink" title="6.2.1 层次的设计"></a>6.2.1 层次的设计</h3><p>我公司项目最开始设计的是三层架构：<strong>业务层 -&gt; 核心层 (<code>high</code> + <code>low</code>) -&gt; 基础层</strong>，其中核心层又分为<code>high</code>和<code>low</code>两部分。但是这种架构会造成核心层过重，基础层过轻的问题，这种并不适合组件化架构。</p>
+<p>在三层架构中会发现，<code>low</code>层并没有耦合业务逻辑，在同层级中是比较独立的，职责较为单一和基础。我们对<code>low</code>层下沉到基础层中，并和基础层进行合并。所以架构被重新分为三层架构：<strong>业务层 -&gt; 核心层 -&gt; 基础层</strong>。之前基础层大多是资源文件和配置文件，在项目中存在感并不高。</p>
+<p>在分层架构中，<strong>需要注意只能上层对下层依赖，下层对上层不能有依赖，下层中不要包含上层业务逻辑</strong>。对于项目中存在的公共资源和代码，应该将其下沉到下层中。</p>
+<h3 id="6-2-2-职责划分"><a href="#6-2-2-职责划分" class="headerlink" title="6.2.2 职责划分"></a>6.2.2 职责划分</h3><p>在三层架构中：</p>
+<ul>
+<li>业务层负责处理上层业务，将不同业务划分到相应组件中。例如<code>IM</code>组件、导航组件、用户组件等。<ul>
+<li>业务层的组件间关系比较复杂，会涉及到组件间业务的通信，以及业务层组件对下层组件的引用。</li>
+</ul>
+</li>
+<li>核心层位于业务层下方，为业务层提供业务支持。例如网络、语音识别等组件应该划分到核心层。<ul>
+<li>核心层应该尽量减少组件间的依赖，将依赖降到最小。</li>
+<li>核心层有时相互之间也需要支持，例如经纬度组件需要网络组件提供网络请求的支持，这种是不可避免的。</li>
+</ul>
+</li>
+<li>其他比较基础的模块，都放在基础层当做基础组件。例如<code>AFN</code>、地图<code>SDK</code>、加密算法等。<ul>
+<li>这些组件都比较独立且不掺杂任何业务逻辑，职责更加单一，相对于核心层更底层。</li>
+<li>可以包含第三方库、资源文件、配置文件、基础库等几大类，<strong>基础层组件相互之间不应该产生任何依赖。</strong></li>
+</ul>
+</li>
+</ul>
+<p>对于核心层和基础层的划分，可以以是否涉及业务、是否涉及同级组件间通信、是否经常改动为参照点。如果符合这几点则放在核心层，如果不符合则放在基础层。</p>
+<p>在设计各个组件时，<strong>应该遵循“高内聚，低耦合”的设计规范，组件的调用应该简单且直接，减少调用方的其他处理。</strong> </p>
+<h3 id="6-2-3-集成方式"><a href="#6-2-3-集成方式" class="headerlink" title="6.2.3 集成方式"></a>6.2.3 集成方式</h3><p>新建一个项目后，首先将配置文件、<code>URLRouter</code>、<code>App</code>容器等集成到主工程中，做一些基础的项目配置，随后集成需要的组件即可。</p>
+<p>项目被整体拆分为组件化架构后，应用对所有组件的集成方式都是一样的，通过<code>Podfile</code>将需要的组件集成到项目中。通过组件化的方式，使得开发新项目速度变得非常快。</p>
+<ul>
+<li>业务层和核心层组件集成后，组件间的通信都是由<code>URLRouter</code>进行通信，项目中不允许直接依赖组件源码。</li>
+<li>基础层组件在集成后则是直接依赖，例如：<ul>
+<li>资源文件和配置文件，这些都是直接在主工程或组件中使用的。</li>
+<li>核心层也是直接依赖第三方库源码的，第三方库则是通过核心层的业务封装，封装后由<code>URLRouter</code>进行通信。</li>
+</ul>
+</li>
+</ul>
+<p>组件的集成方式有两种，源码和<code>framework</code>的形式，我们使用<code>framework</code>的方式集成。因为一般都是项目比较大才用组件化的，但大型项目都会存在编译时间的问题，如果通过<code>framework</code>则会大大减少编译时间，可以节省开发人员的时间。</p>
+<h2 id="6-3-组件间通信"><a href="#6-3-组件间通信" class="headerlink" title="6.3 组件间通信"></a>6.3 组件间通信</h2><p>对于组件间通信，我们采用的<code>MGJRouter</code>方案。因为<code>MGJRouter</code>现在已经很稳定了，而且可以满足蘑菇街这样量级的<code>App</code>需求，证明是很好的，没必要自己写一套再慢慢踩坑。</p>
+<p><code>MGJRouter</code>的好处在于，其调用方式很灵活，通过<code>MGJRouter</code>注册并在<code>block</code>中处理回调，通过<code>URL</code>直接调用或者<code>URL+Params</code>字典的方式进行调用。由于通过<code>URL</code>拼接参数或<code>Params</code>字典传值，所以其参数类型没有数量限定，传递比较灵活。在通过<code>openURL:</code>调用后，可以在<code>completionBlock</code>中处理完成逻辑。</p>
+<h3 id="6-3-1-路由表"><a href="#6-3-1-路由表" class="headerlink" title="6.3.1 路由表"></a>6.3.1 路由表</h3><p><code>MGJRouter</code>有个问题在于，在编写组件间通信的代码时，会涉及到大量的<code>Hardcode</code>。对于<code>Hardcode</code>的问题，蘑菇街开发了一套后台系统，将所有的<code>Router</code>需要的<code>URL</code>和参数名，都定义到这套系统中。我们维护了一个<code>Plist</code>表，内部按不同组件进行划分，包含<code>URL</code>和传参名以及回调参数。</p>
+<img src="https://p1-jj.byteimg.com/tos-cn-i-t2oaga2asx/gold-user-assets/2019/6/22/16b7f27d30fc74fa~tplv-t2oaga2asx-watermark.awebp" alt="组件Router表" style="zoom:95%;" />
+
+<h3 id="6-3-2-路由层安全"><a href="#6-3-2-路由层安全" class="headerlink" title="6.3.2 路由层安全"></a>6.3.2 路由层安全</h3><p>组件化架构需要注意路由层的安全问题。<code>MGJRouter</code>方案可以处理本地及远程的<code>OpenURL</code>调用，如果是程序内组件间的<code>OpenURL</code>调用，则不需要进行校验。而跨应用的<code>OpenURL</code>调用，则需要进行合法性检查。这是为了防止第三方伪造进行<code>OpenURL</code>调用，所以对应用外调起的<code>OpenURL</code>进行的合法性检查，例如其他应用调起、服务器<code>Remote Push</code>等。</p>
+<p>在合法性检查的设计上，每个从应用外调起的合法<code>URL</code>都会带有一个<code>token</code>，在本地会对<code>token</code>进行校验。这种方式的优势在于，没有网络请求的限制和延时。</p>
+<h3 id="6-3-3-代理方法"><a href="#6-3-3-代理方法" class="headerlink" title="6.3.3 代理方法"></a>6.3.3 代理方法</h3><p>在项目中经常会用到代理模式传值，代理模式在<code>iOS</code>中主要分为三部分，协议、代理方、委托方三部分。</p>
+<img src="https://p1-jj.byteimg.com/tos-cn-i-t2oaga2asx/gold-user-assets/2019/6/22/16b7f27d5777af1f~tplv-t2oaga2asx-watermark.awebp" alt="代理设计模式" style="zoom:92%;" />
+
+<p>但如果使用组件化架构的话，会涉及到组件与组件间的代理传值，代理方需要设置为委托方的<code>delegate</code>，但组件间是不可以直接产生耦合的。对于这种跨组件的代理情况，我们直接将代理方的对象通过<code>MGJRouter</code>以参数的形式传给另一个组件，在另一个组件中进行代理设置。</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">HomeViewController *homeVC = [[HomeViewController alloc] init];</span><br><span class="line"><span class="built_in">NSDictionary</span> *params = @&#123;<span class="built_in">CTBUserCenterLoginDelegateKey</span> : homeVC&#125;;</span><br><span class="line">[MGJRouter openURL:<span class="string">@&quot;CTB://UserCenter/UserLogin&quot;</span> withUserInfo:params completion:<span class="literal">nil</span>];</span><br><span class="line"></span><br><span class="line">[MGJRouter registerURLPattern:<span class="string">@&quot;CTB://UserCenter/UserLogin&quot;</span> toHandler:^(<span class="built_in">NSDictionary</span> *routerParameters) &#123;</span><br><span class="line">    <span class="built_in">UIViewController</span> *homeVC = routerParameters[<span class="built_in">CTBUserCenterLoginDelegateKey</span>];</span><br><span class="line">    LoginViewController *loginVC = [[LoginViewController alloc] init];</span><br><span class="line">    loginVC.delegate = homeVC;</span><br><span class="line">&#125;];</span><br></pre></td></tr></table></figure>
+
+<p>协议的定义放在委托方组件的<code>PublicHeader.h</code>中，代理方组件只引用这个<code>PublicHeader.h</code>文件，不耦合委托方内部代码。为了避免定义的代理方法中出现耦合的情况，方法中不能出现和组件内部业务有关的对象，只能传递系统的类。如果涉及到交互的情况，则通过协议方法的返回值进行。</p>
+<h3 id="6-3-4-组件调用传参"><a href="#6-3-4-组件调用传参" class="headerlink" title="6.3.4 组件调用传参"></a>6.3.4 组件调用传参</h3><p><code>MGJRouter</code>可以在<code>openURL:</code>时传入一个<code>NSDictionary</code>参数，<strong>在接触<code>RAC</code>之后，我在想是不是可以把<code>NSDictionary</code>参数变为<code>RACSignal</code>参数，直接传一个信号过去</strong>。</p>
+<p>注册<code>MGJRouter</code>：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">RACSignal *signal = [RACSignal createSignal:^RACDisposable *(<span class="keyword">id</span>&lt;RACSubscriber&gt; subscriber) &#123;</span><br><span class="line">    [subscriber sendNext:<span class="string">@&quot;刘小壮&quot;</span>];</span><br><span class="line">    <span class="keyword">return</span> [RACDisposable disposableWithBlock:^&#123;</span><br><span class="line">        <span class="built_in">NSLog</span>(<span class="string">@&quot;disposable&quot;</span>);</span><br><span class="line">    &#125;];</span><br><span class="line">&#125;];</span><br><span class="line"></span><br><span class="line">[MGJRouter registerURLPattern:<span class="string">@&quot;CTB://UserCenter/getUserInfo&quot;</span> withSignal:signal];</span><br></pre></td></tr></table></figure>
+
+<p>调用<code>MGJRouter</code>：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">RACSignal *signal = [MGJRouter openURL:<span class="string">@&quot;CTB://UserCenter/getUserInfo&quot;</span>];</span><br><span class="line">[signal subscribeNext:^(<span class="built_in">NSString</span> *userName) &#123;</span><br><span class="line">    <span class="built_in">NSLog</span>(<span class="string">@&quot;userName %@&quot;</span>, userName);</span><br><span class="line">&#125;];</span><br></pre></td></tr></table></figure>
+
+<p>这种方式是可行的。使用<code>RACSignal</code>方式优点在于，相对于直接传字典过去更加灵活，并且具备<code>RAC</code>的诸多特性。但缺点也不少，信号控制不好乱用的话也很容易挖坑，是否使用还是看团队情况了。</p>
+<h3 id="6-3-5-常量定义"><a href="#6-3-5-常量定义" class="headerlink" title="6.3.5 常量定义"></a>6.3.5 常量定义</h3><p>在项目中经常会定义一些常量，例如通知名、常量字符串等，这些常量一般都和所属组件有很强的关系，不好单独拆出来放到其他组件。但是这些变量数量并不是很多，而且不是每个组件中都有。</p>
+<p>所以，我们将这些变量都声明在<code>PublicHeader.h</code>文件中，其他组件只能引用<code>PublicHeader.h</code>文件，不能引用组件内部业务代码，这样就规避掉了组件间耦合的问题。</p>
+<h2 id="6-4-H5和Native通信"><a href="#6-4-H5和Native通信" class="headerlink" title="6.4 H5和Native通信"></a>6.4 H5和Native通信</h2><p>在项目中经常会用到<code>H5</code>页面，如果能<strong>通过点击<code>H5</code>页面调起原生页面</strong>，这样的话<code>Native</code>和<code>H5</code>的融合会更好。所以我们设计了一套<code>H5</code>和<code>Native</code>交互的方案，这套方案可以使用<code>URLRouter</code>的方式调起原生页面，实现方式也很简单，并且这套方案和<code>H5</code>原本的跳转逻辑并不冲突。</p>
+<p>通过<code>iOS</code>自带<code>UIWebView</code>创建一个<code>H5</code>页面后，<code>H5</code>可以通过调用下面的<code>JS</code>函数和<code>Native</code>通信。调用时可以传入新的<code>URL</code>，这个<code>URL</code>可以设置为<code>URLRouter</code>的<code>URL</code>。</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">window.location.href = <span class="string">&#x27;CTB://UserCenter/UserLogin?userName=lxz&amp;WeChatID=lz2046703959&#x27;</span>;</span><br></pre></td></tr></table></figure>
+
+<p>通过<code>JS</code>刷新<code>H5</code>页面时，会调用下面的代理方法。</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 如果方法返回YES，则会根据URL协议进行跳转。</span></span><br><span class="line">- (<span class="built_in">BOOL</span>)webView:(<span class="built_in">UIWebView</span> *)webView shouldStartLoadWithRequest:(<span class="built_in">NSURLRequest</span> *)request navigationType:(<span class="built_in">UIWebViewNavigationType</span>)navigationType;</span><br></pre></td></tr></table></figure>
+
+<p>跳转时系统会判断通信协议：</p>
+<ul>
+<li>如果是<code>HTTP</code>等标准协议，则会在当前页面进行刷新。</li>
+<li>如果跳转协议在<code>URL Schame</code>中注册，则会通过系统<code>openURL:</code>的方式调用到<code>AppDelegate</code>的系统代理方法中，在代理方法中调用<code>URLRouter</code>，则可以通过<code>H5</code>页面唤起原生页面。</li>
+</ul>
+<h2 id="6-5-AppService"><a href="#6-5-AppService" class="headerlink" title="6.5 AppService"></a>6.5 AppService</h2><p>在应用启动过程中，通常会做一些初始化操作。有些初始化操作是运行程序所需要的，例如崩溃统计、建立服务器的长连接等。或有的组件会对初始化操作有依赖关系，例如网络组件依赖<code>requestToken</code>等。</p>
+<p>对于应用启动时的初始化操作，应该创建一个<code>AppService</code>来统一管理启动操作，将初始化操作都放在里面，包含创建根控制器等。其中有的初始化操作需要尽快执行，有的并不需要立即执行，可以根据不同操作设定优先级，来管理所有初始化操作。</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#import <span class="meta-string">&lt;Foundation/Foundation.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="keyword">typedef</span> <span class="built_in">NS_ENUM</span>(<span class="built_in">NSUInteger</span>, <span class="built_in">CTBAppServicePriority</span>) &#123;</span><br><span class="line">    <span class="built_in">CTBAppServicePriorityLow</span>,</span><br><span class="line">    <span class="built_in">CTBAppServicePriorityDefault</span>,</span><br><span class="line">    <span class="built_in">CTBAppServicePriorityHigh</span>,</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">@interface</span> <span class="title">CTBAppService</span> : <span class="title">NSObject</span></span></span><br><span class="line">+ (<span class="keyword">instancetype</span>)appService;</span><br><span class="line">- (<span class="keyword">void</span>)registerService:(dispatch_block_t)serviceBlock </span><br><span class="line">               priority:(<span class="built_in">CTBAppServicePriority</span>)priority;</span><br><span class="line"><span class="keyword">@end</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="6-6-Model层设计"><a href="#6-6-Model层设计" class="headerlink" title="6.6 Model层设计"></a>6.6 Model层设计</h2><blockquote>
+<p>项目中存在很多的模型定义，那组件化后这些模型应该定义在哪呢？</p>
+</blockquote>
+<p><strong>casatwy</strong>对模型类的观点是去<code>Model</code>化，简单来说就是用字典代替<code>Model</code>存储数据。这对于组件化架构来说，是解决组件之间数据传递的一个很好的方法。但是去<code>Model</code>的方式，会存在大量的字段读取代码，使用起来远没有模型类方便。</p>
+<p>因为模型类是关乎业务的，理论上必须放在业务层也就是业务组件这一层。但是要把模型对象从一个组件中当做参数传递到另一个组件中，<strong>模型类放在调用方和被调方的哪个组件都不太合适</strong>，而且有可能不只两个组件使用到这个模型对象。这样的话在其他组件使用模型对象，<strong>必然会造成引用和耦合</strong>。</p>
+<p>如果在用到这个模型对象的所有组件中，都分别维护一份相同的模型类，或者各自维护不同结构的模型类，这样之后业务发生改变模型类就会很麻烦，这是不可取的。</p>
+<h3 id="设计方案"><a href="#设计方案" class="headerlink" title="设计方案"></a>设计方案</h3><blockquote>
+<p>如果将所有模型类单独拉出来，定义一个模型组件呢？</p>
+</blockquote>
+<p><strong>这个看起来比较可行，将这个定义模型的组件下沉到基础层，模型组件不包含业务，只声明模型对象的类。</strong> 如果将原来各个组件的模型类定义都拉出来，单独放在一个组件中，可以将原有各组件的<code>Model</code>层变得很轻量，这样对整个项目架构来说也是有好处的。</p>
+<ul>
+<li>在通过<code>Router</code>进行组件间调用时，通过字典进行传值，这种方式比较灵活。</li>
+<li>在组件内部使用<code>Model</code>层时，还是用模型组件中定义的<code>Model</code>类。<code>Model</code>层建议还是用<code>Model</code>对象的形式比较方便，不建议整体使用去<code>Model</code>化的设计。</li>
+<li>在接收到其他组件传递过来的字典参数时，可以通过<code>Model</code>类提供的初始化方法，或其他转<code>Model</code>框架将字典转为<code>Model</code>对象。</li>
+</ul>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">@interface</span> <span class="title">CTBStoreWelfareListModel</span> : <span class="title">NSObject</span></span></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * 自定义初始化方法</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line">- (<span class="keyword">instancetype</span>)initWithDict:(<span class="built_in">NSDictionary</span> *)dict;</span><br><span class="line"><span class="keyword">@end</span></span><br></pre></td></tr></table></figure>
+
+<p>我公司持久化方案用的是<code>CoreData</code>，所有模型的定义都在<code>CoreData</code>组件中，则不需要再单独创建一个模型组件。</p>
+<h2 id="6-7-动态化构想"><a href="#6-7-动态化构想" class="headerlink" title="6.7 动态化构想"></a>6.7 动态化构想</h2><p>我公司项目是一个常规的地图类项目，首页和百度、高德等主流地图导航<code>App</code>一样，有很多添加在地图上的控件。有的版本会添加控件上去，而有的版本会删除控件，与之对应的功能也会被隐藏。</p>
+<p>所以，有次和组里小伙伴们开会的时候就在考虑， <strong>能不能在服务器下发代码对首页进行布局！</strong> 这样就可以对首页进行动态布局，例如有活动的时候在指定时间显示某个控件，这样可以避免<code>App Store</code>审核慢的问题。又或者线上某个模块出现问题，可以紧急下架出问题的模块。</p>
+<p>对于这个问题，我们设计了一套动态配置方案，这套方案可以对整个<code>App</code>进行配置。</p>
+<h3 id="配置表设计"><a href="#配置表设计" class="headerlink" title="配置表设计"></a>配置表设计</h3><p>对于动态配置的问题，我们简单设计了一个配置表，初期打算在首页上先进行试水，以后可能会布置到更多的页面上。这样应用程序各模块的入口，都可以通过配置表来控制，并且通过<code>Router</code>控制页面间跳转，灵活性非常大。</p>
+<p>在第一次安装程序时使用内置的配置表，之后每次都用服务器来替换本地的配置表，这样就可以实现动态配置应用。下面是一个简单设计的配置数据，<code>JSON</code>中配置的是首页的配置信息，用来模拟服务器下发的数据，真正服务器下发的字段会比这个多很多。</p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">    <span class="attr">&quot;status&quot;</span>: <span class="number">200</span>,</span><br><span class="line">    <span class="attr">&quot;viewList&quot;</span>: [</span><br><span class="line">        &#123;</span><br><span class="line">            <span class="attr">&quot;className&quot;</span>: <span class="string">&quot;UIButton&quot;</span>,</span><br><span class="line">            <span class="attr">&quot;frame&quot;</span>: &#123;</span><br><span class="line">                <span class="attr">&quot;originX&quot;</span>: <span class="number">10</span>,</span><br><span class="line">                <span class="attr">&quot;originY&quot;</span>: <span class="number">10</span>,</span><br><span class="line">                <span class="attr">&quot;sizeWidth&quot;</span>: <span class="number">50</span>,</span><br><span class="line">                <span class="attr">&quot;sizeHeight&quot;</span>: <span class="number">30</span></span><br><span class="line">            &#125;,</span><br><span class="line">            <span class="attr">&quot;normalImageURL&quot;</span>: <span class="string">&quot;http://image/normal.com&quot;</span>,</span><br><span class="line">            <span class="attr">&quot;highlightedImageURL&quot;</span>: <span class="string">&quot;http://image/highlighted.com&quot;</span>,</span><br><span class="line">            <span class="attr">&quot;normalText&quot;</span>: <span class="string">&quot;text&quot;</span>,</span><br><span class="line">            <span class="attr">&quot;textColor&quot;</span>: <span class="string">&quot;#FFFFFF&quot;</span>,</span><br><span class="line">            <span class="attr">&quot;routerURL&quot;</span>: <span class="string">&quot;CTB://search/***&quot;</span></span><br><span class="line">        &#125;</span><br><span class="line">    ]</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>对于服务器返回的数据，我们会创建一套解析器，这个解析器用来将<code>JSON</code>解析并“转换”为标准的<code>UIKit</code>控件。<strong>点击后的事件都通过<code>Router</code>进行跳转，所以首页的灵活性和<code>Router</code>的使用程度成正比</strong>。</p>
+<p>这套方案类似于<code>React Native</code>的方案，从服务器下发页面展示效果，但没有<code>React Native</code>功能那么全。相对而言是一个轻量级的配置方案，主要用于页面配置。</p>
+<h3 id="资源动态配置"><a href="#资源动态配置" class="headerlink" title="资源动态配置"></a>资源动态配置</h3><p>除了页面的配置之外，我们发现地图类<code>App</code>一般都存在<code>ipa</code>过大的问题，这样在下载时很消耗流量以及时间。所以我们就在想能不能把资源也做到动态配置，在用户运行程序的时候再加载资源文件包。</p>
+<p>我们想通过配置表的方式，将图片资源文件都放到服务器上，图片的<code>URL</code>也随配置表一起从服务器获取。在使用时请求图片并缓存到本地，成为真正的网络<code>APP</code>。在此基础上设计缓存机制，定期清理本地的图片缓存，减少用户磁盘占用。</p>
+<h1 id="七、滴滴组件化架构"><a href="#七、滴滴组件化架构" class="headerlink" title="七、滴滴组件化架构"></a>七、滴滴组件化架构</h1><p>之前看过滴滴<code>iOS</code>负责人李贤辉的<a target="_blank" rel="noopener" href="https://mp.weixin.qq.com/s?__biz=MzUxMzcxMzE5Ng==&mid=2247488503&idx=1&sn=2c9a82593ebb06533f484f77035c4550&source=41#wechat_redirect">滴滴出行iOS客户端架构演进之路</a>，分享的是滴滴<code>iOS</code>客户端的架构发展历程，下面简单总结一下。</p>
+<h2 id="7-1-发展历程"><a href="#7-1-发展历程" class="headerlink" title="7.1 发展历程"></a>7.1 发展历程</h2><p>滴滴在最开始的时候架构较混乱。然后在<strong>2.0</strong>时期重构为<code>MVC</code>架构，使项目划分更加清晰。在<strong>3.0</strong>时期上线了新的业务线，<strong>这时开始采用游戏开发中的状态机机制</strong>，暂时可以满足现有业务。</p>
+<p>然而在后期不断上线顺风车、代驾、巴士等多条业务线的情况下，<strong>现有架构变得非常臃肿</strong>，<strong>代码耦合严重</strong>。从而在2015年开始了代号为<code>“The One”</code>的方案，这套方案就是滴滴的组件化方案。</p>
+<h2 id="7-2-架构设计"><a href="#7-2-架构设计" class="headerlink" title="7.2 架构设计"></a>7.2 架构设计</h2><p>滴滴的组件化方案，和蘑菇街方案类似，将项目拆分为各个组件，通过<code>CocoaPods</code>来集成和管理各个组件。<strong>项目被拆分为业务部分和技术部分</strong>，业务部分包括专车、拼车、巴士等组件，使用一个<code>pods</code>管理。技术部分则分为登录分享、网络、缓存这样的一些基础组件，分别使用不同的<code>pods</code>管理。</p>
+<p>组件间通信通过<code>ONERouter</code>中间件进行通信，<code>ONERouter</code>类似于<code>MGJRouter</code>，<strong>担负起协调和调用各个组件的作用</strong>。组件间通信通过<code>OpenURL</code>方法，来进行对应的调用。<code>ONERouter</code>内部保存一份<code>Class-URL</code>的映射表，通过<code>URL</code>找到<code>Class</code>并发起调用，<code>Class</code>的注册放在<code>+load</code>方法中进行。</p>
+<p><strong>滴滴在业务组件内部使用<code>MVVM+MVCS</code>混合的架构，两种架构都是<code>MVC</code>的衍生版本</strong>。其中<code>MVCS</code>中的<code>Store</code>负责数据相关逻辑，例如订单状态、地址管理等数据处理。通过<code>MVVM</code>中的<code>VM</code>给控制器瘦身，最后<code>Controller</code>的代码量就很少了。</p>
+<h2 id="7-3-滴滴首页分析"><a href="#7-3-滴滴首页分析" class="headerlink" title="7.3 滴滴首页分析"></a>7.3 滴滴首页分析</h2><p>滴滴文章中说道<strong>首页只能有一个地图实例</strong>，这在很多地图导航相关应用中都是这样做的。滴滴首页主控制器持有导航栏和地图，每个业务线首页控制器都添加在主控制器上，并且业务线控制器背景都设置为透明，<strong>将透明部分响应事件传递到下面的地图中</strong>，只响应属于自己的响应事件。</p>
+<p>由主控制器来切换各个业务线首页，<strong>切换页面后根据不同的业务线来更新地图数据</strong>。</p>
+<h1 id="八、淘宝组件化架构"><a href="#八、淘宝组件化架构" class="headerlink" title="八、淘宝组件化架构"></a>八、淘宝组件化架构</h1><p>本章节源自于宗心在阿里技术沙龙上的一次分享：<a target="_blank" rel="noopener" href="https://developer.aliyun.com/article/129">手机淘宝客户端架构探索实践</a></p>
+<h2 id="8-1-架构发展"><a href="#8-1-架构发展" class="headerlink" title="8.1 架构发展"></a>8.1 架构发展</h2><p>淘宝<code>iOS</code>客户端初期是单工程的普通项目，但随着业务的飞速发展，现有架构并不能承载越来越多的业务需求，导致代码间耦合很严重。后期开发团队对其不断进行重构，将项目重构为组件化架构，淘宝<code>iOS</code>和<code>Android</code>两个平台，除了某个平台特有的一些特性或某些方案不便实施之外，大体架构都是差不多的。</p>
+<p>发展历程</p>
+<ol>
+<li>刚开始是普通的单工程项目，以传统的<code>MVC</code>架构进行开发。随着业务不断的增加，导致项目非常臃肿、耦合严重。</li>
+<li><strong>2013</strong>年淘宝开启 <strong>“all in 无线”计划</strong> ，计划将淘宝变为一个大的平台，将阿里系大多数业务都集成到这个平台上，<strong>造成了业务的大爆发</strong>。 淘宝开始实行插件化架构，将每个业务模块划分为一个子工程，<strong>将组件以<code>framework</code>二方库的形式集成到主工程</strong>。但这种方式并没有做到真正的拆分，还是在一个工程中使用<code>git</code>进行<code>merge</code>，这样还会造成合并冲突、不好回退等问题。</li>
+<li><strong>迎来淘宝移动端有史以来最大的重构</strong>，将其重构为组件化架构。将每个模块当做一个组件，每个组件都是一个单独的项目，并且将组件打包成<code>framework</code>。主工程通过<code>podfile</code>集成所有组件的<code>framework</code>，实现业务之间真正的隔离，通过<code>CocoaPods</code>实现组件化架构。</li>
+</ol>
+<h2 id="8-2-架构优势"><a href="#8-2-架构优势" class="headerlink" title="8.2 架构优势"></a>8.2 架构优势</h2><p>淘宝是使用<code>git</code>来做源码管理的，<strong>在插件化架构时需要尽可能避免<code>merge</code>操作</strong>，否则在大团队中协作成本是很大的。而使用<code>CocoaPods</code>进行组件化开发，则避免了这个问题。</p>
+<p>在<code>CocoaPods</code>中可以通过<code>podfile</code>很好的配置各个组件，包括组件的增加和删除，<strong>以及控制某个组件的版本</strong>。使用<code>CocoaPods</code>的原因，很大程度是为了解决大型项目中，代码管理工具<code>merge</code>代码导致的冲突。并且可以通过配置<code>podfile</code>文件，轻松配置项目。</p>
+<p>每个组件工程有两个<code>target</code>，<strong>一个负责编译当前组件和运行调试，另一个负责打包 framework</strong>。先在组件工程做测试，测试完成后再集成到主工程中集成测试。</p>
+<p><strong>每个组件都是一个独立<code>app</code><strong>，可以独立开发、测试，使得业务组件更加独立，</strong>所有组件可以并行开发</strong>。下层为上层提供能满足需求的底层库，保证上层业务层可以正常开发，并将底层库封装成<code>framework</code>集成到主工程中。</p>
+<p>使用<code>CocoaPods</code>进行组件集成的好处在于，在集成测试自己组件时，<strong>可以直接在本地主工程中，通过<code>podfile</code>使用当前组件源码</strong>，可以直接进行集成测试，不需要提交到服务器仓库。</p>
+<h2 id="8-3-淘宝四层架构"><a href="#8-3-淘宝四层架构" class="headerlink" title="8.3 淘宝四层架构"></a>8.3 淘宝四层架构</h2><img src="https://p1-jj.byteimg.com/tos-cn-i-t2oaga2asx/gold-user-assets/2019/6/22/16b7f27d576bd77f~tplv-t2oaga2asx-watermark.awebp" style="zoom:70%;" />
+
+<p><strong>淘宝架构的核心思想是一切皆组件</strong>，将工程中所有代码都抽象为组件。</p>
+<p><strong>淘宝架构主要分为四层</strong>，最上层是<strong>组件<code>Bundle</code></strong>(业务组件)，依次往下是<strong>容器</strong>(核心层)，<strong>中间件<code>Bundle</code></strong>(功能封装)，<strong>基础库<code>Bundle</code></strong>(底层库)。容器层为整个架构的核心，负责组件间的调度和消息派发。</p>
+<h2 id="8-4-总线设计"><a href="#8-4-总线设计" class="headerlink" title="8.4 总线设计"></a>8.4 总线设计</h2><p>总线设计：<strong>URL路由+服务+消息</strong>。统一所有组件的通信标准，各个业务间通过总线进行通信。</p>
+<img src="https://p1-jj.byteimg.com/tos-cn-i-t2oaga2asx/gold-user-assets/2019/6/22/16b7f27d5882ec38~tplv-t2oaga2asx-watermark.awebp" style="zoom:70%;" />
+
+<h3 id="8-4-1-URL总线"><a href="#8-4-1-URL总线" class="headerlink" title="8.4.1 URL总线"></a>8.4.1 URL总线</h3><p>通过<code>URL</code>总线对三端进行了统一，一个<code>URL</code>可以调起<code>iOS</code>、<code>Android</code>、前端三个平台，产品运营和服务器只需要下发一套<code>URL</code>即可调用对应的组件。</p>
+<p><code>URL</code>路由可以发起请求也可以接受返回值，和<code>MGJRouter</code>差不多。<code>URL</code>路由请求可以被解析就直接拿来使用，<strong>如果不能被解析就跳转<code>H5</code>页面</strong>。这样就完成了一个<strong>对不存在组件调用的兼容</strong>，使用户手中比较老的版本依然可以显示新的组件。</p>
+<p>服务提供一些公共服务，由服务方组件负责实现，通过<code>Protocol</code>进行调用。</p>
+<h3 id="8-4-2-消息总线"><a href="#8-4-2-消息总线" class="headerlink" title="8.4.2 消息总线"></a>8.4.2 消息总线</h3><p>应用通过消息总线进行事件的中心分发，类似于<code>iOS</code>的通知机制。例如客户端前后台切换，则可以通过消息总线分发到接收消息的组件。因为通过<code>URLRouter</code>只是一对一的进行消息派发和调度，如果多次注册同一个<code>URL</code>，则会被覆盖掉。</p>
+<h2 id="8-5-Bundle-App"><a href="#8-5-Bundle-App" class="headerlink" title="8.5 Bundle App"></a>8.5 Bundle App</h2><img src="https://p1-jj.byteimg.com/tos-cn-i-t2oaga2asx/gold-user-assets/2019/6/22/16b7f27d626abf68~tplv-t2oaga2asx-watermark.awebp" style="zoom:70%;" />
+
+<p>在组件化架构的基础上，淘宝提出<code>Bundle App</code>的概念，可以通过已有组件，<strong>进行简单配置后就可以组成一个新的<code>app</code>出来</strong>。解决了多个应用业务复用的问题，防止重复开发同一业务或功能。</p>
+<h1 id="九、总结"><a href="#九、总结" class="headerlink" title="九、总结"></a>九、总结</h1><h2 id="9-1-留个小思考"><a href="#9-1-留个小思考" class="headerlink" title="9.1 留个小思考"></a>9.1 留个小思考</h2><p>下面留个小思考，<strong>把下面字符串复制到微信输入框随便发给一个好友</strong>，然后点击下面链接<strong>大概也能猜到微信的组件化方案</strong>。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">weixin:&#x2F;&#x2F;dl&#x2F;profile</span><br></pre></td></tr></table></figure>
+
+<h2 id="9-2-Demo"><a href="#9-2-Demo" class="headerlink" title="9.2 Demo"></a>9.2 Demo</h2><ul>
+<li><a target="_blank" rel="noopener" href="https://github.com/mogujie/MGJRouter">蘑菇街-MGJRouter</a></li>
+<li><a target="_blank" rel="noopener" href="https://github.com/casatwy/CTMediator">casatwy-CTMediator</a></li>
+<li><a target="_blank" rel="noopener" href="https://github.com/DeveloperErenLiu/ComponentArchitecture">本文组件化架构方案 集成Demo</a>（用<a target="_blank" rel="noopener" href="https://coding.net/">Coding</a>的服务器模拟公司私有服务器，直接拿<code>MGJRouter</code>来当<code>Demo</code>工程中的<code>Router</code>）</li>
+</ul>
+
+    </article>
+    <!-- license  -->
+    
+        <div class="license-wrapper">
+            <p>Author：<a href="https://tenloy.github.io">Tenloy</a>
+            <p>原文链接：<a href="https://tenloy.github.io/2021/04/29/iOS-ComRouter.html">https://tenloy.github.io/2021/04/29/iOS-ComRouter.html</a>
+            <p>发表日期：2021.04.29 , 10:09 AM</p>
+            <p>更新日期：2024.04.07 , 7:24 PM</p>
+            <p>版权声明：本文采用<a rel="license noopener" target="_blank" href="http://creativecommons.org/licenses/by-nc/4.0/">Crative Commons 4.0 许可协议</a>进行许可</p>
+        </div>
+    
+    <!-- paginator  -->
+    <ul class="post-paginator">
+        <li class="next">
+            
+                <div class="nextSlogan">Next Post</div>
+                <a href= "/2021/05/03/iOS-private-pod.html" title= "私有Pod库部署">
+                    <div class="nextTitle">私有Pod库部署</div>
+                </a>
+            
+        </li>
+        <li class="previous">
+            
+                <div class="prevSlogan">Previous Post</div>
+                <a href= "/2021/04/27/iOS-CI.html" title= "iOS的持续集成">
+                    <div class="prevTitle">iOS的持续集成</div>
+                </a>
+            
+        </li>
+    </ul>
+    <!-- 评论插件 -->
+    <!-- 来必力City版安装代码 -->
+
+<!-- City版安装代码已完成 -->
+    
+    
+    <!-- gitalk评论 -->
+
+    <!-- utteranc评论 -->
+
+    <!-- partial('_partial/comment/changyan') -->
+    <!--PC版-->
+
+
+    
+    
+
+    <!-- 评论 -->
+</main>
+            <!-- profile -->
+            
+        </div>
+        <footer class="footer footer-unloaded">
+    <!-- social  -->
+    
+    <div class="social">
+        
+    
+        
+            
+                <a href="mailto:luotengoto@163.com" class="iconfont-archer email" title=email ></a>
+            
+        
+    
+        
+            
+                <a href="//github.com/Tenloy" class="iconfont-archer github" target="_blank" title=github></a>
+            
+        
+    
+        
+            
+                <a href="https://www.jianshu.com/u/8db1bc12db9f" class="iconfont-jian jianshu" target="_blank" title=jianshu></a>
+            
+        
+    
+        
+            
+                <a href="/atom.xml" class="iconfont-archer rss" target="_blank" title=rss></a>
+            
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+
+    </div>
+    
+    <!-- powered by Hexo  -->
+    <div class="copyright">
+        <span id="hexo-power">Powered by <a href="https://hexo.io/" target="_blank">Hexo</a></span><span class="iconfont-archer power">&#xe635;</span><span id="theme-info">theme <a href="https://github.com/fi3ework/hexo-theme-archer" target="_blank">Archer</a></span>
+    </div>
+    <!-- 不蒜子  -->
+    
+    <div class="busuanzi-container">
+    
+     
+    <span id="busuanzi_container_site_pv">PV: <span id="busuanzi_value_site_pv"></span> :)</span>
+    
+    </div>
+    
+</footer>
+    </div>
+    <!-- toc -->
+    
+    <div class="toc-wrapper" style=
+    
+
+
+
+
+
+
+
+top:40vh;
+
+    >
+        <div class="toc-catalog">
+            <span class="iconfont-archer catalog-icon">&#xe613;</span><span>CATALOG</span>
+        </div>
+        <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%B8%80%E3%80%81%E7%BB%84%E4%BB%B6%E5%8C%96%E6%9E%B6%E6%9E%84%E7%9A%84%E7%94%B1%E6%9D%A5"><span class="toc-text">一、组件化架构的由来</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-1-%E5%8E%9F%E5%9B%A0"><span class="toc-text">1.1 原因</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#1-2-%E6%9E%B6%E6%9E%84%E6%94%B9%E8%BF%9B"><span class="toc-text">1.2 架构改进</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%BA%8C%E3%80%81%E8%98%91%E8%8F%87%E8%A1%97%E7%BB%84%E4%BB%B6%E5%8C%96%E6%9E%B6%E6%9E%84%E6%96%B9%E6%A1%88"><span class="toc-text">二、蘑菇街组件化架构方案</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#2-1-MGJRouter%E6%96%B9%E6%A1%88"><span class="toc-text">2.1 MGJRouter方案</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#2-1-1-%E6%9E%B6%E6%9E%84%E8%AE%BE%E8%AE%A1"><span class="toc-text">2.1.1 架构设计</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-1-2-%E7%BB%84%E4%BB%B6%E8%B0%83%E7%94%A8%E5%8F%8A%E4%BC%A0%E5%8F%82"><span class="toc-text">2.1.2 组件调用及传参</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-1-3-%E7%BB%84%E4%BB%B6%E8%B0%83%E7%94%A8%E6%95%B0%E6%8D%AE%E5%9B%9E%E8%BF%94"><span class="toc-text">2.1.3 组件调用数据回返</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-1-4-%E7%9F%AD%E9%93%BE%E7%AE%A1%E7%90%86"><span class="toc-text">2.1.4 短链管理</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-1-5-%E5%9F%BA%E7%A1%80%E7%BB%84%E4%BB%B6"><span class="toc-text">2.1.5 基础组件</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-2-Protocol%E6%96%B9%E6%A1%88"><span class="toc-text">2.2 Protocol方案</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#2-2-1-%E6%95%B4%E4%BD%93%E6%9E%B6%E6%9E%84"><span class="toc-text">2.2.1 整体架构</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-2-2-%E7%A4%BA%E4%BE%8B%E4%BB%A3%E7%A0%81"><span class="toc-text">2.2.2 示例代码</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-3-%E8%98%91%E8%8F%87%E8%A1%97%E7%9A%84%E7%BB%93%E5%90%88%E4%BD%BF%E7%94%A8"><span class="toc-text">2.3 蘑菇街的结合使用</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-4-%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86"><span class="toc-text">2.4 内存管理</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%B8%89%E3%80%81casatwy%E7%BB%84%E4%BB%B6%E5%8C%96%E6%9E%B6%E6%9E%84%E6%96%B9%E6%A1%88"><span class="toc-text">三、casatwy组件化架构方案</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#3-1-%E6%95%B4%E4%BD%93%E6%9E%B6%E6%9E%84"><span class="toc-text">3.1 整体架构</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-2-%E6%9E%B6%E6%9E%84%E8%AE%BE%E8%AE%A1%E6%80%9D%E8%B7%AF"><span class="toc-text">3.2 架构设计思路</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-3-%E6%9E%B6%E6%9E%84%E5%88%86%E6%9E%90"><span class="toc-text">3.3 架构分析</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-4-%E5%91%BD%E5%90%8D%E8%A7%84%E8%8C%83"><span class="toc-text">3.4 命名规范</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%9B%9B%E3%80%81%E5%AF%B9%E6%AF%94%E5%88%86%E6%9E%90"><span class="toc-text">四、对比分析</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#Protocol"><span class="toc-text">Protocol</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#CTMediator"><span class="toc-text">CTMediator</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#MGJRouter"><span class="toc-text">MGJRouter</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%8E%A5%E5%8F%A3%E7%B1%BB"><span class="toc-text">接口类</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%BA%94%E3%80%81%E7%BB%84%E4%BB%B6%E5%8C%96%E6%9E%B6%E6%9E%84%E8%AE%BE%E8%AE%A1"><span class="toc-text">五、组件化架构设计</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#5-1-%E6%95%B4%E4%BD%93%E6%9E%B6%E6%9E%84"><span class="toc-text">5.1 整体架构</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#5-2-%E7%BB%84%E4%BB%B6%E9%9B%86%E6%88%90"><span class="toc-text">5.2 组件集成</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#5-2-1-cocoapods%E7%AE%A1%E7%90%86"><span class="toc-text">5.2.1 cocoapods管理</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-2-2-%E9%9B%86%E6%88%90%E6%96%B9%E5%BC%8F"><span class="toc-text">5.2.2 集成方式</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-2-3-%E8%B5%84%E6%BA%90%E6%96%87%E4%BB%B6"><span class="toc-text">5.2.3 资源文件</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#5-3-%E4%BC%98%E7%82%B9"><span class="toc-text">5.3 优点</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#5-4-%E6%9E%B6%E6%9E%84%E5%88%86%E6%9E%90"><span class="toc-text">5.4 架构分析</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#5-5-%E6%B3%A8%E6%84%8F%E7%82%B9"><span class="toc-text">5.5 注意点</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%85%AD%E3%80%81%E6%88%91%E5%85%AC%E5%8F%B8%E6%9E%B6%E6%9E%84"><span class="toc-text">六、我公司架构</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#6-1-%E6%9E%B6%E6%9E%84%E8%AE%BE%E8%AE%A1"><span class="toc-text">6.1 架构设计</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#6-2-%E5%88%86%E5%B1%82%E6%9E%B6%E6%9E%84"><span class="toc-text">6.2 分层架构</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#6-2-1-%E5%B1%82%E6%AC%A1%E7%9A%84%E8%AE%BE%E8%AE%A1"><span class="toc-text">6.2.1 层次的设计</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-2-2-%E8%81%8C%E8%B4%A3%E5%88%92%E5%88%86"><span class="toc-text">6.2.2 职责划分</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-2-3-%E9%9B%86%E6%88%90%E6%96%B9%E5%BC%8F"><span class="toc-text">6.2.3 集成方式</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#6-3-%E7%BB%84%E4%BB%B6%E9%97%B4%E9%80%9A%E4%BF%A1"><span class="toc-text">6.3 组件间通信</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#6-3-1-%E8%B7%AF%E7%94%B1%E8%A1%A8"><span class="toc-text">6.3.1 路由表</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-3-2-%E8%B7%AF%E7%94%B1%E5%B1%82%E5%AE%89%E5%85%A8"><span class="toc-text">6.3.2 路由层安全</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-3-3-%E4%BB%A3%E7%90%86%E6%96%B9%E6%B3%95"><span class="toc-text">6.3.3 代理方法</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-3-4-%E7%BB%84%E4%BB%B6%E8%B0%83%E7%94%A8%E4%BC%A0%E5%8F%82"><span class="toc-text">6.3.4 组件调用传参</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-3-5-%E5%B8%B8%E9%87%8F%E5%AE%9A%E4%B9%89"><span class="toc-text">6.3.5 常量定义</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#6-4-H5%E5%92%8CNative%E9%80%9A%E4%BF%A1"><span class="toc-text">6.4 H5和Native通信</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#6-5-AppService"><span class="toc-text">6.5 AppService</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#6-6-Model%E5%B1%82%E8%AE%BE%E8%AE%A1"><span class="toc-text">6.6 Model层设计</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%AE%BE%E8%AE%A1%E6%96%B9%E6%A1%88"><span class="toc-text">设计方案</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#6-7-%E5%8A%A8%E6%80%81%E5%8C%96%E6%9E%84%E6%83%B3"><span class="toc-text">6.7 动态化构想</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%85%8D%E7%BD%AE%E8%A1%A8%E8%AE%BE%E8%AE%A1"><span class="toc-text">配置表设计</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%B5%84%E6%BA%90%E5%8A%A8%E6%80%81%E9%85%8D%E7%BD%AE"><span class="toc-text">资源动态配置</span></a></li></ol></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%B8%83%E3%80%81%E6%BB%B4%E6%BB%B4%E7%BB%84%E4%BB%B6%E5%8C%96%E6%9E%B6%E6%9E%84"><span class="toc-text">七、滴滴组件化架构</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#7-1-%E5%8F%91%E5%B1%95%E5%8E%86%E7%A8%8B"><span class="toc-text">7.1 发展历程</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#7-2-%E6%9E%B6%E6%9E%84%E8%AE%BE%E8%AE%A1"><span class="toc-text">7.2 架构设计</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#7-3-%E6%BB%B4%E6%BB%B4%E9%A6%96%E9%A1%B5%E5%88%86%E6%9E%90"><span class="toc-text">7.3 滴滴首页分析</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%85%AB%E3%80%81%E6%B7%98%E5%AE%9D%E7%BB%84%E4%BB%B6%E5%8C%96%E6%9E%B6%E6%9E%84"><span class="toc-text">八、淘宝组件化架构</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#8-1-%E6%9E%B6%E6%9E%84%E5%8F%91%E5%B1%95"><span class="toc-text">8.1 架构发展</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#8-2-%E6%9E%B6%E6%9E%84%E4%BC%98%E5%8A%BF"><span class="toc-text">8.2 架构优势</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#8-3-%E6%B7%98%E5%AE%9D%E5%9B%9B%E5%B1%82%E6%9E%B6%E6%9E%84"><span class="toc-text">8.3 淘宝四层架构</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#8-4-%E6%80%BB%E7%BA%BF%E8%AE%BE%E8%AE%A1"><span class="toc-text">8.4 总线设计</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#8-4-1-URL%E6%80%BB%E7%BA%BF"><span class="toc-text">8.4.1 URL总线</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#8-4-2-%E6%B6%88%E6%81%AF%E6%80%BB%E7%BA%BF"><span class="toc-text">8.4.2 消息总线</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#8-5-Bundle-App"><span class="toc-text">8.5 Bundle App</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%B9%9D%E3%80%81%E6%80%BB%E7%BB%93"><span class="toc-text">九、总结</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#9-1-%E7%95%99%E4%B8%AA%E5%B0%8F%E6%80%9D%E8%80%83"><span class="toc-text">9.1 留个小思考</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#9-2-Demo"><span class="toc-text">9.2 Demo</span></a></li></ol></li></ol>
+    </div>
+    
+    <div class="back-top iconfont-archer">&#xe639;</div>
+    <div class="sidebar sidebar-hide">
+    <ul class="sidebar-tabs sidebar-tabs-active-0">
+        <li class="sidebar-tab-categories"><span class="iconfont-archer">&#xe666;</span><span class="tab-name">Cate</span></li>
+        <li class="sidebar-tab-archives"><span class="iconfont-archer">&#xe67d;</span><span class="tab-name">Archive</span></li>
+        <li class="sidebar-tab-tags"><span class="iconfont-archer">&#xe61b;</span><span class="tab-name">Tag</span></li>
+    </ul>
+    <div class="sidebar-content sidebar-content-show-archive">
+        <div class="sidebar-panel-categories">
+    <div class="sidebar-categories-name">
+    
+    
+    
+    
+    
+        <span class="sidebar-category-name" data-categories="数据结构与算法"><span class="iconfont-archer">&#xe60a;</span>数据结构与算法</span>
+    
+        <span class="sidebar-category-name" data-categories="计算机组成原理"><span class="iconfont-archer">&#xe60a;</span>计算机组成原理</span>
+    
+        <span class="sidebar-category-name" data-categories="计算机网络"><span class="iconfont-archer">&#xe60a;</span>计算机网络</span>
+    
+        <span class="sidebar-category-name" data-categories="汇编语言"><span class="iconfont-archer">&#xe60a;</span>汇编语言</span>
+    
+        <span class="sidebar-category-name" data-categories="数据的存储与传输"><span class="iconfont-archer">&#xe60a;</span>数据的存储与传输</span>
+    
+        <span class="sidebar-category-name" data-categories="操作系统"><span class="iconfont-archer">&#xe60a;</span>操作系统</span>
+    
+        <span class="sidebar-category-name" data-categories="互联网标准RFC"><span class="iconfont-archer">&#xe60a;</span>互联网标准RFC</span>
+    
+        <span class="sidebar-category-name" data-categories="编译链接与装载"><span class="iconfont-archer">&#xe60a;</span>编译链接与装载</span>
+    
+        <span class="sidebar-category-name" data-categories="iOS"><span class="iconfont-archer">&#xe60a;</span>iOS</span>
+    
+        <span class="sidebar-category-name" data-categories="架构与设计模式"><span class="iconfont-archer">&#xe60a;</span>架构与设计模式</span>
+    
+        <span class="sidebar-category-name" data-categories="图形处理与渲染"><span class="iconfont-archer">&#xe60a;</span>图形处理与渲染</span>
+    
+        <span class="sidebar-category-name" data-categories="软件工程"><span class="iconfont-archer">&#xe60a;</span>软件工程</span>
+    
+        <span class="sidebar-category-name" data-categories="音视频处理"><span class="iconfont-archer">&#xe60a;</span>音视频处理</span>
+    
+        <span class="sidebar-category-name" data-categories="DSL"><span class="iconfont-archer">&#xe60a;</span>DSL</span>
+    
+        <span class="sidebar-category-name" data-categories="Swift"><span class="iconfont-archer">&#xe60a;</span>Swift</span>
+    
+        <span class="sidebar-category-name" data-categories="Git"><span class="iconfont-archer">&#xe60a;</span>Git</span>
+    
+        <span class="sidebar-category-name" data-categories="Web"><span class="iconfont-archer">&#xe60a;</span>Web</span>
+    
+    </div>
+    <div class="iconfont-archer sidebar-categories-empty">&#xe678;</div>
+    <div class="sidebar-categories-list"></div>
+</div>
+          <div class="sidebar-panel-archives">
+    <!-- 在ejs中将archive按照时间排序 -->
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    <div class="total-and-search">
+        <div class="total-archive">
+        Total : 76
+        </div>
+        <!-- search  -->
+        
+            <div class="site-search popup-trigger tl-side-search"> 
+                <span class="iconfont-jian search-icon">&#xe7fc;搜索</span>
+            </div>
+        
+    </div>
+    
+    <div class="post-archive">
+    
+    
+    
+    
+    <div class="archive-year"> 2022 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/05</span><a class="archive-post-title" href= "/2022/05/05/sqlite.html" >iOS SQLite的使用与优化</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/28</span><a class="archive-post-title" href= "/2022/04/28/mmap.html" >内存映射mmap函数的原理与应用</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/18</span><a class="archive-post-title" href= "/2022/03/18/avfoundation.html" >AVFoundation Programming Guide(译)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/17</span><a class="archive-post-title" href= "/2022/03/17/avframework.html" >iOS音视频库概述</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/09</span><a class="archive-post-title" href= "/2022/02/09/OAuth.html" >[转] OAuth 2.0简述</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/18</span><a class="archive-post-title" href= "/2022/01/18/wkwebview-buges.html" >WKWebView使用过程中遇到的坑</a>
+        </li>
+    
+    
+    
+    
+    
+        </ul>
+    
+    <div class="archive-year"> 2021 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/22</span><a class="archive-post-title" href= "/2021/11/22/bit-calculation.html" >[转] 位运算实现加、减、乘、除运算</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/10</span><a class="archive-post-title" href= "/2021/11/10/git-use.html" >Git的使用总结</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/21</span><a class="archive-post-title" href= "/2021/10/21/dyld-objc.html" >(七) dyld与Objc—_objc_init、map_images、load_images</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/18</span><a class="archive-post-title" href= "/2021/10/18/compile-dynamic-link.html" >(六) Mach-O 文件的动态链接、库、Dyld(含dlopen)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/14</span><a class="archive-post-title" href= "/2021/10/14/compile-vm-asrl.html" >(五) Mach-O 文件之进程(虚拟)地址空间、ASLR</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/10</span><a class="archive-post-title" href= "/2021/10/10/compile-load.html" >(四) Mach-O 文件的装载</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/08</span><a class="archive-post-title" href= "/2021/10/08/compile-static-link.html" >(三) Mach-O 文件的静态链接</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/06</span><a class="archive-post-title" href= "/2021/10/06/compile-macho.html" >(二) Mach-O 文件结构</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/05</span><a class="archive-post-title" href= "/2021/10/05/compile-clang-llvm.html" >(一) Clang/LLVM 介绍、OC 程序的编译过程</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/02</span><a class="archive-post-title" href= "/2021/10/02/makefile.html" >[转] Make 命令的使用与NodeJS案例</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/28</span><a class="archive-post-title" href= "/2021/09/28/architectural-pattern.html" >常见架构模式: MVC、MVP、MVVM、VIPER</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/25</span><a class="archive-post-title" href= "/2021/09/25/design-pattern.html" >常见的设计模式</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/20</span><a class="archive-post-title" href= "/2021/09/20/program-thought.html" >常见的编程范式</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/15</span><a class="archive-post-title" href= "/2021/09/15/graphics-processing-case.html" >图形处理(三) - 图形处理实践案例</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/15</span><a class="archive-post-title" href= "/2021/09/15/graphics-processing.html" >图形处理(二) - 图形与视频处理相关的框架</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/13</span><a class="archive-post-title" href= "/2021/09/13/image-encode-decode.html" >图形处理(一) - 图片的加载与编解码</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/12</span><a class="archive-post-title" href= "/2021/09/12/iOS-Render.html" >[转] iOS离屏渲染原理及优化</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/11</span><a class="archive-post-title" href= "/2021/09/11/core-animation03.html" >Core-Animation(三) - 渲染流程探究及性能分析</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/09</span><a class="archive-post-title" href= "/2021/09/09/core-animation02.html" >Core Animation(二) - 隐式动画、CATransaction与CAAction</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/07</span><a class="archive-post-title" href= "/2021/09/07/core-animation01.html" >Core Animation(一) - UIView与CALayer、布局与绘制</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/05</span><a class="archive-post-title" href= "/2021/09/05/AFN-Analyse.html" >[转] AFN框架实现解析</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/04</span><a class="archive-post-title" href= "/2021/09/04/nrl-session.html" >NSURLSession概述</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/02</span><a class="archive-post-title" href= "/2021/09/02/Log.html" >移动端日志库设计</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/01</span><a class="archive-post-title" href= "/2021/08/01/Crash-Monitor.html" >iOS崩溃监控与分析</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/30</span><a class="archive-post-title" href= "/2021/07/30/Lag-Monitor.html" >iOS卡顿监控</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/29</span><a class="archive-post-title" href= "/2021/07/29/SwiftUI.html" >SwiftUI</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/29</span><a class="archive-post-title" href= "/2021/07/29/Swift-Version-History.html" >Swift版本更新API介绍</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/26</span><a class="archive-post-title" href= "/2021/07/26/RunLoop-Reposted-From-ibireme.html" >[转] 深入理解RunLoop—ibireme</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/25</span><a class="archive-post-title" href= "/2021/07/25/Protocol-Buffer.html" >Protocol Buffer的基本介绍</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/24</span><a class="archive-post-title" href= "/2021/07/24/base64.html" >Base64编码及iOS中的Base64</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/23</span><a class="archive-post-title" href= "/2021/07/23/chinese-encode.html" >[转] 彻底弄懂常见的7种中文字符编码</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/10</span><a class="archive-post-title" href= "/2021/07/10/p-npc-np.html" >P问题、NP问题、NPC、NP-Hard、P=NP?</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/30</span><a class="archive-post-title" href= "/2021/06/30/probability.html" >(六) 概率算法</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/28</span><a class="archive-post-title" href= "/2021/06/28/branch-bound.html" >(五) 分支限界算法</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/26</span><a class="archive-post-title" href= "/2021/06/26/back-track.html" >(四) 回溯法(试探算法)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/24</span><a class="archive-post-title" href= "/2021/06/24/greed.html" >(三) 贪心算法</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/22</span><a class="archive-post-title" href= "/2021/06/22/dynamic-programming.html" >(二) 动态规划算法</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/20</span><a class="archive-post-title" href= "/2021/06/20/divide-and-conquer.html" >(一) 分治算法及减治、变治算法</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/18</span><a class="archive-post-title" href= "/2021/06/18/several-programming.html" >穷举、递推、迭代(辗转法)、递归算法</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/15</span><a class="archive-post-title" href= "/2021/06/15/datastruction-overview.html" >数据结构与算法概述</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/06</span><a class="archive-post-title" href= "/2021/06/06/Web-Module.html" >前端各种模块化方案总结</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/27</span><a class="archive-post-title" href= "/2021/05/27/Fiber.html" >[转] 最通俗的 React Fiber(时间分片)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/27</span><a class="archive-post-title" href= "/2021/05/27/Coroutine.html" >[转] 什么是协程</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/19</span><a class="archive-post-title" href= "/2021/05/19/DSL.html" >[转] 谈谈DSL以及DSL的应用（以CocoaPods 为例）</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/03</span><a class="archive-post-title" href= "/2021/05/03/iOS-private-pod.html" >私有Pod库部署</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/29</span><a class="archive-post-title" href= "/2021/04/29/iOS-ComRouter.html" >[转] iOS的组件化方案</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/27</span><a class="archive-post-title" href= "/2021/04/27/iOS-CI.html" >iOS的持续集成</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/26</span><a class="archive-post-title" href= "/2021/04/26/Containers.html" >常见的容器概念：Linux容器、Docker容器、服务器容器</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/24</span><a class="archive-post-title" href= "/2021/04/24/Dock-Reprinted-from-RuanYIFeng.html" >[转] Docker入门教程</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/20</span><a class="archive-post-title" href= "/2021/04/20/Sync-Async.html" >同步和异步解读及编程中的使用场景</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/17</span><a class="archive-post-title" href= "/2021/04/17/Arm64-Handbook.html" >ARM64指令简易手册</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/16</span><a class="archive-post-title" href= "/2021/04/16/Arm64-Introduce.html" >iOS需要了解的ARM64汇编</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/13</span><a class="archive-post-title" href= "/2021/04/13/Command-Line.html" >CLI Shell、Terminal、脚本(语言)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/10</span><a class="archive-post-title" href= "/2021/04/10/Ins-SysCall-Kernel-Shell.html" >指令、系统调用、库、Shell、APP的层次关系</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/08</span><a class="archive-post-title" href= "/2021/04/08/ISA-Microarch-Soc.html" >指令集、微架构、手机芯片(Soc)及ARM的介绍</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/02</span><a class="archive-post-title" href= "/2021/04/02/Engineering.html" >工程化、动态化、容器化、组件化</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/01</span><a class="archive-post-title" href= "/2021/04/01/GithubPages-Hexo.html" >使用Hexo+Github Pages搭建个人博客</a>
+        </li>
+    
+    
+    
+    
+    
+        </ul>
+    
+    <div class="archive-year"> 2020 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/22</span><a class="archive-post-title" href= "/2020/12/22/aes.html" >数据加密 — 对称加密(以AES为例)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/21</span><a class="archive-post-title" href= "/2020/12/21/aes-standard.html" >[转] AES标准及Rijndael算法解析</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/20</span><a class="archive-post-title" href= "/2020/12/20/asymmetric.html" >数据加密 — 非对称加密(加签/加密，以RSA为例)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/09</span><a class="archive-post-title" href= "/2020/12/09/pki.html" >常见的PKI标准(X.509、PKCS)及证书相关介绍</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/28</span><a class="archive-post-title" href= "/2020/10/28/runtime-data-structure.html" >Objc Runtime总结</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/11</span><a class="archive-post-title" href= "/2020/09/11/GCD.html" >Objective-C — 深入浅出GCD常用API</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/06</span><a class="archive-post-title" href= "/2020/09/06/oc-block.html" >Objective-C — Block</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/26</span><a class="archive-post-title" href= "/2020/08/26/AutoreleasePool.html" >AutoreleasePool</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/24</span><a class="archive-post-title" href= "/2020/08/24/oc-memory-manage.html" >Objective-C — 内存管理</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/01</span><a class="archive-post-title" href= "/2020/08/01/ui-navigation-bar.html" >[转] 导航栏的架构介绍及使用</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/15</span><a class="archive-post-title" href= "/2020/07/15/symbol-decl.html" >变量声明、函数声明的作用</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/01</span><a class="archive-post-title" href= "/2020/07/01/ios-apns.html" >iOS APNS接收逻辑梳理</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/13</span><a class="archive-post-title" href= "/2020/06/13/ios-vest.html" >iOS制作马甲总结</a>
+        </li>
+    
+    </div>
+  </div>
+        <div class="sidebar-panel-tags">
+    <div class="sidebar-tags-name">
+    
+        <span class="sidebar-tag-name" data-tags="AutoreleasePool"><span class="iconfont-archer">&#xe606;</span>AutoreleasePool</span>
+    
+        <span class="sidebar-tag-name" data-tags="GCD"><span class="iconfont-archer">&#xe606;</span>GCD</span>
+    
+        <span class="sidebar-tag-name" data-tags="hexo"><span class="iconfont-archer">&#xe606;</span>hexo</span>
+    
+        <span class="sidebar-tag-name" data-tags="ISA"><span class="iconfont-archer">&#xe606;</span>ISA</span>
+    
+        <span class="sidebar-tag-name" data-tags="Microarch"><span class="iconfont-archer">&#xe606;</span>Microarch</span>
+    
+        <span class="sidebar-tag-name" data-tags="Soc"><span class="iconfont-archer">&#xe606;</span>Soc</span>
+    
+        <span class="sidebar-tag-name" data-tags="ARM64"><span class="iconfont-archer">&#xe606;</span>ARM64</span>
+    
+        <span class="sidebar-tag-name" data-tags="多线程"><span class="iconfont-archer">&#xe606;</span>多线程</span>
+    
+        <span class="sidebar-tag-name" data-tags="CLI"><span class="iconfont-archer">&#xe606;</span>CLI</span>
+    
+        <span class="sidebar-tag-name" data-tags="Shell"><span class="iconfont-archer">&#xe606;</span>Shell</span>
+    
+        <span class="sidebar-tag-name" data-tags="Docker"><span class="iconfont-archer">&#xe606;</span>Docker</span>
+    
+        <span class="sidebar-tag-name" data-tags="DSL"><span class="iconfont-archer">&#xe606;</span>DSL</span>
+    
+        <span class="sidebar-tag-name" data-tags="协程"><span class="iconfont-archer">&#xe606;</span>协程</span>
+    
+        <span class="sidebar-tag-name" data-tags="dp"><span class="iconfont-archer">&#xe606;</span>dp</span>
+    
+        <span class="sidebar-tag-name" data-tags="Fiber"><span class="iconfont-archer">&#xe606;</span>Fiber</span>
+    
+        <span class="sidebar-tag-name" data-tags="SwiftUI"><span class="iconfont-archer">&#xe606;</span>SwiftUI</span>
+    
+        <span class="sidebar-tag-name" data-tags="LagMonitor"><span class="iconfont-archer">&#xe606;</span>LagMonitor</span>
+    
+        <span class="sidebar-tag-name" data-tags="Swift-Syntax"><span class="iconfont-archer">&#xe606;</span>Swift-Syntax</span>
+    
+        <span class="sidebar-tag-name" data-tags="Log"><span class="iconfont-archer">&#xe606;</span>Log</span>
+    
+        <span class="sidebar-tag-name" data-tags="RunLoop"><span class="iconfont-archer">&#xe606;</span>RunLoop</span>
+    
+        <span class="sidebar-tag-name" data-tags="CrashMonitor"><span class="iconfont-archer">&#xe606;</span>CrashMonitor</span>
+    
+        <span class="sidebar-tag-name" data-tags="AFN"><span class="iconfont-archer">&#xe606;</span>AFN</span>
+    
+    </div>
+    <div class="iconfont-archer sidebar-tags-empty">&#xe678;</div>
+    <div class="tag-load-fail" style="display: none; color: #ccc; font-size: 0.6rem;">
+    缺失模块。<br/>
+    1、请确保node版本大于6.2<br/>
+    2、在博客根目录（注意不是archer根目录）执行以下命令：<br/>
+    <span style="color: #f75357; font-size: 1rem; line-height: 2rem;">npm i hexo-generator-json-content --save</span><br/>
+    3、在根目录_config.yml里添加配置：
+    <pre style="color: #787878; font-size: 0.6rem;">
+jsonContent:
+  meta: false
+  pages: false
+  posts:
+    title: true
+    date: true
+    path: true
+    text: false
+    raw: false
+    content: false
+    slug: false
+    updated: false
+    comments: false
+    link: false
+    permalink: false
+    excerpt: false
+    categories: true
+    tags: true</pre>
+    </div> 
+    <div class="sidebar-tags-list"></div>
+</div>
+    </div>
+</div> 
+    <script>
+    var siteMeta = {
+        root: "/",
+        author: "Tenloy"
+    }
+</script>
+    <!-- CDN failover -->
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js"></script>
+    <script type="text/javascript">
+        if (typeof window.$ === 'undefined')
+        {
+            console.warn('jquery load from jsdelivr failed, will load local script')
+            document.write('<script src="/lib/jquery.min.js">\x3C/script>')
+        }
+    </script>
+    <script src="/scripts/main.js"></script>
+    <!-- algolia -->
+    
+        <div class="site-search">
+  <div class="algolia-popup popup">
+    <div class="algolia-search">
+      <div class="algolia-search-input-icon">
+        <i class="fa fa-search"></i>
+      </div>
+      <div class="algolia-search-input" id="algolia-search-input"></div>
+    </div>
+
+    <div class="algolia-results">
+      <div id="algolia-stats"></div>
+      <div id="algolia-hits"></div>
+      <div id="algolia-pagination" class="algolia-pagination"></div>
+    </div>
+
+    <span class="popup-btn-close">
+      <i class="iconfont-archer">&#xe609;</i>
+    </span>
+  </div>
+</div>
+        <script src="https://cdn.jsdelivr.net/npm/instantsearch.js@2.8.0/dist/instantsearch.min.js" defer></script>
+        <script src="/scripts/search.js" defer></script>
+    
+    <!-- busuanzi  -->
+    
+    <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    
+    <!-- CNZZ  -->
+    
+    </div>
+    <!-- async load share.js -->
+    
+        <script src="/scripts/share.js" async></script>    
+     
+    </body>
+</html>
+
+

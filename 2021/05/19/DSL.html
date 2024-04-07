@@ -1,0 +1,2501 @@
+<!DOCTYPE html>
+<html lang="en">
+    <!-- title -->
+
+
+
+
+<!-- keywords -->
+
+
+
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" >
+    <meta name="author" content="Tenloy">
+    <meta name="renderer" content="webkit">
+    <meta name="copyright" content="Tenloy">
+    
+    <meta name="keywords" content="Tenloy,iOS,Swift">
+    
+    <meta name="description" content="学习 生活 记录 回忆">
+    <meta name="description" content="原文链接：谈谈 DSL 以及 DSL 的应用（以 CocoaPods 为例）   因为 DSL 以及 DSL 的界定本身就是一个比较模糊的概念，所以难免有与他人观点意见相左的地方，如果有不同的意见，我们可以具体讨论。  这次文章的题目虽然是谈谈 DSL 以及 DSL 的应用，不过文章中主要侧重点仍然是 DSL，会简单介绍 DSL 在 iOS 开发中（CocoaPods）是如何应用的。 没有银弹？">
+<meta property="og:type" content="article">
+<meta property="og:title" content="[转] 谈谈DSL以及DSL的应用（以CocoaPods 为例）">
+<meta property="og:url" content="https://tenloy.github.io/2021/05/19/DSL.html">
+<meta property="og:site_name" content="Tenloy&#39;s Blog">
+<meta property="og:description" content="原文链接：谈谈 DSL 以及 DSL 的应用（以 CocoaPods 为例）   因为 DSL 以及 DSL 的界定本身就是一个比较模糊的概念，所以难免有与他人观点意见相左的地方，如果有不同的意见，我们可以具体讨论。  这次文章的题目虽然是谈谈 DSL 以及 DSL 的应用，不过文章中主要侧重点仍然是 DSL，会简单介绍 DSL 在 iOS 开发中（CocoaPods）是如何应用的。 没有银弹？">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://tenloy.github.io/images/DSL/2016-10-03-silver-bullet.jpg">
+<meta property="og:image" content="https://tenloy.github.io/images/DSL/2016-10-03-regex.jpg">
+<meta property="og:image" content="https://tenloy.github.io/images/DSL/2016-10-03-compiler.png">
+<meta property="og:image" content="https://tenloy.github.io/images/DSL/2016-10-03-dom-tree.png">
+<meta property="og:image" content="https://tenloy.github.io/images/DSL/2016-10-03-css-sass.jpg">
+<meta property="og:image" content="https://tenloy.github.io/images/DSL/2016-10-03-cocoapods.png">
+<meta property="og:image" content="https://tenloy.github.io/images/DSL/2016-10-03-rails.jpg">
+<meta property="article:published_time" content="2021-05-19T02:42:44.000Z">
+<meta property="article:modified_time" content="2024-04-07T11:24:50.647Z">
+<meta property="article:author" content="Tenloy">
+<meta property="article:tag" content="DSL">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://tenloy.github.io/images/DSL/2016-10-03-silver-bullet.jpg">
+    <meta http-equiv="Cache-control" content="no-cache">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"/>
+    
+    <title>[转] 谈谈DSL以及DSL的应用（以CocoaPods 为例） · Tenloy&#39;s Blog</title>
+    <style type="text/css">
+    @font-face {
+        font-family: 'Oswald-Regular';
+        src: url("/font/Oswald-Regular.ttf");
+    }
+
+    body {
+        margin: 0;
+    }
+
+    header,
+    footer,
+    .back-top,
+    .sidebar,
+    .container,
+    .site-intro-meta,
+    .toc-wrapper {
+        display: none;
+    }
+
+    .site-intro {
+        position: relative;
+        z-index: 3;
+        width: 100%;
+        /* height: 50vh; */
+        overflow: hidden;
+    }
+
+    .site-intro-placeholder {
+        position: absolute;
+        z-index: -2;
+        top: 0;
+        left: 0;
+        width: calc(100% + 300px);
+        height: 100%;
+        background: repeating-linear-gradient(-45deg, #444 0, #444 80px, #333 80px, #333 160px);
+        background-position: center center;
+        transform: translate3d(-226px, 0, 0);
+        animation: gradient-move 2.5s ease-out 0s infinite;
+    }
+
+    @keyframes gradient-move {
+        0% {
+            transform: translate3d(-226px, 0, 0);
+        }
+        100% {
+            transform: translate3d(0, 0, 0);
+        }
+    }
+
+</style>
+
+    <link rel="preload" href= "/css/style.css?v=20180824" as="style" onload="this.onload=null;this.rel='stylesheet'" />
+    <link rel="stylesheet" href= "/css/mobile.css?v=20180824" media="(max-width: 980px)">
+    
+    <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.2.5/jquery.fancybox.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'" />
+    
+    <!-- /*! loadCSS. [c]2017 Filament Group, Inc. MIT License */
+/* This file is meant as a standalone workflow for
+- testing support for link[rel=preload]
+- enabling async CSS loading in browsers that do not support rel=preload
+- applying rel preload css once loaded, whether supported or not.
+*/ -->
+<script>
+(function( w ){
+	"use strict";
+	// rel=preload support test
+	if( !w.loadCSS ){
+		w.loadCSS = function(){};
+	}
+	// define on the loadCSS obj
+	var rp = loadCSS.relpreload = {};
+	// rel=preload feature support test
+	// runs once and returns a function for compat purposes
+	rp.support = (function(){
+		var ret;
+		try {
+			ret = w.document.createElement( "link" ).relList.supports( "preload" );
+		} catch (e) {
+			ret = false;
+		}
+		return function(){
+			return ret;
+		};
+	})();
+
+	// if preload isn't supported, get an asynchronous load by using a non-matching media attribute
+	// then change that media back to its intended value on load
+	rp.bindMediaToggle = function( link ){
+		// remember existing media attr for ultimate state, or default to 'all'
+		var finalMedia = link.media || "all";
+
+		function enableStylesheet(){
+			link.media = finalMedia;
+		}
+
+		// bind load handlers to enable media
+		if( link.addEventListener ){
+			link.addEventListener( "load", enableStylesheet );
+		} else if( link.attachEvent ){
+			link.attachEvent( "onload", enableStylesheet );
+		}
+
+		// Set rel and non-applicable media type to start an async request
+		// note: timeout allows this to happen async to let rendering continue in IE
+		setTimeout(function(){
+			link.rel = "stylesheet";
+			link.media = "only x";
+		});
+		// also enable media after 3 seconds,
+		// which will catch very old browsers (android 2.x, old firefox) that don't support onload on link
+		setTimeout( enableStylesheet, 3000 );
+	};
+
+	// loop through link elements in DOM
+	rp.poly = function(){
+		// double check this to prevent external calls from running
+		if( rp.support() ){
+			return;
+		}
+		var links = w.document.getElementsByTagName( "link" );
+		for( var i = 0; i < links.length; i++ ){
+			var link = links[ i ];
+			// qualify links to those with rel=preload and as=style attrs
+			if( link.rel === "preload" && link.getAttribute( "as" ) === "style" && !link.getAttribute( "data-loadcss" ) ){
+				// prevent rerunning on link
+				link.setAttribute( "data-loadcss", true );
+				// bind listeners to toggle media back
+				rp.bindMediaToggle( link );
+			}
+		}
+	};
+
+	// if unsupported, run the polyfill
+	if( !rp.support() ){
+		// run once at least
+		rp.poly();
+
+		// rerun poly on an interval until onload
+		var run = w.setInterval( rp.poly, 500 );
+		if( w.addEventListener ){
+			w.addEventListener( "load", function(){
+				rp.poly();
+				w.clearInterval( run );
+			} );
+		} else if( w.attachEvent ){
+			w.attachEvent( "onload", function(){
+				rp.poly();
+				w.clearInterval( run );
+			} );
+		}
+	}
+
+
+	// commonjs
+	if( typeof exports !== "undefined" ){
+		exports.loadCSS = loadCSS;
+	}
+	else {
+		w.loadCSS = loadCSS;
+	}
+}( typeof global !== "undefined" ? global : this ) );
+</script>
+
+    <link rel="icon" href= "/assets/favicon.ico" />
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.min.js" as="script" />
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js" as="script" />
+    <link rel="preload" href="/scripts/main.js" as="script" />
+    <link rel="preload" as="font" href="/font/Oswald-Regular.ttf" crossorigin>
+    <link rel="preload" as="font" href="https://at.alicdn.com/t/font_327081_1dta1rlogw17zaor.woff" crossorigin>
+    
+        <!-- algolia -->
+        <script>
+            
+            var hits = JSON.parse('{"per_page":10}')
+            var labels = JSON.parse('{"input_placeholder":"Search for Posts","hits_empty":"没有找到任何搜索结果: ${query}","hits_stats":"找到约${hits}条结果（用时${time}ms）"}')
+
+            var algolia = {
+                applicationID: 'V0HYXBS9FB',
+                apiKey: '6550d5de786935564142097c3e78c380',
+                indexName: 'law_blog_index',
+                hits: hits,
+                labels: labels
+            }
+        </script>
+    
+    <!-- fancybox -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.2.5/jquery.fancybox.min.js" defer></script>
+    <!-- 百度统计  -->
+    
+    <!-- 谷歌统计  -->
+    
+<meta name="generator" content="Hexo 5.4.0"><link rel="alternate" href="/atom.xml" title="Tenloy's Blog" type="application/atom+xml">
+</head>
+
+    
+        <body class="post-body">
+    
+    
+<header class="header">
+
+    <div class="read-progress"></div>
+    <div class="header-sidebar-menu">&#xe775;</div>
+    <!-- post页的toggle banner  -->
+    
+    <div class="banner">
+            <div class="blog-title">
+                <a href="/" >Tenloy&#39;s Blog</a>
+            </div>
+            <div class="post-title">
+                <a href="#" class="post-name">[转] 谈谈DSL以及DSL的应用（以CocoaPods 为例）</a>
+            </div>
+    </div>
+    
+    <!-- 将home-link的操作改为应用到header-top-right上 -->
+    <div class="header-top-right">
+        <!-- search  -->
+        
+            <div class="site-search popup-trigger tl-search">
+                <span class="iconfont-jian tl-search-icon">&#xe7fc;搜索</span>
+            </div>
+            
+        <a class="home-link" href=/>Tenloy's Blog</a>
+    </div>
+</header>
+    <div class="wrapper">
+        <div class="site-intro" style="
+
+
+
+
+
+
+
+height:40vh;
+">
+    
+    <!-- 主页  -->
+    
+    
+    <!-- 404页  -->
+            
+    <div class="site-intro-placeholder"></div>
+    <div class="site-intro-img" style="background-image: url(/intro/post-bg.jpg)"></div>
+    <div class="site-intro-meta">
+        <!-- 标题  -->
+        <h1 class="intro-title">
+            <!-- 主页  -->
+            
+            [转] 谈谈DSL以及DSL的应用（以CocoaPods 为例）
+            <!-- 404 -->
+            
+        </h1>
+        <!-- 副标题 -->
+        <p class="intro-subtitle">
+            <!-- 主页副标题  -->
+            
+            
+            <!-- 404 -->
+            
+        </p>
+        <!-- 文章页meta -->
+        
+            <div class="post-intros">
+                <!-- 文章页标签  -->
+                
+                    <div class= post-intro-tags >
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags = "DSL">DSL</a>
+    
+</div>
+                
+                
+                    <div class="post-intro-read">
+                        <span>Word count: <span class="post-count word-count">5.1k</span>Reading time: <span class="post-count reading-time">19 min</span></span>
+                    </div>
+                
+                <div class="post-intro-meta">
+                    <span class="post-intro-calander iconfont-archer">&#xe676;</span>
+                    <span class="post-intro-time">2021/05/19</span>
+                    
+                    <span id="busuanzi_container_page_pv" class="busuanzi-pv">
+                        <span class="iconfont-archer">&#xe602;</span>
+                        <span id="busuanzi_value_page_pv"></span>
+                    </span>
+                    
+                    <span class="shareWrapper">
+                        <span class="iconfont-archer shareIcon">&#xe71d;</span>
+                        <span class="shareText">Share</span>
+                        <ul class="shareList">
+                            <li class="iconfont-archer share-qr" data-type="qr">&#xe75b;
+                                <div class="share-qrcode"></div>
+                            </li>
+                            <li class="iconfont-archer" data-type="weibo">&#xe619;</li>
+                            <li class="iconfont-archer" data-type="qzone">&#xe62e;</li>
+                            <li class="iconfont-archer" data-type="twitter">&#xe634;</li>
+                            <li class="iconfont-archer" data-type="facebook">&#xe67a;</li>
+                        </ul>
+                    </span>
+                </div>
+            </div>
+        
+    </div>
+</div>
+        <script>
+ 
+  // get user agent
+  var browser = {
+    versions: function () {
+      var u = window.navigator.userAgent;
+      return {
+        userAgent: u,
+        trident: u.indexOf('Trident') > -1, //IE内核
+        presto: u.indexOf('Presto') > -1, //opera内核
+        webKit: u.indexOf('AppleWebKit') > -1, //苹果、谷歌内核
+        gecko: u.indexOf('Gecko') > -1 && u.indexOf('KHTML') == -1, //火狐内核
+        mobile: !!u.match(/AppleWebKit.*Mobile.*/), //是否为移动终端
+        ios: !!u.match(/\(i[^;]+;( U;)? CPU.+Mac OS X/), //ios终端
+        android: u.indexOf('Android') > -1 || u.indexOf('Linux') > -1, //android终端或者uc浏览器
+        iPhone: u.indexOf('iPhone') > -1 || u.indexOf('Mac') > -1, //是否为iPhone或者安卓QQ浏览器
+        iPad: u.indexOf('iPad') > -1, //是否为iPad
+        webApp: u.indexOf('Safari') == -1, //是否为web应用程序，没有头部与底部
+        weixin: u.indexOf('MicroMessenger') == -1, //是否为微信浏览器
+        uc: u.indexOf('UCBrowser') > -1 //是否为android下的UC浏览器
+      };
+    }()
+  }
+  console.log("userAgent:" + browser.versions.userAgent);
+
+  // callback
+  function fontLoaded() {
+    console.log('font loaded');
+    if (document.getElementsByClassName('site-intro-meta')) {
+      document.getElementsByClassName('intro-title')[0].classList.add('intro-fade-in');
+      document.getElementsByClassName('intro-subtitle')[0].classList.add('intro-fade-in');
+      var postIntros = document.getElementsByClassName('post-intros')[0]
+      if (postIntros) {
+        postIntros.classList.add('post-fade-in');
+      }
+    }
+  }
+
+  // UC不支持跨域，所以直接显示
+  function asyncCb(){
+    if (browser.versions.uc) {
+      console.log("UCBrowser");
+      fontLoaded();
+    } else {
+      WebFont.load({
+        custom: {
+          families: ['Oswald-Regular']
+        },
+        loading: function () {  //所有字体开始加载
+          // console.log('loading');
+        },
+        active: function () {  //所有字体已渲染
+          fontLoaded();
+        },
+        inactive: function () { //字体预加载失败，无效字体或浏览器不支持加载
+          console.log('inactive: timeout');
+          fontLoaded();
+        },
+        timeout: 5000 // Set the timeout to two seconds
+      });
+    }
+  }
+
+  function asyncErr(){
+    console.warn('script load from CDN failed, will load local script')
+  }
+
+  // load webfont-loader async, and add callback function
+  function async(u, cb, err) {
+    var d = document, t = 'script',
+      o = d.createElement(t),
+      s = d.getElementsByTagName(t)[0];
+    o.src = u;
+    if (cb) { o.addEventListener('load', function (e) { cb(null, e); }, false); }
+    if (err) { o.addEventListener('error', function (e) { err(null, e); }, false); }
+    s.parentNode.insertBefore(o, s);
+  }
+
+  var asyncLoadWithFallBack = function(arr, success, reject) {
+      var currReject = function(){
+        reject()
+        arr.shift()
+        if(arr.length)
+          async(arr[0], success, currReject)
+        }
+
+      async(arr[0], success, currReject)
+  }
+
+  asyncLoadWithFallBack([
+    "https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.min.js", 
+    "https://cdn.bootcss.com/webfont/1.6.28/webfontloader.js",
+    "/lib/webfontloader.min.js"
+  ], asyncCb, asyncErr)
+</script>        
+        <img class="loading" src="/assets/loading.svg" style="display: block; margin: 6rem auto 0 auto; width: 6rem; height: 6rem;" />
+        <div class="container container-unloaded">
+            <main class="main post-page">
+    <article class="article-entry">
+        <blockquote>
+<p>原文链接：<a target="_blank" rel="noopener" href="https://draveness.me/dsl/">谈谈 DSL 以及 DSL 的应用（以 CocoaPods 为例）</a></p>
+</blockquote>
+<blockquote>
+<p>因为 DSL 以及 DSL 的界定本身就是一个比较模糊的概念，所以难免有与他人观点意见相左的地方，如果有不同的意见，我们可以具体讨论。</p>
+</blockquote>
+<p>这次文章的题目虽然是谈谈 DSL 以及 DSL 的应用，不过文章中主要侧重点仍然是 DSL，会简单介绍 DSL 在 iOS 开发中（CocoaPods）是如何应用的。</p>
+<h2 id="没有银弹？"><a href="#没有银弹？" class="headerlink" title="没有银弹？"></a>没有银弹？</h2><p>1987 年，IBM 大型电脑之父 Fred Brooks 发表了一篇关于软件工程中的论文 [No Silver Bullet—Essence and Accidents of Software Engineering](No Silver Bullet—Essence and Accidents of Software Engineering) 文中主要围绕这么一个观点：没有任何一种技术或者方法能使软件工程的生产力在十年之内提高十倍。</p>
+<blockquote>
+<p>There is no single development, in either technology or management technique, which by itself promises even one order-of-magnitude improvement within a decade in productivity, in reliability, in simplicity.</p>
+</blockquote>
+<p>时至今日，我们暂且不谈银弹在软件工程中是否存在（<del>这句话在老板或者项目经理要求加快项目进度时，还是十分好用的</del>），作为一个开发者也不是很关心这种抽象的理论，我们更关心的是开发效率能否有实质的提升。</p>
+<img src="/images/DSL/2016-10-03-silver-bullet.jpg" style="zoom:70%">
+
+<p>而今天要介绍的 DSL 就可以真正的提升生产力，减少不必要的工作，在一些领域帮助我们更快的实现需求。</p>
+<h2 id="DSL-是什么？"><a href="#DSL-是什么？" class="headerlink" title="DSL 是什么？"></a>DSL 是什么？</h2><blockquote>
+<p>笔者是在两年以前，在大一的一次分享上听到 DSL 这个词的，但是当时并没有对这个名词有多深的理解与认识，听过也就忘记了，但是最近做的一些开源项目让我重新想起了 DSL，也是这次分享题目的由来。</p>
+</blockquote>
+<p>DSL 其实是 Domain Specific Language 的缩写，中文翻译为<em>领域特定语言</em>（下简称 DSL）；而与 DSL 相对的就是 GPL，这里的 GPL 并不是我们知道的开源许可证，而是 General Purpose Language 的简称，即<em>通用编程语言</em>，也就是我们非常熟悉的 Objective-C、Java、Python 以及 C 语言等等。</p>
+<p><a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Domain-specific_language">Wikipedia</a> 对于 DSL 的定义还是比较简单的：</p>
+<blockquote>
+<p>A specialized computer language designed for a specific task.</p>
+<p>为了解决某一类任务而专门设计的计算机语言。</p>
+</blockquote>
+<p>与 GPL 相对，DSL 与传统意义上的通用编程语言 C、Python 以及 Haskell 完全不同。通用的计算机编程语言是可以用来编写任意计算机程序的，并且能表达任何的<strong>可被计算</strong>的逻辑，同时也是 <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Turing_completeness">图灵完备</a> 的。</p>
+<blockquote>
+<p>在可计算性理论，如果一系列操作数据的规则（如指令集、编程语言、细胞自动机）可以用来模拟任何图灵机，那么它是图灵完备的。图灵完全(图灵完备)意味着可以计算任何图灵-可计算函数。</p>
+<p>没有任何物理系统可以拥有无限内存；如果忽略有限内存的限制，大多数编程语言在其他方面都是图灵完备的。</p>
+</blockquote>
+<p>但是在里所说的 DSL 并不是图灵完备的，它们的<strong>表达能力有限</strong>，只是在特定领域解决特定任务的。</p>
+<blockquote>
+<p>A computer programming language of limited expressiveness focused on a particular domain.</p>
+</blockquote>
+<p>另一个世界级软件开发大师 Martin Fowler 对于领域特定语言的定义在笔者看来就更加具体了，<strong>DSL 通过在表达能力上做的妥协换取在某一领域内的高效</strong>。</p>
+<p>而有限的表达能力就成为了 GPL 和 DSL 之间的一条界限。</p>
+<p>DSL 分为内部 DSL 和外部 DSL：</p>
+<ul>
+<li>内部DSL，也被称为嵌入式DSL。内部的实现是建在一种宿主编程语言之上。使用内部 DSL 的优势是我们不必担心创建、编译及解析语法，因为这些已经被宿主语言解决了。劣势是会受限于宿主语言的特性。</li>
+<li>外部DSL：内部的实现不依赖于某种宿主语言。DSL 的创建者可以决定语言的方方面面（语法、句法等），但为负责为其创建一个解析器和编译器。该过程比较痛苦。</li>
+</ul>
+<p>这一小节中的 DSL 指外部 DSL，下一节中会介绍 <a target="_blank" rel="noopener" href="https://draveness.me/dsl/#embedded-dsl%E5%B5%8C%E5%85%A5%E5%BC%8F-dsl">内部 DSL/嵌入式 DSL</a></p>
+<h3 id="几个栗子"><a href="#几个栗子" class="headerlink" title="几个栗子"></a>几个栗子</h3><p>最常见的 DSL 包括 Regex 以及 HTML &amp; CSS，在这里会对这几个例子进行简单介绍</p>
+<ul>
+<li>Regex<ul>
+<li>正则表达式仅仅指定了字符串的 pattern，其引擎就会根据 pattern 判断当前字符串跟正则表达式是否匹配。<img src="/images/DSL/2016-10-03-regex.jpg" style="zoom:70%"></li>
+</ul>
+</li>
+<li>SQL<ul>
+<li>SQL 语句在使用时也并没有真正的执行，我们输入的 SQL 语句最终还要交给数据库来进行处理，数据库会从 SQL 语句中<strong>读取</strong>有用的信息，然后从数据库中返回使用者期望的结果。</li>
+</ul>
+</li>
+<li>HTML &amp; CSS<ul>
+<li>HTML 和 CSS 只是对 Web 界面的结构语义和样式进行描述，虽然它们在构建网站时非常重要，但是它们并非是一种编程语言，正相反，我们可以认为 HTML 和 CSS 是在 Web 中的领域特定语言。</li>
+</ul>
+</li>
+</ul>
+<h3 id="Features"><a href="#Features" class="headerlink" title="Features"></a>Features</h3><p>上面的几个🌰明显的缩小了通用编程语言的概念，但是它们确实在自己领域表现地非常出色，因为这些 DSL 就是根据某一个特定领域的特点塑造的；而通用编程语言相比领域特定语言，在设计时是为了解决更加抽象的问题，而关注点并不只是在某一个领域。</p>
+<p>上面的几个例子有着一些共同的特点：</p>
+<ul>
+<li>没有计算和执行的概念；</li>
+<li>其本身并不需要直接表示计算；</li>
+<li>使用时只需要声明规则、事实以及某些元素之间的层级和关系；</li>
+</ul>
+<p>虽然了解了 DSL 以及 DSL 的一些特性，但是，到目前为止，我们对于如何构建一个 DSL 仍然不是很清楚。</p>
+<h3 id="构建-DSL"><a href="#构建-DSL" class="headerlink" title="构建 DSL"></a>构建 DSL</h3><p>DSL 的构建与编程语言其实比较类似，想想我们在重新实现编程语言时，需要做那些事情；<font color=red>实现编程语言的过程可以简化为定义语法与语义，然后实现编译器或者解释器的过程</font>，而 DSL 的实现与它也非常类似，我们也需要对 DSL 进行语法与语义上的设计。</p>
+<img src="/images/DSL/2016-10-03-compiler.png" style="zoom:70%">
+
+<p>总结下来，实现 DSL 总共有这么两个需要完成的工作：</p>
+<ol>
+<li>设计语法和语义，定义 DSL 中的元素是什么样的，元素代表什么意思</li>
+<li>实现 parser，对 DSL 解析，最终通过解释器来执行</li>
+</ol>
+<p>以 HTML 为例，HTML 中所有的元素都是包含在尖括号 <code>&lt;&gt;</code> 中的，尖括号中不同的元素代表了不同的标签，而这些标签会被浏览器<strong>解析</strong>成 DOM 树，再经过一系列的过程调用 Native 的图形 API 进行绘制。</p>
+<img src="/images/DSL/2016-10-03-dom-tree.png" style="zoom:70%">
+
+<p>再比如，我们使用下面这种方式对一个模型进行定义，实现一个 ORM 领域的 DSL：</p>
+<figure class="highlight ruby"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">define <span class="symbol">:article</span> <span class="keyword">do</span></span><br><span class="line">  attr <span class="symbol">:name</span></span><br><span class="line">  attr <span class="symbol">:content</span></span><br><span class="line">  attr <span class="symbol">:upvotes</span>, <span class="symbol">:int</span></span><br><span class="line"></span><br><span class="line">  has_many <span class="symbol">:comments</span></span><br><span class="line"><span class="keyword">end</span></span><br></pre></td></tr></table></figure>
+
+<p>在上面的 DSL 中，使用 <code>define</code> 来定义一个新的模型，使用 <code>attr</code> 来为模型添加属性，使用 <code>has_many</code> 建立数据模型中的一对多关系；我们可以使用 DSL 对这段“字符串”进行解析，然后交给代码生成器来生成代码。</p>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">struct</span> <span class="title">Article</span> </span>&#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">var</span> title: <span class="type">String</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">var</span> content: <span class="type">String</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">var</span> createdAt: <span class="type">Date</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">init</span>(<span class="params">title</span>: <span class="type">String</span>, <span class="params">content</span>: <span class="type">String</span>, <span class="params">createdAt</span>: <span class="type">Date</span>)</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">static</span> <span class="keyword">public</span> <span class="function"><span class="keyword">func</span> <span class="title">new</span>(<span class="params">title</span>: <span class="type">String</span>, <span class="params">content</span>: <span class="type">String</span>, <span class="params">createdAt</span>: <span class="type">Date</span>)</span> -&gt; <span class="type">Article</span></span><br><span class="line">    <span class="keyword">static</span> <span class="keyword">public</span> <span class="function"><span class="keyword">func</span> <span class="title">create</span>(<span class="params">title</span>: <span class="type">String</span>, <span class="params">content</span>: <span class="type">String</span>, <span class="params">createdAt</span>: <span class="type">Date</span>)</span> -&gt; <span class="type">Article</span>?</span><br><span class="line">    <span class="operator">...</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这里创建的 DSL 中的元素数量非常少，只有 <code>define</code> <code>attr</code> 以及 <code>has_many</code> 等几个关键字，但是通过这几个关键字就可以完成在模型层需要表达的绝大部分语义。</p>
+<h3 id="设计原则和妥协"><a href="#设计原则和妥协" class="headerlink" title="设计原则和妥协"></a>设计原则和妥协</h3><p>DSL 最大的设计原则就是<strong>简单</strong>，通过简化语言中的元素，降低使用者的负担；无论是 Regex、SQL 还是 HTML 以及 CSS，其说明文档往往只有几页，非常易于学习和掌握。但是，由此带来的问题就是，DSL 中缺乏抽象的概念，比如：模块化、变量以及方法等。</p>
+<blockquote>
+<p>抽象的概念并不是某个领域所关注的问题，就像 Regex 并不需要有模块、变量以及方法等概念。</p>
+</blockquote>
+<p>由于抽象能力的缺乏，在我们的项目规模变得越来越大时，DSL 往往满足不了开发者的需求；我们仍然需要编程语言中的模块化等概念对 DSL 进行补充，以此解决 DSL 并不是真正编程语言的问题。</p>
+<img src="/images/DSL/2016-10-03-css-sass.jpg" style="zoom:70%">
+
+<p>在当今的 Web 前端项目中，我们在开发大规模项目时往往不会直接手写 CSS 文件，而是会使用 Sass 或者 Less 为 CSS 带来更强大的抽象能力，比如嵌套规则，变量，混合以及继承等特性。</p>
+<figure class="highlight css"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="selector-tag">nav</span> &#123;</span><br><span class="line">  <span class="selector-tag">ul</span> &#123;</span><br><span class="line">    <span class="attribute">margin</span>: <span class="number">0</span>;</span><br><span class="line">    <span class="attribute">padding</span>: <span class="number">0</span>;</span><br><span class="line">    <span class="attribute">list-style</span>: none;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="selector-tag">li</span> &#123; <span class="attribute">display</span>: inline-block; &#125;</span><br><span class="line"></span><br><span class="line">  <span class="selector-tag">a</span> &#123;</span><br><span class="line">    <span class="attribute">display</span>: block;</span><br><span class="line">    <span class="attribute">padding</span>: <span class="number">6px</span> <span class="number">12px</span>;</span><br><span class="line">    <span class="attribute">text-decoration</span>: none;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>也就是说，在使用 DSL 的项目规模逐渐变大时，开发者会通过增加抽象能力的方式，对已有的 DSL 进行拓展；但是这种扩展往往需要重新实现通用编程语言中的特性，所以一般情况下都是比较复杂的。</p>
+<h2 id="Embedded-DSL（嵌入式-DSL）"><a href="#Embedded-DSL（嵌入式-DSL）" class="headerlink" title="Embedded DSL（嵌入式 DSL）"></a>Embedded DSL（嵌入式 DSL）</h2><p>那么，是否有一种其它的方法为 DSL 快速添加抽象能力呢？而这也就是这一小节的主题，嵌入式 DSL。</p>
+<p>在上一节讲到的 DSL 其实可以被称为外部 DSL；而这里即将谈到的嵌入式 DSL 也有一个别名，内部 DSL。</p>
+<p>这两者最大的区别就是，内部 DSL 的实现往往是嵌入一些编程语言的，比如 iOS 的依赖管理组件 CocoaPods 和 Android 的主流编译工具 Gradle，前者的实现是基于 Ruby 语言的一些特性，而后者基于 Groovy。</p>
+<img src="/images/DSL/2016-10-03-cocoapods.png" style="zoom:70%">
+
+<p>CocoaPods 以及其它的嵌入式 DSL 使用了宿主语言（host language）的抽象能力，并且省去了实现复杂语法分析器（Parser）的过程，并不需要重新实现模块、变量等特性。</p>
+<p>嵌入式 DSL 的产生其实模糊了框架和 DSL 的边界，不过这两者看起来也没有什么比较明显的区别；不过，DSL 一般会使用宿主语言的特性进行创造，在设计 DSL 时，也不会考虑宿主语言中有哪些 API 以及方法，而框架一般都是对语言中的 API 进行组合和再包装。</p>
+<blockquote>
+<p>我们没有必要争论哪些是框架，哪些是 DSL，因为这些争论并没有什么意义。</p>
+</blockquote>
+<h3 id="Rails-和-Embedded-DSL"><a href="#Rails-和-Embedded-DSL" class="headerlink" title="Rails 和 Embedded DSL"></a>Rails 和 Embedded DSL</h3><p>最出名也最成功的嵌入式 DSL 应该就是 Ruby on Rails 了，虽然对于 Rails 是否是 DSL 有争议，不过 Rails 为 Web 应用的创建提供大量的内置的支撑，使我们在开发 Web 应用时变得非常容易。</p>
+<img src="/images/DSL/2016-10-03-rails.jpg" style="zoom:70%">
+
+<h2 id="Ruby、-DSL-和-iOS"><a href="#Ruby、-DSL-和-iOS" class="headerlink" title="Ruby、 DSL 和 iOS"></a>Ruby、 DSL 和 iOS</h2><p>笔者同时作为 iOS 和 Rails 开发者接触了非常多的 DSL，而在 iOS 开发中最常见的 DSL 就是 CocoaPods 了，而这里我们以 CocoaPods 为例，介绍如何使用 Ruby 创造一个嵌入式 DSL。</p>
+<h3 id="Why-Ruby？"><a href="#Why-Ruby？" class="headerlink" title="Why Ruby？"></a>Why Ruby？</h3><p>看到这里有人可能会问了，为什么使用 Ruby 创造嵌入式 DSL，而不是使用 C、Java、Python 等等语言呢，这里大概有四个原因：</p>
+<ul>
+<li>一切皆对象的特性减少了语言中的元素，不存在基本类型、操作符；</li>
+<li>向 Ruby 方法中传入代码块非常方便；</li>
+<li>作为解释执行的语言，eval 模糊了数据和代码的边界；</li>
+<li>不对代码的格式进行约束，同时一些约定减少了代码中的噪音。</li>
+</ul>
+<h4 id="一切皆对象"><a href="#一切皆对象" class="headerlink" title="一切皆对象"></a>一切皆对象</h4><p>在许多语言，比如 Java 中，数字与其他的基本类型都不是对象，而在 Ruby 中所有的元素，包括基本类型都是对象，同时也不存在运算符的概念，所谓的 <code>1 + 1</code>，其实只是 <code>1.+(1)</code> 的语法糖而已。</p>
+<p>得益于一切皆对象的概念，在 Ruby 中，你可以向任意的对象发送 <code>methods</code> 消息，在运行时自省，所以笔者在每次忘记方法时，都会直接用 <code>methods</code> 来“查阅文档”：</p>
+<figure class="highlight ruby"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">2.3.1 :003 &gt;</span> <span class="number">1</span>.methods</span><br><span class="line"> =&gt; [<span class="symbol">:%</span>, <span class="symbol">:&amp;</span>, <span class="symbol">:*</span>, <span class="symbol">:+</span>, <span class="symbol">:-</span>, <span class="symbol">:/</span>, <span class="symbol">:&lt;</span>, <span class="symbol">:&gt;</span>, <span class="symbol">:^</span>, <span class="symbol">:|</span>, <span class="symbol">:~</span>, <span class="symbol">:-@</span>, <span class="symbol">:**</span>, <span class="symbol">:&lt;=&gt;</span>, <span class="symbol">:&lt;&lt;</span>, <span class="symbol">:&gt;&gt;</span>, <span class="symbol">:&lt;=</span>, <span class="symbol">:&gt;=</span>, <span class="symbol">:==</span>, <span class="symbol">:===</span>, <span class="symbol">:[]</span>, <span class="symbol">:inspect</span>, <span class="symbol">:size</span>, <span class="symbol">:succ</span>, <span class="symbol">:to_s</span>, <span class="symbol">:to_f</span>, <span class="symbol">:div</span>, <span class="symbol">:divmod</span>, <span class="symbol">:fdiv</span>, <span class="symbol">:modulo</span>, ...]</span><br></pre></td></tr></table></figure>
+
+<p>比如在这里向对象 <code>1</code> 调用 <code>methods</code> 就会返回它能响应的所有方法。</p>
+<p>一切皆对象不仅减少了语言中类型的数量，消灭了基本数据类型与对象之间的边界；这一概念同时也简化了组成语言的元素，这样 Ruby 中只有对象和方法，这两个概念，极大降低了这门语言的复杂度：</p>
+<ul>
+<li>使用对象存储状态</li>
+<li>对象之间通过方法通信</li>
+</ul>
+<h4 id="block"><a href="#block" class="headerlink" title="block"></a>block</h4><p>Ruby 对函数式编程范式的支持是通过 block，这里的 block 和 Objective-C 中的 block 有些不同。</p>
+<p>首先 Ruby 中的 block 也是一种对象，即 <code>Proc</code> 类的实例，也就是所有的 block 都是 first-class 的，可以作为参数传递，返回。</p>
+<p>下面的代码演示了两种向 Ruby 方法中传入代码块的方式：</p>
+<figure class="highlight ruby"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">twice</span><span class="params">(&amp;<span class="built_in">proc</span>)</span></span></span><br><span class="line">	<span class="number">2</span>.times &#123; <span class="built_in">proc</span>.call() &#125; <span class="keyword">if</span> <span class="built_in">proc</span></span><br><span class="line"><span class="keyword">end</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">twice</span></span></span><br><span class="line">	<span class="number">2</span>.times &#123; <span class="keyword">yield</span> &#125; <span class="keyword">if</span> block_given?</span><br><span class="line"><span class="keyword">end</span></span><br></pre></td></tr></table></figure>
+
+<p><code>yield</code> 会调用外部传入的 block，<code>block_given?</code> 用于判断当前方法是否传入了 <code>block</code>。</p>
+<figure class="highlight ruby"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">twice <span class="keyword">do</span></span><br><span class="line">	puts <span class="string">&quot;Hello&quot;</span></span><br><span class="line"><span class="keyword">end</span></span><br><span class="line"></span><br><span class="line">twice &#123; puts <span class="string">&quot;hello&quot;</span> &#125;</span><br></pre></td></tr></table></figure>
+
+<p>向 <code>twice</code> 方法传入 block 也非常简单，使用 <code>do</code>、<code>end</code> 或者 <code>&#123;</code>、<code>&#125;</code> 就可以向任何的 Ruby 方法中传入代码块。</p>
+<h4 id="eval"><a href="#eval" class="headerlink" title="eval"></a>eval</h4><p>早在几十年前的 Lisp 语言就有了 <code>eval</code> 这个方法，这个方法会将字符串当做代码来执行，也就是说 <code>eval</code> 模糊了代码与数据之间的边界。</p>
+<figure class="highlight ruby"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">&gt; eval <span class="string">&quot;1 + 2 * 3&quot;</span></span><br><span class="line"> =&gt; <span class="number">7</span></span><br></pre></td></tr></table></figure>
+
+<p>有了 <code>eval</code> 方法，我们就获得了更加强大的动态能力，在运行时，使用字符串来改变控制流程，执行代码并可以直接利用当前语言的解释器；而不需要去手动解析字符串然后执行代码。</p>
+<h4 id="格式和约定"><a href="#格式和约定" class="headerlink" title="格式和约定"></a>格式和约定</h4><p>编写 Ruby 脚本时并不需要像 Python 一样对代码的格式有着严格的规定，没有对空行、Tab 的要求，完全可以想怎么写就怎么写，这样极大的增加了 DSL 设计的可能性。</p>
+<p>同时，在一般情况下，Ruby 在方法调用时并不需要添加括号：</p>
+<figure class="highlight ruby"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">puts <span class="string">&quot;Wello World!&quot;</span></span><br><span class="line">puts(<span class="string">&quot;Hello World!&quot;</span>)</span><br></pre></td></tr></table></figure>
+
+<p>这样减少了 DSL 中的噪音，能够帮助我们更加关心语法以及语义上的设计，降低了使用者出错的可能性。</p>
+<p>最后，Ruby 中存在一种特殊的数据格式 <code>Symbol</code>：</p>
+<figure class="highlight ruby"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">&gt; <span class="symbol">:symbol</span>.to_s</span><br><span class="line"> =&gt; <span class="string">&quot;symbol&quot;</span></span><br><span class="line">&gt; <span class="string">&quot;symbol&quot;</span>.to_sym</span><br><span class="line"> =&gt; <span class="symbol">:symbol</span></span><br></pre></td></tr></table></figure>
+
+<p>Symbol 可以通过 Ruby 中内置的方法与字符串之间无缝转换。那么作为一种字符串的替代品，它的使用也能够降低使用者出错的成本并提升使用体验，我们并不需要去写两边加上引号的字符串，只需要以 <code>:</code> 开头就能创建一个 Symbol 对象。</p>
+<h3 id="Podfile-是什么"><a href="#Podfile-是什么" class="headerlink" title="Podfile 是什么"></a>Podfile 是什么</h3><p>对 Ruby 有了一些了解之后，我们就可以再看一下使用 CocoaPods 的工程中的 Podfile 到底是什么了：</p>
+<figure class="highlight ruby"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">source <span class="string">&#x27;https://github.com/CocoaPods/Specs.git&#x27;</span></span><br><span class="line"></span><br><span class="line">target <span class="string">&#x27;Demo&#x27;</span> <span class="keyword">do</span></span><br><span class="line">	pod <span class="string">&#x27;Mantle&#x27;</span>, <span class="string">&#x27;~&gt; 1.5.1&#x27;</span></span><br><span class="line">	...</span><br><span class="line"><span class="keyword">end</span></span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>如果不了解 iOS 开发后者没有使用过 CocoaPods，笔者在这里简单介绍一下这个文件中的一些信息。</p>
+<p><code>source</code> 可以看作是存储依赖元信息（包括依赖的对应的 GitHub 地址）的源地址；</p>
+<p><code>target</code> 表示需要添加依赖的工程的名字；</p>
+<p><code>pod</code> 表示依赖，<code>Mantle</code> 为依赖的框架，后面是版本号。</p>
+</blockquote>
+<p>上面是一个使用 Podfile 定义依赖的一个例子，不过 Podfile 对约束的描述其实是这样的：</p>
+<figure class="highlight ruby"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">source(<span class="string">&#x27;https://github.com/CocoaPods/Specs.git&#x27;</span>)</span><br><span class="line"></span><br><span class="line">target(<span class="string">&#x27;Demo&#x27;</span>) <span class="keyword">do</span></span><br><span class="line">	pod(<span class="string">&#x27;Mantle&#x27;</span>, <span class="string">&#x27;~&gt; 1.5.1&#x27;</span>)</span><br><span class="line">	...</span><br><span class="line"><span class="keyword">end</span></span><br></pre></td></tr></table></figure>
+
+<p>Podfile 中对于约束的描述，其实都可以看作是代码的简写，在解析时会当做 Ruby 代码来执行。</p>
+<h3 id="简单搞个-Embedded-DSL"><a href="#简单搞个-Embedded-DSL" class="headerlink" title="简单搞个 Embedded DSL"></a>简单搞个 Embedded DSL</h3><p>使用 Ruby 实现嵌入式 DSL 一般需要三个步骤，这里以 CocoaPods 为例进行简单介绍：</p>
+<ul>
+<li>创建一个 Podfile 中“代码”执行的上下文，也就是一些方法；</li>
+<li>读取 Podfile 中的内容到脚本中；</li>
+<li>使用 <code>eval</code> 在上下文中执行 Podfile 中的“代码”；</li>
+</ul>
+<h4 id="原理"><a href="#原理" class="headerlink" title="原理"></a>原理</h4><p>CocoaPods 对于 DSL 的实现基本上就是我们创建一个 DSL 的过程，定义一系列必要的方法，比如 <code>source</code>、<code>pod</code> 等等，创造一个执行的上下文；然后去读存储 DSL 的文件，并且使用 <code>eval</code> 执行。</p>
+<p><strong>信息的传递一般都是通过参数</strong>来进行的，比如：</p>
+<figure class="highlight ruby"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">source <span class="string">&#x27;https://github.com/CocoaPods/Specs.git&#x27;</span></span><br></pre></td></tr></table></figure>
+
+<p><code>source</code> 方法的参数就是依赖元信息 <code>Specs</code> 的 Git 地址，在 <code>eval</code> 执行时就会被读取到 CocoaPods 中，然后进行分析。</p>
+<h4 id="实现"><a href="#实现" class="headerlink" title="实现"></a>实现</h4><p>下面是一个非常常见的 Podfile 内容：</p>
+<figure class="highlight ruby"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">source <span class="string">&#x27;http://source.git&#x27;</span></span><br><span class="line">platform <span class="symbol">:ios</span>, <span class="string">&#x27;8.0&#x27;</span></span><br><span class="line"></span><br><span class="line">target <span class="string">&#x27;Demo&#x27;</span> <span class="keyword">do</span></span><br><span class="line">    pod <span class="string">&#x27;AFNetworking&#x27;</span></span><br><span class="line">    pod <span class="string">&#x27;SDWebImage&#x27;</span></span><br><span class="line">    pod <span class="string">&#x27;Masonry&#x27;</span></span><br><span class="line">    pod <span class="string">&quot;Typeset&quot;</span></span><br><span class="line">    pod <span class="string">&#x27;BlocksKit&#x27;</span></span><br><span class="line">    pod <span class="string">&#x27;Mantle&#x27;</span></span><br><span class="line">    pod <span class="string">&#x27;IQKeyboardManager&#x27;</span></span><br><span class="line">    pod <span class="string">&#x27;IQDropDownTextField&#x27;</span></span><br><span class="line"><span class="keyword">end</span></span><br></pre></td></tr></table></figure>
+
+<p>因为这里的 <code>source</code>、<code>platform</code>、<code>target</code> 以及 <code>pod</code> 都是方法，所以在这里我们需要构建一个包含上述方法的上下文：</p>
+<figure class="highlight ruby"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># eval_pod.rb</span></span><br><span class="line"><span class="variable">$hash_value</span> = &#123;&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">source</span><span class="params">(url)</span></span></span><br><span class="line"><span class="keyword">end</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">target</span><span class="params">(target)</span></span></span><br><span class="line"><span class="keyword">end</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">platform</span><span class="params">(platform, version)</span></span></span><br><span class="line"><span class="keyword">end</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">pod</span><span class="params">(pod)</span></span></span><br><span class="line"><span class="keyword">end</span></span><br></pre></td></tr></table></figure>
+
+<p>使用一个全局变量 <code>hash_value</code> 存储 Podfile 中指定的依赖，并且构建了一个 Podfile 解析脚本的骨架；我们先不去完善这些方法的实现细节，先尝试一下读取 Podfile 中的内容并执行 <code>eval</code> 看看会不会有问题。</p>
+<p>在 <code>eval_pod.rb</code> 文件的最下面加入这几行代码：</p>
+<figure class="highlight ruby"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">content = File.read <span class="string">&#x27;./Podfile&#x27;</span></span><br><span class="line">eval content</span><br><span class="line">p <span class="variable">$hash</span>_value</span><br></pre></td></tr></table></figure>
+
+<p>这里读取了 Podfile 文件中的内容，并把其中的内容当做字符串执行，最后打印 <code>hash_value</code> 的值。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ ruby eval_pod.rb</span><br></pre></td></tr></table></figure>
+
+<p>运行这段 Ruby 代码虽然并没有什么输出，但是并没有报出任何的错误，接下来我们就可以完善这些方法了：</p>
+<figure class="highlight ruby"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">source</span><span class="params">(url)</span></span></span><br><span class="line">    <span class="variable">$hash_value</span>[<span class="string">&#x27;source&#x27;</span>] = url</span><br><span class="line"><span class="keyword">end</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">target</span><span class="params">(target)</span></span></span><br><span class="line">    targets = <span class="variable">$hash_value</span>[<span class="string">&#x27;targets&#x27;</span>]</span><br><span class="line">    targets = [] <span class="keyword">if</span> targets == <span class="literal">nil</span></span><br><span class="line">    targets &lt;&lt; target</span><br><span class="line">    <span class="variable">$hash_value</span>[<span class="string">&#x27;targets&#x27;</span>] = targets</span><br><span class="line">    <span class="keyword">yield</span> <span class="keyword">if</span> block_given?</span><br><span class="line"><span class="keyword">end</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">platform</span><span class="params">(platform, version)</span></span></span><br><span class="line"><span class="keyword">end</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">pod</span><span class="params">(pod)</span></span></span><br><span class="line">    pods = <span class="variable">$hash_value</span>[<span class="string">&#x27;pods&#x27;</span>]</span><br><span class="line">    pods = [] <span class="keyword">if</span> pods == <span class="literal">nil</span></span><br><span class="line">    pods &lt;&lt; pod</span><br><span class="line">    <span class="variable">$hash_value</span>[<span class="string">&#x27;pods&#x27;</span>] = pods</span><br><span class="line"><span class="keyword">end</span></span><br></pre></td></tr></table></figure>
+
+<p>在添加了这些方法的实现之后，再次运行脚本就会得到 Podfile 中的依赖信息了，不过这里的实现非常简单的，很多情况都没有处理：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ ruby eval_pod.rb</span><br><span class="line">&#123;<span class="string">&quot;source&quot;</span>=&gt;<span class="string">&quot;http://source.git&quot;</span>, <span class="string">&quot;targets&quot;</span>=&gt;[<span class="string">&quot;Demo&quot;</span>], <span class="string">&quot;pods&quot;</span>=&gt;[<span class="string">&quot;AFNetworking&quot;</span>, <span class="string">&quot;SDWebImage&quot;</span>, <span class="string">&quot;Masonry&quot;</span>, <span class="string">&quot;Typeset&quot;</span>, <span class="string">&quot;BlocksKit&quot;</span>, <span class="string">&quot;Mantle&quot;</span>, <span class="string">&quot;IQKeyboardManager&quot;</span>, <span class="string">&quot;IQDropDownTextField&quot;</span>]&#125;</span><br></pre></td></tr></table></figure>
+
+<p>不过使用 Ruby 构建一个嵌入式 DSL 的过程大概就是这样，使用语言内建的特性来进行创作，创造出一个在使用时看起来并不像代码的 DSL。</p>
+<h2 id="写在后面"><a href="#写在后面" class="headerlink" title="写在后面"></a>写在后面</h2><p>在最后，笔者想说的是，当我们在某一个领域经常需要解决重复性问题时，可以考虑实现一个 DSL 专门用来解决这些类似的问题。</p>
+<p>而使用嵌入式 DSL 来解决这些问题是一个非常好的办法，我们并不需要重新实现解释器，也可以利用宿主语言的抽象能力。</p>
+<p>同时，在嵌入式 DSL 扩展了 DSL 的范畴之后，不要纠结于某些东西到底是框架还是领域特定语言，这些都不重要，重要的是，在遇到了某些问题时，我们能否跳出来，使用文中介绍的方法减轻我们的工作量。</p>
+<h2 id="Reference"><a href="#Reference" class="headerlink" title="Reference"></a>Reference</h2><ul>
+<li>[No Silver Bullet—Essence and Accidents of Software Engineering](No Silver Bullet—Essence and Accidents of Software Engineering)</li>
+<li><a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Domain-specific_language">Domain-specific language</a></li>
+<li><a target="_blank" rel="noopener" href="http://martinfowler.com/bliki/DomainSpecificLanguage.html">DomainSpecificLanguage</a></li>
+<li><a target="_blank" rel="noopener" href="http://taligarsiel.com/Projects/howbrowserswork1.htm">How browsers work</a></li>
+</ul>
+<h2 id="其它"><a href="#其它" class="headerlink" title="其它"></a>其它</h2><blockquote>
+<p>GitHub Repo：<a target="_blank" rel="noopener" href="https://github.com/draveness/iOS-Source-Code-Analyze">iOS-Source-Code-Analyze</a></p>
+</blockquote>
+<blockquote>
+<p>Source: <a target="_blank" rel="noopener" href="https://draveness.me/dsl">https://draveness.me/dsl</a></p>
+</blockquote>
+
+    </article>
+    <!-- license  -->
+    
+        <div class="license-wrapper">
+            <p>Author：<a href="https://tenloy.github.io">Tenloy</a>
+            <p>原文链接：<a href="https://tenloy.github.io/2021/05/19/DSL.html">https://tenloy.github.io/2021/05/19/DSL.html</a>
+            <p>发表日期：2021.05.19 , 10:42 AM</p>
+            <p>更新日期：2024.04.07 , 7:24 PM</p>
+            <p>版权声明：本文采用<a rel="license noopener" target="_blank" href="http://creativecommons.org/licenses/by-nc/4.0/">Crative Commons 4.0 许可协议</a>进行许可</p>
+        </div>
+    
+    <!-- paginator  -->
+    <ul class="post-paginator">
+        <li class="next">
+            
+                <div class="nextSlogan">Next Post</div>
+                <a href= "/2021/05/27/Coroutine.html" title= "[转] 什么是协程">
+                    <div class="nextTitle">[转] 什么是协程</div>
+                </a>
+            
+        </li>
+        <li class="previous">
+            
+                <div class="prevSlogan">Previous Post</div>
+                <a href= "/2021/05/03/iOS-private-pod.html" title= "私有Pod库部署">
+                    <div class="prevTitle">私有Pod库部署</div>
+                </a>
+            
+        </li>
+    </ul>
+    <!-- 评论插件 -->
+    <!-- 来必力City版安装代码 -->
+
+<!-- City版安装代码已完成 -->
+    
+    
+    <!-- gitalk评论 -->
+
+    <!-- utteranc评论 -->
+
+    <!-- partial('_partial/comment/changyan') -->
+    <!--PC版-->
+
+
+    
+    
+
+    <!-- 评论 -->
+</main>
+            <!-- profile -->
+            
+        </div>
+        <footer class="footer footer-unloaded">
+    <!-- social  -->
+    
+    <div class="social">
+        
+    
+        
+            
+                <a href="mailto:luotengoto@163.com" class="iconfont-archer email" title=email ></a>
+            
+        
+    
+        
+            
+                <a href="//github.com/Tenloy" class="iconfont-archer github" target="_blank" title=github></a>
+            
+        
+    
+        
+            
+                <a href="https://www.jianshu.com/u/8db1bc12db9f" class="iconfont-jian jianshu" target="_blank" title=jianshu></a>
+            
+        
+    
+        
+            
+                <a href="/atom.xml" class="iconfont-archer rss" target="_blank" title=rss></a>
+            
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+
+    </div>
+    
+    <!-- powered by Hexo  -->
+    <div class="copyright">
+        <span id="hexo-power">Powered by <a href="https://hexo.io/" target="_blank">Hexo</a></span><span class="iconfont-archer power">&#xe635;</span><span id="theme-info">theme <a href="https://github.com/fi3ework/hexo-theme-archer" target="_blank">Archer</a></span>
+    </div>
+    <!-- 不蒜子  -->
+    
+    <div class="busuanzi-container">
+    
+     
+    <span id="busuanzi_container_site_pv">PV: <span id="busuanzi_value_site_pv"></span> :)</span>
+    
+    </div>
+    
+</footer>
+    </div>
+    <!-- toc -->
+    
+    <div class="toc-wrapper" style=
+    
+
+
+
+
+
+
+
+top:40vh;
+
+    >
+        <div class="toc-catalog">
+            <span class="iconfont-archer catalog-icon">&#xe613;</span><span>CATALOG</span>
+        </div>
+        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%B2%A1%E6%9C%89%E9%93%B6%E5%BC%B9%EF%BC%9F"><span class="toc-text">没有银弹？</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#DSL-%E6%98%AF%E4%BB%80%E4%B9%88%EF%BC%9F"><span class="toc-text">DSL 是什么？</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%87%A0%E4%B8%AA%E6%A0%97%E5%AD%90"><span class="toc-text">几个栗子</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Features"><span class="toc-text">Features</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%9E%84%E5%BB%BA-DSL"><span class="toc-text">构建 DSL</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%AE%BE%E8%AE%A1%E5%8E%9F%E5%88%99%E5%92%8C%E5%A6%A5%E5%8D%8F"><span class="toc-text">设计原则和妥协</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Embedded-DSL%EF%BC%88%E5%B5%8C%E5%85%A5%E5%BC%8F-DSL%EF%BC%89"><span class="toc-text">Embedded DSL（嵌入式 DSL）</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Rails-%E5%92%8C-Embedded-DSL"><span class="toc-text">Rails 和 Embedded DSL</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Ruby%E3%80%81-DSL-%E5%92%8C-iOS"><span class="toc-text">Ruby、 DSL 和 iOS</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Why-Ruby%EF%BC%9F"><span class="toc-text">Why Ruby？</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E4%B8%80%E5%88%87%E7%9A%86%E5%AF%B9%E8%B1%A1"><span class="toc-text">一切皆对象</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#block"><span class="toc-text">block</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#eval"><span class="toc-text">eval</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%A0%BC%E5%BC%8F%E5%92%8C%E7%BA%A6%E5%AE%9A"><span class="toc-text">格式和约定</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Podfile-%E6%98%AF%E4%BB%80%E4%B9%88"><span class="toc-text">Podfile 是什么</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%AE%80%E5%8D%95%E6%90%9E%E4%B8%AA-Embedded-DSL"><span class="toc-text">简单搞个 Embedded DSL</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%8E%9F%E7%90%86"><span class="toc-text">原理</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%AE%9E%E7%8E%B0"><span class="toc-text">实现</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%86%99%E5%9C%A8%E5%90%8E%E9%9D%A2"><span class="toc-text">写在后面</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Reference"><span class="toc-text">Reference</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%B6%E5%AE%83"><span class="toc-text">其它</span></a></li></ol>
+    </div>
+    
+    <div class="back-top iconfont-archer">&#xe639;</div>
+    <div class="sidebar sidebar-hide">
+    <ul class="sidebar-tabs sidebar-tabs-active-0">
+        <li class="sidebar-tab-categories"><span class="iconfont-archer">&#xe666;</span><span class="tab-name">Cate</span></li>
+        <li class="sidebar-tab-archives"><span class="iconfont-archer">&#xe67d;</span><span class="tab-name">Archive</span></li>
+        <li class="sidebar-tab-tags"><span class="iconfont-archer">&#xe61b;</span><span class="tab-name">Tag</span></li>
+    </ul>
+    <div class="sidebar-content sidebar-content-show-archive">
+        <div class="sidebar-panel-categories">
+    <div class="sidebar-categories-name">
+    
+    
+    
+    
+    
+        <span class="sidebar-category-name" data-categories="数据结构与算法"><span class="iconfont-archer">&#xe60a;</span>数据结构与算法</span>
+    
+        <span class="sidebar-category-name" data-categories="计算机组成原理"><span class="iconfont-archer">&#xe60a;</span>计算机组成原理</span>
+    
+        <span class="sidebar-category-name" data-categories="计算机网络"><span class="iconfont-archer">&#xe60a;</span>计算机网络</span>
+    
+        <span class="sidebar-category-name" data-categories="汇编语言"><span class="iconfont-archer">&#xe60a;</span>汇编语言</span>
+    
+        <span class="sidebar-category-name" data-categories="数据的存储与传输"><span class="iconfont-archer">&#xe60a;</span>数据的存储与传输</span>
+    
+        <span class="sidebar-category-name" data-categories="操作系统"><span class="iconfont-archer">&#xe60a;</span>操作系统</span>
+    
+        <span class="sidebar-category-name" data-categories="互联网标准RFC"><span class="iconfont-archer">&#xe60a;</span>互联网标准RFC</span>
+    
+        <span class="sidebar-category-name" data-categories="编译链接与装载"><span class="iconfont-archer">&#xe60a;</span>编译链接与装载</span>
+    
+        <span class="sidebar-category-name" data-categories="iOS"><span class="iconfont-archer">&#xe60a;</span>iOS</span>
+    
+        <span class="sidebar-category-name" data-categories="架构与设计模式"><span class="iconfont-archer">&#xe60a;</span>架构与设计模式</span>
+    
+        <span class="sidebar-category-name" data-categories="图形处理与渲染"><span class="iconfont-archer">&#xe60a;</span>图形处理与渲染</span>
+    
+        <span class="sidebar-category-name" data-categories="软件工程"><span class="iconfont-archer">&#xe60a;</span>软件工程</span>
+    
+        <span class="sidebar-category-name" data-categories="音视频处理"><span class="iconfont-archer">&#xe60a;</span>音视频处理</span>
+    
+        <span class="sidebar-category-name" data-categories="DSL"><span class="iconfont-archer">&#xe60a;</span>DSL</span>
+    
+        <span class="sidebar-category-name" data-categories="Swift"><span class="iconfont-archer">&#xe60a;</span>Swift</span>
+    
+        <span class="sidebar-category-name" data-categories="Git"><span class="iconfont-archer">&#xe60a;</span>Git</span>
+    
+        <span class="sidebar-category-name" data-categories="Web"><span class="iconfont-archer">&#xe60a;</span>Web</span>
+    
+    </div>
+    <div class="iconfont-archer sidebar-categories-empty">&#xe678;</div>
+    <div class="sidebar-categories-list"></div>
+</div>
+          <div class="sidebar-panel-archives">
+    <!-- 在ejs中将archive按照时间排序 -->
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    <div class="total-and-search">
+        <div class="total-archive">
+        Total : 76
+        </div>
+        <!-- search  -->
+        
+            <div class="site-search popup-trigger tl-side-search"> 
+                <span class="iconfont-jian search-icon">&#xe7fc;搜索</span>
+            </div>
+        
+    </div>
+    
+    <div class="post-archive">
+    
+    
+    
+    
+    <div class="archive-year"> 2022 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/05</span><a class="archive-post-title" href= "/2022/05/05/sqlite.html" >iOS SQLite的使用与优化</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/28</span><a class="archive-post-title" href= "/2022/04/28/mmap.html" >内存映射mmap函数的原理与应用</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/18</span><a class="archive-post-title" href= "/2022/03/18/avfoundation.html" >AVFoundation Programming Guide(译)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/17</span><a class="archive-post-title" href= "/2022/03/17/avframework.html" >iOS音视频库概述</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/09</span><a class="archive-post-title" href= "/2022/02/09/OAuth.html" >[转] OAuth 2.0简述</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/18</span><a class="archive-post-title" href= "/2022/01/18/wkwebview-buges.html" >WKWebView使用过程中遇到的坑</a>
+        </li>
+    
+    
+    
+    
+    
+        </ul>
+    
+    <div class="archive-year"> 2021 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/22</span><a class="archive-post-title" href= "/2021/11/22/bit-calculation.html" >[转] 位运算实现加、减、乘、除运算</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/10</span><a class="archive-post-title" href= "/2021/11/10/git-use.html" >Git的使用总结</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/21</span><a class="archive-post-title" href= "/2021/10/21/dyld-objc.html" >(七) dyld与Objc—_objc_init、map_images、load_images</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/18</span><a class="archive-post-title" href= "/2021/10/18/compile-dynamic-link.html" >(六) Mach-O 文件的动态链接、库、Dyld(含dlopen)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/14</span><a class="archive-post-title" href= "/2021/10/14/compile-vm-asrl.html" >(五) Mach-O 文件之进程(虚拟)地址空间、ASLR</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/10</span><a class="archive-post-title" href= "/2021/10/10/compile-load.html" >(四) Mach-O 文件的装载</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/08</span><a class="archive-post-title" href= "/2021/10/08/compile-static-link.html" >(三) Mach-O 文件的静态链接</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/06</span><a class="archive-post-title" href= "/2021/10/06/compile-macho.html" >(二) Mach-O 文件结构</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/05</span><a class="archive-post-title" href= "/2021/10/05/compile-clang-llvm.html" >(一) Clang/LLVM 介绍、OC 程序的编译过程</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/02</span><a class="archive-post-title" href= "/2021/10/02/makefile.html" >[转] Make 命令的使用与NodeJS案例</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/28</span><a class="archive-post-title" href= "/2021/09/28/architectural-pattern.html" >常见架构模式: MVC、MVP、MVVM、VIPER</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/25</span><a class="archive-post-title" href= "/2021/09/25/design-pattern.html" >常见的设计模式</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/20</span><a class="archive-post-title" href= "/2021/09/20/program-thought.html" >常见的编程范式</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/15</span><a class="archive-post-title" href= "/2021/09/15/graphics-processing-case.html" >图形处理(三) - 图形处理实践案例</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/15</span><a class="archive-post-title" href= "/2021/09/15/graphics-processing.html" >图形处理(二) - 图形与视频处理相关的框架</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/13</span><a class="archive-post-title" href= "/2021/09/13/image-encode-decode.html" >图形处理(一) - 图片的加载与编解码</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/12</span><a class="archive-post-title" href= "/2021/09/12/iOS-Render.html" >[转] iOS离屏渲染原理及优化</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/11</span><a class="archive-post-title" href= "/2021/09/11/core-animation03.html" >Core-Animation(三) - 渲染流程探究及性能分析</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/09</span><a class="archive-post-title" href= "/2021/09/09/core-animation02.html" >Core Animation(二) - 隐式动画、CATransaction与CAAction</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/07</span><a class="archive-post-title" href= "/2021/09/07/core-animation01.html" >Core Animation(一) - UIView与CALayer、布局与绘制</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/05</span><a class="archive-post-title" href= "/2021/09/05/AFN-Analyse.html" >[转] AFN框架实现解析</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/04</span><a class="archive-post-title" href= "/2021/09/04/nrl-session.html" >NSURLSession概述</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/02</span><a class="archive-post-title" href= "/2021/09/02/Log.html" >移动端日志库设计</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/01</span><a class="archive-post-title" href= "/2021/08/01/Crash-Monitor.html" >iOS崩溃监控与分析</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/30</span><a class="archive-post-title" href= "/2021/07/30/Lag-Monitor.html" >iOS卡顿监控</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/29</span><a class="archive-post-title" href= "/2021/07/29/SwiftUI.html" >SwiftUI</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/29</span><a class="archive-post-title" href= "/2021/07/29/Swift-Version-History.html" >Swift版本更新API介绍</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/26</span><a class="archive-post-title" href= "/2021/07/26/RunLoop-Reposted-From-ibireme.html" >[转] 深入理解RunLoop—ibireme</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/25</span><a class="archive-post-title" href= "/2021/07/25/Protocol-Buffer.html" >Protocol Buffer的基本介绍</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/24</span><a class="archive-post-title" href= "/2021/07/24/base64.html" >Base64编码及iOS中的Base64</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/23</span><a class="archive-post-title" href= "/2021/07/23/chinese-encode.html" >[转] 彻底弄懂常见的7种中文字符编码</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/10</span><a class="archive-post-title" href= "/2021/07/10/p-npc-np.html" >P问题、NP问题、NPC、NP-Hard、P=NP?</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/30</span><a class="archive-post-title" href= "/2021/06/30/probability.html" >(六) 概率算法</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/28</span><a class="archive-post-title" href= "/2021/06/28/branch-bound.html" >(五) 分支限界算法</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/26</span><a class="archive-post-title" href= "/2021/06/26/back-track.html" >(四) 回溯法(试探算法)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/24</span><a class="archive-post-title" href= "/2021/06/24/greed.html" >(三) 贪心算法</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/22</span><a class="archive-post-title" href= "/2021/06/22/dynamic-programming.html" >(二) 动态规划算法</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/20</span><a class="archive-post-title" href= "/2021/06/20/divide-and-conquer.html" >(一) 分治算法及减治、变治算法</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/18</span><a class="archive-post-title" href= "/2021/06/18/several-programming.html" >穷举、递推、迭代(辗转法)、递归算法</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/15</span><a class="archive-post-title" href= "/2021/06/15/datastruction-overview.html" >数据结构与算法概述</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/06</span><a class="archive-post-title" href= "/2021/06/06/Web-Module.html" >前端各种模块化方案总结</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/27</span><a class="archive-post-title" href= "/2021/05/27/Fiber.html" >[转] 最通俗的 React Fiber(时间分片)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/27</span><a class="archive-post-title" href= "/2021/05/27/Coroutine.html" >[转] 什么是协程</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/19</span><a class="archive-post-title" href= "/2021/05/19/DSL.html" >[转] 谈谈DSL以及DSL的应用（以CocoaPods 为例）</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/03</span><a class="archive-post-title" href= "/2021/05/03/iOS-private-pod.html" >私有Pod库部署</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/29</span><a class="archive-post-title" href= "/2021/04/29/iOS-ComRouter.html" >[转] iOS的组件化方案</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/27</span><a class="archive-post-title" href= "/2021/04/27/iOS-CI.html" >iOS的持续集成</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/26</span><a class="archive-post-title" href= "/2021/04/26/Containers.html" >常见的容器概念：Linux容器、Docker容器、服务器容器</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/24</span><a class="archive-post-title" href= "/2021/04/24/Dock-Reprinted-from-RuanYIFeng.html" >[转] Docker入门教程</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/20</span><a class="archive-post-title" href= "/2021/04/20/Sync-Async.html" >同步和异步解读及编程中的使用场景</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/17</span><a class="archive-post-title" href= "/2021/04/17/Arm64-Handbook.html" >ARM64指令简易手册</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/16</span><a class="archive-post-title" href= "/2021/04/16/Arm64-Introduce.html" >iOS需要了解的ARM64汇编</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/13</span><a class="archive-post-title" href= "/2021/04/13/Command-Line.html" >CLI Shell、Terminal、脚本(语言)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/10</span><a class="archive-post-title" href= "/2021/04/10/Ins-SysCall-Kernel-Shell.html" >指令、系统调用、库、Shell、APP的层次关系</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/08</span><a class="archive-post-title" href= "/2021/04/08/ISA-Microarch-Soc.html" >指令集、微架构、手机芯片(Soc)及ARM的介绍</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/02</span><a class="archive-post-title" href= "/2021/04/02/Engineering.html" >工程化、动态化、容器化、组件化</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/01</span><a class="archive-post-title" href= "/2021/04/01/GithubPages-Hexo.html" >使用Hexo+Github Pages搭建个人博客</a>
+        </li>
+    
+    
+    
+    
+    
+        </ul>
+    
+    <div class="archive-year"> 2020 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/22</span><a class="archive-post-title" href= "/2020/12/22/aes.html" >数据加密 — 对称加密(以AES为例)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/21</span><a class="archive-post-title" href= "/2020/12/21/aes-standard.html" >[转] AES标准及Rijndael算法解析</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/20</span><a class="archive-post-title" href= "/2020/12/20/asymmetric.html" >数据加密 — 非对称加密(加签/加密，以RSA为例)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/09</span><a class="archive-post-title" href= "/2020/12/09/pki.html" >常见的PKI标准(X.509、PKCS)及证书相关介绍</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/28</span><a class="archive-post-title" href= "/2020/10/28/runtime-data-structure.html" >Objc Runtime总结</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/11</span><a class="archive-post-title" href= "/2020/09/11/GCD.html" >Objective-C — 深入浅出GCD常用API</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/06</span><a class="archive-post-title" href= "/2020/09/06/oc-block.html" >Objective-C — Block</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/26</span><a class="archive-post-title" href= "/2020/08/26/AutoreleasePool.html" >AutoreleasePool</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/24</span><a class="archive-post-title" href= "/2020/08/24/oc-memory-manage.html" >Objective-C — 内存管理</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/01</span><a class="archive-post-title" href= "/2020/08/01/ui-navigation-bar.html" >[转] 导航栏的架构介绍及使用</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/15</span><a class="archive-post-title" href= "/2020/07/15/symbol-decl.html" >变量声明、函数声明的作用</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/01</span><a class="archive-post-title" href= "/2020/07/01/ios-apns.html" >iOS APNS接收逻辑梳理</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/13</span><a class="archive-post-title" href= "/2020/06/13/ios-vest.html" >iOS制作马甲总结</a>
+        </li>
+    
+    </div>
+  </div>
+        <div class="sidebar-panel-tags">
+    <div class="sidebar-tags-name">
+    
+        <span class="sidebar-tag-name" data-tags="AutoreleasePool"><span class="iconfont-archer">&#xe606;</span>AutoreleasePool</span>
+    
+        <span class="sidebar-tag-name" data-tags="GCD"><span class="iconfont-archer">&#xe606;</span>GCD</span>
+    
+        <span class="sidebar-tag-name" data-tags="hexo"><span class="iconfont-archer">&#xe606;</span>hexo</span>
+    
+        <span class="sidebar-tag-name" data-tags="ISA"><span class="iconfont-archer">&#xe606;</span>ISA</span>
+    
+        <span class="sidebar-tag-name" data-tags="Microarch"><span class="iconfont-archer">&#xe606;</span>Microarch</span>
+    
+        <span class="sidebar-tag-name" data-tags="Soc"><span class="iconfont-archer">&#xe606;</span>Soc</span>
+    
+        <span class="sidebar-tag-name" data-tags="ARM64"><span class="iconfont-archer">&#xe606;</span>ARM64</span>
+    
+        <span class="sidebar-tag-name" data-tags="多线程"><span class="iconfont-archer">&#xe606;</span>多线程</span>
+    
+        <span class="sidebar-tag-name" data-tags="CLI"><span class="iconfont-archer">&#xe606;</span>CLI</span>
+    
+        <span class="sidebar-tag-name" data-tags="Shell"><span class="iconfont-archer">&#xe606;</span>Shell</span>
+    
+        <span class="sidebar-tag-name" data-tags="Docker"><span class="iconfont-archer">&#xe606;</span>Docker</span>
+    
+        <span class="sidebar-tag-name" data-tags="DSL"><span class="iconfont-archer">&#xe606;</span>DSL</span>
+    
+        <span class="sidebar-tag-name" data-tags="协程"><span class="iconfont-archer">&#xe606;</span>协程</span>
+    
+        <span class="sidebar-tag-name" data-tags="dp"><span class="iconfont-archer">&#xe606;</span>dp</span>
+    
+        <span class="sidebar-tag-name" data-tags="Fiber"><span class="iconfont-archer">&#xe606;</span>Fiber</span>
+    
+        <span class="sidebar-tag-name" data-tags="SwiftUI"><span class="iconfont-archer">&#xe606;</span>SwiftUI</span>
+    
+        <span class="sidebar-tag-name" data-tags="LagMonitor"><span class="iconfont-archer">&#xe606;</span>LagMonitor</span>
+    
+        <span class="sidebar-tag-name" data-tags="Swift-Syntax"><span class="iconfont-archer">&#xe606;</span>Swift-Syntax</span>
+    
+        <span class="sidebar-tag-name" data-tags="Log"><span class="iconfont-archer">&#xe606;</span>Log</span>
+    
+        <span class="sidebar-tag-name" data-tags="RunLoop"><span class="iconfont-archer">&#xe606;</span>RunLoop</span>
+    
+        <span class="sidebar-tag-name" data-tags="CrashMonitor"><span class="iconfont-archer">&#xe606;</span>CrashMonitor</span>
+    
+        <span class="sidebar-tag-name" data-tags="AFN"><span class="iconfont-archer">&#xe606;</span>AFN</span>
+    
+    </div>
+    <div class="iconfont-archer sidebar-tags-empty">&#xe678;</div>
+    <div class="tag-load-fail" style="display: none; color: #ccc; font-size: 0.6rem;">
+    缺失模块。<br/>
+    1、请确保node版本大于6.2<br/>
+    2、在博客根目录（注意不是archer根目录）执行以下命令：<br/>
+    <span style="color: #f75357; font-size: 1rem; line-height: 2rem;">npm i hexo-generator-json-content --save</span><br/>
+    3、在根目录_config.yml里添加配置：
+    <pre style="color: #787878; font-size: 0.6rem;">
+jsonContent:
+  meta: false
+  pages: false
+  posts:
+    title: true
+    date: true
+    path: true
+    text: false
+    raw: false
+    content: false
+    slug: false
+    updated: false
+    comments: false
+    link: false
+    permalink: false
+    excerpt: false
+    categories: true
+    tags: true</pre>
+    </div> 
+    <div class="sidebar-tags-list"></div>
+</div>
+    </div>
+</div> 
+    <script>
+    var siteMeta = {
+        root: "/",
+        author: "Tenloy"
+    }
+</script>
+    <!-- CDN failover -->
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js"></script>
+    <script type="text/javascript">
+        if (typeof window.$ === 'undefined')
+        {
+            console.warn('jquery load from jsdelivr failed, will load local script')
+            document.write('<script src="/lib/jquery.min.js">\x3C/script>')
+        }
+    </script>
+    <script src="/scripts/main.js"></script>
+    <!-- algolia -->
+    
+        <div class="site-search">
+  <div class="algolia-popup popup">
+    <div class="algolia-search">
+      <div class="algolia-search-input-icon">
+        <i class="fa fa-search"></i>
+      </div>
+      <div class="algolia-search-input" id="algolia-search-input"></div>
+    </div>
+
+    <div class="algolia-results">
+      <div id="algolia-stats"></div>
+      <div id="algolia-hits"></div>
+      <div id="algolia-pagination" class="algolia-pagination"></div>
+    </div>
+
+    <span class="popup-btn-close">
+      <i class="iconfont-archer">&#xe609;</i>
+    </span>
+  </div>
+</div>
+        <script src="https://cdn.jsdelivr.net/npm/instantsearch.js@2.8.0/dist/instantsearch.min.js" defer></script>
+        <script src="/scripts/search.js" defer></script>
+    
+    <!-- busuanzi  -->
+    
+    <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    
+    <!-- CNZZ  -->
+    
+    </div>
+    <!-- async load share.js -->
+    
+        <script src="/scripts/share.js" async></script>    
+     
+    </body>
+</html>
+
+
