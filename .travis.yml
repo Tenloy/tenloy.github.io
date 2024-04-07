@@ -1,0 +1,22 @@
+sudo: false
+language: node_js
+node_js:
+    - 12
+cache: npm
+branches:
+    only:
+      - master # build master branch only
+script:
+    - hexo clean && hexo generate
+    - export HEXO_ALGOLIA_INDEXING_KEY=$Algolia_APIKey
+    # - hexo algolia 因为自动部署服务器，是去install的hexo algolia新包，改动不生效，那么手动调用吧。
+    # TODO: 或者fork该工具，修改之后，重新上传，然后依赖这个新包。
+deploy:
+    provider: pages
+    skip-cleanup: true
+    github-token: $GH_TOKEN
+    keep-history: true
+    on:
+        branch: master
+    local-dir: public
+
