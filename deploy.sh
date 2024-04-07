@@ -1,9 +1,16 @@
 #!/bin/bash
+work_dir=$(
+    cd "$(dirname "$0")"
+    pwd
+)
+
+cd $work_dir
+pwd
+
 mkdir -p .deploy/.git
 cp -r .git .deploy/
 cd .deploy
-git checkout gh-pages
-git pull
+git checkout gh-pages && git pull
 rm -rf `ls`
 cd ../
 hexo clean && hexo generate
