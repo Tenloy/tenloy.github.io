@@ -1,0 +1,2927 @@
+<!DOCTYPE html>
+<html lang="en">
+    <!-- title -->
+
+
+
+
+<!-- keywords -->
+
+
+
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" >
+    <meta name="author" content="Tenloy">
+    <meta name="renderer" content="webkit">
+    <meta name="copyright" content="Tenloy">
+    
+    <meta name="keywords" content="Tenloy,iOS,Swift">
+    
+    <meta name="description" content="学习 生活 记录 回忆">
+    <meta name="description" content="iOS 数据库方案目前移动端数据库方案按其实现可分为两类，  关系型数据库，代表有CoreData、FMDB等。 CoreData：它是苹果内建框架，和Xcode深度结合，可以很方便进行ORM；但其上手学习成本较高，不容易掌握。稳定性也堪忧，很容易crash；多线程的支持也比较鸡肋。 FMDB：它基于SQLite封装，对于有SQLite和ObjC基础的开发者来说，简单易懂，可以直接上手；而缺点也正">
+<meta property="og:type" content="article">
+<meta property="og:title" content="iOS SQLite的使用与优化">
+<meta property="og:url" content="https://tenloy.github.io/2022/05/05/sqlite.html">
+<meta property="og:site_name" content="Tenloy&#39;s Blog">
+<meta property="og:description" content="iOS 数据库方案目前移动端数据库方案按其实现可分为两类，  关系型数据库，代表有CoreData、FMDB等。 CoreData：它是苹果内建框架，和Xcode深度结合，可以很方便进行ORM；但其上手学习成本较高，不容易掌握。稳定性也堪忧，很容易crash；多线程的支持也比较鸡肋。 FMDB：它基于SQLite封装，对于有SQLite和ObjC基础的开发者来说，简单易懂，可以直接上手；而缺点也正">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://tenloy.github.io/images/sqlite/21.jpg">
+<meta property="og:image" content="https://tenloy.github.io/images/sqlite/01.jpg">
+<meta property="og:image" content="https://tenloy.github.io/images/sqlite/02.jpg">
+<meta property="og:image" content="https://tenloy.github.io/images/sqlite/03.jpg">
+<meta property="og:image" content="https://tenloy.github.io/images/sqlite/04.png">
+<meta property="og:image" content="https://tenloy.github.io/images/sqlite/05.jpg">
+<meta property="og:image" content="https://tenloy.github.io/images/sqlite/06.jpg">
+<meta property="og:image" content="https://tenloy.github.io/images/sqlite/07.png">
+<meta property="og:image" content="https://tenloy.github.io/images/sqlite/08.jpg">
+<meta property="og:image" content="https://tenloy.github.io/images/sqlite/09.jpg">
+<meta property="og:image" content="https://tenloy.github.io/images/sqlite/10.jpg">
+<meta property="og:image" content="https://tenloy.github.io/images/sqlite/11.jpg">
+<meta property="og:image" content="https://tenloy.github.io/images/sqlite/12.jpg">
+<meta property="og:image" content="https://tenloy.github.io/images/sqlite/13.jpg">
+<meta property="og:image" content="https://tenloy.github.io/images/sqlite/14.jpg">
+<meta property="og:image" content="https://tenloy.github.io/images/sqlite/15.jpg">
+<meta property="og:image" content="https://tenloy.github.io/images/sqlite/16.jpg">
+<meta property="og:image" content="https://tenloy.github.io/images/sqlite/17.jpg">
+<meta property="og:image" content="https://tenloy.github.io/images/sqlite/18.jpg">
+<meta property="og:image" content="https://tenloy.github.io/images/sqlite/19.jpg">
+<meta property="og:image" content="https://tenloy.github.io/images/sqlite/20.jpg">
+<meta property="og:image" content="https://tenloy.github.io/images/sqlite/22.png">
+<meta property="og:image" content="https://tenloy.github.io/images/sqlite/23.png">
+<meta property="og:image" content="https://tenloy.github.io/images/sqlite/24.png">
+<meta property="og:image" content="https://github.com/Tencent/wcdb/wiki/assets/benchmark/baseline_read.png">
+<meta property="og:image" content="https://github.com/Tencent/wcdb/wiki/assets/benchmark/baseline_write.png">
+<meta property="og:image" content="https://github.com/Tencent/wcdb/wiki/assets/benchmark/baseline_batch_write.png">
+<meta property="og:image" content="https://github.com/Tencent/wcdb/wiki/assets/benchmark/multithread_read_read.png">
+<meta property="og:image" content="https://github.com/Tencent/wcdb/wiki/assets/benchmark/multithread_read_write.png">
+<meta property="og:image" content="https://github.com/Tencent/wcdb/wiki/assets/benchmark/multithread_write_write.png">
+<meta property="article:published_time" content="2022-05-05T03:12:33.000Z">
+<meta property="article:modified_time" content="2024-04-07T11:38:00.517Z">
+<meta property="article:author" content="Tenloy">
+<meta property="article:tag" content="Tenloy, iOS, Tenloy Blog, 博客，Swift, 编译, 计算机">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://tenloy.github.io/images/sqlite/21.jpg">
+    <meta http-equiv="Cache-control" content="no-cache">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"/>
+    
+    <title>iOS SQLite的使用与优化 · Tenloy&#39;s Blog</title>
+    <style type="text/css">
+    @font-face {
+        font-family: 'Oswald-Regular';
+        src: url("/font/Oswald-Regular.ttf");
+    }
+
+    body {
+        margin: 0;
+    }
+
+    header,
+    footer,
+    .back-top,
+    .sidebar,
+    .container,
+    .site-intro-meta,
+    .toc-wrapper {
+        display: none;
+    }
+
+    .site-intro {
+        position: relative;
+        z-index: 3;
+        width: 100%;
+        /* height: 50vh; */
+        overflow: hidden;
+    }
+
+    .site-intro-placeholder {
+        position: absolute;
+        z-index: -2;
+        top: 0;
+        left: 0;
+        width: calc(100% + 300px);
+        height: 100%;
+        background: repeating-linear-gradient(-45deg, #444 0, #444 80px, #333 80px, #333 160px);
+        background-position: center center;
+        transform: translate3d(-226px, 0, 0);
+        animation: gradient-move 2.5s ease-out 0s infinite;
+    }
+
+    @keyframes gradient-move {
+        0% {
+            transform: translate3d(-226px, 0, 0);
+        }
+        100% {
+            transform: translate3d(0, 0, 0);
+        }
+    }
+
+</style>
+
+    <link rel="preload" href= "/css/style.css?v=20180824" as="style" onload="this.onload=null;this.rel='stylesheet'" />
+    <link rel="stylesheet" href= "/css/mobile.css?v=20180824" media="(max-width: 980px)">
+    
+    <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.2.5/jquery.fancybox.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'" />
+    
+    <!-- /*! loadCSS. [c]2017 Filament Group, Inc. MIT License */
+/* This file is meant as a standalone workflow for
+- testing support for link[rel=preload]
+- enabling async CSS loading in browsers that do not support rel=preload
+- applying rel preload css once loaded, whether supported or not.
+*/ -->
+<script>
+(function( w ){
+	"use strict";
+	// rel=preload support test
+	if( !w.loadCSS ){
+		w.loadCSS = function(){};
+	}
+	// define on the loadCSS obj
+	var rp = loadCSS.relpreload = {};
+	// rel=preload feature support test
+	// runs once and returns a function for compat purposes
+	rp.support = (function(){
+		var ret;
+		try {
+			ret = w.document.createElement( "link" ).relList.supports( "preload" );
+		} catch (e) {
+			ret = false;
+		}
+		return function(){
+			return ret;
+		};
+	})();
+
+	// if preload isn't supported, get an asynchronous load by using a non-matching media attribute
+	// then change that media back to its intended value on load
+	rp.bindMediaToggle = function( link ){
+		// remember existing media attr for ultimate state, or default to 'all'
+		var finalMedia = link.media || "all";
+
+		function enableStylesheet(){
+			link.media = finalMedia;
+		}
+
+		// bind load handlers to enable media
+		if( link.addEventListener ){
+			link.addEventListener( "load", enableStylesheet );
+		} else if( link.attachEvent ){
+			link.attachEvent( "onload", enableStylesheet );
+		}
+
+		// Set rel and non-applicable media type to start an async request
+		// note: timeout allows this to happen async to let rendering continue in IE
+		setTimeout(function(){
+			link.rel = "stylesheet";
+			link.media = "only x";
+		});
+		// also enable media after 3 seconds,
+		// which will catch very old browsers (android 2.x, old firefox) that don't support onload on link
+		setTimeout( enableStylesheet, 3000 );
+	};
+
+	// loop through link elements in DOM
+	rp.poly = function(){
+		// double check this to prevent external calls from running
+		if( rp.support() ){
+			return;
+		}
+		var links = w.document.getElementsByTagName( "link" );
+		for( var i = 0; i < links.length; i++ ){
+			var link = links[ i ];
+			// qualify links to those with rel=preload and as=style attrs
+			if( link.rel === "preload" && link.getAttribute( "as" ) === "style" && !link.getAttribute( "data-loadcss" ) ){
+				// prevent rerunning on link
+				link.setAttribute( "data-loadcss", true );
+				// bind listeners to toggle media back
+				rp.bindMediaToggle( link );
+			}
+		}
+	};
+
+	// if unsupported, run the polyfill
+	if( !rp.support() ){
+		// run once at least
+		rp.poly();
+
+		// rerun poly on an interval until onload
+		var run = w.setInterval( rp.poly, 500 );
+		if( w.addEventListener ){
+			w.addEventListener( "load", function(){
+				rp.poly();
+				w.clearInterval( run );
+			} );
+		} else if( w.attachEvent ){
+			w.attachEvent( "onload", function(){
+				rp.poly();
+				w.clearInterval( run );
+			} );
+		}
+	}
+
+
+	// commonjs
+	if( typeof exports !== "undefined" ){
+		exports.loadCSS = loadCSS;
+	}
+	else {
+		w.loadCSS = loadCSS;
+	}
+}( typeof global !== "undefined" ? global : this ) );
+</script>
+
+    <link rel="icon" href= "/assets/favicon.ico" />
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.min.js" as="script" />
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js" as="script" />
+    <link rel="preload" href="/scripts/main.js" as="script" />
+    <link rel="preload" as="font" href="/font/Oswald-Regular.ttf" crossorigin>
+    <link rel="preload" as="font" href="https://at.alicdn.com/t/font_327081_1dta1rlogw17zaor.woff" crossorigin>
+    
+        <!-- algolia -->
+        <script>
+            
+            var hits = JSON.parse('{"per_page":10}')
+            var labels = JSON.parse('{"input_placeholder":"Search for Posts","hits_empty":"没有找到任何搜索结果: ${query}","hits_stats":"找到约${hits}条结果（用时${time}ms）"}')
+
+            var algolia = {
+                applicationID: 'V0HYXBS9FB',
+                apiKey: '6550d5de786935564142097c3e78c380',
+                indexName: 'law_blog_index',
+                hits: hits,
+                labels: labels
+            }
+        </script>
+    
+    <!-- fancybox -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.2.5/jquery.fancybox.min.js" defer></script>
+    <!-- 百度统计  -->
+    
+    <!-- 谷歌统计  -->
+    
+<meta name="generator" content="Hexo 5.4.0"><link rel="alternate" href="/atom.xml" title="Tenloy's Blog" type="application/atom+xml">
+</head>
+
+    
+        <body class="post-body">
+    
+    
+<header class="header">
+
+    <div class="read-progress"></div>
+    <div class="header-sidebar-menu">&#xe775;</div>
+    <!-- post页的toggle banner  -->
+    
+    <div class="banner">
+            <div class="blog-title">
+                <a href="/" >Tenloy&#39;s Blog</a>
+            </div>
+            <div class="post-title">
+                <a href="#" class="post-name">iOS SQLite的使用与优化</a>
+            </div>
+    </div>
+    
+    <!-- 将home-link的操作改为应用到header-top-right上 -->
+    <div class="header-top-right">
+        <!-- search  -->
+        
+            <div class="site-search popup-trigger tl-search">
+                <span class="iconfont-jian tl-search-icon">&#xe7fc;搜索</span>
+            </div>
+            
+        <a class="home-link" href=/>Tenloy's Blog</a>
+    </div>
+</header>
+    <div class="wrapper">
+        <div class="site-intro" style="
+
+
+
+
+
+
+
+height:40vh;
+">
+    
+    <!-- 主页  -->
+    
+    
+    <!-- 404页  -->
+            
+    <div class="site-intro-placeholder"></div>
+    <div class="site-intro-img" style="background-image: url(/intro/post-bg.jpg)"></div>
+    <div class="site-intro-meta">
+        <!-- 标题  -->
+        <h1 class="intro-title">
+            <!-- 主页  -->
+            
+            iOS SQLite的使用与优化
+            <!-- 404 -->
+            
+        </h1>
+        <!-- 副标题 -->
+        <p class="intro-subtitle">
+            <!-- 主页副标题  -->
+            
+            
+            <!-- 404 -->
+            
+        </p>
+        <!-- 文章页meta -->
+        
+            <div class="post-intros">
+                <!-- 文章页标签  -->
+                
+                
+                    <div class="post-intro-read">
+                        <span>Word count: <span class="post-count word-count">18.8k</span>Reading time: <span class="post-count reading-time">70 min</span></span>
+                    </div>
+                
+                <div class="post-intro-meta">
+                    <span class="post-intro-calander iconfont-archer">&#xe676;</span>
+                    <span class="post-intro-time">2022/05/05</span>
+                    
+                    <span id="busuanzi_container_page_pv" class="busuanzi-pv">
+                        <span class="iconfont-archer">&#xe602;</span>
+                        <span id="busuanzi_value_page_pv"></span>
+                    </span>
+                    
+                    <span class="shareWrapper">
+                        <span class="iconfont-archer shareIcon">&#xe71d;</span>
+                        <span class="shareText">Share</span>
+                        <ul class="shareList">
+                            <li class="iconfont-archer share-qr" data-type="qr">&#xe75b;
+                                <div class="share-qrcode"></div>
+                            </li>
+                            <li class="iconfont-archer" data-type="weibo">&#xe619;</li>
+                            <li class="iconfont-archer" data-type="qzone">&#xe62e;</li>
+                            <li class="iconfont-archer" data-type="twitter">&#xe634;</li>
+                            <li class="iconfont-archer" data-type="facebook">&#xe67a;</li>
+                        </ul>
+                    </span>
+                </div>
+            </div>
+        
+    </div>
+</div>
+        <script>
+ 
+  // get user agent
+  var browser = {
+    versions: function () {
+      var u = window.navigator.userAgent;
+      return {
+        userAgent: u,
+        trident: u.indexOf('Trident') > -1, //IE内核
+        presto: u.indexOf('Presto') > -1, //opera内核
+        webKit: u.indexOf('AppleWebKit') > -1, //苹果、谷歌内核
+        gecko: u.indexOf('Gecko') > -1 && u.indexOf('KHTML') == -1, //火狐内核
+        mobile: !!u.match(/AppleWebKit.*Mobile.*/), //是否为移动终端
+        ios: !!u.match(/\(i[^;]+;( U;)? CPU.+Mac OS X/), //ios终端
+        android: u.indexOf('Android') > -1 || u.indexOf('Linux') > -1, //android终端或者uc浏览器
+        iPhone: u.indexOf('iPhone') > -1 || u.indexOf('Mac') > -1, //是否为iPhone或者安卓QQ浏览器
+        iPad: u.indexOf('iPad') > -1, //是否为iPad
+        webApp: u.indexOf('Safari') == -1, //是否为web应用程序，没有头部与底部
+        weixin: u.indexOf('MicroMessenger') == -1, //是否为微信浏览器
+        uc: u.indexOf('UCBrowser') > -1 //是否为android下的UC浏览器
+      };
+    }()
+  }
+  console.log("userAgent:" + browser.versions.userAgent);
+
+  // callback
+  function fontLoaded() {
+    console.log('font loaded');
+    if (document.getElementsByClassName('site-intro-meta')) {
+      document.getElementsByClassName('intro-title')[0].classList.add('intro-fade-in');
+      document.getElementsByClassName('intro-subtitle')[0].classList.add('intro-fade-in');
+      var postIntros = document.getElementsByClassName('post-intros')[0]
+      if (postIntros) {
+        postIntros.classList.add('post-fade-in');
+      }
+    }
+  }
+
+  // UC不支持跨域，所以直接显示
+  function asyncCb(){
+    if (browser.versions.uc) {
+      console.log("UCBrowser");
+      fontLoaded();
+    } else {
+      WebFont.load({
+        custom: {
+          families: ['Oswald-Regular']
+        },
+        loading: function () {  //所有字体开始加载
+          // console.log('loading');
+        },
+        active: function () {  //所有字体已渲染
+          fontLoaded();
+        },
+        inactive: function () { //字体预加载失败，无效字体或浏览器不支持加载
+          console.log('inactive: timeout');
+          fontLoaded();
+        },
+        timeout: 5000 // Set the timeout to two seconds
+      });
+    }
+  }
+
+  function asyncErr(){
+    console.warn('script load from CDN failed, will load local script')
+  }
+
+  // load webfont-loader async, and add callback function
+  function async(u, cb, err) {
+    var d = document, t = 'script',
+      o = d.createElement(t),
+      s = d.getElementsByTagName(t)[0];
+    o.src = u;
+    if (cb) { o.addEventListener('load', function (e) { cb(null, e); }, false); }
+    if (err) { o.addEventListener('error', function (e) { err(null, e); }, false); }
+    s.parentNode.insertBefore(o, s);
+  }
+
+  var asyncLoadWithFallBack = function(arr, success, reject) {
+      var currReject = function(){
+        reject()
+        arr.shift()
+        if(arr.length)
+          async(arr[0], success, currReject)
+        }
+
+      async(arr[0], success, currReject)
+  }
+
+  asyncLoadWithFallBack([
+    "https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.min.js", 
+    "https://cdn.bootcss.com/webfont/1.6.28/webfontloader.js",
+    "/lib/webfontloader.min.js"
+  ], asyncCb, asyncErr)
+</script>        
+        <img class="loading" src="/assets/loading.svg" style="display: block; margin: 6rem auto 0 auto; width: 6rem; height: 6rem;" />
+        <div class="container container-unloaded">
+            <main class="main post-page">
+    <article class="article-entry">
+        <h1 id="iOS-数据库方案"><a href="#iOS-数据库方案" class="headerlink" title="iOS 数据库方案"></a>iOS 数据库方案</h1><p>目前移动端数据库方案按其实现可分为两类，</p>
+<ul>
+<li><strong>关系型数据库</strong>，代表有CoreData、FMDB等。<ul>
+<li><strong>CoreData</strong>：它是苹果内建框架，和Xcode深度结合，可以很方便进行ORM；但其上手学习成本较高，不容易掌握。稳定性也堪忧，很容易crash；多线程的支持也比较鸡肋。</li>
+<li><strong>FMDB</strong>：它基于SQLite封装，对于有SQLite和ObjC基础的开发者来说，简单易懂，可以直接上手；而缺点也正是在此，FMDB只是将SQLite的C接口封装成了ObjC接口，没有做太多别的优化，即所谓的胶水代码(Glue Code)。使用过程需要用大量的代码拼接SQL、拼装Object，并不方便。</li>
+</ul>
+</li>
+<li><strong>key-value数据库</strong>，代表有Realm、LevelDB、RocksDB等。<ul>
+<li><strong>Realm</strong>：因其在各平台封装、优化的优势，比较受移动开发者的欢迎。对于iOS开发者，key-value的实现直接易懂，可以像使用NSDictionary一样使用Realm。并且ORM彻底，省去了拼装Object的过程。但其对代码侵入性很强，Realm要求类继承RLMObject的基类。这对于单继承的ObjC，意味着不能再继承其他自定义的子类。同时，key-value数据库对较为复杂的查询场景也比较无力。</li>
+</ul>
+</li>
+</ul>
+<p>可见，各个方案都有其独特的优势及劣势，没有最好的，只有最适合的。</p>
+<h1 id="一、SQLite概述及其优点、不足"><a href="#一、SQLite概述及其优点、不足" class="headerlink" title="一、SQLite概述及其优点、不足"></a>一、SQLite概述及其优点、不足</h1><blockquote>
+<p><a target="_blank" rel="noopener" href="https://www.sqlite.org/">SQLite官方文档</a></p>
+</blockquote>
+<p>SQLite是一个进程内的库，实现了自给自足的、无服务器的、零配置的、事务性的 SQL 数据库引擎。它是一个零配置的数据库，这意味着与其他数据库不一样，您不需要在系统中配置。</p>
+<p>就像其他数据库，SQLite 引擎不是一个独立的进程，可以按应用程序需求进行静态或动态连接。SQLite 直接访问其存储文件。</p>
+<h2 id="1-1-为什么要用-SQLite？"><a href="#1-1-为什么要用-SQLite？" class="headerlink" title="1.1 为什么要用 SQLite？"></a>1.1 为什么要用 SQLite？</h2><ul>
+<li>不需要一个单独的服务器进程或操作的系统（无服务器的）。</li>
+<li>SQLite 不需要配置，这意味着不需要安装或管理。</li>
+<li>一个完整的 SQLite 数据库是存储在一个单一的跨平台的磁盘文件。</li>
+<li>SQLite 是非常小的，是轻量级的，完全配置时小于 400KiB，省略可选功能配置时小于250KiB。</li>
+<li>SQLite 是自给自足的，这意味着不需要任何外部的依赖。</li>
+<li>SQLite 事务是完全兼容 ACID 的，允许从多个进程或线程安全访问。</li>
+<li>SQLite 支持 SQL92（SQL2）标准的大多数查询语言的功能。</li>
+<li>SQLite 使用 ANSI-C 编写的，并提供了简单和易于使用的 API。</li>
+<li>SQLite 可在 UNIX（Linux, Mac OS-X, Android, iOS）和 Windows（Win32, WinCE, WinRT）中运行。</li>
+</ul>
+<h2 id="1-2-SQLite-局限性"><a href="#1-2-SQLite-局限性" class="headerlink" title="1.2 SQLite 局限性"></a>1.2 SQLite 局限性</h2><p>在 SQLite 中，SQL92 不支持的特性如下所示：</p>
+<table>
+<thead>
+<tr>
+<th align="left">特性</th>
+<th align="left">描述</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left">查询 — 外连接</td>
+<td align="left">只实现了 LEFT OUTER JOIN。不支持RIGHT OUTER JOIN、FULL OUTER JOIN</td>
+</tr>
+<tr>
+<td align="left">修改 — ALTER TABLE</td>
+<td align="left">支持修改表名称、添加字段命令，但不支持删除字段、修改字段的属性(名称、类型、宽度等) 。</td>
+</tr>
+<tr>
+<td align="left">Trigger 支持</td>
+<td align="left">支持 FOR EACH ROW 触发器，但不支持 FOR EACH STATEMENT 触发器。</td>
+</tr>
+<tr>
+<td align="left">VIEWs</td>
+<td align="left">在 SQLite 中，视图是只读的。您不可以在视图上执行 DELETE、INSERT 或 UPDATE 语句。</td>
+</tr>
+<tr>
+<td align="left">GRANT 和 REVOKE</td>
+<td align="left">可以应用的唯一的访问权限是底层操作系统的正常文件访问权限。</td>
+</tr>
+</tbody></table>
+<h1 id="二、SQLite中的”连接“与”句柄“"><a href="#二、SQLite中的”连接“与”句柄“" class="headerlink" title="二、SQLite中的”连接“与”句柄“"></a>二、SQLite中的”连接“与”句柄“</h1><h2 id="2-1-MySQL的”连接“"><a href="#2-1-MySQL的”连接“" class="headerlink" title="2.1 MySQL的”连接“"></a>2.1 MySQL的”连接“</h2><p>数据库连接(database connection)是数据库服务器与客户端之间的通信联系（数据库也是个服务器，也需要远程连接操作）。客户通过数据库连接发送命令、接收服务器返回的结果。</p>
+<ul>
+<li><p>通过可执行文件，连接服务器</p>
+<p>以下是从命令行中，使用MySQL二进制方式，连接MySQL数据库，进入到mysql命令提示符下来操作数据库。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 在本实例中，使用root用户登录到mysql服务器，当然你也可以使用其他mysql用户登录。</span></span><br><span class="line"><span class="comment"># 如果用户权限足够，任何用户都可以在mysql的命令提示窗口中进行SQL操作。</span></span><br><span class="line">[root@host]<span class="comment"># mysql -u root -p</span></span><br><span class="line">Enter password:******</span><br><span class="line"></span><br><span class="line"><span class="comment"># 以上命令执行后，登录成功输出结果如下:</span></span><br><span class="line">Welcome to the MySQL monitor.  Commands end with ; or \g.</span><br><span class="line">Your MySQL connection id is 2854760 to server version: 5.0.9</span><br><span class="line"></span><br><span class="line">Type <span class="string">&#x27;help;&#x27;</span> or <span class="string">&#x27;\h&#x27;</span> <span class="keyword">for</span> <span class="built_in">help</span>. Type <span class="string">&#x27;\c&#x27;</span> to clear the buffer.</span><br><span class="line"></span><br><span class="line"><span class="comment"># 在登录成功后会出现 mysql&gt; 命令提示窗口，你可以在上面执行任何 SQL 语句。</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 退出 mysql&gt; 命令提示窗口可以使用 exit 命令，如下所示：</span></span><br><span class="line">mysql&gt; <span class="built_in">exit</span></span><br><span class="line">Bye</span><br></pre></td></tr></table></figure></li>
+<li><p>通过代码连接，比如Java</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">MySQLDemo</span> </span>&#123;</span><br><span class="line"> </span><br><span class="line">    <span class="comment">// MySQL 8.0 以下版本 - JDBC 驱动名及数据库 URL</span></span><br><span class="line">    <span class="keyword">static</span> <span class="keyword">final</span> String JDBC_DRIVER = <span class="string">&quot;com.mysql.jdbc.Driver&quot;</span>;  </span><br><span class="line">    <span class="keyword">static</span> <span class="keyword">final</span> String DB_URL = <span class="string">&quot;jdbc:mysql://localhost:3306/RUNOOB&quot;</span>;</span><br><span class="line"> </span><br><span class="line">    <span class="comment">// MySQL 8.0 以上版本 - JDBC 驱动名及数据库 URL</span></span><br><span class="line">    <span class="comment">//static final String JDBC_DRIVER = &quot;com.mysql.cj.jdbc.Driver&quot;;  </span></span><br><span class="line">    <span class="comment">//static final String DB_URL = &quot;jdbc:mysql://localhost:3306/RUNOOB?useSSL=false&amp;allowPublicKeyRetrieval=true&amp;serverTimezone=UTC&quot;;</span></span><br><span class="line"> </span><br><span class="line">    <span class="comment">// 数据库的用户名与密码，需要根据自己的设置</span></span><br><span class="line">    <span class="keyword">static</span> <span class="keyword">final</span> String USER = <span class="string">&quot;root&quot;</span>;</span><br><span class="line">    <span class="keyword">static</span> <span class="keyword">final</span> String PASS = <span class="string">&quot;123456&quot;</span>;</span><br><span class="line"> </span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</span><br><span class="line">        <span class="comment">// 注册 JDBC 驱动</span></span><br><span class="line">        Class.forName(JDBC_DRIVER);</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 打开链接：连接数据库....</span></span><br><span class="line">        Connection conn = DriverManager.getConnection(DB_URL,USER,PASS);</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 执行查询：实例化Statement对象...</span></span><br><span class="line">        Statement stmt = conn.createStatement();</span><br><span class="line">        String sql = <span class="string">&quot;SELECT id, name, url FROM websites&quot;</span>;</span><br><span class="line">        ResultSet rs = stmt.executeQuery(sql);</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 展开结果集数据库</span></span><br><span class="line">        <span class="keyword">while</span>(rs.next())&#123;</span><br><span class="line">            <span class="comment">// 通过字段检索</span></span><br><span class="line">            <span class="keyword">int</span> id  = rs.getInt(<span class="string">&quot;id&quot;</span>);</span><br><span class="line">            String name = rs.getString(<span class="string">&quot;name&quot;</span>);</span><br><span class="line">            String url = rs.getString(<span class="string">&quot;url&quot;</span>);</span><br><span class="line">            <span class="comment">// 输出数据</span></span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment">// 完成后关闭</span></span><br><span class="line">        rs.close();</span><br><span class="line">        stmt.close();</span><br><span class="line">        conn.close();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+</ul>
+<p>IBM DB2, Microsoft SQL Server, Oracle, MySQL, PostgreSQL, 与Neo4j使用连接池技术来改善性能。</p>
+<p>建造连接时，通常要提供一个驱动程序或provider与一个连接字符串。例如，<code>Server=sql_box;Database=Common;User ID=uid;Pwd=password;</code></p>
+<p>一旦连接建立，它可以被打开、关闭、设置性质。</p>
+<h2 id="2-2-操作系统中句柄与文件"><a href="#2-2-操作系统中句柄与文件" class="headerlink" title="2.2 操作系统中句柄与文件"></a>2.2 操作系统中句柄与文件</h2><h3 id="2-2-1-操作系统中的”句柄“"><a href="#2-2-1-操作系统中的”句柄“" class="headerlink" title="2.2.1 操作系统中的”句柄“"></a>2.2.1 操作系统中的”句柄“</h3><blockquote>
+<p>在程序设计中，句柄（handle）是Windows操作系统用来标识被应用程序所创建或使用的对象的整数。其本质相当于带有引用计数的智能指针。当一个应用程序要引用其他系统（如数据库、操作系统）所管理的内存块或对象时，可以使用句柄。</p>
+<p>句柄与普通指针的区别在于：</p>
+<ul>
+<li>指针包含的是引用对象的内存地址，而句柄则是由系统所管理的引用标识，该标识可以被系统重新定位到一个内存地址上。这种间接访问对象的模式增强了系统对引用对象的控制。（参见封装）。</li>
+<li>通俗的说就是我们调用句柄就是调用句柄所提供的服务，即句柄已经把它能做的操作都设定好了，我们只能在句柄所提供的操作范围内进行操作，但是普通指针的操作却多种多样，不受限制。</li>
+</ul>
+<p>句柄与安全性：客户获得句柄时，句柄不仅是资源的标识符，也被授予了对资源的特定访问权限。</p>
+</blockquote>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// C 打开文件，返回文件指针(FILE是个结构体，记录了打开文件的一些信息)</span></span><br><span class="line"><span class="comment">// 操作系统把我们指定要打开文件的信息保存起来，并且返回给我们一个指向文件 信息的指针，称为文件指针。文件指针也可以理解为代指打开的文件。</span></span><br><span class="line"><span class="comment">// 指针的类型为 FILE 类型，FILE 是系统使用 typedef 定义出来的有关文件信息的一种结构体类型，结构中含有文件名、文件状态和文件当前位置等信息。</span></span><br><span class="line"><span class="function">FILE * <span class="title">fopen</span><span class="params">(<span class="keyword">const</span> <span class="keyword">char</span> * filename, <span class="keyword">const</span> <span class="keyword">char</span> * mode)</span></span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> &#123;</span></span><br><span class="line">    <span class="keyword">short</span> level;        <span class="comment">// 缓冲区&quot;满&quot;或者&quot;空&quot;的程度</span></span><br><span class="line">    <span class="keyword">unsigned</span> flags;     <span class="comment">// 文件状态标志</span></span><br><span class="line">    <span class="keyword">char</span> fd;            <span class="comment">// Linux中叫做文件描述符，Windows中叫句柄</span></span><br><span class="line">    <span class="keyword">unsigned</span> <span class="keyword">char</span> hold; <span class="comment">// 如无缓冲区不读取字符</span></span><br><span class="line">    <span class="keyword">short</span> bsize;        <span class="comment">// 缓冲区的大小</span></span><br><span class="line">    <span class="keyword">unsigned</span> <span class="keyword">char</span> *buffer;<span class="comment">// 数据缓冲区的位置</span></span><br><span class="line">    <span class="keyword">unsigned</span> ar;        <span class="comment">// 指针，当前的指向</span></span><br><span class="line">    <span class="keyword">unsigned</span> istemp;    <span class="comment">// 临时文件，指示器</span></span><br><span class="line">    <span class="keyword">short</span> token;        <span class="comment">// 用于有效性的检查</span></span><br><span class="line">&#125; FILE;</span><br><span class="line"></span><br><span class="line">FILE *fp = <span class="literal">NULL</span>;</span><br><span class="line">fp = fopen(<span class="string">&quot;../test&quot;</span>, <span class="string">&quot;w&quot;</span>);</span><br></pre></td></tr></table></figure>
+
+<p>关于句柄，下面举一个实际的例子，在Linux中，值为0、1、2的fd分别代表标准输入、标准输出和标准错误输出。在程序中打开文件得到的fd从3开始增长。fd具体是什么呢？</p>
+<p>在内核中，每一个进程都有一个私有的“打开文件表”，这个表是一个指针数组，每一个元素都指向一个内核的打开文件对象。而fd，就是这个表的下标。当用户打开一个文件时，内核会在内部生成一个打开文件对象，并在这个表里找到一个空项，让这一项指向生成的打开文件对象，并返回这一项的下标作为fd。由于这个表处于内核，并且用户无法访问到，因此用户即使拥有fd，也无法得到打开文件对象的地址，只能够通过系统提供的函数来操作。</p>
+<p>在C语言里，操纵文件的渠道则是FILE结构，不难想象，C语言中的 FILE结构必定和fd有一对一的关系，每个FILE结构都会记录自己唯一对 应的fd。</p>
+<h3 id="2-2-2-文件打开多次-多句柄"><a href="#2-2-2-文件打开多次-多句柄" class="headerlink" title="2.2.2 文件打开多次(多句柄)"></a>2.2.2 文件打开多次(多句柄)</h3><p>一个文件可以被打开多次(同一进程/不同进程)，返回的文件指针、fd(文件描述符/句柄)、文件的读写指针(光标)都不同，都是独立的。</p>
+<ul>
+<li>如果是不同进程中，因为打开文件表是每个进程私有的，得到的fd也是可能一样的。</li>
+</ul>
+<p>被打开多次时：</p>
+<ul>
+<li>记得要关闭多次 </li>
+<li>此时，文件是可以同时读写的，需要注意避免读写冲突：<ul>
+<li>如果打开模式是r/r+/w/w+，那写入的数据因为文件读写指针是独立的，所以会发生数据覆盖写入的问题。</li>
+<li>如果打开模式是a/a+，那写入前会自动调整文件读写指针到文件末尾，<em>此时就是多线程/多进程并发操作文件的效果</em>。</li>
+</ul>
+</li>
+</ul>
+<p>所以，如果是多进程写日志的场景中，一个日志文件打开了多次，那写数据时，最好通过进程号标记每一条日志是由哪个进程写入的，因为各进程写入文件是随机的。</p>
+<h2 id="2-3-SQLite中的”连接“与”句柄“"><a href="#2-3-SQLite中的”连接“与”句柄“" class="headerlink" title="2.3 SQLite中的”连接“与”句柄“"></a>2.3 SQLite中的”连接“与”句柄“</h2><p>SQLite作为应用或产品的嵌入式数据库，此时不是作为一个服务(server)在工作，对SQLite的操作，更类似于文件系统中，对本地文件的操作(打开/关闭)。API也很相似：（<em>但为了跟MySQL等数据库系统看齐，有时候也称这个文件打开操作是个创建连接</em>(<em>Connection</em>)）</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">sqlite3</span> &#123;</span></span><br><span class="line">  sqlite3_vfs *pVfs;            <span class="comment">/* OS Interface */</span></span><br><span class="line">  <span class="keyword">int</span> nDb;                      <span class="comment">/* Number of backends currently in use */</span></span><br><span class="line">  Db *aDb;                      <span class="comment">/* All backends */</span></span><br><span class="line">  <span class="keyword">int</span> flags;                    <span class="comment">/* Miscellaneous flags. See below */</span></span><br><span class="line">  <span class="keyword">unsigned</span> <span class="keyword">int</span> openFlags;       <span class="comment">/* Flags passed to sqlite3_vfs.xOpen() */</span></span><br><span class="line">  <span class="keyword">int</span> errCode;                  <span class="comment">/* Most recent error code (SQLITE_*) */</span></span><br><span class="line">  <span class="keyword">int</span> errMask;                  <span class="comment">/* &amp; result codes with this before returning */</span></span><br><span class="line">  <span class="comment">//....省略了超级多</span></span><br><span class="line">  sqlite3 *pBlockingConnection; <span class="comment">/* Connection that caused SQLITE_LOCKED */</span></span><br><span class="line">  sqlite3 *pUnlockConnection;           <span class="comment">/* Connection to watch for unlock */</span></span><br><span class="line">  <span class="keyword">void</span> *pUnlockArg;                     <span class="comment">/* Argument to xUnlockNotify */</span></span><br><span class="line">  <span class="built_in"><span class="keyword">void</span></span> (*xUnlockNotify)(<span class="keyword">void</span> **, <span class="keyword">int</span>);  <span class="comment">/* Unlock notify callback */</span></span><br><span class="line">  sqlite3 *pNextBlocked;        <span class="comment">/* Next in list of all blocked connections */</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">endif</span></span></span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="comment">/*</span></span><br><span class="line"><span class="comment"> * Open a new database Connection. (官方文档中叫连接，源码中直接称Open a new database handle.)</span></span><br><span class="line"><span class="comment"> * @param ppDb 传入一个sqlite3 *指针的地址。这个地址会在函数执行完被赋值</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">sqlite3_open</span><span class="params">(</span></span></span><br><span class="line"><span class="function"><span class="params">    <span class="keyword">const</span> <span class="keyword">char</span> *filename,   <span class="comment">/* Database filename (UTF-8) */</span></span></span></span><br><span class="line"><span class="function"><span class="params">    sqlite3 **ppDb          <span class="comment">/* OUT: SQLite db handle.*/</span></span></span></span><br><span class="line"><span class="function"><span class="params">)</span></span>;</span><br><span class="line"><span class="comment">/*</span></span><br><span class="line"><span class="comment"> * Closing A Database Connection</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">sqlite3_close</span><span class="params">(sqlite3*)</span></span>;</span><br></pre></td></tr></table></figure>
+
+<p>这个传出参数 <code>ppDb</code> 定义与C语言中的<strong>文件指针</strong>很相似，一点都不符合操作系统中对句柄的定义。<strong>不知道为什么SQLite中将其叫做句柄。不过注意点就好了，知道sqlite3中的句柄本质上是个文件指针，区别于Windows句柄就行。</strong></p>
+<h1 id="三、SQLite-简单使用示例"><a href="#三、SQLite-简单使用示例" class="headerlink" title="三、SQLite 简单使用示例"></a>三、SQLite 简单使用示例</h1><figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// SQLite初体验原生实现(了解)</span></span><br><span class="line"></span><br><span class="line"><span class="meta">#import <span class="meta-string">&lt;sqlite3.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">@interface</span> <span class="title">ViewController</span> ()</span>&#123;</span><br><span class="line">    sqlite3 *_db;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">@end</span></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">@implementation</span> <span class="title">ViewController</span></span></span><br><span class="line"></span><br><span class="line">- (<span class="keyword">void</span>)viewDidLoad &#123;</span><br><span class="line">    [<span class="keyword">super</span> viewDidLoad];</span><br><span class="line">    <span class="comment">// Do any additional setup after loading the view, typically from a nib.</span></span><br><span class="line">    </span><br><span class="line">    <span class="comment">//创建数据库和打开数据库,只需要一个函数 sqlite3_open</span></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">        参数1:创建出来的数据库,保存到沙盒的哪个路径中,路径的后缀以.db或是.sqlite结尾</span></span><br><span class="line"><span class="comment">        参数2:数据库实例,后面增,删,改,查都必须用到它</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="built_in">NSString</span> *dbPath = [[<span class="built_in">NSSearchPathForDirectoriesInDomains</span>(<span class="built_in">NSDocumentDirectory</span>, <span class="built_in">NSUserDomainMask</span>, <span class="literal">YES</span>) lastObject] stringByAppendingPathComponent:<span class="string">@&quot;my.db&quot;</span>];</span><br><span class="line">    </span><br><span class="line">    <span class="comment">//如果没有数据库,就创建并且打开</span></span><br><span class="line">    <span class="comment">//如果有数据,直接打开</span></span><br><span class="line">    <span class="keyword">int</span> result = sqlite3_open([dbPath UTF8String], &amp;_db);</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">if</span> (result == SQLITE_OK) &#123;</span><br><span class="line">        <span class="built_in">NSLog</span>(<span class="string">@&quot;创建和打开数据库的连接成功!!!&quot;</span>);</span><br><span class="line">        </span><br><span class="line">        <span class="comment">//创建表,新增,修改,删除,都用到一个函数 sqlite3_exec</span></span><br><span class="line">        <span class="comment">/**</span></span><br><span class="line"><span class="comment">            参数1 数据库的实例</span></span><br><span class="line"><span class="comment">            参数2 要执行的创表的Sql</span></span><br><span class="line"><span class="comment">            参数3 成功之后的要执行的函数,如果不传,写NULL</span></span><br><span class="line"><span class="comment">            参数4 执行参数3函数的参数</span></span><br><span class="line"><span class="comment">            参数5 错误</span></span><br><span class="line"><span class="comment">         */</span></span><br><span class="line">        <span class="built_in">NSString</span> *createSQLString = <span class="string">@&quot;create table if not exists T_student(studentId integer primary key,studentName text not null,studentAge integer default 20);&quot;</span>;</span><br><span class="line">        </span><br><span class="line">        <span class="keyword">char</span> *errmsg = <span class="literal">NULL</span>;</span><br><span class="line">        sqlite3_exec(_db, createSQLString.UTF8String, <span class="literal">NULL</span>, <span class="literal">NULL</span>, &amp;errmsg);</span><br><span class="line">        </span><br><span class="line">        <span class="keyword">if</span> (errmsg==<span class="literal">NULL</span>) &#123;</span><br><span class="line">            <span class="built_in">NSLog</span>(<span class="string">@&quot;创建表成功了!!!&quot;</span>);</span><br><span class="line">        &#125;<span class="keyword">else</span> &#123;</span><br><span class="line">            <span class="built_in">NSLog</span>(<span class="string">@&quot;%s&quot;</span>,errmsg);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">- (<span class="keyword">void</span>)query&#123;</span><br><span class="line">    <span class="comment">//查询数据 sqlite3_prepare_v2</span></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">        参数1:数据库实例</span></span><br><span class="line"><span class="comment">        参数2:查询sql语句</span></span><br><span class="line"><span class="comment">        参数3:一般传入-1,让系统自动去算</span></span><br><span class="line"><span class="comment">        参数4:查询出来的结果集</span></span><br><span class="line"><span class="comment">        参数5:NULL</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="built_in">NSString</span> *queryAllSQLString = <span class="string">@&quot;select * from T_student;&quot;</span>;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">//结果集合</span></span><br><span class="line">    sqlite3_stmt *stmt = <span class="literal">NULL</span>;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">//只要查询成功了,stmt这个里面就会有数据</span></span><br><span class="line">    <span class="keyword">int</span> result = sqlite3_prepare_v2(_db, queryAllSQLString.UTF8String, <span class="number">-1</span>, &amp;stmt, <span class="literal">NULL</span>);</span><br><span class="line">    <span class="keyword">if</span> (result == SQLITE_OK) &#123;<span class="comment">//查询成功</span></span><br><span class="line">        <span class="keyword">while</span> (sqlite3_step(stmt) == SQLITE_ROW) &#123;<span class="comment">//遍历到一行数据，会自动判断有没有，没有就跳过这个循环</span></span><br><span class="line">            <span class="comment">//取出该行里面,需要的字段的值</span></span><br><span class="line">            <span class="keyword">const</span> <span class="keyword">unsigned</span> <span class="keyword">char</span> *name = sqlite3_column_text(stmt, <span class="number">1</span>);</span><br><span class="line">            <span class="built_in">NSString</span> *ocName = [[<span class="built_in">NSString</span> alloc] initWithCString:name encoding:<span class="built_in">NSUTF8StringEncoding</span>];</span><br><span class="line">            <span class="keyword">int</span> age  = sqlite3_column_int(stmt, <span class="number">2</span>);</span><br><span class="line">            <span class="built_in">NSLog</span>(<span class="string">@&quot;%@---%d&quot;</span>,ocName,age);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">@end</span></span><br></pre></td></tr></table></figure>
+
+<h1 id="四、SQLite的两种日志模式"><a href="#四、SQLite的两种日志模式" class="headerlink" title="四、SQLite的两种日志模式"></a>四、SQLite的两种日志模式</h1><p>SQLite主要有两种日志模式(journal mode)：DELETE模式和WAL(Write-Ahead Log)模式，默认是DELETE模式。</p>
+<p>DELETE模式下，日志文件记录的是数据页变更前的内容。当事务开启时，将db-page的内容写入日志，写操作直接修改db-page，读操作也是直接读取db-page，db-page存储了事务最新的所有更新，当事务提交时直接删除日志文件即可，事务回滚时将日志文件覆盖db-page文件，恢复原始数据。</p>
+<blockquote>
+<p>WAL：预写日志。是指在数据写入到数据库之前，先写入到日志。再将日志记录变更到存储器中。</p>
+</blockquote>
+<p>WAL模式下，日志文件记录的是数据变更后的内容。当事务开启时，写操作不直接修改db-page，而是以append的方式追加到日志文件末尾，当事务提交时不会影响db-page，直接将日志文件覆盖到db-page即可，事务回滚时直接将日志文件去掉即可。读操作也是读取日志文件，开始读数据时会先扫描日志文件，看需要读的数据是否在日志文件中，如果在直接读取，否则从对应的db-page读取，并引入.shm文件，建立日志索引，采用哈希索引来加快日志扫描。</p>
+<p>两种模式对读写并发的影响：</p>
+<ul>
+<li>DELETE模式下因为读写操作都是直接在db-page上面进行，因此读写操作必须串行执行。</li>
+<li>WAL模式下，读写操作都是在日志文件上进行，写操作会先append到日志文件末尾，而不是直接覆盖旧数据。而读操作开始时，会记下当前的日志文件状态，并且只访问在此之前的数据。这就确保了多线程<strong>读与读</strong>、<strong>读与写</strong>之间可以并发地进行。</li>
+<li>更多关于WAL模式的内容可以阅读<a target="_blank" rel="noopener" href="https://www.sqlite.org/">SQLite官方文档</a>。</li>
+</ul>
+<p>iOS中，如果使用了WAL模式，那么打开app沙盒里面的会有三种类型的文件：sqlite、sqlite-shm、sqlite-wal。</p>
+<ul>
+<li>sqlite-shm是共享内存(Shared Memory)文件，该文件里面会包含一份sqlite-wal文件的索引，系统会自动生成shm文件，所以删除它，下次运行还会生成。</li>
+<li>sqlite-wal是预写式日志(Write-Ahead Log)文件，这个文件里面会包含尚未提交的数据库事务，所以看见有这个文件了，就代表数据库里面还有还没有处理完的事务需要提交，所以说如果有sqlite-wal文件，再去打开sqlite文件，很可能最近一次数据库操作还没有执行。</li>
+</ul>
+<p>在调试的时候，如果需要即时的观察数据库的变化，我们就可以先将日志模式设置为DELETE。</p>
+<h1 id="五、数据库的升级"><a href="#五、数据库的升级" class="headerlink" title="五、数据库的升级"></a>五、数据库的升级</h1><h2 id="5-1-数据库升级是指什么？"><a href="#5-1-数据库升级是指什么？" class="headerlink" title="5.1 数据库升级是指什么？"></a>5.1 数据库升级是指什么？</h2><blockquote>
+<p>先弄清楚数据库、数据库系统的区别。</p>
+</blockquote>
+<ul>
+<li>表(Table)：以按行按列形式组织及展现的数据。一张表由表名、表中的字段和表的记录三个部分组成的。</li>
+<li>数据库(Database)：相互之间有关联关系的Table的集合。<ul>
+<li>数据库是电子化信息的集合。将信息规范化并使之电子化，形成电子信息 ‘库’，以便利用计算机对这些信息进行快速有效的存储、检索、统计与管理。</li>
+</ul>
+</li>
+<li>数据库管理系统(Database Management System，DBMS)：能实现数据库的定义、操纵(增删改查)、控制(权限等)、维护(转储/恢复/重组/性能监测/分析)。<ul>
+<li>其实可以就是个SDK，一般提供命令行工具、编程API两种使用方式。</li>
+<li>常见的有：MySQL、SQL Server、DB2、Oracle Database等。</li>
+</ul>
+</li>
+</ul>
+<p><strong>一般移动端开发中的所说的数据库升级，无非就是对库、表的增删，对表结构(<em>设计数据表结构就是定义数据表文件名，确定数据表包含哪些字段，各字段的字段名、字段类型、及宽度</em>)的修改</strong>。</p>
+<p>移动端中的数据库升级，需要考虑不同存量APP版本，升级时的不同处理：比如：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// V1: 表A 表B</span></span><br><span class="line"><span class="comment">// V2: 表A 表B 表C</span></span><br><span class="line"><span class="comment">// V3: 表A 表B 表C(Modify, 对表C进行修改)</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// 那么</span></span><br><span class="line"><span class="comment">//   1. 在开发V3时，就要考虑对V1、V2的不同处理：V1直接创建最新的表C、V2需要进行表的修改。</span></span><br><span class="line"><span class="comment">//   2. 需要保证已存储的数据不丢失。</span></span><br></pre></td></tr></table></figure>
+
+<p>服务端开发中，因为数据库升级，不需要考虑上面的存量用户使用问题，所以很简单，不值一提。所以<strong>一般服务端开发人员所说的数据库升级是指数据库管理系统升级，比如MySQL版本升级。</strong></p>
+<h2 id="5-2-表结构修改的几种处理方式"><a href="#5-2-表结构修改的几种处理方式" class="headerlink" title="5.2 表结构修改的几种处理方式"></a>5.2 表结构修改的几种处理方式</h2><p>数据库升级中库、表的增删不提，关于表结构修改的几种处理方式：</p>
+<ul>
+<li><p>直接删除旧表，丢弃已存储数据，再新建新表（<strong>除非评估后，数据可留可删。否则不推荐</strong>）</p>
+</li>
+<li><p><strong>如果SQLite支持要进行的操作</strong>：在已有表的基础上对表结构进行修改。（SQLite的ALTER TABLE命令非常局限，只支持重命名表以及添加新的字段。）</p>
+<ul>
+<li>优点：能够保留数据</li>
+<li>缺点：规则比较繁琐，要建立一个数据库的字段配置文件，然后读取配置文件，执行SQL修改表结构、约束和主键等等，涉及到跨多个版本的数据库升级就变得繁琐并且麻烦了</li>
+</ul>
+</li>
+<li><p><strong>如果SQLite不支持要进行的操作，比如：列的删除操作、字段名、长度、类型等属性的修改</strong>，那此时老表就不能用了，需要进行数据迁移操作。</p>
+<ul>
+<li>数据迁移：将旧表改名为临时表，然后创建新表 — 导入数据 — 删除临时表。(<em>或者先创建临时表，把数据导入到临时表，然后删除旧表，把临时表更名为旧表的名称，也行</em>)</li>
+<li>优点：能够保留数据，支持表结构的修改，约束、主键的变更，实现起来比较简单</li>
+<li>缺点：实现的步骤比较多</li>
+</ul>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"># 创建临时表</span><br><span class="line"><span class="keyword">create</span> <span class="keyword">table</span> [new_table](id <span class="type">integer</span> <span class="keyword">primary</span> key, name text)</span><br><span class="line"># 导入数据</span><br><span class="line"><span class="keyword">create</span> <span class="keyword">table</span> [new_table] <span class="keyword">as</span> <span class="keyword">select</span> id, name <span class="keyword">from</span> [old_table]</span><br><span class="line"># 删除旧表</span><br><span class="line"><span class="keyword">drop</span> <span class="keyword">table</span> if <span class="keyword">exists</span> [old_table]</span><br><span class="line"># 重命名临时表</span><br><span class="line"><span class="keyword">alter</span> <span class="keyword">table</span> [new_table] rename <span class="keyword">to</span> [old_table]</span><br></pre></td></tr></table></figure></li>
+</ul>
+<h2 id="5-3-数据库升级常见的几种方式"><a href="#5-3-数据库升级常见的几种方式" class="headerlink" title="5.3 数据库升级常见的几种方式"></a>5.3 数据库升级常见的几种方式</h2><p>假如：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// V1: 表A 表B</span></span><br><span class="line"><span class="comment">// V2: 表A 表B 表C</span></span><br><span class="line"><span class="comment">// V3: 表A 表B 表C2(Modify, 对表C进行了修改，称C修改后为C2)</span></span><br><span class="line"><span class="comment">// V4: 表A 表B2(M) 表C2</span></span><br><span class="line"><span class="comment">// V5: 表A2(M) 表B2 表C2 (即将发布的新版本)</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="5-3-1-最原始的SQLite"><a href="#5-3-1-最原始的SQLite" class="headerlink" title="5.3.1 最原始的SQLite"></a>5.3.1 最原始的SQLite</h3><p>在Android中，SQLiteOpenHelper 类中有一个方法<code>onUpgrade</code>，当我们创建对象的时候如果传入的版本号大于之前的版本号，该方法就会被调用，通过判断oldVersion 和 newVersion 就可以决定如何升级数据库。（iOS同理，只不过需要自己维护版本号）</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Override</span> </span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onUpgrade</span><span class="params">(SQLiteDatabase db, <span class="keyword">int</span> oldVersion, <span class="keyword">int</span> newVersion)</span> </span>&#123; </span><br><span class="line">    <span class="keyword">if</span> (<span class="number">1</span> == oldVersion) &#123; <span class="comment">//修改A-&gt;A2、修改B-&gt;B2、创建C2    &#125; </span></span><br><span class="line">    <span class="keyword">if</span> (<span class="number">2</span> == oldVersion) &#123; <span class="comment">//修改A-&gt;A2、修改B-&gt;B2、修改C-&gt;C2 &#125; </span></span><br><span class="line">    <span class="keyword">if</span> (<span class="number">3</span> == oldVersion) &#123; <span class="comment">//修改A-&gt;A2、修改B-&gt;B2&#125; </span></span><br><span class="line">    <span class="keyword">if</span> (<span class="number">4</span> == oldVersion) &#123; <span class="comment">//修改A-&gt;A2&#125; </span></span><br><span class="line">&#125; </span><br></pre></td></tr></table></figure>
+
+<p>注意点：</p>
+<ol>
+<li>要记录每个数据库版本的库、表结构</li>
+<li>每次数据库有了新版本，都需要重写所有存量版本的 if 分支的升级处理。</li>
+</ol>
+<h3 id="5-3-2-只需记录每次迭代改动"><a href="#5-3-2-只需记录每次迭代改动" class="headerlink" title="5.3.2 只需记录每次迭代改动"></a>5.3.2 只需记录每次迭代改动</h3><p>谷歌在 2018 I/O 大会上发布了一系列辅助android开发者的实用工具，这套工具就是Jetpack，它是一套库、工具和指南的合集，可以帮助开发者更轻松地编写和构建出色的 Android 应用程序。</p>
+<p>其中，ROOM就是 JetPack组件中的数据库框架。使用ROOM时，数据库升级时，只需要写出相比上次的更新就行。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">static</span> <span class="keyword">final</span> Migration MIGRATION_4_5 = <span class="keyword">new</span> Migration(<span class="number">4</span>,<span class="number">5</span>) &#123;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">migrate</span><span class="params">(<span class="meta">@NonNull</span> SupportSQLiteDatabase database)</span> </span>&#123;</span><br><span class="line">        Log.e(<span class="string">&quot;chen&quot;</span>,<span class="string">&quot;migrate:&quot;</span>+database.getVersion());</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            database.execSQL(<span class="string">&quot;CREATE TABLE IF NOT EXISTS `hermes_static_resource` (`url` TEXT NOT NULL, `file_name` TEXT NOT NULL, `file_path` TEXT NOT NULL, `download_status` INTEGER NOT NULL, `update_time` INTEGER NOT NULL, `create_time` INTEGER NOT NULL, PRIMARY KEY(`url`))&quot;</span>);</span><br><span class="line">            database.execSQL(<span class="string">&quot;CREATE TABLE IF NOT EXISTS `hermes_cert` (`domain_name` TEXT NOT NULL, `data` TEXT NOT NULL, `version` INTEGER NOT NULL, PRIMARY KEY(`domain_name`))&quot;</span>);</span><br><span class="line">            database.execSQL(<span class="string">&quot;DROP TABLE IF EXISTS web_resource_data&quot;</span>);</span><br><span class="line">            database.execSQL(<span class="string">&quot;DROP TABLE IF EXISTS CertificateBean&quot;</span>);</span><br><span class="line">            database.execSQL(<span class="string">&quot;DROP TABLE IF EXISTS PushMessage&quot;</span>);</span><br><span class="line">        &#125;<span class="keyword">catch</span> (Exception e)&#123;</span><br><span class="line"></span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br><span class="line"><span class="keyword">static</span> <span class="keyword">final</span> Migration MIGRATION_5_6 = <span class="keyword">new</span> Migration(<span class="number">5</span>,<span class="number">6</span>) &#123;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">migrate</span><span class="params">(<span class="meta">@NonNull</span> SupportSQLiteDatabase database)</span> </span>&#123;</span><br><span class="line">        Log.e(<span class="string">&quot;chen&quot;</span>,<span class="string">&quot;migrate:&quot;</span>+database.getVersion());</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            database.execSQL(<span class="string">&quot;CREATE TABLE IF NOT EXISTS `orion_host` (`old_host` TEXT NOT NULL, `new_host` TEXT NOT NULL, `data` TEXT, `version` INTEGER NOT NULL, PRIMARY KEY(`old_host`))&quot;</span>);</span><br><span class="line">        &#125;<span class="keyword">catch</span> (Exception e)&#123;</span><br><span class="line"></span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<p>iOS方面也有相同的库：FMDB README_MD中推荐了FMDBMigrationManager开源库，来做数据库升级。</p>
+<p>根据官方文档的解释，有两种方法实现升级：</p>
+<p>第一种：每次升级对应一个文件。所谓升级文件，就是一些sql文件，在里面写入一些对数据库操作的语句。</p>
+<ul>
+<li>文件名的格式是固定的 <code>(数字)_(描述性语言).sql</code>。前面的数字就是所谓的版本号，官方建议使用时间戳，也可以使用1，2，3，4，5……升级，保持单调递增即可。</li>
+<li>文件内写入要对数据库做的操作sql语句，比如<code>create table user(name TEXT, ....)</code>。</li>
+</ul>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// DBPath是要升级的数据库的地址 </span></span><br><span class="line"><span class="comment">// [NSBundle mainBundle]是保存数据库升级sql文件的位置 根据自己放文件的位置定。</span></span><br><span class="line">   <span class="comment">// FMDBMigrationManager 将会根据创建时给入的NSBundle自行寻找sql文件，对比版本号进行操作。</span></span><br><span class="line">FMDBMigrationManager * manager=[FMDBMigrationManager managerWithDatabaseAtPath:DBPath migrationsBundle:[<span class="built_in">NSBundle</span> mainBundle]];</span><br><span class="line"></span><br><span class="line"><span class="built_in">BOOL</span> resultState=<span class="literal">NO</span>;</span><br><span class="line"><span class="built_in">NSError</span> * error=<span class="literal">nil</span>;</span><br><span class="line"><span class="keyword">if</span> (!manager.hasMigrationsTable) &#123;</span><br><span class="line">    <span class="comment">// 执行完该语句，会发现我们的数据库中多了一个表 schema_migrations。为版本号表，记录数据库的版本号。</span></span><br><span class="line">    resultState=[manager createMigrationsTable:&amp;error];</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 将数据库升级到指定版本。UINT64_MAX 表示升级到最高版本</span></span><br><span class="line">resultState=[manager migrateDatabaseToVersion:<span class="built_in">UINT64_MAX</span> progress:<span class="literal">nil</span> error:&amp;error];</span><br></pre></td></tr></table></figure>
+
+<p>第二种：使用自定义类的形式。</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#import <span class="meta-string">&lt;Foundation/Foundation.h&gt;</span></span></span><br><span class="line"><span class="meta">#import <span class="meta-string">&quot;FMDBMigrationManager.h&quot;</span></span></span><br><span class="line"><span class="comment">// 首先定义一个新的类：Migration</span></span><br><span class="line"><span class="class"><span class="keyword">@interface</span> <span class="title">Migration</span> : <span class="title">NSObject</span>&lt;<span class="title">FMDBMigrating</span>&gt; // 遵循<span class="title">FMDBMigrating</span>协议</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// 由于name和version都是只读的，因此我们要自定义一个init方法，传入描述 版本号和升级语句，升级语句最好用数组的方式传入，因为可能有多个升级语句。</span></span><br><span class="line">- (<span class="keyword">instancetype</span>)initWithName:(<span class="built_in">NSString</span> *)name andVersion:(uint64_t)version andExecuteUpdateArray:(<span class="built_in">NSArray</span> *)updateArray;<span class="comment">//自定义方法</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// 与第一种拖入文件的方式相同，name是升级描述，version是版本号，最后一个方法里面，进行操作。</span></span><br><span class="line"><span class="keyword">@property</span> (<span class="keyword">nonatomic</span>, <span class="keyword">readonly</span>) <span class="built_in">NSString</span> *name;</span><br><span class="line"><span class="keyword">@property</span> (<span class="keyword">nonatomic</span>, <span class="keyword">readonly</span>) uint64_t version;</span><br><span class="line">- (<span class="built_in">BOOL</span>)migrateDatabase:(FMDatabase *)database error:(<span class="keyword">out</span> <span class="built_in">NSError</span> *__autoreleasing *)error;</span><br><span class="line"><span class="keyword">@end</span></span><br><span class="line">  </span><br><span class="line"></span><br><span class="line"><span class="comment">//  Migration.m</span></span><br><span class="line"><span class="meta">#import <span class="meta-string">&quot;Migration.h&quot;</span></span></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">@interface</span> <span class="title">Migration</span>()</span></span><br><span class="line"><span class="keyword">@property</span>(<span class="keyword">nonatomic</span>,<span class="keyword">copy</span>)<span class="built_in">NSString</span> * myName;</span><br><span class="line"><span class="keyword">@property</span>(<span class="keyword">nonatomic</span>,<span class="keyword">assign</span>)uint64_t myVersion;</span><br><span class="line"><span class="keyword">@property</span>(<span class="keyword">nonatomic</span>,<span class="keyword">strong</span>)<span class="built_in">NSArray</span> * updateArray;</span><br><span class="line"><span class="keyword">@end</span></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">@implementation</span> <span class="title">Migration</span></span></span><br><span class="line"></span><br><span class="line">- (<span class="keyword">instancetype</span>)initWithName:(<span class="built_in">NSString</span> *)name andVersion:(uint64_t)version andExecuteUpdateArray:(<span class="built_in">NSArray</span> *)updateArray&#123;</span><br><span class="line">    <span class="keyword">if</span> (<span class="keyword">self</span>=[<span class="keyword">super</span> init]) &#123;</span><br><span class="line">        _myName=name;</span><br><span class="line">        _myVersion=version;</span><br><span class="line">        _updateArray=updateArray;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">self</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">- (<span class="built_in">NSString</span> *)name  &#123; <span class="keyword">return</span> _myName; &#125;</span><br><span class="line">- (uint64_t)version &#123; <span class="keyword">return</span> _myVersion; &#125;</span><br><span class="line">- (<span class="built_in">BOOL</span>)migrateDatabase:(FMDatabase *)database error:(<span class="keyword">out</span> <span class="built_in">NSError</span> *__autoreleasing *)error&#123;</span><br><span class="line">    <span class="keyword">for</span>(<span class="built_in">NSString</span> * updateStr <span class="keyword">in</span> _updateArray)&#123;</span><br><span class="line">        [database executeUpdate:updateStr];</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">YES</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">@end</span></span><br></pre></td></tr></table></figure>
+
+<p>使用方法也很简单，将自定义类对象添加进manager即可。</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">FMDBMigrationManager * manager=[FMDBMigrationManager managerWithDatabaseAtPath:DBPath migrationsBundle:[<span class="built_in">NSBundle</span> mainBundle]];</span><br><span class="line"></span><br><span class="line">Migration * migration_1=[[Migration alloc]initWithName:<span class="string">@&quot;新增USer表&quot;</span> andVersion:<span class="number">1</span> andExecuteUpdateArray:@[<span class="string">@&quot;create table User(name text,age integer)&quot;</span>]];</span><br><span class="line">Migration * migration_2=[[Migration alloc]initWithName:<span class="string">@&quot;USer表新增字段email&quot;</span> andVersion:<span class="number">2</span> andExecuteUpdateArray:@[<span class="string">@&quot;alter table User add email text&quot;</span>]];</span><br><span class="line"></span><br><span class="line"><span class="comment">// ... 以后还想升级，在加入一个新的自定义对象，注意！！！版本号要保持递增</span></span><br><span class="line"></span><br><span class="line">[manager addMigration:migration_1];</span><br><span class="line">[manager addMigration:migration_2];</span><br><span class="line"></span><br><span class="line"><span class="built_in">BOOL</span> resultState=<span class="literal">NO</span>;</span><br><span class="line"><span class="built_in">NSError</span> * error=<span class="literal">nil</span>;</span><br><span class="line"><span class="keyword">if</span> (!manager.hasMigrationsTable) &#123;</span><br><span class="line">    resultState=[manager createMigrationsTable:&amp;error];</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">resultState=[manager migrateDatabaseToVersion:<span class="built_in">UINT64_MAX</span> progress:<span class="literal">nil</span> error:&amp;error];</span><br></pre></td></tr></table></figure>
+
+<p><strong>看了一下实现代码，很简单，是根据版本号，循环将之前的数据库升级sql执行了一遍</strong>(<strong>简单粗暴</strong>)。而不是直接根据现有版本号与最新版本号，得出两者之间的差异，只做差异更新。</p>
+<ul>
+<li><em>不知道google出版的roomdb是怎么做的。</em></li>
+<li>不过，因为我们每次都是指定的升级sql，而不是当次升级至的数据库状态。通过每次的sql语句，比较指定两次的差异，也不是很好做吧？下面这种提供了ORM形式的数据库升级，应该可以做到直接比较(<em>想到了git工作原理中，就是每次有</em>)。</li>
+</ul>
+<h3 id="5-3-3-与ORM相结合的升级"><a href="#5-3-3-与ORM相结合的升级" class="headerlink" title="5.3.3 与ORM相结合的升级"></a>5.3.3 与ORM相结合的升级</h3><p>比如CoreData、WCDB等，以后者为例。</p>
+<p>WCDB 将数据库升级和 ORM 结合起来，对于需要增删改的字段，只需直接在 ORM 层面修改，并再次调用 createTableAndIndexesOfName:withClass: 接口即可自动升级。以下是一个数据库升级的例子。</p>
+<ul>
+<li><strong>删除字段</strong>：如例子中的 createTime 字段，删除字段只需直接将 ORM 中的定义删除即可。</li>
+<li><strong>增加字段</strong>：如例子中的 aNewProperty 字段，增加字段只需直接添加 ORM 的定义即可。</li>
+<li><strong>修改字段类型</strong>：如例子中的 content 字段，字段类型可以直接修改，但需要确保新类型与旧类型兼容。</li>
+<li><strong>修改字段名称</strong>：如例子中的 aNewModifiedTime ，字段名称可以通过 WCDB_SYNTHESIZE_COLUMN(className, propertyName, columnName) 重新映射。</li>
+<li><strong>增加约束</strong>：如例子中的 WCDB_UNIQUE(Message, aNewModifiedTime) ，新的约束只需直接在 ORM 中添加即可。</li>
+<li><strong>增加索引</strong>：如例子中的 WCDB_INDEX(Message, “_newIndex”, aNewProperty) ，新的索引只需直接在 ORM 添加。</li>
+</ul>
+<img src="/images/sqlite/21.jpg" alt="wcdb-up" style="zoom:90%;" />
+
+<p>其他：有个ObjectBox，也支持ORM，跨平台 Android/iOS/Mac/Windows/Go。(Android同事用过)，号称世界最快嵌入式数据库；体积小(最小压缩到增加体积1MB) ；函数设计简单优雅；支持DSL；支持监听数据库；浏览器查看数据库，仅查看；根据配置生成的JSON文件自动迁移；不支持嵌套对象。</p>
+<h1 id="六、SQLite的优化点"><a href="#六、SQLite的优化点" class="headerlink" title="六、SQLite的优化点"></a>六、SQLite的优化点</h1><blockquote>
+<p>原文 — <a target="_blank" rel="noopener" href="https://mp.weixin.qq.com/s?__biz=MzAwNDY1ODY2OQ==&mid=2649286361&idx=1&sn=78bbcda7f41a14291ad71289e4821f71&scene=21#wechat_redirect">微信iOS SQLite源码优化实践</a></p>
+</blockquote>
+<p>随着微信iOS客户端业务的增长，在数据库上遇到的性能瓶颈也逐渐凸显。在<a target="_blank" rel="noopener" href="http://mp.weixin.qq.com/s?__biz=MzAwNDY1ODY2OQ==&mid=207890859&idx=1&sn=e98dd604cdb854e7a5808d2072c29162&scene=21#wechat_redirect">微信的卡顿监控系统</a>上，数据库相关的卡顿不断上升。而在用户侧也逐渐能感知到这种卡顿，尤其是有大量群聊、联系人和消息收发的重度用户。</p>
+<p>我们在对SQLite进行优化的过程中发现，靠单纯地修改SQLite的参数配置，已经不能彻底解决问题。因此从6.3.16版本开始，我们合入了SQLite的源码，并开始进行源码层的优化。</p>
+<p>本文将分享在SQLite源码上进行的多线程并发、I/O性能优化等，并介绍优化相关的SQLite原理。</p>
+<h2 id="6-1-多线程并发优化"><a href="#6-1-多线程并发优化" class="headerlink" title="6.1 多线程并发优化"></a>6.1 多线程并发优化</h2><h3 id="6-1-1-背景"><a href="#6-1-1-背景" class="headerlink" title="6.1.1 背景"></a>6.1.1 背景</h3><p>由于历史原因，旧版本的微信一直使用单句柄的方案，即所有线程共有一个SQLite Handle，并用线程锁避免多线程问题。当多线程并发时，各线程的数据库操作同步顺序进行，这就导致后来的线程会被阻塞较长的时间。</p>
+<h3 id="6-1-2-SQLite的多句柄方案及Busy-Retry方案"><a href="#6-1-2-SQLite的多句柄方案及Busy-Retry方案" class="headerlink" title="6.1.2 SQLite的多句柄方案及Busy Retry方案"></a>6.1.2 SQLite的多句柄方案及Busy Retry方案</h3><p>SQLite 支持三种线程模式：(<em><a target="_blank" rel="noopener" href="https://www.sqlite.org/threadsafe.html">官方文档 — Using SQLite In Multi-Threaded Applications</a></em>)</p>
+<ul>
+<li>单线程（Single-thread） ，在此模式下，所有互斥锁都被禁用，并且SQLite连接不能在多个线程中使用。</li>
+<li>多线程（Multi-thread），在此模式下，SQLite可以安全地由多个线程使用，前提是在两个或多个线程中不同时使用单个数据库连接。</li>
+<li>串行（Serialized），在此模式下，SQLite可以被多个线程安全地使用而没有任何限制。（<strong>默认</strong>）</li>
+</ul>
+<p>线程模式可以在以下三种时间设置：</p>
+<ul>
+<li>编译时（从源代码编译 SQLite 库时）</li>
+<li>启动时（当打算使用 SQLite 的应用程序正在初始化时）</li>
+<li>运行时（当在应用程序中，创建新的 SQLite 数据库连接时）。</li>
+<li>一般来说，运行时会覆盖启动时，启动时会覆盖编译时。注意：单线程模式一旦选择就不能被覆盖。</li>
+</ul>
+<p>所以，SQLite实际是支持多线程（几乎）无锁地并发操作。只需</p>
+<ol>
+<li>开启配置 <code>PRAGMA SQLITE_THREADSAFE=2</code></li>
+<li>确保同一个句柄同一时间只有一个线程在操作</li>
+</ol>
+<blockquote>
+<p>Multi-thread. In this mode, SQLite can be safely used by multiple threads provided that no single database connection is used simultaneously in two or more threads.</p>
+</blockquote>
+<p>倘若再开启SQLite的WAL模式（Write-Ahead-Log），多线程的并发性将得到进一步的提升。</p>
+<p>此时写操作会先append到wal文件末尾，而不是直接覆盖旧数据。而读操作开始时，会记下当前的WAL文件状态，并且只访问在此之前的数据。这就确保了多线程<strong>读与读</strong>、<strong>读与写</strong>之间可以并发地进行。</p>
+<p>然而，阻塞的情况并非不会发生。</p>
+<ul>
+<li>当多线程写操作并发时，后来者还是必须在源码层等待之前的写操作完成后才能继续。</li>
+</ul>
+<p>SQLite提供了Busy Retry的方案，即发生阻塞时，会触发Busy Handler，此时可以让线程休眠一段时间后，重新尝试操作。重试一定次数依然失败后，则返回<code>SQLITE_BUSY</code>错误码。</p>
+<p><img src="/images/sqlite/01.jpg" alt="01"></p>
+<h3 id="6-1-3-SQLite-Busy-Retry方案的不足"><a href="#6-1-3-SQLite-Busy-Retry方案的不足" class="headerlink" title="6.1.3 SQLite Busy Retry方案的不足"></a>6.1.3 SQLite Busy Retry方案的不足</h3><p>Busy Retry的方案虽然基本能解决问题，但对性能的压榨做的不够极致。在Retry过程中，休眠时间的长短和重试次数，是决定性能和操作成功率的关键。</p>
+<p>然而，它们的最优值，因不同操作不同场景而不同。</p>
+<ul>
+<li>若休眠时间太短，使得重试次数太多，会空耗CPU的资源；（<em>CPU重试加锁的时间里，是空转的，不响应任何别的工作程序。如下图中第二段红色Try Lock。</em>）</li>
+<li>若休眠时间过长，会造成等待的时间太长；（<em>如下图第三段红色Sleep，CPU可用的情况下，因为sleep时间还没截止，会继续等待。</em>）</li>
+<li>若重试次数太少，则会降低操作的成功率。</li>
+</ul>
+<p><img src="/images/sqlite/02.jpg" alt="01"></p>
+<p>我们通过A/B Test对不同的休眠时间进行了测试，得到了如下的结果：</p>
+<p><img src="/images/sqlite/03.jpg" alt="01"></p>
+<p>可以看到，倘若休眠时间与重试成功率的关系，按照绿色的曲线进行分布，那么p点的值也不失为该方案的一个次优解。然而事总不遂人愿，我们需要一个更好的方案。</p>
+<h3 id="6-1-4-SQLite中的线程锁及进程锁"><a href="#6-1-4-SQLite中的线程锁及进程锁" class="headerlink" title="6.1.4 SQLite中的线程锁及进程锁"></a>6.1.4 SQLite中的线程锁及进程锁</h3><p>作为有着十几年发展历史、且被广泛认可的数据库，SQLite的任何方案选择都是有其原因的。在完全理解由来之前，切忌盲目自信、直接上手修改。因此，首先要了解SQLite是如何控制并发的。</p>
+<p><img src="/images/sqlite/04.png" alt="01"></p>
+<p>SQLite是一个适配不同平台的数据库，不仅支持多线程并发，还支持多进程并发。它的核心逻辑可以分为两部分：</p>
+<ul>
+<li>Core层。包括了接口层、编译器和虚拟机。通过接口传入SQL语句，由编译器编译SQL生成虚拟机的操作码opcode。而虚拟机是基于生成的操作码，控制Backend的行为。</li>
+<li>Backend层。由B-Tree、Pager、OS三部分组成，实现了数据库的存取数据的主要逻辑。</li>
+</ul>
+<p>在架构最底端的OS层是对不同操作系统的系统调用的抽象层。它实现了一个VFS（Virtual File System），将OS层的接口在编译时映射到对应操作系统的系统调用。锁的实现也是在这里进行的。</p>
+<p>SQLite通过两个锁来控制并发：</p>
+<ul>
+<li>第一个锁对应DB文件，通过5种状态进行管理；</li>
+<li>第二个锁对应WAL文件，通过修改一个16-bit的unsigned short int的每一个bit进行管理。</li>
+</ul>
+<p>尽管锁的逻辑有一些复杂，但此处并不需关心。这两种锁最终都落在OS层的<code>sqlite3OsLock</code>、<code>sqlite3OsUnlock</code>和<code>sqlite3OsShmLock</code>上具体实现。</p>
+<p>它们在锁的实现比较类似。以lock操作在iOS上的实现为例：</p>
+<ol>
+<li><p>通过<code>pthread_mutex_lock</code>进行线程锁，防止其他线程介入。然后比较状态量，若当前状态不可跳转，则返回<code>SQLITE_BUSY</code></p>
+</li>
+<li><p>通过<code>fcntl</code>进行文件锁，防止其他进程介入。若锁失败，则返回<code>SQLITE_BUSY</code></p>
+<blockquote>
+<p>多线程可以用多线程互斥量pthread_mutex_t实现线程之间上锁，那么多进程之间如何共享锁呢？</p>
+<ul>
+<li><p>使用文件锁<code>flock</code>实现多进程锁</p>
+<p>由于文件锁是存放到位于内存的系统文件表中， 所有进程/线程可通过系统访问。如果不同进程使用同一文件锁（写锁/排他锁），当取得文件锁时，进程可继续执行；如果没有取得锁，则阻塞等待。而唯一标识该文件的是文件路径，因此，可以通过一个共同的文件路径，来实现多进程锁机制。</p>
+</li>
+<li><p>使用多线程锁实现多进程锁</p>
+<p>多线程之间天然共享内存/变量，而多进程各有自己的进程空间，它们之间是不共享数据的。2个关键步骤</p>
+<p>1）互斥锁变量存放到共享内存；</p>
+<p>2）设置互斥锁变量的进程共享属性（PTHREAD_PROCESS_SHARED)；</p>
+</li>
+</ul>
+</blockquote>
+</li>
+</ol>
+<p>而SQLite选择Busy Retry的方案的原因也正是在此－－－<strong>文件锁没有线程锁类似pthread_cond_signal的通知机制。当一个进程的数据库操作结束时，无法通过锁来第一时间通知到其他进程进行重试。因此只能退而求其次，通过多次休眠来进行尝试。</strong></p>
+<h3 id="6-1-5-优化开始"><a href="#6-1-5-优化开始" class="headerlink" title="6.1.5 优化开始"></a>6.1.5 优化开始</h3><p>通过上面的各种分析、准备，终于可以动手开始修改了。</p>
+<p>我们知道，iOS app是单进程的，并<strong>没有多进程并发的需求</strong>，这和SQLite的设计初衷是不相同的。这就给我们的优化提供了理论上的基础。在iOS这一特定场景下，我们可以舍弃兼容性，提高并发性。</p>
+<p>新的方案修改为，当OS层进行lock操作时：</p>
+<ol>
+<li>通过 <code>pthread_mutex_lock</code> 进行线程锁，防止其他线程介入。然后比较状态量，若当前状态不可跳转，则将当前期望跳转的状态，插入到一个FIFO的Queue尾部。最后，线程通过 <code>pthread_cond_wait</code> 进入休眠状态，等待其他线程的唤醒。</li>
+<li>忽略文件锁</li>
+</ol>
+<p>当OS层的unlock操作结束后：</p>
+<ol>
+<li>取出Queue头部的状态量，并比较状态是否能够跳转。若能够跳转，则通过<code>pthread_cond_signal_thread_np</code>唤醒对应的线程重试。</li>
+</ol>
+<blockquote>
+<p><code>pthread_cond_signal_thread_np</code> 是Apple在pthread库中新增的接口，与 <code>pthread_cond_signal</code> 类似，它能唤醒一个等待条件锁的线程。不同的是，<code>pthread_cond_signal_thread_np</code> 可以指定一个特定的线程进行唤醒。</p>
+</blockquote>
+<p><img src="/images/sqlite/05.jpg" alt="01"></p>
+<p>新的方案可以在DB空闲时的第一时间，通知到其他正在等待的线程，最大程度地降低了空等待的时间，且准确无误。此外，由于Queue的存在，当主线程被其他线程阻塞时，可以将主线程的操作“插队”到Queue的头部。当其他线程发起唤醒通知时，主线程可以有更高的优先级，从而降低用户可感知的卡顿。</p>
+<p>该方案上线后，卡顿检测系统检测到</p>
+<ul>
+<li>等待线程锁的造成的卡顿下降超过90%</li>
+<li>SQLITE_BUSY的发生次数下降超过95%</li>
+</ul>
+<img src="/images/sqlite/06.jpg" alt="01" style="zoom:80%;" />
+
+<p><img src="/images/sqlite/07.png" alt="01"></p>
+<h2 id="6-2-I-O-性能优化"><a href="#6-2-I-O-性能优化" class="headerlink" title="6.2 I/O 性能优化"></a>6.2 I/O 性能优化</h2><h3 id="6-2-1-保留WAL文件大小"><a href="#6-2-1-保留WAL文件大小" class="headerlink" title="6.2.1 保留WAL文件大小"></a>6.2.1 保留WAL文件大小</h3><p>如上文多线程优化时提到，开启WAL模式后，写入的数据会先append到WAL文件的末尾。待文件增长到一定长度后，SQLite会进行checkpoint。这个长度默认为1000个页大小，在iOS上约为3.9MB。</p>
+<p>同样的，在数据库关闭时，SQLite也会进行checkpoint。不同的是，checkpoint成功之后，会将WAL文件长度删除或truncate到0。下次打开数据库，并写入数据时，WAL文件需要重新增长。而对于文件系统来说，这就意味着需要<strong>消耗时间重新寻找合适的文件块</strong>。</p>
+<p>显然SQLite的设计是针对容量较小的设备，尤其是在十几年前的那个年代，这样的设备并不在少数。而随着硬盘价格日益降低，对于像iPhone这样的设备，几MB的空间已经不再是需要斤斤计较的了。</p>
+<p>因此我们可以修改为：</p>
+<ul>
+<li>数据库关闭并checkpoint成功时，不再truncate或删除WAL文件只修改WAL的文件头的Magic Number。下次数据库打开时，SQLite会识别到WAL文件不可用，重新从头开始写入。</li>
+</ul>
+<blockquote>
+<p>保留WAL文件大小后，每个数据库都会有这约3.9MB的额外空间占用。如果数据库较多，这些空间还是不可忽略的。因此，微信中目前只对读写频繁且检测到卡顿的数据库开启，如聊天记录数据库。</p>
+</blockquote>
+<h3 id="6-2-2-mmap优化"><a href="#6-2-2-mmap优化" class="headerlink" title="6.2.2 mmap优化"></a>6.2.2 mmap优化</h3><p>mmap对I/O性能的提升无需赘言，尤其是对于读操作。SQLite也在OS层封装了mmap的接口，可以无缝地切换mmap和普通的I/O接口。只需配置 <code>PRAGMA mmap_size=XXX</code> 即可开启mmap。</p>
+<blockquote>
+<p>There are advantages and disadvantages to using memory-mapped I/O. Advantages include:</p>
+<p>Many operations, especially I/O intensive operations, can be much faster since content does need to be copied between kernel space and user space. In some cases, performance can nearly double.</p>
+<p>The SQLite library may need less RAM since it shares pages with the operating-system page cache and does not always need its own copy of working pages.</p>
+<p>使用内存映射 I/O 有利有弊。优点包括：</p>
+<ul>
+<li>许多操作，尤其是 I/O 密集型操作，可以更快。因为内容不再需要在内核空间和用户空间之间复制。在某些情况下，性能几乎可以翻倍。</li>
+<li>SQLite 库可能需要更少的 RAM，因为它与操作系统页面缓存(page cache)共享pages，而且并不总是需要自己的工作页面(working pages)副本。</li>
+</ul>
+</blockquote>
+<p>然而，你在iOS上这样配置恐怕不会有任何效果。因为早期的iOS版本的存在一些bug，SQLite在编译层就关闭了在iOS上对mmap的支持，并且后知后觉地在16年1月才重新打开。所以如果使用的SQLite版本较低，还需注释掉相关代码后，重新编译生成后，才可以享受上mmap的性能。</p>
+<p><img src="/images/sqlite/08.jpg" alt="01"></p>
+<p>开启mmap后，SQLite性能将有所提升，但这还不够。因为它只会对DB文件进行了mmap，而WAL文件享受不到这个优化。</p>
+<p>WAL文件长度是可能变短的，而在多句柄下，对WAL文件的操作是并行的。一旦某个句柄将WAL文件缩短了，而没有一个通知机制让其他句柄更新mmap的内容。此时其他句柄若使用mmap操作已被缩短的内容，就会造成crash。而普通的I/O接口，则只会返回错误，不会造成crash。因此，SQLite没有实现对WAL文件的mmap。</p>
+<p>还记得我们上一个优化吗？没错，我们保留了WAL文件的大小。因此它在这个场景下是不会缩短的，那么不能mmap的条件就被打破了。实现上，只需在WAL文件打开时，用<code>unixMapfile</code>将其映射到内存中，SQLite的OS层即会自动识别，将普通的I/O接口切换到mmap上。</p>
+<h2 id="6-3-其他优化"><a href="#6-3-其他优化" class="headerlink" title="6.3 其他优化"></a>6.3 其他优化</h2><h3 id="6-3-1-禁用文件锁"><a href="#6-3-1-禁用文件锁" class="headerlink" title="6.3.1 禁用文件锁"></a>6.3.1 禁用文件锁</h3><p>如我们在多线程优化时所说，对于iOS app并没有多进程的需求。因此我们可以直接注释掉<code>os_unix.c</code>中所有文件锁相关的操作。</p>
+<p>也许你会很奇怪，虽然没有文件锁的需求，但这个操作耗时也很短，是否有必要特意优化呢？其实并不全然。耗时多少是比出来。</p>
+<p>SQLite中有cache机制。被加载进内存的page，使用完毕后不会立刻释放。而是在一定范围内通过LRU的算法更新page cache。这就意味着，如果cache设置得当，大部分读操作都不会读取新的page。然而因为文件锁的存在，本来这个只需在内存层面进行的读操作，不得不进行至少一次I/O操作。而我们知道，I/O操作是远远慢于内存操作的。</p>
+<h3 id="6-3-2-禁用内存统计锁"><a href="#6-3-2-禁用内存统计锁" class="headerlink" title="6.3.2 禁用内存统计锁"></a>6.3.2 禁用内存统计锁</h3><p>SQLite会对申请的内存进行统计，而这些统计的数据都是放到同一个全局变量里进行计算的。这就意味着统计前后，都是需要加线程锁，防止出现多线程问题的。</p>
+<p><img src="/images/sqlite/09.jpg" alt="01"></p>
+<p>内存申请虽然不是非常耗时的操作，但却很频繁。多线程并发时，各线程很容易互相阻塞。</p>
+<p>阻塞虽然也很短暂，但频繁地切换线程，却是个很影响性能的操作，尤其是单核设备。</p>
+<p>因此，如果不需要内存统计的特性，可以通过<code>sqlite3_config(SQLITE_CONFIG_MEMSTATUS, 0)</code>进行关闭。这个修改虽然不需要改动源码，但如果不查看源码，恐怕是比较难发现的。</p>
+<p>优化上线后，卡顿监控系统监测到</p>
+<ul>
+<li>DB写操作造成的卡顿下降超过80%</li>
+<li>DB读操作造成的卡顿下降超过85%</li>
+</ul>
+<img src="/images/sqlite/10.jpg" alt="01" style="zoom:80%;" />
+
+<h2 id="6-4-数据库修复"><a href="#6-4-数据库修复" class="headerlink" title="6.4 数据库修复"></a>6.4 数据库修复</h2><blockquote>
+<p>数据库修复指的是通过技术手段将损坏的数据库文件修复至可正常使用的数据库文件的过程。 </p>
+</blockquote>
+<h3 id="6-4-1-前言"><a href="#6-4-1-前言" class="headerlink" title="6.4.1 前言"></a>6.4.1 前言</h3><p>众所周知，微信在后台服务器不保存聊天记录，微信在移动客户端所有的聊天记录都存储在一个 SQLite 数据库中，一旦这个数据库损坏，将会丢失用户多年的聊天记录。而我们监控到现网的损坏率是0.02%，也就是每 1w 个用户就有 2 个会遇到数据库损坏。考虑到微信这么庞大的用户基数，这个损坏率就很严重了。更严重的是我们用的官方修复算法，修复成功率只有 30%。损坏率高，修复率低，这两个问题都需要我们着手解决。</p>
+<h3 id="6-4-2-SQLite-损坏原因及其优化-降低损坏率"><a href="#6-4-2-SQLite-损坏原因及其优化-降低损坏率" class="headerlink" title="6.4.2 SQLite 损坏原因及其优化(降低损坏率)"></a>6.4.2 SQLite 损坏原因及其优化(降低损坏率)</h3><p>我们首先来看 SQLite 损坏的原因，SQLite官网(<a target="_blank" rel="noopener" href="http://www.sqlite.org/howtocorrupt.html)%E4%B8%8A%E5%88%97%E5%87%BA%E4%BB%A5%E4%B8%8B%E5%87%A0%E7%82%B9%EF%BC%9A">http://www.sqlite.org/howtocorrupt.html)上列出以下几点：</a></p>
+<ul>
+<li>文件错写</li>
+<li>文件锁 bug</li>
+<li>文件 sync 失败</li>
+<li>设备损坏</li>
+<li>内存覆盖</li>
+<li>操作系统 bug</li>
+<li>SQLite bug</li>
+</ul>
+<p>但是我们通过收集到的大量案例和日志，分析出实际上移动端数据库损坏的真正原因其实就3个：</p>
+<ul>
+<li>空间不足</li>
+<li>设备断电</li>
+<li>文件 sync 失败</li>
+</ul>
+<p>我们需要针对这些原因一一进行优化。</p>
+<h4 id="1-优化空间占用"><a href="#1-优化空间占用" class="headerlink" title="1. 优化空间占用"></a>1. 优化空间占用</h4><p>首先我们来优化微信的空间占用问题。在这之前微信的部分业务也做了空间清理，例如朋友圈会自动删除7天前缓存的图片。但是总的来说对文件空间的使用缺乏一个全局把控，全靠各个业务自觉。我们需要做得更积极主动，要让开发人员意识到用户的存储空间是宝贵的。我们采取以下措施：</p>
+<ul>
+<li>业务文件先申请后使用，如果某个文件没有申请就使用了，会被自动扫描出来并删除；</li>
+<li>每个业务文件都要申明有效期，是一天、一个星期、一个月还是永久存储；</li>
+<li>过期文件会被自动清理。</li>
+</ul>
+<p><img src="/images/sqlite/11.jpg" alt="11"></p>
+<p>对于微信之外的空间占用，例如相册、视频、其他App的空间占用，微信本身是做不了什么事情的，我们可以提示用户进行空间清理： </p>
+<img src="/images/sqlite/12.jpg" style="zoom:65%;" />
+
+<h4 id="2-优化文件-sync"><a href="#2-优化文件-sync" class="headerlink" title="2. 优化文件 sync"></a>2. 优化文件 sync</h4><h5 id="1-synchronous-FULL"><a href="#1-synchronous-FULL" class="headerlink" title="1) synchronous = FULL"></a>1) synchronous = FULL</h5><p>设置SQLite的文件同步机制为全同步，亦即要求每个事务的写操作是真的flush到文件里去。</p>
+<h5 id="2-fullfsync-1"><a href="#2-fullfsync-1" class="headerlink" title="2) fullfsync = 1"></a>2) fullfsync = 1</h5><p>通过与苹果工程师的交流，我们发现在 iOS 平台下还有 fullfsync (<a target="_blank" rel="noopener" href="https://www.sqlite.org/pragma.html#pragma_fullfsync">https://www.sqlite.org/pragma.html#pragma_fullfsync</a>) 这个选项，可以严格保证写入顺序跟提交顺序一致。设备开发商为了测评数据好看，往往会对提交的数据进行重排，再统一写入，亦即写入顺序跟App提交的顺序不一致。在某些情况下，例如断电，就可能导致写入文件不一致的情况，导致文件损坏。</p>
+<h4 id="3-优化效果"><a href="#3-优化效果" class="headerlink" title="3. 优化效果"></a>3. 优化效果</h4><p>多管齐下之后，我们成功将损坏率降低了一半多；DB损坏还是无法完全避免，我们还是得提高修复成功率。 </p>
+<img src="/images/sqlite/13.jpg" style="zoom:65%;" />
+
+<h3 id="6-4-3-SQLite-修复逻辑优化-提高修复率"><a href="#6-4-3-SQLite-修复逻辑优化-提高修复率" class="headerlink" title="6.4.3 SQLite 修复逻辑优化(提高修复率)"></a>6.4.3 SQLite 修复逻辑优化(提高修复率)</h3><p>长久以来SQLite DB都有损坏问题，从Android、iOS等移动系统，到Windows、Linux 等桌面系统都会出现。由于微信所有消息都保存在DB，服务端不保留备份，一旦损坏将导致用户消息数据丢失，显然不能接受。</p>
+<p>下面介绍一下微信数据库修复的具体方案和发展历程。</p>
+<h4 id="1-我们的需求"><a href="#1-我们的需求" class="headerlink" title="1. 我们的需求"></a>1. 我们的需求</h4><p>具体来说，微信需要一套满足以下条件的DB恢复方案：</p>
+<ul>
+<li><strong>恢复成功率高。</strong> 由于牵涉到用户核心数据，“姑且一试”的方案是不够的，虽说 100% 成功率不太现实，但 90% 甚至 99% 以上的成功率才是我们想要的。</li>
+<li><strong>支持加密DB。</strong> Android 端微信客户端使用的是加密 SQLCipher DB，加密会改变信息 的排布，往往对密文一个字节的改动就能使解密后一大片数据变得面目全非。这对于数据恢复 不是什么好消息，我们的方案必须应对这种情况。</li>
+<li><strong>能处理超大的数据量。</strong> 经过统计分析，个别重度用户DB大小已经超过2GB，恢复方案 必须在如此大的数据量下面保证不掉链子。</li>
+<li><strong>不影响体验。</strong> 统计发现只有万分之一不到的用户会发生DB损坏，如果恢复方案 需要事先准备（比如备份），它必须对用户不可见，不能为了极个别牺牲全体用户的体验。</li>
+</ul>
+<p>经过多年的不断改进，微信先后采用出三套不同的DB恢复方案，离上面的目标已经越来越近了。</p>
+<h4 id="2-sql-master表介绍"><a href="#2-sql-master表介绍" class="headerlink" title="2. sql_master表介绍"></a>2. sql_master表介绍</h4><p>首先我们来看 SQLite 的架构。SQLite 使用 B+树 存储一个表，整个 SQLite 数据库就是这些 B+树 组成的森林。</p>
+<ul>
+<li>每个表的元数据，都记录在一个叫 sql_master 的表中。</li>
+<li>这个 sql_master 表(下面有些场景简称 master 表) 本身也是一个 B+树 存储的普通表。DB 第0页就是他的根节点。</li>
+</ul>
+<img src="/images/sqlite/14.jpg" style="zoom:85%;" />
+
+<p><code>sqlite_master</code>是一个每个SQLite DB都有的特殊的表， 无论是查看官方文档<a target="_blank" rel="noopener" href="https://www.sqlite.org/schematab.html">Database File Format</a>，还是执行SQL语句 <code>SELECT * FROM sqlite_master;</code>，都可得知这个SQLite的系统表中保存着数据库中所有的其他表、索引(indexes)、触发器(triggers)、视图(views)的元数据：表名、类型（table/index）、创建此表/索引的SQL语句，以及表的RootPage。(只包括table本身的信息即元数据，不包括里面的数据哦)</p>
+<p><code>sqlite_master</code> 每一行记录一个项目。在创建一个SQLIte数据库的时候，该表会自动创建。<code>sqlite_master</code>的表名、表结构都是固定的：</p>
+<ul>
+<li>type：是以下文本字符串之一：“table”、“index”、“view”或“trigger”，具体取决于定义的对象类型。 ‘table’ 字符串用于普通表和虚拟表。</li>
+<li>name：保存对象的名称。</li>
+<li>tbl_name：包含与对象关联的表或视图的名称。<ul>
+<li>对于表或视图，tbl_name 列是 name 列的副本。</li>
+<li>对于索引，tbl_name 是被索引的表的名称。</li>
+<li>对于触发器，tbl_name 列存储导致触发器触发的表或视图的名称。</li>
+</ul>
+</li>
+<li>rootpage：存储表和索引的 b-tree 根节点的 page 号。对于描述视图、触发器和虚拟表(virtual tables)的行，rootpage 列是 0 或 NULL。</li>
+<li>sql：存储描述对象的 SQL 文本。此 SQL 文本是 CREATE TABLE、CREATE VIRTUAL TABLE、CREATE INDEX、CREATE VIEW 或 CREATE TRIGGER 语句。</li>
+<li><em>更详细的说明，可以见上面的官方文档链接</em></li>
+</ul>
+<img src="/images/sqlite/15.jpg" style="zoom:100%;" />
+
+<p><strong>正常情况下，SQLite 引擎打开DB后首次使用，需要先遍历</strong> <code>sqlite_master</code>，并将里面保存的SQL语句再解析一遍， 保存在内存中供后续编译SQL语句时使用。</p>
+<p>由于sqlite_master表存储所有的数据库项目，所以可以通过该表判断特定的表、视图或者索引是否存在。例如，以下语句可以判断user表是否存在。</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">select</span> <span class="built_in">count</span>(<span class="operator">*</span>) <span class="keyword">from</span> sqlite_master <span class="keyword">where</span> name<span class="operator">=</span><span class="string">&#x27;user&#x27;</span> <span class="keyword">and</span> type<span class="operator">=</span><span class="string">&#x27;table&#x27;</span></span><br></pre></td></tr></table></figure>
+
+<h4 id="3-方案一：官方的Dump恢复方案"><a href="#3-方案一：官方的Dump恢复方案" class="headerlink" title="3. 方案一：官方的Dump恢复方案"></a>3. 方案一：官方的Dump恢复方案</h4><p>Google 一下SQLite DB恢复，不难搜到使用<code>.dump</code>命令恢复DB的方法。<code>.dump</code>命令的作用是将 整个数据库的内容输出为很多 SQL 语句，只要对空 DB 执行这些语句就能得到一个一样的 DB。</p>
+<p><code>.dump</code>命令原理很简单：</p>
+<ol>
+<li>每个SQLite DB都有一个<code>sqlite_master</code>表。遍历它得到所有表的名称和 <code>CREATE TABLE ...</code>的SQL语句，输出<code>CREATE TABLE</code>语句。</li>
+<li>根据根节点地址和创表语句接着使用<code>SELECT * FROM ...</code> 通过表名遍历整个表，每读出一行就输出一个<code>INSERT</code>语句，遍历完后就把整个DB dump出来了（<em>能 select 多少是多少</em>）。</li>
+</ol>
+<p>这样的操作，和普通查表是一样的，遇到损坏一样会返回<code>SQLITE_CORRUPT</code>，我们忽略掉损坏错误，继续遍历下个表，最终可以把所有没损坏的表以及<strong>损坏了的表的前半部分</strong>读取出来。将dump 出来的SQL语句逐行执行，最终可以得到一个等效的新DB。由于直接跑在SQLite上层，所以天然 就支持加密SQLCipher，不需要额外处理。</p>
+<p>下图是dump输出样例：</p>
+<img src="/images/sqlite/16.jpg" style="zoom:100%;" />
+
+<p>优点：</p>
+<ul>
+<li>这个方案不需要任何准备，只有坏DB的用户要花好几分钟跑恢复，大部分用户是不感知的。 </li>
+</ul>
+<p>缺点：</p>
+<ul>
+<li>数据量大小，主要影响恢复需要的临时空间：先要保存 dump 出来的SQL的空间，这个大概一倍DB大小，还要另外一倍 DB大小来新建 DB恢复。</li>
+<li>至于我们最关心的成功率呢？上线后，<strong>成功率约为30</strong>%。这个成功率的定义是至少恢复了一条记录，也就是说一大半用户 一条都恢复不成功！研究一下就发现，恢复失败的用户，原因都是<code>sqlite_master</code>表读不出来。</li>
+</ul>
+<p><strong>官方修复算法率低下原因 — 太依赖 master 表</strong>：</p>
+<p>前面说过，master 表他本身也是一个 B+树 形式的普通表，DB 第0页就是他的根节点。那么只要 master 表某个节点损坏，这个节点下面记录的表就都恢复不了。更坏的情况是 DB 第0页损坏，那么整个 master 表都读不出来，就导致整个DB都恢复失败。这就是官方修复算法成功率这么低的原因，太依赖 master 表了。</p>
+<p>恢复率这么低的尴尬状况维持了好久， 其他方案才渐渐露出水面。</p>
+<h4 id="4-方案二：备份恢复方案"><a href="#4-方案二：备份恢复方案" class="headerlink" title="4. 方案二：备份恢复方案"></a>4. 方案二：备份恢复方案</h4><p>损坏的数据无法修复，最直观的解决方案就是<strong>备份</strong>，于是备份恢复方案被提上日程了。备份恢复这个方案思路简单，SQLite 也有不少备份机制可以使用，具体是：</p>
+<ul>
+<li><strong>拷贝：</strong> 不能再直白的方式。由于SQLite DB本身是文件（主DB + journal 或 WAL）， 直接把文件复制就能达到备份的目的。</li>
+<li><strong>Dump：</strong> 上一个恢复方案用到的命令的本来目的。在DB完好的时候执行<code>.dump</code>， 把 DB所有内容输出为 SQL语句，达到备份目的，恢复的时候执行SQL即可。</li>
+<li><strong>Backup API：</strong> SQLite自身提供的一套备份机制，按 Page 为单位复制到新 DB， 支持热备份。</li>
+</ul>
+<p>这么多的方案孰优孰劣？作为一个移动APP，我们关心的无非就是 <strong>备份大小、备份性能、 恢复性能</strong> 几个指标。微信作为一个重度DB使用者，备份大小和备份性能是主要关注点： 原本用户就可能有2GB 大的 DB，如果备份数据本身也有2GB 大小，用户想必不会接受； 性能则主要影响体验和备份成功率，作为用户不感知的功能，占用太多系统资源造成卡顿是不行的，备份耗时越久，被系统杀死等意外事件发生的概率也越高。</p>
+<p>对以上方案做简单测试后，备份方案也就基本定下了。下图是备选方案性能对比（测试用的DB大小约 <strong>50MB</strong>， 数据条目数大约为 <strong>10万条</strong>）：</p>
+<img src="/images/sqlite/17.jpg" style="zoom:100%;" />
+
+<p>可以看出，比较折中的选择是 <strong>Dump + 压缩</strong>，备份大小具有明显优势，备份性能尚可， 恢复性能较差但由于需要恢复的场景较少，算是可以接受的短板。</p>
+<p>微信在Dump + gzip方案上再加以优化：</p>
+<ul>
+<li>由于格式化SQL语句输出耗时较长，因此使用了自定义的二进制格式承载Dump输出。<ul>
+<li>由于数据保密需要，二进制Dump数据也做了加密处理。</li>
+<li> 采用自定义二进制格式还有一个好处是，恢复的时候不需要重复的编译SQL语句，编译一次就可以插入整个表的数据了，恢复性能也有一定提升。</li>
+</ul>
+</li>
+<li>第二耗时的压缩操作则放到别的线程同时进行，在双核以上的环境基本可以做到无额外时间消耗。</li>
+</ul>
+<p>相比原始的Dump + 压缩，优化后的方案<strong>每秒备份行数提升了 150%，每秒恢复行数也提升了 40%</strong> （性能优化效果如下图）。</p>
+<img src="/images/sqlite/18.jpg" style="zoom:80%;" />
+
+<p>即使优化后的方案，对于特大DB备份也是<strong>耗时耗电</strong>。对于移动APP来说，可能未必有这样的机会做这样重度的操作，或者频繁备份会导致卡顿，这也是需要开发者衡量的。比如Android微信会选择在 <strong>充电并灭屏</strong> 时进行DB备份，若备份过程中退出以上状态，备份会中止，等待下次机会。</p>
+<p>备份方案上线后，恢复成功率<strong>达到72</strong>%，但有部分重度用户DB损坏时，由于备份耗时太久， 始终没有成功，而对DB数据丢失更为敏感的也恰恰是这些用户，于是新方案应运而生。</p>
+<h4 id="5-方案三：解析B-tree恢复方案-RepairKit"><a href="#5-方案三：解析B-tree恢复方案-RepairKit" class="headerlink" title="5. 方案三：解析B-tree恢复方案(RepairKit)"></a>5. 方案三：解析B-tree恢复方案(RepairKit)</h4><p>备份方案的高消耗迫使我们从另外的方案考虑，于是我们再次把注意力放在之前的Dump方案。 Dump 方案本质上是尝试从坏DB里读出信息，这个尝试一般来说会出现两种结果：</p>
+<ul>
+<li>DB的基本格式仍然健在，但个别数据损坏，读到损坏的地方SQLite返回 <code>SQLITE_CORRUPT</code> 错误， 但已读到的数据得以恢复。</li>
+<li>基本格式丢失（文件头或<code>sqlite_master</code>损坏），获取有哪些表的时候就返回 <code>SQLITE_CORRUPT</code> ，根本没法恢复。</li>
+</ul>
+<p>第一种可以算是预期行为，毕竟没有损坏的数据能 <strong>部分恢复</strong>。从之前的数据看， 不少用户遇到的是第二种情况，这种有没挽救的余地呢？ —— <strong>sqlite_master 损坏时的修复方案</strong>。</p>
+<h5 id="1-方案：自实现数据读取系统"><a href="#1-方案：自实现数据读取系统" class="headerlink" title="1) 方案：自实现数据读取系统"></a>1) 方案：自实现数据读取系统</h5><p>假如<code>sqlite_master</code>损坏了无法解析，“Dump恢复”这种走正常SQLite 流程的方法，自然会卡在第一步了。</p>
+<p>为了让<code>sqlite_master</code>受损的DB也能打开，需要想办法绕过SQLite引擎的逻辑。 <strong>由于SQLite引擎初始化逻辑比较复杂，为了避免副作用，没有采用hack的方式复用其逻辑，而是决定仿造一个只可以读取数据的最小化系统</strong>。</p>
+<p>虽然仿造最小化系统可以跳过很多正确性校验，但也需要一些必须的数据：</p>
+<h5 id="2-关键点1-—-sqlite-master备份"><a href="#2-关键点1-—-sqlite-master备份" class="headerlink" title="2) 关键点1 — sqlite_master备份"></a>2) 关键点1 — sqlite_master备份</h5><p><code>sqlite_master</code>里保存的信息对恢复来说也是十分重要的， 特别是RootPage，因为它是表对应的B-tree结构的根节点所在地，没有了它我们甚至不知道从哪里开始解析对应的表。</p>
+<p><code>sqlite_master</code>信息量比较小，因此对它进行备份成本是非常低的，一般手机典型只需要几毫秒到数十毫秒即可完成，一致性也容易保证， 只需要执行了上述语句的时候重新备份一次即可。</p>
+<p><strong>备份时机：</strong></p>
+<p>我们只需要每隔一段时间轮询 master 表，看看最近有没有增删 table，有的话就全量备份。</p>
+<p>这里有个担忧，就是普通数据表的插入会不会导致表的根节点发生变化，也就是说 master 表会不会频繁变化，如果变化很频繁的话，我们就不能简单地进行轮询方案了。通过分析源码，我们发现 SQLite 里面 B+树 算法的实现是 <strong>向下分裂</strong> 的，也就是说当一个叶子页满了需要分裂时，原来的叶子页会成为内部节点，然后新申请两个页作为他的叶子页。这就保证了根节点一旦定下来，是再也不会变动的。实际的代码调试也证实了我们这个推论。所以说 master 表只会在新创建表、删除表、修改表结构时（例如执行了<code>CREATE TABLE</code>、<code>ALTER TABLE</code> 等语句）才会发生变化，我们完全可以采用定时轮询方案。</p>
+<p><strong>备份文件有效性</strong></p>
+<p>接下来的难题是既然 DB 可以损坏，那么这个备份文件也会损坏，怎么办呢？我们采用了 <strong>双备份</strong> 的机制。具体来说就是：</p>
+<ul>
+<li>会有新旧两个备份文件，每个文件头都加上 CRC 校验；</li>
+<li>每次备份时，从两个备份文件中选出一个进行覆盖。具体怎么选呢？<ul>
+<li>优先选损坏那个备份文件，如果两个都有效，那么就选相对较旧的。这就保证了即使本次写入导致文件损坏，还有另外一份备份可以用。</li>
+<li>这个做法跟 Realm 标榜的 MVCC（多版本并发控制）的做法有异曲同工之妙，相当于确认新写入的文件有效之后，才使用新写入的文件，否则还是继续用旧的有效的文件。</li>
+</ul>
+</li>
+</ul>
+<p>前面提到 DB 损坏的一个常见场景是空间不足，这种情况下还要分配文件空间给备份文件也是会失败的。为了解决这个问题，我们采取 <strong>预先分配空间</strong> 的做法，初始值是 32K，大约可存 750 个表的元信息，后续则按照32K的倍数进行增长。</p>
+<p>有了备份，我们的逻辑可以在读取DB自带的<code>sqlite_master</code>失败的时候使用备份的信息来代替。</p>
+<h5 id="3-关键点2-—-加解密"><a href="#3-关键点2-—-加解密" class="headerlink" title="3) 关键点2 — 加解密"></a>3) 关键点2 — 加解密</h5><p>DB初始化的问题除了文件头和<code>sqlite_master</code>完整性外，还有加密。</p>
+<p>SQLCipher加密数据库，对应的恢复逻辑还需要加上解密逻辑。按照SQLCipher的实现，加密DB 是按page 进行包括头部的完整加密，所用的密钥是根据用户输入的原始密码和创建DB 时随机生成的 salt 运算后得出的。可以猜想得到，如果保存salt错了，将没有办法得出之前加密用的密钥，导致所有page都无法读出了。由于salt 是创建DB时随机生成，后续不再修改，将它纳入到备份的范围内即可。</p>
+<h5 id="4-实现"><a href="#4-实现" class="headerlink" title="4) 实现"></a>4) 实现</h5><p>到此，初始化必须的数据就保证了，可以仿造读取逻辑了。</p>
+<ul>
+<li>我们常规使用的读取DB的方法（包括dump方式恢复），都是通过执行SQL语句实现的，这牵涉到SQLite系统最复杂的子系统——SQL执行引擎。我们的恢复任务只需要遍历B-tree所有节点， 读出数据即可完成，不需要复杂的查询逻辑，因此最复杂的SQL引擎可以省略。</li>
+<li>同时，因为我们的系统是只读的， 写入恢复数据到新 DB 只要直接调用 SQLite 接口即可，因而可以省略同样比较复杂的B-tree平衡、Journal和同步等逻辑。 </li>
+<li>最后恢复用的最小系统只需要：<ul>
+<li>VFS读取部分的接口（Open/Read/Close），或者直接用stdio的fopen/fread、Posix的open/read也可以</li>
+<li>SQLCipher的解密逻辑：加密 SQLCipher 情况较为复杂，幸好SQLCipher 加密部分可以单独抽出，直接套用其解密逻辑。</li>
+<li>B-tree解析逻辑：Database File Format 详细描述了SQLite文件格式， 参照之实现B-tree解析可读取 SQLite DB。</li>
+</ul>
+</li>
+</ul>
+<p>即可实现。最小化系统如图所示：</p>
+<img src="/images/sqlite/19.jpg" style="zoom:80%;" />
+
+<h5 id="5-注意点-—-列的补全"><a href="#5-注意点-—-列的补全" class="headerlink" title="5) 注意点 — 列的补全"></a>5) 注意点 — 列的补全</h5><p>实现了上面的逻辑，就能读出DB的数据进行恢复了，但还有一个小插曲。</p>
+<ul>
+<li>我们知道，使用SQLite查询一个表， 每一行的列数都是一致的，这是Schema层面保证的。但是在Schema的下面一层——B-tree层，没有这个保证。 B-tree的每一行（或者说每个entry、每个record）可以有不同的列数，一般来说，SQLite插入一行时， B-tree里面的列数和实际表的列数是一致的。</li>
+<li>但是<strong>当对一个表进行了 <code>ALTER TABLE ADD COLUMN</code> 操作， 整个表都增加了一列，但已经存在的B-tree行实际上没有做改动，还是维持原来的列数。 当SQLite查询到 <code>ALTER TABLE</code> 前的行，缺少的列会自动用默认值补全</strong>。</li>
+<li>恢复的时候，也需要做同样的判断和支持， 否则会出现缺列而无法插入到新的DB。</li>
+</ul>
+<h5 id="6-优化效果"><a href="#6-优化效果" class="headerlink" title="6) 优化效果"></a>6) 优化效果</h5><p>解析B-tree方案上线后，<strong>成功率约为78</strong>%。这个成功率计算方法为恢复成功的 Page 数除以总 Page 数。 由于是我们自己的系统，可以得知总 Page 数，使用恢复 Page 数比例的计算方法比人数更能反映真实情况。 </p>
+<p>B-tree解析好处是准备成本较低，不需要经常更新备份，对大部分表比较少的应用备份开销也小到几乎可以忽略， 成功恢复后能还原损坏时最新的数据，不受备份时限影响。 坏处是，和Dump一样，如果损坏到表的中间部分，比如非叶子节点，将导致后续数据无法读出。</p>
+<h4 id="6-不同方案的组合"><a href="#6-不同方案的组合" class="headerlink" title="6. 不同方案的组合"></a>6. 不同方案的组合</h4><p>由于解析B-tree恢复原理和备份恢复不同，失败场景也有差别，可以两种手段混合使用覆盖更多损坏场景。 微信的数据库中，有部分数据是临时或者可从服务端拉取的，这部分数据可以选择不修复，有些数据是不可恢复或者 恢复成本高的，就需要修复了。</p>
+<ul>
+<li>如果修复过程一路都是成功的，那无疑使用B-tree解析修复效果要好于备份恢复。备份恢复由于存在时效性，总有部分最新的记录会丢掉，解析修复由于直接基于损坏DB来操作，不存在时效性问题。 假如损坏部分位于不需要修复的部分，解析修复有可能不发生任何错误而完成。</li>
+<li>如果修复过程遇到错误，则很可能是需要修复的B-tree损坏了，这会导致需要修复的表发生部分或全部缺失。 这个时候再使用备份修复，能挽救一些缺失的部分。</li>
+<li>最早的Dump修复，场景已经基本被B-tree解析修复覆盖了，若B-tree修复不成功，Dump恢复也很有可能不会成功。 即便如此，假如上面的所有尝试都失败，最后还是会尝试Dump恢复。</li>
+</ul>
+<p>恢复方案组合如图所示：</p>
+<img src="/images/sqlite/20.jpg" style="zoom:85%;" />
+
+<p>上面说的三种修复方法，原理上只涉及到SQLite文件格式以及基本的文件系统，是跨平台的。 实际操作上，各个平台可以利用各自的特性做策略上的调整，比如 Android 系统使用 <code>JobScheduler</code> 在充电灭屏状态下备份。</p>
+<h3 id="6-4-4-小结"><a href="#6-4-4-小结" class="headerlink" title="6.4.4 小结"></a>6.4.4 小结</h3><p>通过这些优化，我们提高了微信聊天记录存储的可靠性。这些优化实践，会同上面在并发、IO性能方面的优化实践（<a target="_blank" rel="noopener" href="http://mp.weixin.qq.com/s?__biz=MzAwNDY1ODY2OQ==&mid=2649286361&idx=1&sn=78bbcda7f41a14291ad71289e4821f71&scene=21#wechat_redirect">微信iOS SQLite源码优化实践</a>），将会合并到微信即将开源的 WCDB（WeChat Database）组件中。</p>
+<h2 id="6-5-小结"><a href="#6-5-小结" class="headerlink" title="6.5 小结"></a>6.5 小结</h2><p>移动客户端数据库虽然不如后台数据库那么复杂，但也存在着不少可挖掘的技术点。本次尝试了仅对SQLite原有的方案进行优化，而市面上还有许多优秀的数据库，如LevelDB、RocksDB、Realm等，它们采用了和SQLite不同的实现原理。后续我们将借鉴它们的优化经验，尝试更深入的优化。</p>
+<h1 id="七、SQLite多线程解决方案"><a href="#七、SQLite多线程解决方案" class="headerlink" title="七、SQLite多线程解决方案"></a>七、SQLite多线程解决方案</h1><h2 id="7-1-FMDB中的多线程-—-转串行"><a href="#7-1-FMDB中的多线程-—-转串行" class="headerlink" title="7.1 FMDB中的多线程 — 转串行"></a>7.1 FMDB中的多线程 — 转串行</h2><p><a target="_blank" rel="noopener" href="https://github.com/ccgus/fmdb">FMDB</a> 是基于 SQLite 的数据库框架，使用 Objective-C 语言对 SQLite 的 C 语言接口做了一层面向对象的封装，并通过一个 Serial 队列保证在多线程环境下的数据安全。</p>
+<p>FMDB 提供了 <code>FMDatabase</code> 类，该类与数据库文件一一对应，在新建一个 FMDatabase 对象时，可以关联一个已有的数据库文件；该对象以面向对象思想封装了增、删、改、查、事务等常用的数据库操作。但是<code>FMDatabase</code>  <strong>不是线程安全</strong> 的，在多个线程之间使用同一个<code>FMDatabase</code>可能会出现数据错误。</p>
+<p>对于线程安全 FMDB 提供了<code>FMDatabaseQueue</code> 和 <code>FMDatabasePool</code> 。</p>
+<ul>
+<li><code>FMDatabaseQueue</code>持有 SQLite 句柄，多个线程使用同一个句柄，同时在初始化时创建了一个<strong>串行队列</strong>，当在多线程之间执行数据库操作时，<code>FMDatabaseQueue</code>将数据库操作以 <strong>block</strong> 的形式添加到该串行队列，然后按接收<strong>顺序同步执行</strong>，以此来保证数据库在多线程下的数据安全。</li>
+<li><code>FMDatabasePool</code> 实现原理和<code>FMDatabaseQueue</code>一样，它的使用更加灵活，但是容易造成死锁，不推荐使用。</li>
+</ul>
+<p>FMDatabaseQueue原理：让各个线程的数据库操作按顺序同步执行。</p>
+<img src="/images/sqlite/22.png" alt="img" style="zoom:77%;" />
+
+<p>示例：</p>
+<p>创建FMDatabaseQueue：</p>
+<figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">NSString</span> *documentPath = [<span class="built_in">NSSearchPathForDirectoriesInDomains</span>(<span class="built_in">NSDocumentDirectory</span>, <span class="built_in">NSUserDomainMask</span>, <span class="literal">YES</span>) lastObject];</span><br><span class="line"><span class="built_in">NSString</span> *path = [documentPath stringByAppendingPathComponent:<span class="string">@&quot;demoDataBase.sqlite&quot;</span>];</span><br><span class="line">_database = [FMDatabase databaseWithPath:path];</span><br></pre></td></tr></table></figure>
+
+<p>多线程操作数据库：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">dispatch_queue_t</span> queue = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, <span class="number">0</span>);</span><br><span class="line"></span><br><span class="line"><span class="built_in">dispatch_async</span>(queue, ^&#123;</span><br><span class="line">    [<span class="keyword">self</span>.databaseQueue inDatabase:^(FMDatabase *db) &#123;</span><br><span class="line">        <span class="built_in">BOOL</span> result = [db executeUpdate:<span class="string">@&quot;INSERT INTO Person (name, sex) VALUES (&#x27;张三&#x27;, &#x27;男&#x27;)&quot;</span>];</span><br><span class="line">        <span class="keyword">if</span> (result) &#123; <span class="built_in">NSLog</span>(<span class="string">@&quot;插入成功 - %@&quot;</span>, [<span class="built_in">NSThread</span> currentThread]); &#125;</span><br><span class="line">    &#125;];</span><br><span class="line">&#125;);</span><br><span class="line"></span><br><span class="line"><span class="built_in">dispatch_async</span>(queue, ^&#123;</span><br><span class="line">    [<span class="keyword">self</span>.databaseQueue inDatabase:^(FMDatabase *db) &#123;</span><br><span class="line">        <span class="built_in">BOOL</span> result = [db executeUpdate:<span class="string">@&quot;INSERT INTO Person (name, sex) VALUES (&#x27;李四&#x27;, &#x27;男&#x27;)&quot;</span>];</span><br><span class="line">        <span class="keyword">if</span> (result) &#123; <span class="built_in">NSLog</span>(<span class="string">@&quot;插入成功 - %@&quot;</span>, [<span class="built_in">NSThread</span> currentThread]); &#125;</span><br><span class="line">    &#125;];</span><br><span class="line">&#125;);</span><br><span class="line"></span><br><span class="line"><span class="built_in">dispatch_async</span>(queue, ^&#123;</span><br><span class="line">    [<span class="keyword">self</span>.databaseQueue inDatabase:^(FMDatabase *db) &#123;</span><br><span class="line">        <span class="built_in">BOOL</span> result = [db executeUpdate:<span class="string">@&quot;INSERT INTO Person (name, sex) VALUES (&#x27;王五&#x27;, &#x27;男&#x27;)&quot;</span>];</span><br><span class="line">        <span class="keyword">if</span> (result) &#123; <span class="built_in">NSLog</span>(<span class="string">@&quot;插入成功 - %@&quot;</span>, [<span class="built_in">NSThread</span> currentThread]); &#125;</span><br><span class="line">    &#125;];</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+
+<p>运行结果：</p>
+<img src="/images/sqlite/23.png" alt="img" style="zoom:85%;" />
+
+<p>数据库结果：</p>
+<p><img src="/images/sqlite/24.png" alt="img"></p>
+<h2 id="7-2-WCDB"><a href="#7-2-WCDB" class="headerlink" title="7.2 WCDB"></a>7.2 WCDB</h2><p>WCDB 是微信团队推出的一个高效、完整、易用的移动数据库框架，基于 SQLCipher（SQLite的加密扩展），支持 iOS，mac OS 和 Android。</p>
+<p>WCDB 通过 <strong>SQLite 多句柄</strong> 和 <strong>WAL 日志模式</strong> 来支持线程间读与读、读与写操作<strong>并发</strong>执行，并通过<strong>优化 Busy Retry 方案</strong> 来提升线程间写与写操作<strong>串行</strong>执行的效率。(<em>实现细节见6.1节</em>)</p>
+<p>WCDB 内置一个句柄池<code>HandlePool</code>，由它管理和分发 SQLite 句柄。WCDB 提供的<code>WCTDatabase</code>、<code>WCTTable</code>和<code>WCTTransaction</code>的所有 SQL 操作接口都是线程安全，它们不直接持有数据库句柄，而是由<code>HandlePool</code>根据数据库访问所在的线程、是否处于事务、并发状态等，自动分发合适的 SQLite 连接进行操作，以此来保证同一个句柄在同一时间只有一个线程在操作，从而达到读与读、读与写并发的效果。</p>
+<h2 id="7-3-性能对比"><a href="#7-3-性能对比" class="headerlink" title="7.3 性能对比"></a>7.3 性能对比</h2><blockquote>
+<p>以下测试数据来自 <a target="_blank" rel="noopener" href="https://github.com/Tencent/wcdb/wiki/%e6%80%a7%e8%83%bd%e6%95%b0%e6%8d%ae%e4%b8%8eBenchmark">WCDB性能数据与Benchmark</a></p>
+</blockquote>
+<p>这里主要对比 FMDB 和 WCDB。</p>
+<p>如无特殊说明，SQLite配置均为WAL模式、缓存大小2000字节、页大小4 kb：</p>
+<ul>
+<li><code>PRAGMA cache_size=-2000</code></li>
+<li><code>PRAGMA page_size=4096</code></li>
+<li><code>PRAGMA journal_mode=WAL</code></li>
+</ul>
+<p>测试数据均为含有一个整型和一个二进制数据的表：<code>CREATE TABLE benchmark(key INTEGER, value BLOB)</code>，二进制数据长度为100字节。</p>
+<h3 id="7-3-1-Baseline"><a href="#7-3-1-Baseline" class="headerlink" title="7.3.1 Baseline"></a>7.3.1 Baseline</h3><ul>
+<li><strong>读操作性能测试</strong>：该测试为从数据库中取出所有数据，并拼装为object。</li>
+</ul>
+<img src="https://github.com/Tencent/wcdb/wiki/assets/benchmark/baseline_read.png" style="zoom:57%;" />
+
+<ul>
+<li><strong>写操作性能测试</strong>：该测试为将object的数据不断插入到数据库中（不使用事务）。</li>
+</ul>
+<img src="https://github.com/Tencent/wcdb/wiki/assets/benchmark/baseline_write.png" style="zoom:57%;" />
+
+<ul>
+<li><strong>批量写操作性能测试</strong>：该测试为将object的数据批量插入数据库（使用事务）。</li>
+</ul>
+<img src="https://github.com/Tencent/wcdb/wiki/assets/benchmark/baseline_batch_write.png" style="zoom:57%;" />
+
+<p>WCDB写操作和批量写操作的性能分别优于FMDB <strong>28%</strong> 和 <strong>180%</strong> ，而读操作则劣于FMDB <strong>5%</strong> 。</p>
+<p>对于读操作，SQLite速度很快，因此封装层的消耗会占比较多。FMDB只做了最简单的封装， 而WCDB还包括ORM、WINQ等操作，因此执行的指令会比FMDB多，从而导致性能稍差于FMDB。但WCDB也通过一些优化手段减少这种差距。例如，通过IMP指针调用函数、部分操作No-ARC等等。</p>
+<p>而写操作，WCDB也做了许多针对性的优化。例如，WAL模式下写入操作触发checkpoint时，不立即执行checkpoint，而是由一个checkpoint线程来完成，从而减少单次操作的耗时等等。</p>
+<h3 id="7-3-2-Multithread"><a href="#7-3-2-Multithread" class="headerlink" title="7.3.2 Multithread"></a>7.3.2 Multithread</h3><ul>
+<li><strong>多线程读操作性能测试</strong>：该测试同时启动两个线程，分别从数据库中取出所有数据，并拼装为object。</li>
+</ul>
+<img src="https://github.com/Tencent/wcdb/wiki/assets/benchmark/multithread_read_read.png" style="zoom:57%;" />
+
+<ul>
+<li><strong>多线程读写操作性能测试</strong>：该测试同时启动两个线程，一个线程从数据库中取出所有数据，并拼装为object；另一个将object的数据批量插入到数据库中。</li>
+</ul>
+<img src="https://github.com/Tencent/wcdb/wiki/assets/benchmark/multithread_read_write.png" style="zoom:57%;" />
+
+<ul>
+<li><strong>多线程写操作性能测试</strong>：该测试同时启动两个线程，分别将object的数据批量插入数据库。</li>
+</ul>
+<img src="https://github.com/Tencent/wcdb/wiki/assets/benchmark/multithread_write_write.png" style="zoom:57%;" />
+
+<p>WCDB 的多线程读写操作性能优于 FMDB <strong>62%</strong> ，而多线程读操作基本与 FMDB 持平（FMDB 只对 SQLite 做了最简单的封装， 而 WCDB 还包括ORM、WINQ等操作，执行的指令会比 FMDB 多，因此在多线程读测试中没有表现出明显的优势）。</p>
+<p>FMDB在多线程写测试中，直接触发了 Busy Retry ，返回错误<code>SQLITE_BUSY</code>，因此无法比较。而WCDB通过优化Busy Retry，多线程写操作实质也是串行执行，但不会出错导致操作中断。</p>
+<h2 id="7-4-小结"><a href="#7-4-小结" class="headerlink" title="7.4 小结"></a>7.4 小结</h2><p>FMDB 采用串行队列来保证线程安全，并且采用单句柄方案，即所有线程共用一个SQLite Handle。在多线程并发时，虽然能够使各个线程的数据库操作按顺序同步进行，保证了数据安全，但正是因为各线程同步进行，导致后来的线程会被阻塞较长时间，无论是读操作还是写操作，都必须等待前面的线程执行完毕，使得性能无法得到更好的保障。</p>
+<p>WCDB 内置了一个句柄池，根据各个线程的情况派发数据库句柄，通过多句柄方案来实现线程间读与读、读与写并发执行，并开启SQLite的WAL日志模式进一步提高多线程的并发性。同时 WCDB 修改了SQLite的内部实现，优化了 Busy Retry 方案，禁用了文件锁并添加队列来支持主动唤醒等待的线程，以此来提高线程间写与写串行执行的效率。</p>
+<p>WCDB 在多线程方面明显优于 FMDB。</p>
+<h1 id="八、参考链接"><a href="#八、参考链接" class="headerlink" title="八、参考链接"></a>八、参考链接</h1><ul>
+<li>并发及IO优化<ul>
+<li><a target="_blank" rel="noopener" href="http://mp.weixin.qq.com/s?__biz=MzAwNDY1ODY2OQ==&mid=2649286361&idx=1&sn=78bbcda7f41a14291ad71289e4821f71&scene=21#wechat_redirect">微信iOS SQLite源码优化实践</a></li>
+</ul>
+</li>
+<li>数据库修复<ul>
+<li><a target="_blank" rel="noopener" href="https://mp.weixin.qq.com/s/N1tuHTyg3xVfbaSd4du-tw">微信 SQLite 数据库修复实践</a></li>
+<li><a target="_blank" rel="noopener" href="https://cloud.tencent.com/developer/article/1005513">微信移动端数据库组件 WCDB 系列：数据库修复三板斧（二）</a></li>
+</ul>
+</li>
+<li>WCDB的使用<ul>
+<li><a target="_blank" rel="noopener" href="https://mp.weixin.qq.com/s/1XxcrsR2HKam9ytNk8vmGw">微信移动端数据库组件WCDB系列（一）-iOS基础篇</a></li>
+<li><a target="_blank" rel="noopener" href="https://cloud.tencent.com/developer/article/1005718">为什么要从 FMDB 迁移到 WCDB？</a></li>
+<li><a target="_blank" rel="noopener" href="https://github.com/Tencent/wcdb/wiki/%E6%80%A7%E8%83%BD%E6%95%B0%E6%8D%AE%E4%B8%8EBenchmark">性能数据与Benchmark</a></li>
+<li><a target="_blank" rel="noopener" href="https://github.com/Tencent/wcdb">WCDB 源码</a></li>
+</ul>
+</li>
+<li><a target="_blank" rel="noopener" href="https://cloud.tencent.com/developer/article/1005549">微信 WCDB 进化之路：开源与开始</a></li>
+<li><a target="_blank" rel="noopener" href="https://github.com/ccgus/fmdb">FMDB 源码</a></li>
+</ul>
+
+    </article>
+    <!-- license  -->
+    
+        <div class="license-wrapper">
+            <p>Author：<a href="https://tenloy.github.io">Tenloy</a>
+            <p>原文链接：<a href="https://tenloy.github.io/2022/05/05/sqlite.html">https://tenloy.github.io/2022/05/05/sqlite.html</a>
+            <p>发表日期：2022.05.05 , 11:12 AM</p>
+            <p>更新日期：2024.04.07 , 7:38 PM</p>
+            <p>版权声明：本文采用<a rel="license noopener" target="_blank" href="http://creativecommons.org/licenses/by-nc/4.0/">Crative Commons 4.0 许可协议</a>进行许可</p>
+        </div>
+    
+    <!-- paginator  -->
+    <ul class="post-paginator">
+        <li class="next">
+            
+        </li>
+        <li class="previous">
+            
+                <div class="prevSlogan">Previous Post</div>
+                <a href= "/2022/04/28/mmap.html" title= "内存映射mmap函数的原理与应用">
+                    <div class="prevTitle">内存映射mmap函数的原理与应用</div>
+                </a>
+            
+        </li>
+    </ul>
+    <!-- 评论插件 -->
+    <!-- 来必力City版安装代码 -->
+
+<!-- City版安装代码已完成 -->
+    
+    
+    <!-- gitalk评论 -->
+
+    <!-- utteranc评论 -->
+
+    <!-- partial('_partial/comment/changyan') -->
+    <!--PC版-->
+
+
+    
+    
+
+    <!-- 评论 -->
+</main>
+            <!-- profile -->
+            
+        </div>
+        <footer class="footer footer-unloaded">
+    <!-- social  -->
+    
+    <div class="social">
+        
+    
+        
+            
+                <a href="mailto:luotengoto@163.com" class="iconfont-archer email" title=email ></a>
+            
+        
+    
+        
+            
+                <a href="//github.com/Tenloy" class="iconfont-archer github" target="_blank" title=github></a>
+            
+        
+    
+        
+            
+                <a href="https://www.jianshu.com/u/8db1bc12db9f" class="iconfont-jian jianshu" target="_blank" title=jianshu></a>
+            
+        
+    
+        
+            
+                <a href="/atom.xml" class="iconfont-archer rss" target="_blank" title=rss></a>
+            
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+
+    </div>
+    
+    <!-- powered by Hexo  -->
+    <div class="copyright">
+        <span id="hexo-power">Powered by <a href="https://hexo.io/" target="_blank">Hexo</a></span><span class="iconfont-archer power">&#xe635;</span><span id="theme-info">theme <a href="https://github.com/fi3ework/hexo-theme-archer" target="_blank">Archer</a></span>
+    </div>
+    <!-- 不蒜子  -->
+    
+    <div class="busuanzi-container">
+    
+     
+    <span id="busuanzi_container_site_pv">PV: <span id="busuanzi_value_site_pv"></span> :)</span>
+    
+    </div>
+    
+</footer>
+    </div>
+    <!-- toc -->
+    
+    <div class="toc-wrapper" style=
+    
+
+
+
+
+
+
+
+top:40vh;
+
+    >
+        <div class="toc-catalog">
+            <span class="iconfont-archer catalog-icon">&#xe613;</span><span>CATALOG</span>
+        </div>
+        <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#iOS-%E6%95%B0%E6%8D%AE%E5%BA%93%E6%96%B9%E6%A1%88"><span class="toc-text">iOS 数据库方案</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%B8%80%E3%80%81SQLite%E6%A6%82%E8%BF%B0%E5%8F%8A%E5%85%B6%E4%BC%98%E7%82%B9%E3%80%81%E4%B8%8D%E8%B6%B3"><span class="toc-text">一、SQLite概述及其优点、不足</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-1-%E4%B8%BA%E4%BB%80%E4%B9%88%E8%A6%81%E7%94%A8-SQLite%EF%BC%9F"><span class="toc-text">1.1 为什么要用 SQLite？</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#1-2-SQLite-%E5%B1%80%E9%99%90%E6%80%A7"><span class="toc-text">1.2 SQLite 局限性</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%BA%8C%E3%80%81SQLite%E4%B8%AD%E7%9A%84%E2%80%9D%E8%BF%9E%E6%8E%A5%E2%80%9C%E4%B8%8E%E2%80%9D%E5%8F%A5%E6%9F%84%E2%80%9C"><span class="toc-text">二、SQLite中的”连接“与”句柄“</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#2-1-MySQL%E7%9A%84%E2%80%9D%E8%BF%9E%E6%8E%A5%E2%80%9C"><span class="toc-text">2.1 MySQL的”连接“</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-2-%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E4%B8%AD%E5%8F%A5%E6%9F%84%E4%B8%8E%E6%96%87%E4%BB%B6"><span class="toc-text">2.2 操作系统中句柄与文件</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#2-2-1-%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E4%B8%AD%E7%9A%84%E2%80%9D%E5%8F%A5%E6%9F%84%E2%80%9C"><span class="toc-text">2.2.1 操作系统中的”句柄“</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-2-2-%E6%96%87%E4%BB%B6%E6%89%93%E5%BC%80%E5%A4%9A%E6%AC%A1-%E5%A4%9A%E5%8F%A5%E6%9F%84"><span class="toc-text">2.2.2 文件打开多次(多句柄)</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-3-SQLite%E4%B8%AD%E7%9A%84%E2%80%9D%E8%BF%9E%E6%8E%A5%E2%80%9C%E4%B8%8E%E2%80%9D%E5%8F%A5%E6%9F%84%E2%80%9C"><span class="toc-text">2.3 SQLite中的”连接“与”句柄“</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%B8%89%E3%80%81SQLite-%E7%AE%80%E5%8D%95%E4%BD%BF%E7%94%A8%E7%A4%BA%E4%BE%8B"><span class="toc-text">三、SQLite 简单使用示例</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%9B%9B%E3%80%81SQLite%E7%9A%84%E4%B8%A4%E7%A7%8D%E6%97%A5%E5%BF%97%E6%A8%A1%E5%BC%8F"><span class="toc-text">四、SQLite的两种日志模式</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%BA%94%E3%80%81%E6%95%B0%E6%8D%AE%E5%BA%93%E7%9A%84%E5%8D%87%E7%BA%A7"><span class="toc-text">五、数据库的升级</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#5-1-%E6%95%B0%E6%8D%AE%E5%BA%93%E5%8D%87%E7%BA%A7%E6%98%AF%E6%8C%87%E4%BB%80%E4%B9%88%EF%BC%9F"><span class="toc-text">5.1 数据库升级是指什么？</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#5-2-%E8%A1%A8%E7%BB%93%E6%9E%84%E4%BF%AE%E6%94%B9%E7%9A%84%E5%87%A0%E7%A7%8D%E5%A4%84%E7%90%86%E6%96%B9%E5%BC%8F"><span class="toc-text">5.2 表结构修改的几种处理方式</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#5-3-%E6%95%B0%E6%8D%AE%E5%BA%93%E5%8D%87%E7%BA%A7%E5%B8%B8%E8%A7%81%E7%9A%84%E5%87%A0%E7%A7%8D%E6%96%B9%E5%BC%8F"><span class="toc-text">5.3 数据库升级常见的几种方式</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#5-3-1-%E6%9C%80%E5%8E%9F%E5%A7%8B%E7%9A%84SQLite"><span class="toc-text">5.3.1 最原始的SQLite</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-3-2-%E5%8F%AA%E9%9C%80%E8%AE%B0%E5%BD%95%E6%AF%8F%E6%AC%A1%E8%BF%AD%E4%BB%A3%E6%94%B9%E5%8A%A8"><span class="toc-text">5.3.2 只需记录每次迭代改动</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-3-3-%E4%B8%8EORM%E7%9B%B8%E7%BB%93%E5%90%88%E7%9A%84%E5%8D%87%E7%BA%A7"><span class="toc-text">5.3.3 与ORM相结合的升级</span></a></li></ol></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%85%AD%E3%80%81SQLite%E7%9A%84%E4%BC%98%E5%8C%96%E7%82%B9"><span class="toc-text">六、SQLite的优化点</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#6-1-%E5%A4%9A%E7%BA%BF%E7%A8%8B%E5%B9%B6%E5%8F%91%E4%BC%98%E5%8C%96"><span class="toc-text">6.1 多线程并发优化</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#6-1-1-%E8%83%8C%E6%99%AF"><span class="toc-text">6.1.1 背景</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-1-2-SQLite%E7%9A%84%E5%A4%9A%E5%8F%A5%E6%9F%84%E6%96%B9%E6%A1%88%E5%8F%8ABusy-Retry%E6%96%B9%E6%A1%88"><span class="toc-text">6.1.2 SQLite的多句柄方案及Busy Retry方案</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-1-3-SQLite-Busy-Retry%E6%96%B9%E6%A1%88%E7%9A%84%E4%B8%8D%E8%B6%B3"><span class="toc-text">6.1.3 SQLite Busy Retry方案的不足</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-1-4-SQLite%E4%B8%AD%E7%9A%84%E7%BA%BF%E7%A8%8B%E9%94%81%E5%8F%8A%E8%BF%9B%E7%A8%8B%E9%94%81"><span class="toc-text">6.1.4 SQLite中的线程锁及进程锁</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-1-5-%E4%BC%98%E5%8C%96%E5%BC%80%E5%A7%8B"><span class="toc-text">6.1.5 优化开始</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#6-2-I-O-%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96"><span class="toc-text">6.2 I&#x2F;O 性能优化</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#6-2-1-%E4%BF%9D%E7%95%99WAL%E6%96%87%E4%BB%B6%E5%A4%A7%E5%B0%8F"><span class="toc-text">6.2.1 保留WAL文件大小</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-2-2-mmap%E4%BC%98%E5%8C%96"><span class="toc-text">6.2.2 mmap优化</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#6-3-%E5%85%B6%E4%BB%96%E4%BC%98%E5%8C%96"><span class="toc-text">6.3 其他优化</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#6-3-1-%E7%A6%81%E7%94%A8%E6%96%87%E4%BB%B6%E9%94%81"><span class="toc-text">6.3.1 禁用文件锁</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-3-2-%E7%A6%81%E7%94%A8%E5%86%85%E5%AD%98%E7%BB%9F%E8%AE%A1%E9%94%81"><span class="toc-text">6.3.2 禁用内存统计锁</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#6-4-%E6%95%B0%E6%8D%AE%E5%BA%93%E4%BF%AE%E5%A4%8D"><span class="toc-text">6.4 数据库修复</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#6-4-1-%E5%89%8D%E8%A8%80"><span class="toc-text">6.4.1 前言</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-4-2-SQLite-%E6%8D%9F%E5%9D%8F%E5%8E%9F%E5%9B%A0%E5%8F%8A%E5%85%B6%E4%BC%98%E5%8C%96-%E9%99%8D%E4%BD%8E%E6%8D%9F%E5%9D%8F%E7%8E%87"><span class="toc-text">6.4.2 SQLite 损坏原因及其优化(降低损坏率)</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#1-%E4%BC%98%E5%8C%96%E7%A9%BA%E9%97%B4%E5%8D%A0%E7%94%A8"><span class="toc-text">1. 优化空间占用</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2-%E4%BC%98%E5%8C%96%E6%96%87%E4%BB%B6-sync"><span class="toc-text">2. 优化文件 sync</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#1-synchronous-FULL"><span class="toc-text">1) synchronous &#x3D; FULL</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#2-fullfsync-1"><span class="toc-text">2) fullfsync &#x3D; 1</span></a></li></ol></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3-%E4%BC%98%E5%8C%96%E6%95%88%E6%9E%9C"><span class="toc-text">3. 优化效果</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-4-3-SQLite-%E4%BF%AE%E5%A4%8D%E9%80%BB%E8%BE%91%E4%BC%98%E5%8C%96-%E6%8F%90%E9%AB%98%E4%BF%AE%E5%A4%8D%E7%8E%87"><span class="toc-text">6.4.3 SQLite 修复逻辑优化(提高修复率)</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#1-%E6%88%91%E4%BB%AC%E7%9A%84%E9%9C%80%E6%B1%82"><span class="toc-text">1. 我们的需求</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2-sql-master%E8%A1%A8%E4%BB%8B%E7%BB%8D"><span class="toc-text">2. sql_master表介绍</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3-%E6%96%B9%E6%A1%88%E4%B8%80%EF%BC%9A%E5%AE%98%E6%96%B9%E7%9A%84Dump%E6%81%A2%E5%A4%8D%E6%96%B9%E6%A1%88"><span class="toc-text">3. 方案一：官方的Dump恢复方案</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#4-%E6%96%B9%E6%A1%88%E4%BA%8C%EF%BC%9A%E5%A4%87%E4%BB%BD%E6%81%A2%E5%A4%8D%E6%96%B9%E6%A1%88"><span class="toc-text">4. 方案二：备份恢复方案</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#5-%E6%96%B9%E6%A1%88%E4%B8%89%EF%BC%9A%E8%A7%A3%E6%9E%90B-tree%E6%81%A2%E5%A4%8D%E6%96%B9%E6%A1%88-RepairKit"><span class="toc-text">5. 方案三：解析B-tree恢复方案(RepairKit)</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#1-%E6%96%B9%E6%A1%88%EF%BC%9A%E8%87%AA%E5%AE%9E%E7%8E%B0%E6%95%B0%E6%8D%AE%E8%AF%BB%E5%8F%96%E7%B3%BB%E7%BB%9F"><span class="toc-text">1) 方案：自实现数据读取系统</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#2-%E5%85%B3%E9%94%AE%E7%82%B91-%E2%80%94-sqlite-master%E5%A4%87%E4%BB%BD"><span class="toc-text">2) 关键点1 — sqlite_master备份</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#3-%E5%85%B3%E9%94%AE%E7%82%B92-%E2%80%94-%E5%8A%A0%E8%A7%A3%E5%AF%86"><span class="toc-text">3) 关键点2 — 加解密</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#4-%E5%AE%9E%E7%8E%B0"><span class="toc-text">4) 实现</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#5-%E6%B3%A8%E6%84%8F%E7%82%B9-%E2%80%94-%E5%88%97%E7%9A%84%E8%A1%A5%E5%85%A8"><span class="toc-text">5) 注意点 — 列的补全</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#6-%E4%BC%98%E5%8C%96%E6%95%88%E6%9E%9C"><span class="toc-text">6) 优化效果</span></a></li></ol></li><li class="toc-item toc-level-4"><a class="toc-link" href="#6-%E4%B8%8D%E5%90%8C%E6%96%B9%E6%A1%88%E7%9A%84%E7%BB%84%E5%90%88"><span class="toc-text">6. 不同方案的组合</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-4-4-%E5%B0%8F%E7%BB%93"><span class="toc-text">6.4.4 小结</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#6-5-%E5%B0%8F%E7%BB%93"><span class="toc-text">6.5 小结</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%B8%83%E3%80%81SQLite%E5%A4%9A%E7%BA%BF%E7%A8%8B%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88"><span class="toc-text">七、SQLite多线程解决方案</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#7-1-FMDB%E4%B8%AD%E7%9A%84%E5%A4%9A%E7%BA%BF%E7%A8%8B-%E2%80%94-%E8%BD%AC%E4%B8%B2%E8%A1%8C"><span class="toc-text">7.1 FMDB中的多线程 — 转串行</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#7-2-WCDB"><span class="toc-text">7.2 WCDB</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#7-3-%E6%80%A7%E8%83%BD%E5%AF%B9%E6%AF%94"><span class="toc-text">7.3 性能对比</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#7-3-1-Baseline"><span class="toc-text">7.3.1 Baseline</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#7-3-2-Multithread"><span class="toc-text">7.3.2 Multithread</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#7-4-%E5%B0%8F%E7%BB%93"><span class="toc-text">7.4 小结</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%85%AB%E3%80%81%E5%8F%82%E8%80%83%E9%93%BE%E6%8E%A5"><span class="toc-text">八、参考链接</span></a></li></ol>
+    </div>
+    
+    <div class="back-top iconfont-archer">&#xe639;</div>
+    <div class="sidebar sidebar-hide">
+    <ul class="sidebar-tabs sidebar-tabs-active-0">
+        <li class="sidebar-tab-categories"><span class="iconfont-archer">&#xe666;</span><span class="tab-name">Cate</span></li>
+        <li class="sidebar-tab-archives"><span class="iconfont-archer">&#xe67d;</span><span class="tab-name">Archive</span></li>
+        <li class="sidebar-tab-tags"><span class="iconfont-archer">&#xe61b;</span><span class="tab-name">Tag</span></li>
+    </ul>
+    <div class="sidebar-content sidebar-content-show-archive">
+        <div class="sidebar-panel-categories">
+    <div class="sidebar-categories-name">
+    
+    
+    
+    
+    
+        <span class="sidebar-category-name" data-categories="数据结构与算法"><span class="iconfont-archer">&#xe60a;</span>数据结构与算法</span>
+    
+        <span class="sidebar-category-name" data-categories="计算机组成原理"><span class="iconfont-archer">&#xe60a;</span>计算机组成原理</span>
+    
+        <span class="sidebar-category-name" data-categories="计算机网络"><span class="iconfont-archer">&#xe60a;</span>计算机网络</span>
+    
+        <span class="sidebar-category-name" data-categories="汇编语言"><span class="iconfont-archer">&#xe60a;</span>汇编语言</span>
+    
+        <span class="sidebar-category-name" data-categories="数据的存储与传输"><span class="iconfont-archer">&#xe60a;</span>数据的存储与传输</span>
+    
+        <span class="sidebar-category-name" data-categories="操作系统"><span class="iconfont-archer">&#xe60a;</span>操作系统</span>
+    
+        <span class="sidebar-category-name" data-categories="互联网标准RFC"><span class="iconfont-archer">&#xe60a;</span>互联网标准RFC</span>
+    
+        <span class="sidebar-category-name" data-categories="编译链接与装载"><span class="iconfont-archer">&#xe60a;</span>编译链接与装载</span>
+    
+        <span class="sidebar-category-name" data-categories="iOS"><span class="iconfont-archer">&#xe60a;</span>iOS</span>
+    
+        <span class="sidebar-category-name" data-categories="架构与设计模式"><span class="iconfont-archer">&#xe60a;</span>架构与设计模式</span>
+    
+        <span class="sidebar-category-name" data-categories="图形处理与渲染"><span class="iconfont-archer">&#xe60a;</span>图形处理与渲染</span>
+    
+        <span class="sidebar-category-name" data-categories="软件工程"><span class="iconfont-archer">&#xe60a;</span>软件工程</span>
+    
+        <span class="sidebar-category-name" data-categories="音视频处理"><span class="iconfont-archer">&#xe60a;</span>音视频处理</span>
+    
+        <span class="sidebar-category-name" data-categories="DSL"><span class="iconfont-archer">&#xe60a;</span>DSL</span>
+    
+        <span class="sidebar-category-name" data-categories="Swift"><span class="iconfont-archer">&#xe60a;</span>Swift</span>
+    
+        <span class="sidebar-category-name" data-categories="Git"><span class="iconfont-archer">&#xe60a;</span>Git</span>
+    
+        <span class="sidebar-category-name" data-categories="Web"><span class="iconfont-archer">&#xe60a;</span>Web</span>
+    
+    </div>
+    <div class="iconfont-archer sidebar-categories-empty">&#xe678;</div>
+    <div class="sidebar-categories-list"></div>
+</div>
+          <div class="sidebar-panel-archives">
+    <!-- 在ejs中将archive按照时间排序 -->
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    <div class="total-and-search">
+        <div class="total-archive">
+        Total : 76
+        </div>
+        <!-- search  -->
+        
+            <div class="site-search popup-trigger tl-side-search"> 
+                <span class="iconfont-jian search-icon">&#xe7fc;搜索</span>
+            </div>
+        
+    </div>
+    
+    <div class="post-archive">
+    
+    
+    
+    
+    <div class="archive-year"> 2022 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/05</span><a class="archive-post-title" href= "/2022/05/05/sqlite.html" >iOS SQLite的使用与优化</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/28</span><a class="archive-post-title" href= "/2022/04/28/mmap.html" >内存映射mmap函数的原理与应用</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/18</span><a class="archive-post-title" href= "/2022/03/18/avfoundation.html" >AVFoundation Programming Guide(译)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/17</span><a class="archive-post-title" href= "/2022/03/17/avframework.html" >iOS音视频库概述</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/09</span><a class="archive-post-title" href= "/2022/02/09/OAuth.html" >[转] OAuth 2.0简述</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/18</span><a class="archive-post-title" href= "/2022/01/18/wkwebview-buges.html" >WKWebView使用过程中遇到的坑</a>
+        </li>
+    
+    
+    
+    
+    
+        </ul>
+    
+    <div class="archive-year"> 2021 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/22</span><a class="archive-post-title" href= "/2021/11/22/bit-calculation.html" >[转] 位运算实现加、减、乘、除运算</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/10</span><a class="archive-post-title" href= "/2021/11/10/git-use.html" >Git的使用总结</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/21</span><a class="archive-post-title" href= "/2021/10/21/dyld-objc.html" >(七) dyld与Objc—_objc_init、map_images、load_images</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/18</span><a class="archive-post-title" href= "/2021/10/18/compile-dynamic-link.html" >(六) Mach-O 文件的动态链接、库、Dyld(含dlopen)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/14</span><a class="archive-post-title" href= "/2021/10/14/compile-vm-asrl.html" >(五) Mach-O 文件之进程(虚拟)地址空间、ASLR</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/10</span><a class="archive-post-title" href= "/2021/10/10/compile-load.html" >(四) Mach-O 文件的装载</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/08</span><a class="archive-post-title" href= "/2021/10/08/compile-static-link.html" >(三) Mach-O 文件的静态链接</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/06</span><a class="archive-post-title" href= "/2021/10/06/compile-macho.html" >(二) Mach-O 文件结构</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/05</span><a class="archive-post-title" href= "/2021/10/05/compile-clang-llvm.html" >(一) Clang/LLVM 介绍、OC 程序的编译过程</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/02</span><a class="archive-post-title" href= "/2021/10/02/makefile.html" >[转] Make 命令的使用与NodeJS案例</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/28</span><a class="archive-post-title" href= "/2021/09/28/architectural-pattern.html" >常见架构模式: MVC、MVP、MVVM、VIPER</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/25</span><a class="archive-post-title" href= "/2021/09/25/design-pattern.html" >常见的设计模式</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/20</span><a class="archive-post-title" href= "/2021/09/20/program-thought.html" >常见的编程范式</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/15</span><a class="archive-post-title" href= "/2021/09/15/graphics-processing-case.html" >图形处理(三) - 图形处理实践案例</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/15</span><a class="archive-post-title" href= "/2021/09/15/graphics-processing.html" >图形处理(二) - 图形与视频处理相关的框架</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/13</span><a class="archive-post-title" href= "/2021/09/13/image-encode-decode.html" >图形处理(一) - 图片的加载与编解码</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/12</span><a class="archive-post-title" href= "/2021/09/12/iOS-Render.html" >[转] iOS离屏渲染原理及优化</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/11</span><a class="archive-post-title" href= "/2021/09/11/core-animation03.html" >Core-Animation(三) - 渲染流程探究及性能分析</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/09</span><a class="archive-post-title" href= "/2021/09/09/core-animation02.html" >Core Animation(二) - 隐式动画、CATransaction与CAAction</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/07</span><a class="archive-post-title" href= "/2021/09/07/core-animation01.html" >Core Animation(一) - UIView与CALayer、布局与绘制</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/05</span><a class="archive-post-title" href= "/2021/09/05/AFN-Analyse.html" >[转] AFN框架实现解析</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/04</span><a class="archive-post-title" href= "/2021/09/04/nrl-session.html" >NSURLSession概述</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/02</span><a class="archive-post-title" href= "/2021/09/02/Log.html" >移动端日志库设计</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/01</span><a class="archive-post-title" href= "/2021/08/01/Crash-Monitor.html" >iOS崩溃监控与分析</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/30</span><a class="archive-post-title" href= "/2021/07/30/Lag-Monitor.html" >iOS卡顿监控</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/29</span><a class="archive-post-title" href= "/2021/07/29/SwiftUI.html" >SwiftUI</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/29</span><a class="archive-post-title" href= "/2021/07/29/Swift-Version-History.html" >Swift版本更新API介绍</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/26</span><a class="archive-post-title" href= "/2021/07/26/RunLoop-Reposted-From-ibireme.html" >[转] 深入理解RunLoop—ibireme</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/25</span><a class="archive-post-title" href= "/2021/07/25/Protocol-Buffer.html" >Protocol Buffer的基本介绍</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/24</span><a class="archive-post-title" href= "/2021/07/24/base64.html" >Base64编码及iOS中的Base64</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/23</span><a class="archive-post-title" href= "/2021/07/23/chinese-encode.html" >[转] 彻底弄懂常见的7种中文字符编码</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/10</span><a class="archive-post-title" href= "/2021/07/10/p-npc-np.html" >P问题、NP问题、NPC、NP-Hard、P=NP?</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/30</span><a class="archive-post-title" href= "/2021/06/30/probability.html" >(六) 概率算法</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/28</span><a class="archive-post-title" href= "/2021/06/28/branch-bound.html" >(五) 分支限界算法</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/26</span><a class="archive-post-title" href= "/2021/06/26/back-track.html" >(四) 回溯法(试探算法)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/24</span><a class="archive-post-title" href= "/2021/06/24/greed.html" >(三) 贪心算法</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/22</span><a class="archive-post-title" href= "/2021/06/22/dynamic-programming.html" >(二) 动态规划算法</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/20</span><a class="archive-post-title" href= "/2021/06/20/divide-and-conquer.html" >(一) 分治算法及减治、变治算法</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/18</span><a class="archive-post-title" href= "/2021/06/18/several-programming.html" >穷举、递推、迭代(辗转法)、递归算法</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/15</span><a class="archive-post-title" href= "/2021/06/15/datastruction-overview.html" >数据结构与算法概述</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/06</span><a class="archive-post-title" href= "/2021/06/06/Web-Module.html" >前端各种模块化方案总结</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/27</span><a class="archive-post-title" href= "/2021/05/27/Fiber.html" >[转] 最通俗的 React Fiber(时间分片)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/27</span><a class="archive-post-title" href= "/2021/05/27/Coroutine.html" >[转] 什么是协程</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/19</span><a class="archive-post-title" href= "/2021/05/19/DSL.html" >[转] 谈谈DSL以及DSL的应用（以CocoaPods 为例）</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/03</span><a class="archive-post-title" href= "/2021/05/03/iOS-private-pod.html" >私有Pod库部署</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/29</span><a class="archive-post-title" href= "/2021/04/29/iOS-ComRouter.html" >[转] iOS的组件化方案</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/27</span><a class="archive-post-title" href= "/2021/04/27/iOS-CI.html" >iOS的持续集成</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/26</span><a class="archive-post-title" href= "/2021/04/26/Containers.html" >常见的容器概念：Linux容器、Docker容器、服务器容器</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/24</span><a class="archive-post-title" href= "/2021/04/24/Dock-Reprinted-from-RuanYIFeng.html" >[转] Docker入门教程</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/20</span><a class="archive-post-title" href= "/2021/04/20/Sync-Async.html" >同步和异步解读及编程中的使用场景</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/17</span><a class="archive-post-title" href= "/2021/04/17/Arm64-Handbook.html" >ARM64指令简易手册</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/16</span><a class="archive-post-title" href= "/2021/04/16/Arm64-Introduce.html" >iOS需要了解的ARM64汇编</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/13</span><a class="archive-post-title" href= "/2021/04/13/Command-Line.html" >CLI Shell、Terminal、脚本(语言)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/10</span><a class="archive-post-title" href= "/2021/04/10/Ins-SysCall-Kernel-Shell.html" >指令、系统调用、库、Shell、APP的层次关系</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/08</span><a class="archive-post-title" href= "/2021/04/08/ISA-Microarch-Soc.html" >指令集、微架构、手机芯片(Soc)及ARM的介绍</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/02</span><a class="archive-post-title" href= "/2021/04/02/Engineering.html" >工程化、动态化、容器化、组件化</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/01</span><a class="archive-post-title" href= "/2021/04/01/GithubPages-Hexo.html" >使用Hexo+Github Pages搭建个人博客</a>
+        </li>
+    
+    
+    
+    
+    
+        </ul>
+    
+    <div class="archive-year"> 2020 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/22</span><a class="archive-post-title" href= "/2020/12/22/aes.html" >数据加密 — 对称加密(以AES为例)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/21</span><a class="archive-post-title" href= "/2020/12/21/aes-standard.html" >[转] AES标准及Rijndael算法解析</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/20</span><a class="archive-post-title" href= "/2020/12/20/asymmetric.html" >数据加密 — 非对称加密(加签/加密，以RSA为例)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/09</span><a class="archive-post-title" href= "/2020/12/09/pki.html" >常见的PKI标准(X.509、PKCS)及证书相关介绍</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/28</span><a class="archive-post-title" href= "/2020/10/28/runtime-data-structure.html" >Objc Runtime总结</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/11</span><a class="archive-post-title" href= "/2020/09/11/GCD.html" >Objective-C — 深入浅出GCD常用API</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/06</span><a class="archive-post-title" href= "/2020/09/06/oc-block.html" >Objective-C — Block</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/26</span><a class="archive-post-title" href= "/2020/08/26/AutoreleasePool.html" >AutoreleasePool</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/24</span><a class="archive-post-title" href= "/2020/08/24/oc-memory-manage.html" >Objective-C — 内存管理</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/01</span><a class="archive-post-title" href= "/2020/08/01/ui-navigation-bar.html" >[转] 导航栏的架构介绍及使用</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/15</span><a class="archive-post-title" href= "/2020/07/15/symbol-decl.html" >变量声明、函数声明的作用</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/01</span><a class="archive-post-title" href= "/2020/07/01/ios-apns.html" >iOS APNS接收逻辑梳理</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/13</span><a class="archive-post-title" href= "/2020/06/13/ios-vest.html" >iOS制作马甲总结</a>
+        </li>
+    
+    </div>
+  </div>
+        <div class="sidebar-panel-tags">
+    <div class="sidebar-tags-name">
+    
+        <span class="sidebar-tag-name" data-tags="AutoreleasePool"><span class="iconfont-archer">&#xe606;</span>AutoreleasePool</span>
+    
+        <span class="sidebar-tag-name" data-tags="GCD"><span class="iconfont-archer">&#xe606;</span>GCD</span>
+    
+        <span class="sidebar-tag-name" data-tags="hexo"><span class="iconfont-archer">&#xe606;</span>hexo</span>
+    
+        <span class="sidebar-tag-name" data-tags="ISA"><span class="iconfont-archer">&#xe606;</span>ISA</span>
+    
+        <span class="sidebar-tag-name" data-tags="Microarch"><span class="iconfont-archer">&#xe606;</span>Microarch</span>
+    
+        <span class="sidebar-tag-name" data-tags="Soc"><span class="iconfont-archer">&#xe606;</span>Soc</span>
+    
+        <span class="sidebar-tag-name" data-tags="CLI"><span class="iconfont-archer">&#xe606;</span>CLI</span>
+    
+        <span class="sidebar-tag-name" data-tags="Shell"><span class="iconfont-archer">&#xe606;</span>Shell</span>
+    
+        <span class="sidebar-tag-name" data-tags="ARM64"><span class="iconfont-archer">&#xe606;</span>ARM64</span>
+    
+        <span class="sidebar-tag-name" data-tags="多线程"><span class="iconfont-archer">&#xe606;</span>多线程</span>
+    
+        <span class="sidebar-tag-name" data-tags="Docker"><span class="iconfont-archer">&#xe606;</span>Docker</span>
+    
+        <span class="sidebar-tag-name" data-tags="DSL"><span class="iconfont-archer">&#xe606;</span>DSL</span>
+    
+        <span class="sidebar-tag-name" data-tags="协程"><span class="iconfont-archer">&#xe606;</span>协程</span>
+    
+        <span class="sidebar-tag-name" data-tags="Fiber"><span class="iconfont-archer">&#xe606;</span>Fiber</span>
+    
+        <span class="sidebar-tag-name" data-tags="dp"><span class="iconfont-archer">&#xe606;</span>dp</span>
+    
+        <span class="sidebar-tag-name" data-tags="SwiftUI"><span class="iconfont-archer">&#xe606;</span>SwiftUI</span>
+    
+        <span class="sidebar-tag-name" data-tags="RunLoop"><span class="iconfont-archer">&#xe606;</span>RunLoop</span>
+    
+        <span class="sidebar-tag-name" data-tags="Swift-Syntax"><span class="iconfont-archer">&#xe606;</span>Swift-Syntax</span>
+    
+        <span class="sidebar-tag-name" data-tags="LagMonitor"><span class="iconfont-archer">&#xe606;</span>LagMonitor</span>
+    
+        <span class="sidebar-tag-name" data-tags="CrashMonitor"><span class="iconfont-archer">&#xe606;</span>CrashMonitor</span>
+    
+        <span class="sidebar-tag-name" data-tags="Log"><span class="iconfont-archer">&#xe606;</span>Log</span>
+    
+        <span class="sidebar-tag-name" data-tags="AFN"><span class="iconfont-archer">&#xe606;</span>AFN</span>
+    
+    </div>
+    <div class="iconfont-archer sidebar-tags-empty">&#xe678;</div>
+    <div class="tag-load-fail" style="display: none; color: #ccc; font-size: 0.6rem;">
+    缺失模块。<br/>
+    1、请确保node版本大于6.2<br/>
+    2、在博客根目录（注意不是archer根目录）执行以下命令：<br/>
+    <span style="color: #f75357; font-size: 1rem; line-height: 2rem;">npm i hexo-generator-json-content --save</span><br/>
+    3、在根目录_config.yml里添加配置：
+    <pre style="color: #787878; font-size: 0.6rem;">
+jsonContent:
+  meta: false
+  pages: false
+  posts:
+    title: true
+    date: true
+    path: true
+    text: false
+    raw: false
+    content: false
+    slug: false
+    updated: false
+    comments: false
+    link: false
+    permalink: false
+    excerpt: false
+    categories: true
+    tags: true</pre>
+    </div> 
+    <div class="sidebar-tags-list"></div>
+</div>
+    </div>
+</div> 
+    <script>
+    var siteMeta = {
+        root: "/",
+        author: "Tenloy"
+    }
+</script>
+    <!-- CDN failover -->
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js"></script>
+    <script type="text/javascript">
+        if (typeof window.$ === 'undefined')
+        {
+            console.warn('jquery load from jsdelivr failed, will load local script')
+            document.write('<script src="/lib/jquery.min.js">\x3C/script>')
+        }
+    </script>
+    <script src="/scripts/main.js"></script>
+    <!-- algolia -->
+    
+        <div class="site-search">
+  <div class="algolia-popup popup">
+    <div class="algolia-search">
+      <div class="algolia-search-input-icon">
+        <i class="fa fa-search"></i>
+      </div>
+      <div class="algolia-search-input" id="algolia-search-input"></div>
+    </div>
+
+    <div class="algolia-results">
+      <div id="algolia-stats"></div>
+      <div id="algolia-hits"></div>
+      <div id="algolia-pagination" class="algolia-pagination"></div>
+    </div>
+
+    <span class="popup-btn-close">
+      <i class="iconfont-archer">&#xe609;</i>
+    </span>
+  </div>
+</div>
+        <script src="https://cdn.jsdelivr.net/npm/instantsearch.js@2.8.0/dist/instantsearch.min.js" defer></script>
+        <script src="/scripts/search.js" defer></script>
+    
+    <!-- busuanzi  -->
+    
+    <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    
+    <!-- CNZZ  -->
+    
+    </div>
+    <!-- async load share.js -->
+    
+        <script src="/scripts/share.js" async></script>    
+     
+    </body>
+</html>
+
+

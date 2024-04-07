@@ -1,0 +1,2669 @@
+<!DOCTYPE html>
+<html lang="en">
+    <!-- title -->
+
+
+
+
+<!-- keywords -->
+
+
+
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" >
+    <meta name="author" content="Tenloy">
+    <meta name="renderer" content="webkit">
+    <meta name="copyright" content="Tenloy">
+    
+    <meta name="keywords" content="Tenloy,iOS,Swift">
+    
+    <meta name="description" content="学习 生活 记录 回忆">
+    <meta name="description" content="一、概述1.2 汇编语言早期的程序员发现机器语言在阅读、书写方面的问题，是如此的难以辨别和记忆，需要记住所有抽象的二进制码，为了解决这个问题，汇编语言就产生了。汇编语言是各种CPU提供的机器指令的助记符的集合，人们可以用汇编语言直接控制硬件系统进行工作。 汇编语言的主体是汇编指令。汇编指令和机器指令的差别在于指令的表示方法上。汇编指令是机器指令便于记忆的书写格式。 汇编语言与硬件关联很深，所以涉及">
+<meta property="og:type" content="article">
+<meta property="og:title" content="iOS需要了解的ARM64汇编">
+<meta property="og:url" content="https://tenloy.github.io/2021/04/16/Arm64-Introduce.html">
+<meta property="og:site_name" content="Tenloy&#39;s Blog">
+<meta property="og:description" content="一、概述1.2 汇编语言早期的程序员发现机器语言在阅读、书写方面的问题，是如此的难以辨别和记忆，需要记住所有抽象的二进制码，为了解决这个问题，汇编语言就产生了。汇编语言是各种CPU提供的机器指令的助记符的集合，人们可以用汇编语言直接控制硬件系统进行工作。 汇编语言的主体是汇编指令。汇编指令和机器指令的差别在于指令的表示方法上。汇编指令是机器指令便于记忆的书写格式。 汇编语言与硬件关联很深，所以涉及">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://tenloy.github.io/images/OS/arm64/2181780-36cc3b54e593b773.png">
+<meta property="og:image" content="https://tenloy.github.io/images/OS/arm64/2181780-3dffe09c419c6841.png">
+<meta property="og:image" content="https://tenloy.github.io/images/OS/arm64/2181780-e75c427c84c8457b.png">
+<meta property="og:image" content="https://tenloy.github.io/images/OS/arm64/2181780-27421d825a780d70.png">
+<meta property="og:image" content="https://tenloy.github.io/images/OS/arm64/2181780-a1e8cfe27820c7be.png">
+<meta property="og:image" content="https://tenloy.github.io/images/OS/arm64/CPSR01.png">
+<meta property="og:image" content="https://tenloy.github.io/images/OS/arm64/CPSR02.png">
+<meta property="og:image" content="https://tenloy.github.io/images/OS/arm64/2181780-fe8f75682a49fb75.jpg">
+<meta property="og:image" content="https://tenloy.github.io/images/OS/arm64/2181780-00533963d2c07253.jpg">
+<meta property="og:image" content="https://tenloy.github.io/images/OS/arm64/2181780-72b831ae09d51685.png">
+<meta property="og:image" content="https://tenloy.github.io/images/OS/arm64/2181780-1905b18d9661ce46.png">
+<meta property="og:image" content="https://tenloy.github.io/images/OS/arm64/method-call-stack.png">
+<meta property="og:image" content="https://tenloy.github.io/images/OS/arm64/2181780-7e9657f2cd933fff.png">
+<meta property="article:published_time" content="2021-04-16T07:00:20.000Z">
+<meta property="article:modified_time" content="2024-04-07T11:38:00.504Z">
+<meta property="article:author" content="Tenloy">
+<meta property="article:tag" content="ARM64">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://tenloy.github.io/images/OS/arm64/2181780-36cc3b54e593b773.png">
+    <meta http-equiv="Cache-control" content="no-cache">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"/>
+    
+    <title>iOS需要了解的ARM64汇编 · Tenloy&#39;s Blog</title>
+    <style type="text/css">
+    @font-face {
+        font-family: 'Oswald-Regular';
+        src: url("/font/Oswald-Regular.ttf");
+    }
+
+    body {
+        margin: 0;
+    }
+
+    header,
+    footer,
+    .back-top,
+    .sidebar,
+    .container,
+    .site-intro-meta,
+    .toc-wrapper {
+        display: none;
+    }
+
+    .site-intro {
+        position: relative;
+        z-index: 3;
+        width: 100%;
+        /* height: 50vh; */
+        overflow: hidden;
+    }
+
+    .site-intro-placeholder {
+        position: absolute;
+        z-index: -2;
+        top: 0;
+        left: 0;
+        width: calc(100% + 300px);
+        height: 100%;
+        background: repeating-linear-gradient(-45deg, #444 0, #444 80px, #333 80px, #333 160px);
+        background-position: center center;
+        transform: translate3d(-226px, 0, 0);
+        animation: gradient-move 2.5s ease-out 0s infinite;
+    }
+
+    @keyframes gradient-move {
+        0% {
+            transform: translate3d(-226px, 0, 0);
+        }
+        100% {
+            transform: translate3d(0, 0, 0);
+        }
+    }
+
+</style>
+
+    <link rel="preload" href= "/css/style.css?v=20180824" as="style" onload="this.onload=null;this.rel='stylesheet'" />
+    <link rel="stylesheet" href= "/css/mobile.css?v=20180824" media="(max-width: 980px)">
+    
+    <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.2.5/jquery.fancybox.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'" />
+    
+    <!-- /*! loadCSS. [c]2017 Filament Group, Inc. MIT License */
+/* This file is meant as a standalone workflow for
+- testing support for link[rel=preload]
+- enabling async CSS loading in browsers that do not support rel=preload
+- applying rel preload css once loaded, whether supported or not.
+*/ -->
+<script>
+(function( w ){
+	"use strict";
+	// rel=preload support test
+	if( !w.loadCSS ){
+		w.loadCSS = function(){};
+	}
+	// define on the loadCSS obj
+	var rp = loadCSS.relpreload = {};
+	// rel=preload feature support test
+	// runs once and returns a function for compat purposes
+	rp.support = (function(){
+		var ret;
+		try {
+			ret = w.document.createElement( "link" ).relList.supports( "preload" );
+		} catch (e) {
+			ret = false;
+		}
+		return function(){
+			return ret;
+		};
+	})();
+
+	// if preload isn't supported, get an asynchronous load by using a non-matching media attribute
+	// then change that media back to its intended value on load
+	rp.bindMediaToggle = function( link ){
+		// remember existing media attr for ultimate state, or default to 'all'
+		var finalMedia = link.media || "all";
+
+		function enableStylesheet(){
+			link.media = finalMedia;
+		}
+
+		// bind load handlers to enable media
+		if( link.addEventListener ){
+			link.addEventListener( "load", enableStylesheet );
+		} else if( link.attachEvent ){
+			link.attachEvent( "onload", enableStylesheet );
+		}
+
+		// Set rel and non-applicable media type to start an async request
+		// note: timeout allows this to happen async to let rendering continue in IE
+		setTimeout(function(){
+			link.rel = "stylesheet";
+			link.media = "only x";
+		});
+		// also enable media after 3 seconds,
+		// which will catch very old browsers (android 2.x, old firefox) that don't support onload on link
+		setTimeout( enableStylesheet, 3000 );
+	};
+
+	// loop through link elements in DOM
+	rp.poly = function(){
+		// double check this to prevent external calls from running
+		if( rp.support() ){
+			return;
+		}
+		var links = w.document.getElementsByTagName( "link" );
+		for( var i = 0; i < links.length; i++ ){
+			var link = links[ i ];
+			// qualify links to those with rel=preload and as=style attrs
+			if( link.rel === "preload" && link.getAttribute( "as" ) === "style" && !link.getAttribute( "data-loadcss" ) ){
+				// prevent rerunning on link
+				link.setAttribute( "data-loadcss", true );
+				// bind listeners to toggle media back
+				rp.bindMediaToggle( link );
+			}
+		}
+	};
+
+	// if unsupported, run the polyfill
+	if( !rp.support() ){
+		// run once at least
+		rp.poly();
+
+		// rerun poly on an interval until onload
+		var run = w.setInterval( rp.poly, 500 );
+		if( w.addEventListener ){
+			w.addEventListener( "load", function(){
+				rp.poly();
+				w.clearInterval( run );
+			} );
+		} else if( w.attachEvent ){
+			w.attachEvent( "onload", function(){
+				rp.poly();
+				w.clearInterval( run );
+			} );
+		}
+	}
+
+
+	// commonjs
+	if( typeof exports !== "undefined" ){
+		exports.loadCSS = loadCSS;
+	}
+	else {
+		w.loadCSS = loadCSS;
+	}
+}( typeof global !== "undefined" ? global : this ) );
+</script>
+
+    <link rel="icon" href= "/assets/favicon.ico" />
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.min.js" as="script" />
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js" as="script" />
+    <link rel="preload" href="/scripts/main.js" as="script" />
+    <link rel="preload" as="font" href="/font/Oswald-Regular.ttf" crossorigin>
+    <link rel="preload" as="font" href="https://at.alicdn.com/t/font_327081_1dta1rlogw17zaor.woff" crossorigin>
+    
+        <!-- algolia -->
+        <script>
+            
+            var hits = JSON.parse('{"per_page":10}')
+            var labels = JSON.parse('{"input_placeholder":"Search for Posts","hits_empty":"没有找到任何搜索结果: ${query}","hits_stats":"找到约${hits}条结果（用时${time}ms）"}')
+
+            var algolia = {
+                applicationID: 'V0HYXBS9FB',
+                apiKey: '6550d5de786935564142097c3e78c380',
+                indexName: 'law_blog_index',
+                hits: hits,
+                labels: labels
+            }
+        </script>
+    
+    <!-- fancybox -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.2.5/jquery.fancybox.min.js" defer></script>
+    <!-- 百度统计  -->
+    
+    <!-- 谷歌统计  -->
+    
+<meta name="generator" content="Hexo 5.4.0"><link rel="alternate" href="/atom.xml" title="Tenloy's Blog" type="application/atom+xml">
+</head>
+
+    
+        <body class="post-body">
+    
+    
+<header class="header">
+
+    <div class="read-progress"></div>
+    <div class="header-sidebar-menu">&#xe775;</div>
+    <!-- post页的toggle banner  -->
+    
+    <div class="banner">
+            <div class="blog-title">
+                <a href="/" >Tenloy&#39;s Blog</a>
+            </div>
+            <div class="post-title">
+                <a href="#" class="post-name">iOS需要了解的ARM64汇编</a>
+            </div>
+    </div>
+    
+    <!-- 将home-link的操作改为应用到header-top-right上 -->
+    <div class="header-top-right">
+        <!-- search  -->
+        
+            <div class="site-search popup-trigger tl-search">
+                <span class="iconfont-jian tl-search-icon">&#xe7fc;搜索</span>
+            </div>
+            
+        <a class="home-link" href=/>Tenloy's Blog</a>
+    </div>
+</header>
+    <div class="wrapper">
+        <div class="site-intro" style="
+
+
+
+
+
+
+
+height:40vh;
+">
+    
+    <!-- 主页  -->
+    
+    
+    <!-- 404页  -->
+            
+    <div class="site-intro-placeholder"></div>
+    <div class="site-intro-img" style="background-image: url(/intro/post-bg.jpg)"></div>
+    <div class="site-intro-meta">
+        <!-- 标题  -->
+        <h1 class="intro-title">
+            <!-- 主页  -->
+            
+            iOS需要了解的ARM64汇编
+            <!-- 404 -->
+            
+        </h1>
+        <!-- 副标题 -->
+        <p class="intro-subtitle">
+            <!-- 主页副标题  -->
+            
+            
+            <!-- 404 -->
+            
+        </p>
+        <!-- 文章页meta -->
+        
+            <div class="post-intros">
+                <!-- 文章页标签  -->
+                
+                    <div class= post-intro-tags >
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags = "ARM64">ARM64</a>
+    
+</div>
+                
+                
+                    <div class="post-intro-read">
+                        <span>Word count: <span class="post-count word-count">9.6k</span>Reading time: <span class="post-count reading-time">35 min</span></span>
+                    </div>
+                
+                <div class="post-intro-meta">
+                    <span class="post-intro-calander iconfont-archer">&#xe676;</span>
+                    <span class="post-intro-time">2021/04/16</span>
+                    
+                    <span id="busuanzi_container_page_pv" class="busuanzi-pv">
+                        <span class="iconfont-archer">&#xe602;</span>
+                        <span id="busuanzi_value_page_pv"></span>
+                    </span>
+                    
+                    <span class="shareWrapper">
+                        <span class="iconfont-archer shareIcon">&#xe71d;</span>
+                        <span class="shareText">Share</span>
+                        <ul class="shareList">
+                            <li class="iconfont-archer share-qr" data-type="qr">&#xe75b;
+                                <div class="share-qrcode"></div>
+                            </li>
+                            <li class="iconfont-archer" data-type="weibo">&#xe619;</li>
+                            <li class="iconfont-archer" data-type="qzone">&#xe62e;</li>
+                            <li class="iconfont-archer" data-type="twitter">&#xe634;</li>
+                            <li class="iconfont-archer" data-type="facebook">&#xe67a;</li>
+                        </ul>
+                    </span>
+                </div>
+            </div>
+        
+    </div>
+</div>
+        <script>
+ 
+  // get user agent
+  var browser = {
+    versions: function () {
+      var u = window.navigator.userAgent;
+      return {
+        userAgent: u,
+        trident: u.indexOf('Trident') > -1, //IE内核
+        presto: u.indexOf('Presto') > -1, //opera内核
+        webKit: u.indexOf('AppleWebKit') > -1, //苹果、谷歌内核
+        gecko: u.indexOf('Gecko') > -1 && u.indexOf('KHTML') == -1, //火狐内核
+        mobile: !!u.match(/AppleWebKit.*Mobile.*/), //是否为移动终端
+        ios: !!u.match(/\(i[^;]+;( U;)? CPU.+Mac OS X/), //ios终端
+        android: u.indexOf('Android') > -1 || u.indexOf('Linux') > -1, //android终端或者uc浏览器
+        iPhone: u.indexOf('iPhone') > -1 || u.indexOf('Mac') > -1, //是否为iPhone或者安卓QQ浏览器
+        iPad: u.indexOf('iPad') > -1, //是否为iPad
+        webApp: u.indexOf('Safari') == -1, //是否为web应用程序，没有头部与底部
+        weixin: u.indexOf('MicroMessenger') == -1, //是否为微信浏览器
+        uc: u.indexOf('UCBrowser') > -1 //是否为android下的UC浏览器
+      };
+    }()
+  }
+  console.log("userAgent:" + browser.versions.userAgent);
+
+  // callback
+  function fontLoaded() {
+    console.log('font loaded');
+    if (document.getElementsByClassName('site-intro-meta')) {
+      document.getElementsByClassName('intro-title')[0].classList.add('intro-fade-in');
+      document.getElementsByClassName('intro-subtitle')[0].classList.add('intro-fade-in');
+      var postIntros = document.getElementsByClassName('post-intros')[0]
+      if (postIntros) {
+        postIntros.classList.add('post-fade-in');
+      }
+    }
+  }
+
+  // UC不支持跨域，所以直接显示
+  function asyncCb(){
+    if (browser.versions.uc) {
+      console.log("UCBrowser");
+      fontLoaded();
+    } else {
+      WebFont.load({
+        custom: {
+          families: ['Oswald-Regular']
+        },
+        loading: function () {  //所有字体开始加载
+          // console.log('loading');
+        },
+        active: function () {  //所有字体已渲染
+          fontLoaded();
+        },
+        inactive: function () { //字体预加载失败，无效字体或浏览器不支持加载
+          console.log('inactive: timeout');
+          fontLoaded();
+        },
+        timeout: 5000 // Set the timeout to two seconds
+      });
+    }
+  }
+
+  function asyncErr(){
+    console.warn('script load from CDN failed, will load local script')
+  }
+
+  // load webfont-loader async, and add callback function
+  function async(u, cb, err) {
+    var d = document, t = 'script',
+      o = d.createElement(t),
+      s = d.getElementsByTagName(t)[0];
+    o.src = u;
+    if (cb) { o.addEventListener('load', function (e) { cb(null, e); }, false); }
+    if (err) { o.addEventListener('error', function (e) { err(null, e); }, false); }
+    s.parentNode.insertBefore(o, s);
+  }
+
+  var asyncLoadWithFallBack = function(arr, success, reject) {
+      var currReject = function(){
+        reject()
+        arr.shift()
+        if(arr.length)
+          async(arr[0], success, currReject)
+        }
+
+      async(arr[0], success, currReject)
+  }
+
+  asyncLoadWithFallBack([
+    "https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.min.js", 
+    "https://cdn.bootcss.com/webfont/1.6.28/webfontloader.js",
+    "/lib/webfontloader.min.js"
+  ], asyncCb, asyncErr)
+</script>        
+        <img class="loading" src="/assets/loading.svg" style="display: block; margin: 6rem auto 0 auto; width: 6rem; height: 6rem;" />
+        <div class="container container-unloaded">
+            <main class="main post-page">
+    <article class="article-entry">
+        <h2 id="一、概述"><a href="#一、概述" class="headerlink" title="一、概述"></a>一、概述</h2><h3 id="1-2-汇编语言"><a href="#1-2-汇编语言" class="headerlink" title="1.2 汇编语言"></a>1.2 汇编语言</h3><p>早期的程序员发现机器语言在阅读、书写方面的问题，是如此的难以辨别和记忆，需要记住所有抽象的二进制码，为了解决这个问题，汇编语言就产生了。汇编语言是各种CPU提供的机器指令的助记符的集合，人们可以用汇编语言直接控制硬件系统进行工作。</p>
+<p>汇编语言的主体是汇编指令。汇编指令和机器指令的差别在于指令的表示方法上。汇编指令是机器指令便于记忆的书写格式。</p>
+<p>汇编语言与硬件关联很深，所以涉及到的知识点有很多，如：寄存器、端口、寻址方式、内外中断、以及指令的实现原理等，额，如果想了解这些知识点，可以阅读<a target="_blank" rel="noopener" href="https://links.jianshu.com/go?to=https://item.jd.com/12259774.html">《汇编语言（第3版）》 王爽著</a>。本篇博客类似阅读手册，主要记录一些常见的寄存器、以及不同汇编语言规范中指令的编写风格(intel及AT&amp;T的篇幅很少，毕竟我是一个iOSer，以移动端主流ARM64汇编为例)。</p>
+<h3 id="1-2-iOS相关的指令集及对应的ARM汇编语言"><a href="#1-2-iOS相关的指令集及对应的ARM汇编语言" class="headerlink" title="1.2 iOS相关的指令集及对应的ARM汇编语言"></a>1.2 iOS相关的指令集及对应的ARM汇编语言</h3><p>作为iOS开发工程师，主要需要了解的汇编语言是：</p>
+<ul>
+<li>iOS模拟器：兼容x86指令集，对应 <code>AT&amp;T 汇编</code>语言规范</li>
+<li>iOS真机设备：兼容ARM指令集，对应 <code>ARM 汇编</code>语言规范</li>
+</ul>
+<img src="/images/OS/arm64/2181780-36cc3b54e593b773.png" style="zoom:80%">
+
+
+
+<h2 id="二、ARM64-汇编"><a href="#二、ARM64-汇编" class="headerlink" title="二、ARM64 汇编"></a>二、ARM64 汇编</h2><ul>
+<li>汇编里面要学习的三个重要概念：寄存器、内存模型、指令。</li>
+<li>arm64架构又分为2种执行状态：<code>AArch64 Application Level</code> 和 <code>AArch32 Application Level</code> (后者是为了兼容以前的32bit的程序)<ul>
+<li>AArch64执行A64指令，使用64bit的通用寄存器；</li>
+<li>AArch32执行A32/T32指令，使用32bit的通用寄存器；</li>
+</ul>
+</li>
+</ul>
+<h3 id="2-1-先放代码-—-Hello-world"><a href="#2-1-先放代码-—-Hello-world" class="headerlink" title="2.1 先放代码 — Hello world"></a>2.1 先放代码 — Hello world</h3><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span>&#123;</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">&quot;hello, world\n&quot;</span>);</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>生成汇编文件：<code>xcrun --sdk iphoneos clang -S -arch arm64 helloworld.c</code>。也可以在XCode中，<code>Product -&gt; Perform Action -&gt; Assemble</code> 来生成汇编文件。</p>
+<figure class="highlight arm"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line">    <span class="meta">.section</span>    __TEXT,__text,regular,pure_instructions</span><br><span class="line">    .build_version ios, <span class="number">13</span>, <span class="number">2</span>   sdk_version <span class="number">13</span>, <span class="number">2</span></span><br><span class="line">    .globl  _main               <span class="comment">; -- Begin function main</span></span><br><span class="line">    .p2align    <span class="number">2</span></span><br><span class="line"><span class="symbol">_main:</span>                          <span class="comment">; @main</span></span><br><span class="line">    .cfi_startproc</span><br><span class="line"><span class="comment">; %bb.0:</span></span><br><span class="line">    <span class="keyword">sub</span> <span class="built_in">sp</span>, <span class="built_in">sp</span>, <span class="number">#32</span>             <span class="comment">; sub 减法； sp = sp - 32Byte</span></span><br><span class="line">    stp x29, x30, [<span class="built_in">sp</span>, <span class="number">#16</span>]     <span class="comment">; stp 寄存器存储到内存上，依次存两个；保存x29(FP)，和x30(LR) 到sp+16Byte上的16个Byte</span></span><br><span class="line">    <span class="keyword">add</span> x29, <span class="built_in">sp</span>, <span class="number">#16</span>            <span class="comment">; add 加法；把sp+16Byte的结果写入x29(FP)；</span></span><br><span class="line">    .cfi_def_cfa w29, <span class="number">16</span></span><br><span class="line">    .cfi_offset w30, -<span class="number">8</span></span><br><span class="line">    .cfi_offset w29, -<span class="number">16</span></span><br><span class="line">    stur    wzr, [x29, #-<span class="number">4</span>]     <span class="comment">; stur 寄存器内容存储到内存；把wzr(零寄存器)中的数据写入 x29(FP)减 4Byte 的内存</span></span><br><span class="line">    <span class="keyword">adrp</span>    x0, l_.str<span class="comment">@PAGE     ; adrp 读取地址到寄存器；把符号l.str所在的Page读入x0</span></span><br><span class="line">    <span class="keyword">add</span> x0, x0, l_.str<span class="comment">@PAGEOFF  ; x0 = x0 + l.str所在Page的偏移量</span></span><br><span class="line">    <span class="keyword">bl</span>  _printf                 <span class="comment">; bl 子程序调用；调用printf函数</span></span><br><span class="line">    <span class="keyword">mov</span> w8, <span class="number">#0</span>                  <span class="comment">; mov 传送指令；0写入x8</span></span><br><span class="line">    <span class="keyword">str</span> w0, [<span class="built_in">sp</span>, <span class="number">#8</span>]            <span class="comment">; w0写入sp+8的内存</span></span><br><span class="line">    <span class="keyword">mov</span> x0, x8                  <span class="comment">; x8写入x0</span></span><br><span class="line">    ldp x29, x30, [<span class="built_in">sp</span>, <span class="number">#16</span>]     <span class="comment">; sp+16Byte处的内存的两个8Byte，分别写入x29, x30</span></span><br><span class="line">    <span class="keyword">add</span> <span class="built_in">sp</span>, <span class="built_in">sp</span>, <span class="number">#32</span>             <span class="comment">; sp = sp + 32Byte</span></span><br><span class="line">    ret</span><br><span class="line">    .cfi_endproc</span><br><span class="line">                                        <span class="comment">; -- End function</span></span><br><span class="line">    <span class="meta">.section</span>    __TEXT,__cstring,cstring_literals</span><br><span class="line"><span class="symbol">l_.str:</span>                                 <span class="comment">; @.str</span></span><br><span class="line">    <span class="meta">.asciz</span>  <span class="string">&quot;hellom, world\n&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="symbol">.subsections_via_symbols</span></span><br></pre></td></tr></table></figure>
+
+<p>汇编代码几个规则：</p>
+<ul>
+<li>以<code>.(点)</code>开头的是汇编器指令。汇编器指令是告诉汇编器如何生成机器码的，阅读汇编代码的时候通常可以忽略掉。<ul>
+<li><code>.section __TEXT，__text，regular，pure_instructions</code>：表示接下来的内容在生成二进制代码的时候，应该生成到Mach-O文件 <code>__TEXT(Segment)</code> 中的 <code>__text(Section)</code>；</li>
+<li><code>.cfi_startproc</code>：用在每个函数的开始，用于初始化一些内部数据结构；</li>
+<li><code>.cfi_endproc</code>：在函数结束的时候使用与.cfi_startproc相配套使用；</li>
+<li><code>.cfi_def_cfa &lt;register&gt;, &lt;offset&gt;</code>：从寄存器中获取地址并向其添加偏移量；</li>
+<li><code>.cfi_offset &lt;register&gt;, &lt;offset&gt;</code>：寄存器以前的值保存在CFA的offset偏移处；</li>
+</ul>
+</li>
+<li>以<code>:(冒号)</code>结尾的是标签(Label)。代表一个地址，在需要时可以使用跳转指令<code>跳转到标签</code>处执行。其中，以小写字母l开头的是本地(local)标签，只能用于函数内部。</li>
+</ul>
+<h3 id="2-2-ARM中的寄存器"><a href="#2-2-ARM中的寄存器" class="headerlink" title="2.2 ARM中的寄存器"></a>2.2 ARM中的寄存器</h3><h4 id="2-2-1-寄存器"><a href="#2-2-1-寄存器" class="headerlink" title="2.2.1 寄存器"></a>2.2.1 寄存器</h4><p>CPU 本身只负责运算，不负责储存数据。数据一般都储存在内存之中，CPU 要用的时候就去内存读写数据。但是，CPU 的运算速度远高于内存的读写速度，为了避免被拖慢，CPU 都自带一级缓存和二级缓存。基本上，CPU 缓存可以看作是读写速度较快的内存。</p>
+<p>但是，CPU 缓存还是不够快，另外数据在缓存里面的地址是不固定的，CPU 每次读写都要寻址也会拖慢速度。因此，除了缓存之外，CPU 还自带了寄存器（register），用来储存最常用的数据。也就是说，那些最频繁读写的数据（比如循环变量），都会放在寄存器里面，CPU 优先读写寄存器，再由寄存器跟内存交换数据。</p>
+<img src="/images/OS/arm64/2181780-3dffe09c419c6841.png" style="zoom:100%">
+
+<p>寄存器不依靠地址区分数据，而依靠名称。每一个寄存器都有自己的名称，我们告诉 CPU 去具体的哪一个寄存器拿数据，这样的速度是最快的。有人比喻寄存器是 CPU 的零级缓存。</p>
+<p>这里介绍一下arm64常见的一些寄存器：</p>
+<ul>
+<li>通用寄存器 31个：x0-x30，64位</li>
+<li>浮点寄存器 32个：v0-v31，128位</li>
+<li>特殊寄存器：ZR、SP、PC、SPRs</li>
+</ul>
+<h4 id="2-2-2-通用寄存器x0-–-x30"><a href="#2-2-2-通用寄存器x0-–-x30" class="headerlink" title="2.2.2 通用寄存器x0 – x30"></a>2.2.2 通用寄存器x0 – x30</h4><p><code>x0 - x30</code> 是31个通用整形寄存器。每个寄存器可以存取一个64位大小的数。 当使用 <code>x0 - x30</code> 访问时，它就是一个64位的数。当使用 <code>w0 - w30</code> 访问时，访问的是这些寄存器的低32位，如图：</p>
+<img src="/images/OS/arm64/2181780-e75c427c84c8457b.png" style="zoom:70%">
+
+<p>为了函数调用的目的，通用寄存器分为四组(<a target="_blank" rel="noopener" href="https://links.jianshu.com/go?to=https://developer.arm.com/docs/den0024/latest/the-abi-for-arm-64-bit-architecture/register-use-in-the-aarch64-procedure-call-standard/parameters-in-general-purpose-registers">官网文档</a>):</p>
+<img src="/images/OS/arm64/2181780-27421d825a780d70.png" style="zoom:70%">
+
+<ul>
+<li>注意，但参数过多、返回值过大时，比如是个成员很多的结构体，通用x0-x7不够用，会通过栈来传递</li>
+</ul>
+<h4 id="2-2-3-一些特殊寄存器"><a href="#2-2-3-一些特殊寄存器" class="headerlink" title="2.2.3 一些特殊寄存器"></a>2.2.3 一些特殊寄存器</h4><h5 id="ZR"><a href="#ZR" class="headerlink" title="ZR"></a>ZR</h5><p>zero register 零寄存器，与通用寄存器一样，x、w分别代表64/32位(<code>XZR/WZR</code>)，作用就是0，写进去代表丢弃结果，拿出来是0.</p>
+<h5 id="SP"><a href="#SP" class="headerlink" title="SP"></a>SP</h5><p>Stack Pointer 保存栈指针。在指令编码中，使用 <code>SP/WSP</code>来进行对SP寄存器的访问。</p>
+<h5 id="PC"><a href="#PC" class="headerlink" title="PC"></a>PC</h5><p>程序计数器，俗称PC指针，总是指向即将要执行的下一条指令。在arm64中，软件是不能改写PC寄存器的。</p>
+<h5 id="V0-–-V31"><a href="#V0-–-V31" class="headerlink" title="V0 – V31"></a>V0 – V31</h5><p>向量寄存器，也可以说是浮点型寄存器。它的特点是每个寄存器的大小是 128 位的。 分别可以用 <code>Bn Hn Sn Dn Qn</code> 的方式来访问不同的位数。可以这样理解记忆，基于一个word是32位，也就是4Byte大小：</p>
+<ul>
+<li>Bn：一个Byte的大小</li>
+<li>Hn：half word. 就是16位</li>
+<li>Sn：single word. 32位</li>
+<li>Dn：double word. 64位</li>
+<li>Qn：quad word. 128位</li>
+</ul>
+<img src="/images/OS/arm64/2181780-a1e8cfe27820c7be.png" style="zoom:70%">
+
+<h5 id="程序状态寄存器"><a href="#程序状态寄存器" class="headerlink" title="程序状态寄存器"></a>程序状态寄存器</h5><p>状态寄存器，用于存放程序运行中一些状态标识。不同于编程语言里面的if else。在汇编中就需要根据状态寄存器中的一些状态来控制分支的执行。状态寄存器又分为</p>
+<ul>
+<li>The Current Program Status Register (CPSR)</li>
+<li>The Saved Program Status Registers (SPSRs)</li>
+</ul>
+<p>一般都是使用 <code>CPSR</code> ，当发生异常时，<code>CPSR</code> 会存入 <code>SPSR</code> 。当异常恢复，再拷贝回 <code>CPSR</code>。</p>
+<p>不同于其他寄存器，其他寄存器是用来存放数据的，都是整个寄存器具有一个含义。而CPSR寄存器是按位起作用的，也就是说，它的每一位都有专门的含义，记录特定的信息。</p>
+<ul>
+<li>CPSR寄存器是32位的</li>
+<li>CPSR的低8位（包括I、F、T和M[4:0]）称为<code>控制位</code>，程序无法修改，除非CPU运行于特权模式下，程序才能修改控制位。</li>
+<li>N、Z、C、V均为<code>条件标志位</code>，分别代表运算过程中产生的状态。它们的内容可被算术或逻辑运算的结果所改变，并且可以决定某条指令是否被执行。</li>
+</ul>
+<img src="/images/OS/arm64/CPSR01.png" style="zoom:75%">
+
+<img src="/images/OS/arm64/CPSR02.png" style="zoom:70%">
+
+<p>还有一些系统寄存器，如 <code>FPSR</code> <code>FPCR</code>是浮点型运算时的状态寄存器等。基本了解上面这些寄存器就可以了。</p>
+<h3 id="2-3-ARM指令的使用格式"><a href="#2-3-ARM指令的使用格式" class="headerlink" title="2.3 ARM指令的使用格式"></a>2.3 ARM指令的使用格式</h3><p>ARM作为精简指令集(RISC)，所有 ARM 指令(RISC)的长度都是 <code>32 位</code>。行成对比的是复杂指令集(CISC，如x86)，指令长度不同，最长的指令长达15 bytes，等于120位。</p>
+<p>ARM指令使用的基本格式如下：<code>&lt;opcode&gt;&#123;&lt;cond&gt;&#125;&#123;S&#125; &lt;Rd&gt;,&lt;Rn&gt;,&#123;&lt;operand2&gt;&#125;</code></p>
+<ul>
+<li>Opcode：操作码；指令助记符，如LDR、STR等。</li>
+<li>Cond：可选的条件码；执行条件，如EQ、NE等。</li>
+<li>S：可选后缀；若指定S，则根据指令执行结果更新CPSR中的条件码</li>
+<li>Rd：目标寄存器</li>
+<li>Rn：存放在第1操作数的寄存器。</li>
+<li>operand2：第2个操作数。</li>
+<li>“&lt; &gt;”：“&lt; &gt;”内的项是必需的，例如，<opcode>是指令助记符，这是必须书写的。</li>
+<li>“{ }”：“{ }”内的(ˇˍˇ) 项是可选的，例如，{&lt; code&gt;}为指令执行条件，是可选项。若不书写，则使用默认条件AL（无条件执行）。</li>
+</ul>
+<p>有几个注意点：</p>
+<ul>
+<li><strong>寄存器</strong>：为标号，不加前缀（ARM汇编中，标号就是一个符号，代表着汇编程序中指令或数据的内存地址）</li>
+<li><strong>操作数顺序</strong>：目标操作数在左，源操作数在右</li>
+<li><strong>立即数</strong>：前加#作为前缀</li>
+<li><strong>寻址格式</strong>：<figure class="highlight arm"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">;寻址格式：</span></span><br><span class="line">[x10, <span class="number">#0x10</span>]      <span class="comment">; signed offset。意思是从 x10 + 0x10的地址取值</span></span><br><span class="line">[<span class="built_in">sp</span>, #-<span class="number">16</span>]!       <span class="comment">; pre-index。意思是从 sp-16地址取值，取值完后在把 sp-16  writeback 回 sp</span></span><br><span class="line">                  <span class="comment">; ! 表示寄存器写回，如果没有！，那么只会从 sp-16 地址读写值，而不会修改 sp 的值</span></span><br><span class="line">[<span class="built_in">sp</span>], <span class="number">#16</span>         <span class="comment">; post-index。意思是从 sp 地址取值，取值完后在把 sp+16 writeback 回 sp</span></span><br><span class="line"></span><br><span class="line"><span class="comment">;举例：</span></span><br><span class="line"><span class="keyword">ldr</span> x0, [x1]              <span class="comment">; 从`x1`指向的地址里面取出一个 64 位大小的数存入 `x0`</span></span><br><span class="line"><span class="symbol">ldp</span> x1, x2, [x10, <span class="number">#0x10</span>]  <span class="comment">; 从 x10 + 0x10 指向的地址里面取出 2个 64位的数，分别存入x1, x2</span></span><br><span class="line"><span class="keyword">str</span> x5, [<span class="built_in">sp</span>, <span class="number">#24</span>]         <span class="comment">; 把x5的值（64位数值）存到 sp+24 指向的内存地址上</span></span><br><span class="line"><span class="symbol">stp</span> x29, x30, [<span class="built_in">sp</span>, #-<span class="number">16</span>]! <span class="comment">; 把 x29, x30的值存到 sp-16的地址上，并且把 sp-=16. </span></span><br><span class="line"><span class="symbol">ldp</span> x29, x30, [<span class="built_in">sp</span>], <span class="number">#16</span>   <span class="comment">; 从sp地址取出 16 byte数据，分别存入x29, x30. 然后 sp+=16;</span></span><br></pre></td></tr></table></figure></li>
+</ul>
+<p>除此之外，还有两种地址表示方式(相对寻址)：</p>
+<ul>
+<li><code>程序相对地址</code>(程序相对的表达式)：是命名寄存器的值加上或减去一个数字常数</li>
+<li><code>寄存器相对地址</code>(寄存器相对的表达式)：表示为相对当前程序计数器 (PC) 的偏移量。它通常是标签与数字<br>表达式的组合(如<code>ADR</code>指令)</li>
+</ul>
+<h3 id="2-4-ARM常用指令"><a href="#2-4-ARM常用指令" class="headerlink" title="2.4 ARM常用指令"></a>2.4 ARM常用指令</h3><p>ARM处理器的指令集可以分为跳转指令、数据处理指令、程序状态寄存器（PSR）处理指令、加载/存储指令、协处理器指令和异常产生指令6大指令。</p>
+<p>由于篇幅原因，只列举了常用的一些，可以正常阅读汇编代码即可。更多的可以跳转<a target="_blank" rel="noopener" href="https://www.jianshu.com/p/b9301d02a125">ARM64指令简易手册</a>查阅。全面的可以查看<a target="_blank" rel="noopener" href="https://links.jianshu.com/go?to=https://developer.arm.com/architectures">ARM官网文档</a>。如果想看中文版的资料可以看<a target="_blank" rel="noopener" href="https://links.jianshu.com/go?to=http://infocenter.arm.com/help/index.jsp?topic=/com.arm.doc.dui0204ic/Cegbgefe.html">《汇编器指南》— 第二章、第四章</a></p>
+<h4 id="2-4-1-数据处理指令"><a href="#2-4-1-数据处理指令" class="headerlink" title="2.4.1 数据处理指令"></a>2.4.1 数据处理指令</h4><figure class="highlight arm"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">  <span class="keyword">MOV</span>    X1，X0              <span class="comment">; 将寄存器X0的值传送到寄存器X1。MOV：从另一个寄存器、被移位的寄存器或将一个立即数加载到目的寄存器。</span></span><br><span class="line"></span><br><span class="line"><span class="comment">;算术运算：ADD SUB MUL … 等加减乘除运算</span></span><br><span class="line">  <span class="keyword">ADD</span>    X0，X1，X2          <span class="comment">; 寄存器X1和X2的值相加后传送到X0</span></span><br><span class="line">  <span class="keyword">SUB</span>    X0，X1，X2          <span class="comment">; 寄存器X1和X2的值相减后传送到X0</span></span><br><span class="line">  MUL</span><br><span class="line">  <span class="keyword">add</span>  x14, x4, x27, <span class="keyword">lsl</span> <span class="number">#1</span>  <span class="comment">; 算术运算也可以与逻辑位移运算一起用，意思是把  (x27 &lt;&lt; 1) + x4 = x14;</span></span><br><span class="line"></span><br><span class="line"><span class="comment">;扩展位数运算：有 zero extend(高位补0) 和 sign extend(高位填充和符号位一致，一般有符号数用这个)。 一般用来补齐位数。常和算术运算配合一起.</span></span><br><span class="line">  <span class="keyword">add</span>  w20, w30, w20, <span class="keyword">uxth</span>   <span class="comment">; 算术运算也可以与扩展位数运输算一起，意思是取 w20的低16位，无符号补齐到32位后再进行  w30 + w20的运算</span></span><br><span class="line"></span><br><span class="line"><span class="comment">;逻辑运算指令</span></span><br><span class="line">  <span class="keyword">LSL</span>                        <span class="comment">; 逻辑左移</span></span><br><span class="line">  <span class="keyword">LSR</span>                        <span class="comment">; 逻辑右移</span></span><br><span class="line">  <span class="keyword">ASR</span>                        <span class="comment">; 算术右移</span></span><br><span class="line">  <span class="keyword">ROR</span>                        <span class="comment">; 循环右移</span></span><br><span class="line">  <span class="keyword">AND</span>    X0，X0，<span class="number">#0xF</span>        <span class="comment">; 与。X0的值与0xF相位与后的值传送到X0</span></span><br><span class="line">  <span class="keyword">ORR</span>    X0，X0，<span class="number">#9</span>          <span class="comment">; 或。X0的值与9相位或后的值传送到X0</span></span><br><span class="line">  <span class="keyword">EOR</span>    X0，X0，<span class="number">#0xF</span>        <span class="comment">; 异或。X0的值与0xF相异或后的值传送到X0</span></span><br></pre></td></tr></table></figure>
+<p>ARM指令中，不支持将立即数直接写入内存，需要先通过mov写入寄存器，然后通过str将寄存器中的值存储进内存</p>
+<h4 id="2-4-2-寄存器加载-存储指令"><a href="#2-4-2-寄存器加载-存储指令" class="headerlink" title="2.4.2 寄存器加载/存储指令"></a>2.4.2 寄存器加载/存储指令</h4><figure class="highlight arm"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">LDR</span>    X5，[X6，<span class="number">#0x08</span>]            <span class="comment">; ld(load)： X6寄存器加0x08的和的地址值内的数据传送到X5</span></span><br><span class="line"><span class="symbol">LDP</span>    x29, x30, [<span class="built_in">sp</span>, <span class="number">#0x10</span>]     <span class="comment">; ldp(load pair)：是ldr 的变种指令，可以同时操作两个寄存器，从指定内存处读取两个数据到寄存器</span></span><br><span class="line"><span class="keyword">STR</span>    X0, [<span class="built_in">SP</span>, <span class="number">#0x8</span>]            <span class="comment">; st:store, str:往内存中写数据（偏移值为正）; X0寄存器的数据传送到SP+0x8地址值指向的存储空间</span></span><br><span class="line"><span class="symbol">STUR</span>   w0, [x29, #-<span class="number">0x8</span>]          <span class="comment">; 往内存中写数据（偏移值为负）</span></span><br><span class="line"><span class="symbol">STP</span>    x29, x30, [<span class="built_in">sp</span>, <span class="number">#0x10</span>]     <span class="comment">; stp(store pair)：是str 的变种指令，可以同时操作两个寄存器，将一对寄存器中的值，入栈，存放到指定内存处</span></span><br><span class="line"><span class="keyword">ADR</span>      <span class="comment">; 将一个立即值与 pc 值相加，并将结果写入目标寄存器</span></span><br><span class="line"><span class="keyword">ADRP</span>     <span class="comment">; 以页为单位的大范围的地址读取指令，这里的P就是page的意思。取得page的基地址存入寄存器</span></span><br><span class="line"><span class="comment">/*示例: </span></span><br><span class="line"><span class="comment">  adrp    x0, l_.str@PAGE         ；将符号l.str所在的page基址读入x0</span></span><br><span class="line"><span class="comment">  add     x0, x0, l_.str@PAGEOFF  ；x0 = x0 + l.str所在page中的偏移量</span></span><br><span class="line"><span class="comment">*/</span></span><br></pre></td></tr></table></figure>
+<h4 id="2-4-3-跳转和控制指令"><a href="#2-4-3-跳转和控制指令" class="headerlink" title="2.4.3 跳转和控制指令"></a>2.4.3 跳转和控制指令</h4><figure class="highlight arm"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">CBZ</span>      <span class="comment">; 比较（Compare），如果结果为零（Zero）就转移（只能跳到后面的指令）</span></span><br><span class="line"><span class="keyword">CBNZ</span>     <span class="comment">; 比较，如果结果非零（Non Zero）就转移（只能跳到后面的指令）</span></span><br><span class="line"><span class="keyword">CMP</span>      <span class="comment">; 比较指令，相当于SUBS，影响程序状态寄存器CPSR，关于CPSR的几个状态值，前面寄存器节已经讲过</span></span><br><span class="line"></span><br><span class="line">B&#123;条件&#125; 目标地址  <span class="comment">; 跳转指令，可带条件跳转与cmp配合使用。一般是本方法内的跳转，如while循环，if else等。</span></span><br><span class="line"><span class="keyword">BL</span>  		<span class="comment">; 带返回的跳转指令， 返回地址保存到LR（X30）。存了LR也就意味着可以返回到本方法继续执行。一般用于不同方法之间的调用</span></span><br><span class="line"><span class="symbol">RET</span> 		<span class="comment">; 子程序返回指令，返回地址默认保存在LR（X30）</span></span><br></pre></td></tr></table></figure>
+<h4 id="2-4-4-异常产生指令"><a href="#2-4-4-异常产生指令" class="headerlink" title="2.4.4 异常产生指令"></a>2.4.4 异常产生指令</h4><figure class="highlight arm"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="symbol">SWI</span>(Software Interrupt)    <span class="comment">; 软件中断指令。用于产生软中断，从而实现处理器从用户模式变换到管理模式，CPSR保存到管理模式的SPSR中，执行转移到SWI向量，在其他模式下也可以使用SWI指令，处理器同样切换到管理模式。</span></span><br><span class="line"><span class="symbol">BKPT</span>(BreakPoint)           <span class="comment">; 断点中断指令。产生一个预取异常（prefetch abort），它常被用来设置软件断点，在调试程序时十分有用。当系统中存在调试硬件时，该指令被忽略。</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="2-5-ARM指令的二进制编码"><a href="#2-5-ARM指令的二进制编码" class="headerlink" title="2.5 ARM指令的二进制编码"></a>2.5 ARM指令的二进制编码</h3><h4 id="2-5-1-对应的二进制编码格式"><a href="#2-5-1-对应的二进制编码格式" class="headerlink" title="2.5.1 对应的二进制编码格式"></a>2.5.1 对应的二进制编码格式</h4><p>ARM指令集是以<code>32位</code>二进制编码的方式给出的，大部分的指令编码中定义了第一操作数、第二操作数、目的操作数、条件标志影响位以及每条指令所对应的不同功能实现的二进制位。<strong>每条32位ARM指令都具有不同的二进制编码方式，与不同的指令功能相对应</strong>。</p>
+<p>如图所示表示了ARM指令集编码：</p>
+<img src="/images/OS/arm64/2181780-fe8f75682a49fb75.jpg" style="zoom:65%">
+
+<h4 id="2-5-2-条件执行"><a href="#2-5-2-条件执行" class="headerlink" title="2.5.2 条件执行"></a>2.5.2 条件执行</h4><p>ARM指令的一个重要特点就是所有指令都是带有条件的，就是说汇编中可以根据状态寄存器中的一些状态来控制分支的执行。</p>
+<p>在ARM的指令编码表中，统一占用编码的最高4位[31:28]来表示条件码。每种条件码用两个英文缩写字符表示其含义，可添加在指令助记符的后面，表示指令执行时必须要满足的条件。ARM指令根据CPSR中的条件位自动判断是否执行指令。在条件满足时，指令执行；否则，指令被忽略。</p>
+<p>例如，数据传送指令MOV加上条件后缀EQ后成为MOVEQ，表示“相等则执行传送”，“不相等则本条指令不执行”，即只有当CPRS中的Z标志为1时，才会发生数据传送。ARM指令集编码表列举了4位条件码的16种编码中能为用户所使用的15种，而编码1111为系统暂不使用的保留编码。</p>
+<img src="/images/OS/arm64/2181780-00533963d2c07253.jpg" style="zoom:90%">
+
+<img src="/images/OS/arm64/2181780-72b831ae09d51685.png" style="zoom:65%">
+
+<p>看下面几行汇编指令：</p>
+<figure class="highlight arm"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">cmp</span> x2, <span class="number">#0</span>         <span class="comment">; x2 - 0 = 0。  状态寄存器标识zero: PSTATE.NZCV.Z = 1</span></span><br><span class="line"><span class="symbol">b.ne</span>  <span class="number">0x1000d48f0</span>  <span class="comment">; ne就是个condition code, 这句的意思是，当判断状态寄存器 NZCV.Z != 1才跳转，因此这句不会跳转</span></span><br><span class="line"></span><br><span class="line"><span class="number">0x1000d4ab0</span> <span class="keyword">bl</span> testFuncA               <span class="comment">; 跳转方法，这个时候 lr 设置为 0x1000d4ab4</span></span><br><span class="line"><span class="number">0x1000d4ab4</span> <span class="keyword">orr</span> x8, xzr, <span class="number">#0x1f00000000</span> <span class="comment">; testFuncA执行完之后跳回lr就周到了这一行</span></span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><a target="_blank" rel="noopener" href="https://links.jianshu.com/go?to=http://blog.eetop.cn/blog-204849-53277.html">ARM指令集编码概述</a></li>
+<li><a target="_blank" rel="noopener" href="https://links.jianshu.com/go?to=https://wenku.baidu.com/view/79d1582d59fafab069dc5022aaea998fcd224042.html?re=view">ARM汇编指令机器码举例详解</a></li>
+</ul>
+<h2 id="三、函数调用栈"><a href="#三、函数调用栈" class="headerlink" title="三、函数调用栈"></a>三、函数调用栈</h2><p>先简单再说一下内存模型：</p>
+<h3 id="3-1-堆"><a href="#3-1-堆" class="headerlink" title="3.1 堆"></a>3.1 堆</h3><p>寄存器只能存放很少量的数据，大多数时候，CPU 要指挥寄存器，直接跟内存交换数据。所以，除了寄存器，还必须了解内存怎么储存数据。</p>
+<p>程序运行的时候，操作系统会给它<strong>分配一段内存，用来储存程序和运行产生的数据</strong>。这段内存有起始地址和结束地址，比如从 <code>0x1000</code> 到 <code>0x8000</code>，起始地址是较小的那个地址，结束地址是较大的那个地址。</p>
+<p>程序运行过程中，对于<strong>动态的内存占用请求（比如新建对象，或者使用<code>malloc</code>命令），系统就会从预先分配好的那段内存之中，划出一部分给用户</strong>，具体规则是从起始地址开始划分（实际上，起始地址会有一段静态数据，这里忽略）。举例来说，用户要求得到10个字节内存，那么从起始地址 <code>0x1000</code> 开始给他分配，一直分配到地址 <code>0x100A</code> ，如果再要求得到22个字节，那么就分配到 <code>0x1020</code>。</p>
+<blockquote>
+<p><strong>这种因为用户主动请求而划分出来的内存区域，叫做 Heap（堆）。它由起始地址开始，从低位（地址）向高位（地址）增长。Heap 的一个重要特点就是不会自动消失，必须手动释放，或者由垃圾回收机制来回收。</strong></p>
+</blockquote>
+<h3 id="3-2-栈"><a href="#3-2-栈" class="headerlink" title="3.2 栈"></a>3.2 栈</h3><blockquote>
+<p>Stack 是由于函数运行而临时占用的内存区域。或者说栈是指令执行时存放临时变量的内存空间。<strong>一个函数对应一帧，<code>fp</code>指向当前frame的栈底，<code>sp</code>指向栈顶</strong></p>
+</blockquote>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">   <span class="keyword">int</span> a = <span class="number">2</span>;</span><br><span class="line">   <span class="keyword">int</span> b = <span class="number">3</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>上面代码中，系统开始执行main函数时，会为它在内存里面建立一个<code>帧（frame）</code>，所有main的内部变量（比如a和b）都保存在这个帧里面。main函数执行结束后，该帧就会被回收，释放所有的内部变量，不再占用空间。</p>
+<p>如果函数内部调用了其他函数，会发生什么情况？</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">   <span class="keyword">int</span> a = <span class="number">2</span>;</span><br><span class="line">   <span class="keyword">int</span> b = <span class="number">3</span>;</span><br><span class="line">   <span class="keyword">return</span> <span class="built_in">add_a_and_b</span>(a, b);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>上面代码中，main函数内部调用了add_a_and_b函数。执行到这一行的时候，系统也会为add_a_and_b新建一个帧，用来储存它的内部变量。也就是说，此时同时存在两个帧：<code>main</code>和<code>add_a_and_b</code>。一般来说，<strong>调用栈有多少层，就有多少帧</strong>。</p>
+<p>等到<code>add_a_and_b</code><strong>运行结束，它的帧就会被回收</strong>，系统会回到函数main刚才中断执行的地方，继续往下执行。通过这种机制，就实现了函数的层层调用，并且每一层都能使用自己的本地变量。</p>
+<p>所有的帧都存放在 Stack，由于帧是一层层叠加的，所以 Stack 叫做栈。生成新的帧，叫做”入栈”，英文是 push；栈的回收叫做”出栈”，英文是 pop。Stack 的特点就是，最晚入栈的帧最早出栈（因为最内层的函数调用，最先结束运行），这就叫做”后进先出”的数据结构。每一次函数执行结束，就自动释放一个帧，所有函数执行结束，整个 Stack 就都释放了。</p>
+<p>注意：</p>
+<ul>
+<li>Stack 是由内存区域的结束地址开始，<code>从高位（地址）向低位（地址）分配</code>。<ul>
+<li>栈顶置针向低移动，就是分配临时存储空间，栈顶置针向高移动，就是释放临时存储空间。</li>
+<li>比如，内存区域的结束地址是0x8000，第一帧假定是16字节，那么下一次分配的地址就会从0x7FF0开始；第二帧假定需要64字节，那么地址就会移动到0x7FB0。</li>
+</ul>
+</li>
+<li>栈中一个数据所分配到的内存中，存储(读取)数据时，是<code>从低位（地址）向高位（地址）读写</code>的。即<code>栈中数据的打印地址(起始地址)与堆中一样，是低地址开始</code>。<ul>
+<li>情况一：见下面代码块中的<code>stp</code>、<code>ldp</code>。</li>
+<li>情况二：复合类型，如创建一个结构体局部变量，打印成员变量，会发现是从低地址向高地址依次打印出来的</li>
+<li>注意：基本数据类型的存储，还涉及到<code>大端、小端字节序</code>的概念，即指高位字节在前(后)。</li>
+</ul>
+</li>
+<li>补充：复合数据类型都是由基本数据类型组成的，基本数据类型的存储不会带来空闲(冗余)空间的：<ul>
+<li>char类型的数据值为单个字符，ASCII码值对应为0-255，正好一个字节存储。</li>
+<li>int类型，比如int = 1，int占4字节，存的时候会存0x00000001，即会转成8位的16进制表示存储，占满4字节</li>
+<li>冗余空间的产生，往往是因为一些比如对齐之类的存储策略造成的</li>
+</ul>
+</li>
+</ul>
+<p>下面的图简单的描述了 main 调用方法 printf 时，栈是如何划分的：</p>
+<img src="/images/OS/arm64/2181780-1905b18d9661ce46.png" style="zoom:35%">
+
+<p>下面是方法的调用过程，分别对应方法头、方法尾：</p>
+<figure class="highlight arm"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">; x29就是fp, x30就是lr</span></span><br><span class="line"></span><br><span class="line"><span class="comment">; 方法头：保存当前函数/子程序(main)的栈底FP、LR(main结束后需要执行的下一条指令)</span></span><br><span class="line"><span class="keyword">sub</span>  <span class="built_in">sp</span>， <span class="built_in">sp</span>， <span class="number">#32</span>             <span class="comment">; sub 减法； sp = sp - 32Byte</span></span><br><span class="line"><span class="symbol">stp</span>  x29， x30， [<span class="built_in">sp</span>， <span class="number">#16</span>]    <span class="comment">; stp 寄存器存储到内存上；保存x29(FP)、x30(LR)到sp+16Byte上的16个Byte(通用寄存器，用x访问，表示64位，8Byte)</span></span><br><span class="line"><span class="keyword">add</span>  x29， <span class="built_in">sp</span>， <span class="number">#16</span>            <span class="comment">; add 加法；把sp+16Byte写入x29(FP)，保存即将执行函数的栈底</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">bl</span>  _printf <span class="comment">; 子程序调用。 </span></span><br><span class="line"><span class="comment">/*</span></span><br><span class="line"><span class="comment"> 跳转到_printf方法处，同时将该行的下一个指令的地址复制到 lr。作用也很好理解：当printf执行完了之后要返回来继续执行，但是计算机要如何知道返回到哪执行呢？ 就是靠lr记录了返回的地址，方法才能得以正常返回。</span></span><br><span class="line"><span class="comment"> 本来LR中存储的是LR(main)，是记录main函数执行完需要返回执行的下一条指令。在发生bl _printf后，LR存储的是printf函数执行完需要执行的下一条执行。这里没显示printf函数的汇编代码，在其中还有一个ret，会返回到这个LR</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"></span><br><span class="line"><span class="comment">; 方法尾</span></span><br><span class="line"><span class="symbol">ldp</span> x29， x30， [<span class="built_in">sp</span>， <span class="number">#16</span>]     <span class="comment">; 将sp+16Byte后的两个8Byte，分别存入FP、LR，恢复为FP(main)，LR(main)</span></span><br><span class="line"><span class="keyword">add</span> <span class="built_in">sp</span>， <span class="built_in">sp</span>， <span class="number">#32</span>              <span class="comment">; sp = sp + 32Byte</span></span><br><span class="line"><span class="comment">/*</span></span><br><span class="line"><span class="comment">	这一步执行完之后，fp就执行了图中FP(main)；sp指向了 SP(main)；lr恢复成main执行完后的返回地址。 </span></span><br><span class="line"><span class="comment">	这个时候状态已经完全恢复到了 main 的环境</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"></span><br><span class="line"><span class="symbol">ret</span>    <span class="comment">; 返回指令，这一步直接执行lr的指令。</span></span><br></pre></td></tr></table></figure>
+
+<p>总结：</p>
+<ul>
+<li>方法头、尾的作用就是调用前保存程序状态，调用后恢复程序状态。</li>
+<li>如果一个函数内部没有其他函数调用，也就没有这几行方法头、尾了，比如一个最简单的程序如：</li>
+</ul>
+<figure class="highlight arm"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/*</span></span><br><span class="line"><span class="comment">  #include &lt;stdio.h&gt;</span></span><br><span class="line"><span class="comment">  void nothing()&#123;</span></span><br><span class="line"><span class="comment">      return;</span></span><br><span class="line"><span class="comment">  &#125;</span></span><br><span class="line"><span class="comment">  汇编代码中就一行ret指令，如下：</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"> </span><br><span class="line"><span class="symbol">_nothing:</span>                               <span class="comment">; @nothing</span></span><br><span class="line">    .cfi_startproc</span><br><span class="line"><span class="comment">; %bb.0:</span></span><br><span class="line">    ret</span><br><span class="line">    .cfi_endproc</span><br></pre></td></tr></table></figure>
+
+<p>关于参数及返回值的传递，具有以下规则(赘述一遍，前面讲寄存器时提过)：</p>
+<ul>
+<li>当函数参数个数小于等于8个的时候，x0-x7依次存储前8个参数</li>
+<li>参数个数大于8个的时候，多余的参数会通过栈传递</li>
+<li>方法通常通过x0返回数据，如果返回的数据结构较大，则通过x8将数据的地址进行返回（寄存器最大为8字节，超过8字节的返回值，一个寄存器就传递不了了）</li>
+<li>在Intel 32位汇编中：<ul>
+<li>小于等于4字节，函数将返回值存储在eax中（32位机器，eax本身只有4个字节）</li>
+<li>5～8字节，几乎所有的调用惯例(调用约定)都是采用eax和edx 联合返回的方式进行的，eax存储返回值的低4字节，edx存储返回值的高4字节</li>
+<li>大于8字节，在栈上临时开辟一块内存区域作为中转，eax返回数据的地址。返回时，先将值写入到这一块指定的栈内存，外部程序使用时再读取，多了两次内存读写，造成额外开销。(参考<a target="_blank" rel="noopener" href="https://www.jianshu.com/p/23a9110cff96">《程序员的自我修养—第10章内存》</a>)</li>
+</ul>
+</li>
+</ul>
+<h3 id="3-3-Stack-backtrace与符号化"><a href="#3-3-Stack-backtrace与符号化" class="headerlink" title="3.3 Stack backtrace与符号化"></a>3.3 Stack backtrace与符号化</h3><p>栈回溯对代码调试和crash定位有很重大的意义，通过之前几个步骤的图解，栈回溯的原理也相对比较清楚了。</p>
+<ol>
+<li>通过当前的SP，FP可以得到当前函数的stack frame，通过PC可以得到当前执行的地址。</li>
+<li>在当前栈的FP上方，可以得到Caller(调用者)的FP，和LR。通过偏移，我们还可以获取到Caller的SP。由于LR保存了Caller下一条指令的地址，所以实际上我们也获取到了Caller的PC</li>
+<li>有了Caller的FP，SP和PC，我们就可以获取到Caller的stack frame信息，由此递归就可以不获取到所有的Stack Frame信息。</li>
+</ol>
+<p>下面这个网图(<a target="_blank" rel="noopener" href="https://juejin.cn/post/6910791727670362125">BSBackTracelogger学习笔记</a>)挺详细的：</p>
+<img src="/images/OS/arm64/method-call-stack.png" alt="method-call-stack" style="zoom:65%;" />
+
+<p>c函数调用a函数是一个入栈出栈的过程，调用开始的时候入栈，同时需要保存c函数的FP(x29)和LR(x30)在a函数的FP和FP+8的位置，即当前函数a的FP位置保存的就是调用方的FP位置，a函数调用结束时返回到LR的位置继续执行下一条指令，而这条指令属于c函数，因此我们可以 <strong>通过FP来建立整个调用链的关系，通过LR来确认调用方函数的符号。</strong></p>
+<p><strong>尽管如此，有两种情况是获取不到调用堆栈的，一种是尾调用优化，一种是内联函数。</strong></p>
+<p>栈回溯的过程中，我们拿到的是函数的地址，又是如何通过函数地址获取到函数的名称和偏移量的呢？</p>
+<ul>
+<li>对于系统的库，比如<code>CoreFoundation</code>我们可以直接通过系统的符号表拿到</li>
+<li>对于自己代码，则依赖于编译时候生成的dsym文件。</li>
+</ul>
+<p>这个过程我们称之为 <code>symbolicate</code> ，对于iOS设备上的crash log，我们可以直接通过XCode的工具 <code>symbolicatecrash</code> 来符号化：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">cd</span> /Applications/Xcode.app/Contents/SharedFrameworks/DVTFoundation.framework/Versions/A/Resources</span><br><span class="line">./symbolicatecrash ~/Desktop/1.crash ~/Desktop/1.dSYM &gt; ~/Desktop/result.crash</span><br></pre></td></tr></table></figure>
+
+<p>当然，可以用工具 <code>dwarfdump</code> 去查询一个函数地址：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">dwarfdump --lookup 0x000000010007528c  -arch arm64 1.dSYM</span><br></pre></td></tr></table></figure>
+
+<h2 id="四、内联汇编"><a href="#四、内联汇编" class="headerlink" title="四、内联汇编"></a>四、内联汇编</h2><p>用汇编编写的程序虽然运行速度快，但开发速度非常慢，效率也很低。如果只是想对关键代码段进行优化，或许更好的办法是将汇编指令嵌入到 C 语言程序中，从而充分利用高级语言和汇编语言各自的特点。但一般来讲，在 C 代码中嵌入汇编语句要比”纯粹”的汇编语言代码复杂得多，因为需要解决如何分配寄存器，以及如何与C代码中的变量相结合等问题。</p>
+<h3 id="4-1-格式"><a href="#4-1-格式" class="headerlink" title="4.1 格式"></a>4.1 格式</h3><h4 id="4-1-1-格式说明"><a href="#4-1-1-格式说明" class="headerlink" title="4.1.1 格式说明"></a>4.1.1 格式说明</h4><p>GCC 提供了很好的内联汇编支持。最基本的格式是：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">__asm__(<span class="string">&quot;asm statements&quot;</span>);</span><br></pre></td></tr></table></figure>
+
+<p>例如：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">__asm__(<span class="string">&quot;nop&quot;</span>);</span><br><span class="line"><span class="comment">// 如果需要同时执行多条汇编语句，则应该用&quot;\\n\\t&quot;将各个语句分隔开，例如：</span></span><br><span class="line">__asm__( <span class="string">&quot;pushl %%eax \\n\\t&quot;</span></span><br><span class="line">         <span class="string">&quot;movl $0, %%eax \\n\\t&quot;</span></span><br><span class="line">         <span class="string">&quot;popl %eax&quot;</span>);</span><br></pre></td></tr></table></figure>
+
+<p>通常嵌入到 C 代码中的汇编语句很难做到与其它部分没有任何关系，因此更多时候需要用到完整的内联汇编格式：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/*</span></span><br><span class="line"><span class="comment"> gcc中 __asm__ 和 asm 的区别:</span></span><br><span class="line"><span class="comment">  对于ANSI C来说: 当要用 -std=c99 编译选项时，需要用__asm__ 来替代 asm, 要不然编译不过。</span></span><br><span class="line"><span class="comment">  其他情况下: asm 等同于__asm__. 同样情况的还有 __ typeof__、__inline__, 参考请见 GCC Manual</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line">__asm__(<span class="string">&quot;asm statements&quot;</span>       <span class="comment">// 汇编指令</span></span><br><span class="line">        : outputs              <span class="comment">// 输出操作数列表</span></span><br><span class="line">        : inputs               <span class="comment">// 输入操作数列表</span></span><br><span class="line">        : registers-modified); <span class="comment">// 被改变的资源列表                 </span></span><br></pre></td></tr></table></figure>
+
+<p>插入到 C 代码中的汇编语句是以”:”分隔的四个部分：</p>
+<ul>
+<li>第一部分是汇编代码本身，通常称为指令部，其格式和在汇编语言中使用的格式基本相同。<strong>指令部分是必须的，而其它部分则可以根据实际情况而省略。</strong><ul>
+<li>在将汇编语句嵌入到C代码中时，<strong>操作数如何与C代码中的变量相结合</strong>是个很大的问题。</li>
+<li>GCC采用如下方法来解决这个问题：<ul>
+<li>程序员提供具体的指令，而对寄存器的使用则只需给出”样板”和约束条件就可以了，具体如何将寄存器与变量结合起来完全由GCC和GAS来负责。</li>
+<li>汇编语句中，用到的操作数<strong>从输出部的第一个约束开始编号，序号从0开始</strong>，每个约束记数一次。在GCC内联汇编语句的指令部中，<strong>只需在序号前，加上前缀<code>%</code>(如%0，%1)，表示的就是需要使用寄存器的”样板”操作数。</strong></li>
+<li>指令部中使用了几个样板操作数，就表明有几个变量需要与寄存器相结合，这样GCC和GAS在编译和汇编时会根据后面给定的约束条件进行恰当的处理。</li>
+<li>由于样板操作数也使用’ %’作为前缀，因此在涉及到具体的寄存器时，<strong>寄存器名前面应该加上两个</strong><code>%</code>，以免产生混淆。</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>紧跟在指令部后面的是输出部，是规定输出变量如何与样板操作数进行结合的条件，每个条件称为一个“<strong>约束</strong>”，必要时可以包含多个约束，相互之间用逗号分隔开就可以了。<ul>
+<li>每个输出约束都以’=’号开始，然后紧跟一个对操作数类型进行说明的字后，最后是如何与变量相结合的约束。</li>
+<li>与输出部中说明的操作数相结合的寄存器或操作数本身，在执行完嵌入的汇编代码后均不保留执行之前的内容，这是GCC在调度寄存器时所使用的依据。</li>
+</ul>
+</li>
+<li>输出部后面是输入部，输入约束的格式和输出约束相似，但不带’=’号。<ul>
+<li>如果一个输入约束要求使用寄存器，则GCC在预处理时就会为之分配一个寄存器，并插入必要的指令将操作数装入该寄存器。</li>
+<li>与输入部中说明的操作数相结合的寄存器或操作数本身，在执行完嵌入的汇编代码后也不保留执行之前的内容。</li>
+</ul>
+</li>
+<li>有时在进行某些操作时，除了要用到进行数据输入和输出的寄存器外，还要使用多个寄存器来保存中间计算结果，这样就难免会破坏原有寄存器的内容。在GCC内联汇编格式中的最后一个部分中，可以对将产生副作用的寄存器进行说明，以便GCC能够采用相应的措施。</li>
+</ul>
+<h4 id="4-1-2-举例-旧版本"><a href="#4-1-2-举例-旧版本" class="headerlink" title="4.1.2 举例(旧版本)"></a>4.1.2 举例(旧版本)</h4><p>下面是一个内联汇编的简单例子：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/* inline.c </span></span><br><span class="line"><span class="comment">   实现：完成将变量a的值赋予变量b，有几点需要说明：</span></span><br><span class="line"><span class="comment">*/</span></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">int</span> a = <span class="number">10</span>, b = <span class="number">0</span>;</span><br><span class="line">                        <span class="comment">// 内联汇编语句中，使用寄存器 eax 时，寄存器名前应该加两个 &#x27;%&#x27;，即 %%eax。</span></span><br><span class="line">                        <span class="comment">// 内联汇编语句中，使用 %0、%1 等来标识变量，任何只带一个 &#x27;%&#x27; 的标识符都看成是操作数，而不是寄存器。</span></span><br><span class="line">    __asm__ __volatile__(<span class="string">&quot;movl %1, %%eax;\\n\\r&quot;</span> <span class="comment">// 变量a这个输入操作数，对应样板操作数%1</span></span><br><span class="line">                         <span class="string">&quot;movl %%eax, %0;&quot;</span>       <span class="comment">// 变量b这个输出操作数，对应样板操作数%0</span></span><br><span class="line">                         :<span class="string">&quot;=r&quot;</span>(b)  <span class="comment">// 输出. 约束符为r，表示将变量a、b存储在寄存器中</span></span><br><span class="line">                                   <span class="comment">//      约束修饰符=，表示只写</span></span><br><span class="line">                         :<span class="string">&quot;r&quot;</span>(a)   <span class="comment">// 输入. </span></span><br><span class="line">                         :<span class="string">&quot;%eax&quot;</span>); <span class="comment">// 被改变的寄存器。告诉 GCC 它将改变寄存器 eax 中的值，GCC 在处理时不应使用该寄存器来存储任何其它的值。</span></span><br><span class="line">  </span><br><span class="line">    <span class="comment">// 由于变量 b 被指定成输出操作数，当内联汇编语句执行完毕后，它所保存的值将被更新。</span></span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">&quot;Result: %d, %d\\n&quot;</span>, a, b);                        </span><br><span class="line">&#125;                        </span><br></pre></td></tr></table></figure>
+
+<h4 id="4-1-3-举例-新版本"><a href="#4-1-3-举例-新版本" class="headerlink" title="4.1.3 举例(新版本)"></a>4.1.3 举例(新版本)</h4><p>下面的汇编代码是从GCC 3.1版本开始才支持的，而在此之前一直是上面的形式。上述0%和1%分别表示第一个、第二个操作数。GCC的最新版本仍然支持上述语法，但明显，上述语法更容易出错，且难以维护：假设你写一个较长的内联汇编，然后需要在某个位置插入一个新的输出操作数，此时，之后的操作数都需要重新编号。</p>
+<p>新版本：</p>
+<ul>
+<li>人为指定每个输出数的符号名，用方括号包围，后面跟一个约束串，然后再加上一个括号包围的C表达式，这个括号里的符号就是C语言代码中的变量。</li>
+</ul>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">asm</span>(</span><br><span class="line">    <span class="string">&quot;mov %[result], %[value], ror #1&quot;</span> </span><br><span class="line">    : [result] <span class="string">&quot;=r&quot;</span> (y)  <span class="comment">// result：符号名  &quot;=r&quot;：约束串*  (y)：C表达式</span></span><br><span class="line">    : [value] <span class="string">&quot;r&quot;</span> (x)    <span class="comment">// 同上</span></span><br><span class="line">    :</span><br><span class="line">); </span><br></pre></td></tr></table></figure>
+
+<h3 id="4-2-约束符与约束修饰符"><a href="#4-2-约束符与约束修饰符" class="headerlink" title="4.2 约束符与约束修饰符"></a>4.2 约束符与约束修饰符</h3><p>需要注意的是，内联汇编语句的指令部在引用一个操作数时总是将其作为32位的长字使用，但实际情况可能需要的是字或字节，因此应该在约束中指明正确的限定符：</p>
+<table>
+<thead>
+<tr>
+<th>限定/约束符</th>
+<th>意义</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>“m”、”v”、”o”</td>
+<td>内存单元</td>
+</tr>
+<tr>
+<td>“r”</td>
+<td>通用寄存器</td>
+</tr>
+<tr>
+<td>“q”</td>
+<td>寄存器eax、ebx、ecx、edx之一</td>
+</tr>
+<tr>
+<td>“i”、”h”</td>
+<td>直接操作数</td>
+</tr>
+<tr>
+<td>“E”和”F”</td>
+<td>浮点数</td>
+</tr>
+<tr>
+<td>“g”</td>
+<td>任意</td>
+</tr>
+<tr>
+<td>“a”、”b”、”c”、”d”</td>
+<td>分别表示寄存器eax、ebx、ecx和edx</td>
+</tr>
+<tr>
+<td>“S”和”D”</td>
+<td>寄存器esi、edi</td>
+</tr>
+<tr>
+<td>“I”</td>
+<td>常数（0至31）</td>
+</tr>
+</tbody></table>
+<table>
+<thead>
+<tr>
+<th>约束修饰符</th>
+<th>意义</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>无</td>
+<td>被修饰的约束符是只读的</td>
+</tr>
+<tr>
+<td>=</td>
+<td>被修饰的约束符是只写的。通常用于所有输出操作数的属性</td>
+</tr>
+<tr>
+<td>+</td>
+<td>被修饰的约束符是可读写的。只能被列为输出操作数的属性，否则编译会报错。</td>
+</tr>
+<tr>
+<td>&amp;</td>
+<td>被修饰的约束符只能作为输出</td>
+</tr>
+</tbody></table>
+<p>摘自<a target="_blank" rel="noopener" href="https://links.jianshu.com/go?to=https://www.ibm.com/developerworks/cn/linux/l-assembly/index.html">Linux 汇编语言开发指南—第七节</a></p>
+<h3 id="4-3-应用"><a href="#4-3-应用" class="headerlink" title="4.3 应用"></a>4.3 应用</h3><ul>
+<li><p>题目：NSLog(@”Hello World”) 在这行代码上边加一行代码，让函数输出Goodbye World</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    __asm__(<span class="string">&quot;mov X0, %[xxx]\n&quot;</span></span><br><span class="line">            <span class="string">&quot;b 0xc \n&quot;</span></span><br><span class="line">            :</span><br><span class="line">            :[xxx]<span class="string">&quot;r&quot;</span>(@<span class="string">&quot;Goodbye world&quot;</span>)</span><br><span class="line">            :);</span><br><span class="line">    NSLog(@<span class="string">&quot;Hello World&quot;</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+</ul>
+<h2 id="五、汇编层次看高级语言"><a href="#五、汇编层次看高级语言" class="headerlink" title="五、汇编层次看高级语言"></a>五、汇编层次看高级语言</h2><p>汇编层面上只有寄存器、内存及数据(地址(无符号整数)、数字(定点、浮点)、字符、逻辑数)</p>
+<ul>
+<li><strong>指针</strong>：本质上就是一个变量的地址。</li>
+<li><strong>结构体</strong>：本质上就是按照一定规则分配的连续内存。<ul>
+<li>结构体作为参数时，将成员通过连续的通用寄存器或者浮点型寄存器传入。当结构体过大(<code>成员过多、复杂</code>)的时候，作为参数和返回值时，通过栈来传递，这一点和函数的<code>参数个数过多</code>的时候类似。</li>
+<li>举例：当使用printf直接打印<code>结构体变量</code>时(一般不这么使用，而是打印<code>结构体.成员变量</code>)，不是直接打印地址，而是打印成员。前面有多少个打印字符，就会打印出多少个成员变量的值。(如果打印字符多于成员数，会打印出一些随机的东西)</li>
+</ul>
+</li>
+<li><strong>数组</strong>：<ul>
+<li>数组作为函数参数的时候，是以指针的方式传入的，比如这个例子中，是把sp+12Byte的地址作为参数放到x0中，传递给logArray函数的。</li>
+<li>初始化数组的变量是存储在代码段的常量区，<code>.section __TEXT，__const</code></li>
+<li>在编译过后，会在变量区域的上下各插入一个<code>___stack_chk_guard</code>，在方法执行完毕后，检查栈上的___stack_chk_guard是否被修改过了，如果被修改过了报错。</li>
+</ul>
+</li>
+</ul>
+<h2 id="六、intel、AT-amp-T汇编的简单对比了解"><a href="#六、intel、AT-amp-T汇编的简单对比了解" class="headerlink" title="六、intel、AT&amp;T汇编的简单对比了解"></a>六、intel、AT&amp;T汇编的简单对比了解</h2><img src="/images/OS/arm64/2181780-7e9657f2cd933fff.png" style="zoom:80%">
+
+
+
+<h2 id="七、参考链接"><a href="#七、参考链接" class="headerlink" title="七、参考链接"></a>七、参考链接</h2><ul>
+<li>关于ARM64汇编<ul>
+<li><a target="_blank" rel="noopener" href="https://links.jianshu.com/go?to=https://developer.arm.com/products/architecture">ARMv8-A Architecture – ARM</a></li>
+<li><a target="_blank" rel="noopener" href="https://links.jianshu.com/go?to=http://infocenter.arm.com/help/index.jsp?topic=/com.arm.doc.dui0204ic/Cegbgefe.html">《汇编器指南》第二章、第四章— ARM官网文档</a></li>
+<li><a target="_blank" rel="noopener" href="https://links.jianshu.com/go?to=http://www.ruanyifeng.com/blog/2018/01/assembly-language-primer.html">汇编语言入门教程(intel汇编) — 阮一峰</a></li>
+<li><a target="_blank" rel="noopener" href="https://links.jianshu.com/go?to=https://blog.cnbluebox.com/blog/2017/07/24/arm64-start/">iOS开发同学的arm64汇编入门</a></li>
+<li><a target="_blank" rel="noopener" href="https://links.jianshu.com/go?to=https://blog.csdn.net/zqixiao_09/article/details/50726544">ARM汇编指令集手册</a></li>
+<li><a target="_blank" rel="noopener" href="https://links.jianshu.com/go?to=https://blog.csdn.net/Hello_Hwc/article/details/80028030">iOS汇编 — 实践篇</a></li>
+</ul>
+</li>
+<li>关于Intel与AT&amp;T汇编<ul>
+<li><a target="_blank" rel="noopener" href="https://links.jianshu.com/go?to=https://www.ibm.com/developerworks/cn/linux/l-assembly/index.html"><strong>Linux 汇编语言开发指南(AT&amp;T汇编与intel汇编)</strong></a></li>
+<li><a target="_blank" rel="noopener" href="https://www.jianshu.com/p/7e4dcc768ad1">iOS-AT&amp;T汇编</a></li>
+<li><a target="_blank" rel="noopener" href="https://links.jianshu.com/go?to=http://www.ruanyifeng.com/blog/2018/01/assembly-language-primer.html">汇编语言入门教程(intel汇编) — 阮一峰</a></li>
+<li><a target="_blank" rel="noopener" href="https://links.jianshu.com/go?to=https://blog.csdn.net/albertsh/article/details/106041560">汇编指令入门级整理(intel汇编与AT&amp;T汇编)</a></li>
+</ul>
+</li>
+</ul>
+
+    </article>
+    <!-- license  -->
+    
+        <div class="license-wrapper">
+            <p>Author：<a href="https://tenloy.github.io">Tenloy</a>
+            <p>原文链接：<a href="https://tenloy.github.io/2021/04/16/Arm64-Introduce.html">https://tenloy.github.io/2021/04/16/Arm64-Introduce.html</a>
+            <p>发表日期：2021.04.16 , 3:00 PM</p>
+            <p>更新日期：2024.04.07 , 7:38 PM</p>
+            <p>版权声明：本文采用<a rel="license noopener" target="_blank" href="http://creativecommons.org/licenses/by-nc/4.0/">Crative Commons 4.0 许可协议</a>进行许可</p>
+        </div>
+    
+    <!-- paginator  -->
+    <ul class="post-paginator">
+        <li class="next">
+            
+                <div class="nextSlogan">Next Post</div>
+                <a href= "/2021/04/17/Arm64-Handbook.html" title= "ARM64指令简易手册">
+                    <div class="nextTitle">ARM64指令简易手册</div>
+                </a>
+            
+        </li>
+        <li class="previous">
+            
+                <div class="prevSlogan">Previous Post</div>
+                <a href= "/2021/04/13/Command-Line.html" title= "CLI Shell、Terminal、脚本(语言)">
+                    <div class="prevTitle">CLI Shell、Terminal、脚本(语言)</div>
+                </a>
+            
+        </li>
+    </ul>
+    <!-- 评论插件 -->
+    <!-- 来必力City版安装代码 -->
+
+<!-- City版安装代码已完成 -->
+    
+    
+    <!-- gitalk评论 -->
+
+    <!-- utteranc评论 -->
+
+    <!-- partial('_partial/comment/changyan') -->
+    <!--PC版-->
+
+
+    
+    
+
+    <!-- 评论 -->
+</main>
+            <!-- profile -->
+            
+        </div>
+        <footer class="footer footer-unloaded">
+    <!-- social  -->
+    
+    <div class="social">
+        
+    
+        
+            
+                <a href="mailto:luotengoto@163.com" class="iconfont-archer email" title=email ></a>
+            
+        
+    
+        
+            
+                <a href="//github.com/Tenloy" class="iconfont-archer github" target="_blank" title=github></a>
+            
+        
+    
+        
+            
+                <a href="https://www.jianshu.com/u/8db1bc12db9f" class="iconfont-jian jianshu" target="_blank" title=jianshu></a>
+            
+        
+    
+        
+            
+                <a href="/atom.xml" class="iconfont-archer rss" target="_blank" title=rss></a>
+            
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+
+    </div>
+    
+    <!-- powered by Hexo  -->
+    <div class="copyright">
+        <span id="hexo-power">Powered by <a href="https://hexo.io/" target="_blank">Hexo</a></span><span class="iconfont-archer power">&#xe635;</span><span id="theme-info">theme <a href="https://github.com/fi3ework/hexo-theme-archer" target="_blank">Archer</a></span>
+    </div>
+    <!-- 不蒜子  -->
+    
+    <div class="busuanzi-container">
+    
+     
+    <span id="busuanzi_container_site_pv">PV: <span id="busuanzi_value_site_pv"></span> :)</span>
+    
+    </div>
+    
+</footer>
+    </div>
+    <!-- toc -->
+    
+    <div class="toc-wrapper" style=
+    
+
+
+
+
+
+
+
+top:40vh;
+
+    >
+        <div class="toc-catalog">
+            <span class="iconfont-archer catalog-icon">&#xe613;</span><span>CATALOG</span>
+        </div>
+        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E3%80%81%E6%A6%82%E8%BF%B0"><span class="toc-text">一、概述</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-2-%E6%B1%87%E7%BC%96%E8%AF%AD%E8%A8%80"><span class="toc-text">1.2 汇编语言</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-2-iOS%E7%9B%B8%E5%85%B3%E7%9A%84%E6%8C%87%E4%BB%A4%E9%9B%86%E5%8F%8A%E5%AF%B9%E5%BA%94%E7%9A%84ARM%E6%B1%87%E7%BC%96%E8%AF%AD%E8%A8%80"><span class="toc-text">1.2 iOS相关的指令集及对应的ARM汇编语言</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8C%E3%80%81ARM64-%E6%B1%87%E7%BC%96"><span class="toc-text">二、ARM64 汇编</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#2-1-%E5%85%88%E6%94%BE%E4%BB%A3%E7%A0%81-%E2%80%94-Hello-world"><span class="toc-text">2.1 先放代码 — Hello world</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-2-ARM%E4%B8%AD%E7%9A%84%E5%AF%84%E5%AD%98%E5%99%A8"><span class="toc-text">2.2 ARM中的寄存器</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#2-2-1-%E5%AF%84%E5%AD%98%E5%99%A8"><span class="toc-text">2.2.1 寄存器</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2-2-2-%E9%80%9A%E7%94%A8%E5%AF%84%E5%AD%98%E5%99%A8x0-%E2%80%93-x30"><span class="toc-text">2.2.2 通用寄存器x0 – x30</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2-2-3-%E4%B8%80%E4%BA%9B%E7%89%B9%E6%AE%8A%E5%AF%84%E5%AD%98%E5%99%A8"><span class="toc-text">2.2.3 一些特殊寄存器</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#ZR"><span class="toc-text">ZR</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#SP"><span class="toc-text">SP</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#PC"><span class="toc-text">PC</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#V0-%E2%80%93-V31"><span class="toc-text">V0 – V31</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#%E7%A8%8B%E5%BA%8F%E7%8A%B6%E6%80%81%E5%AF%84%E5%AD%98%E5%99%A8"><span class="toc-text">程序状态寄存器</span></a></li></ol></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-3-ARM%E6%8C%87%E4%BB%A4%E7%9A%84%E4%BD%BF%E7%94%A8%E6%A0%BC%E5%BC%8F"><span class="toc-text">2.3 ARM指令的使用格式</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-4-ARM%E5%B8%B8%E7%94%A8%E6%8C%87%E4%BB%A4"><span class="toc-text">2.4 ARM常用指令</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#2-4-1-%E6%95%B0%E6%8D%AE%E5%A4%84%E7%90%86%E6%8C%87%E4%BB%A4"><span class="toc-text">2.4.1 数据处理指令</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2-4-2-%E5%AF%84%E5%AD%98%E5%99%A8%E5%8A%A0%E8%BD%BD-%E5%AD%98%E5%82%A8%E6%8C%87%E4%BB%A4"><span class="toc-text">2.4.2 寄存器加载&#x2F;存储指令</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2-4-3-%E8%B7%B3%E8%BD%AC%E5%92%8C%E6%8E%A7%E5%88%B6%E6%8C%87%E4%BB%A4"><span class="toc-text">2.4.3 跳转和控制指令</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2-4-4-%E5%BC%82%E5%B8%B8%E4%BA%A7%E7%94%9F%E6%8C%87%E4%BB%A4"><span class="toc-text">2.4.4 异常产生指令</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-5-ARM%E6%8C%87%E4%BB%A4%E7%9A%84%E4%BA%8C%E8%BF%9B%E5%88%B6%E7%BC%96%E7%A0%81"><span class="toc-text">2.5 ARM指令的二进制编码</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#2-5-1-%E5%AF%B9%E5%BA%94%E7%9A%84%E4%BA%8C%E8%BF%9B%E5%88%B6%E7%BC%96%E7%A0%81%E6%A0%BC%E5%BC%8F"><span class="toc-text">2.5.1 对应的二进制编码格式</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2-5-2-%E6%9D%A1%E4%BB%B6%E6%89%A7%E8%A1%8C"><span class="toc-text">2.5.2 条件执行</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%89%E3%80%81%E5%87%BD%E6%95%B0%E8%B0%83%E7%94%A8%E6%A0%88"><span class="toc-text">三、函数调用栈</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#3-1-%E5%A0%86"><span class="toc-text">3.1 堆</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-2-%E6%A0%88"><span class="toc-text">3.2 栈</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-3-Stack-backtrace%E4%B8%8E%E7%AC%A6%E5%8F%B7%E5%8C%96"><span class="toc-text">3.3 Stack backtrace与符号化</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9B%9B%E3%80%81%E5%86%85%E8%81%94%E6%B1%87%E7%BC%96"><span class="toc-text">四、内联汇编</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#4-1-%E6%A0%BC%E5%BC%8F"><span class="toc-text">4.1 格式</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#4-1-1-%E6%A0%BC%E5%BC%8F%E8%AF%B4%E6%98%8E"><span class="toc-text">4.1.1 格式说明</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#4-1-2-%E4%B8%BE%E4%BE%8B-%E6%97%A7%E7%89%88%E6%9C%AC"><span class="toc-text">4.1.2 举例(旧版本)</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#4-1-3-%E4%B8%BE%E4%BE%8B-%E6%96%B0%E7%89%88%E6%9C%AC"><span class="toc-text">4.1.3 举例(新版本)</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-2-%E7%BA%A6%E6%9D%9F%E7%AC%A6%E4%B8%8E%E7%BA%A6%E6%9D%9F%E4%BF%AE%E9%A5%B0%E7%AC%A6"><span class="toc-text">4.2 约束符与约束修饰符</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-3-%E5%BA%94%E7%94%A8"><span class="toc-text">4.3 应用</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%94%E3%80%81%E6%B1%87%E7%BC%96%E5%B1%82%E6%AC%A1%E7%9C%8B%E9%AB%98%E7%BA%A7%E8%AF%AD%E8%A8%80"><span class="toc-text">五、汇编层次看高级语言</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%AD%E3%80%81intel%E3%80%81AT-amp-T%E6%B1%87%E7%BC%96%E7%9A%84%E7%AE%80%E5%8D%95%E5%AF%B9%E6%AF%94%E4%BA%86%E8%A7%A3"><span class="toc-text">六、intel、AT&amp;T汇编的简单对比了解</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%83%E3%80%81%E5%8F%82%E8%80%83%E9%93%BE%E6%8E%A5"><span class="toc-text">七、参考链接</span></a></li></ol>
+    </div>
+    
+    <div class="back-top iconfont-archer">&#xe639;</div>
+    <div class="sidebar sidebar-hide">
+    <ul class="sidebar-tabs sidebar-tabs-active-0">
+        <li class="sidebar-tab-categories"><span class="iconfont-archer">&#xe666;</span><span class="tab-name">Cate</span></li>
+        <li class="sidebar-tab-archives"><span class="iconfont-archer">&#xe67d;</span><span class="tab-name">Archive</span></li>
+        <li class="sidebar-tab-tags"><span class="iconfont-archer">&#xe61b;</span><span class="tab-name">Tag</span></li>
+    </ul>
+    <div class="sidebar-content sidebar-content-show-archive">
+        <div class="sidebar-panel-categories">
+    <div class="sidebar-categories-name">
+    
+    
+    
+    
+    
+        <span class="sidebar-category-name" data-categories="数据结构与算法"><span class="iconfont-archer">&#xe60a;</span>数据结构与算法</span>
+    
+        <span class="sidebar-category-name" data-categories="计算机组成原理"><span class="iconfont-archer">&#xe60a;</span>计算机组成原理</span>
+    
+        <span class="sidebar-category-name" data-categories="计算机网络"><span class="iconfont-archer">&#xe60a;</span>计算机网络</span>
+    
+        <span class="sidebar-category-name" data-categories="汇编语言"><span class="iconfont-archer">&#xe60a;</span>汇编语言</span>
+    
+        <span class="sidebar-category-name" data-categories="数据的存储与传输"><span class="iconfont-archer">&#xe60a;</span>数据的存储与传输</span>
+    
+        <span class="sidebar-category-name" data-categories="操作系统"><span class="iconfont-archer">&#xe60a;</span>操作系统</span>
+    
+        <span class="sidebar-category-name" data-categories="互联网标准RFC"><span class="iconfont-archer">&#xe60a;</span>互联网标准RFC</span>
+    
+        <span class="sidebar-category-name" data-categories="编译链接与装载"><span class="iconfont-archer">&#xe60a;</span>编译链接与装载</span>
+    
+        <span class="sidebar-category-name" data-categories="iOS"><span class="iconfont-archer">&#xe60a;</span>iOS</span>
+    
+        <span class="sidebar-category-name" data-categories="架构与设计模式"><span class="iconfont-archer">&#xe60a;</span>架构与设计模式</span>
+    
+        <span class="sidebar-category-name" data-categories="图形处理与渲染"><span class="iconfont-archer">&#xe60a;</span>图形处理与渲染</span>
+    
+        <span class="sidebar-category-name" data-categories="软件工程"><span class="iconfont-archer">&#xe60a;</span>软件工程</span>
+    
+        <span class="sidebar-category-name" data-categories="音视频处理"><span class="iconfont-archer">&#xe60a;</span>音视频处理</span>
+    
+        <span class="sidebar-category-name" data-categories="DSL"><span class="iconfont-archer">&#xe60a;</span>DSL</span>
+    
+        <span class="sidebar-category-name" data-categories="Swift"><span class="iconfont-archer">&#xe60a;</span>Swift</span>
+    
+        <span class="sidebar-category-name" data-categories="Git"><span class="iconfont-archer">&#xe60a;</span>Git</span>
+    
+        <span class="sidebar-category-name" data-categories="Web"><span class="iconfont-archer">&#xe60a;</span>Web</span>
+    
+    </div>
+    <div class="iconfont-archer sidebar-categories-empty">&#xe678;</div>
+    <div class="sidebar-categories-list"></div>
+</div>
+          <div class="sidebar-panel-archives">
+    <!-- 在ejs中将archive按照时间排序 -->
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    <div class="total-and-search">
+        <div class="total-archive">
+        Total : 76
+        </div>
+        <!-- search  -->
+        
+            <div class="site-search popup-trigger tl-side-search"> 
+                <span class="iconfont-jian search-icon">&#xe7fc;搜索</span>
+            </div>
+        
+    </div>
+    
+    <div class="post-archive">
+    
+    
+    
+    
+    <div class="archive-year"> 2022 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/05</span><a class="archive-post-title" href= "/2022/05/05/sqlite.html" >iOS SQLite的使用与优化</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/28</span><a class="archive-post-title" href= "/2022/04/28/mmap.html" >内存映射mmap函数的原理与应用</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/18</span><a class="archive-post-title" href= "/2022/03/18/avfoundation.html" >AVFoundation Programming Guide(译)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/17</span><a class="archive-post-title" href= "/2022/03/17/avframework.html" >iOS音视频库概述</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/09</span><a class="archive-post-title" href= "/2022/02/09/OAuth.html" >[转] OAuth 2.0简述</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/18</span><a class="archive-post-title" href= "/2022/01/18/wkwebview-buges.html" >WKWebView使用过程中遇到的坑</a>
+        </li>
+    
+    
+    
+    
+    
+        </ul>
+    
+    <div class="archive-year"> 2021 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/22</span><a class="archive-post-title" href= "/2021/11/22/bit-calculation.html" >[转] 位运算实现加、减、乘、除运算</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/10</span><a class="archive-post-title" href= "/2021/11/10/git-use.html" >Git的使用总结</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/21</span><a class="archive-post-title" href= "/2021/10/21/dyld-objc.html" >(七) dyld与Objc—_objc_init、map_images、load_images</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/18</span><a class="archive-post-title" href= "/2021/10/18/compile-dynamic-link.html" >(六) Mach-O 文件的动态链接、库、Dyld(含dlopen)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/14</span><a class="archive-post-title" href= "/2021/10/14/compile-vm-asrl.html" >(五) Mach-O 文件之进程(虚拟)地址空间、ASLR</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/10</span><a class="archive-post-title" href= "/2021/10/10/compile-load.html" >(四) Mach-O 文件的装载</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/08</span><a class="archive-post-title" href= "/2021/10/08/compile-static-link.html" >(三) Mach-O 文件的静态链接</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/06</span><a class="archive-post-title" href= "/2021/10/06/compile-macho.html" >(二) Mach-O 文件结构</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/05</span><a class="archive-post-title" href= "/2021/10/05/compile-clang-llvm.html" >(一) Clang/LLVM 介绍、OC 程序的编译过程</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/02</span><a class="archive-post-title" href= "/2021/10/02/makefile.html" >[转] Make 命令的使用与NodeJS案例</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/28</span><a class="archive-post-title" href= "/2021/09/28/architectural-pattern.html" >常见架构模式: MVC、MVP、MVVM、VIPER</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/25</span><a class="archive-post-title" href= "/2021/09/25/design-pattern.html" >常见的设计模式</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/20</span><a class="archive-post-title" href= "/2021/09/20/program-thought.html" >常见的编程范式</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/15</span><a class="archive-post-title" href= "/2021/09/15/graphics-processing-case.html" >图形处理(三) - 图形处理实践案例</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/15</span><a class="archive-post-title" href= "/2021/09/15/graphics-processing.html" >图形处理(二) - 图形与视频处理相关的框架</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/13</span><a class="archive-post-title" href= "/2021/09/13/image-encode-decode.html" >图形处理(一) - 图片的加载与编解码</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/12</span><a class="archive-post-title" href= "/2021/09/12/iOS-Render.html" >[转] iOS离屏渲染原理及优化</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/11</span><a class="archive-post-title" href= "/2021/09/11/core-animation03.html" >Core-Animation(三) - 渲染流程探究及性能分析</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/09</span><a class="archive-post-title" href= "/2021/09/09/core-animation02.html" >Core Animation(二) - 隐式动画、CATransaction与CAAction</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/07</span><a class="archive-post-title" href= "/2021/09/07/core-animation01.html" >Core Animation(一) - UIView与CALayer、布局与绘制</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/05</span><a class="archive-post-title" href= "/2021/09/05/AFN-Analyse.html" >[转] AFN框架实现解析</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/04</span><a class="archive-post-title" href= "/2021/09/04/nrl-session.html" >NSURLSession概述</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/02</span><a class="archive-post-title" href= "/2021/09/02/Log.html" >移动端日志库设计</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/01</span><a class="archive-post-title" href= "/2021/08/01/Crash-Monitor.html" >iOS崩溃监控与分析</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/30</span><a class="archive-post-title" href= "/2021/07/30/Lag-Monitor.html" >iOS卡顿监控</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/29</span><a class="archive-post-title" href= "/2021/07/29/SwiftUI.html" >SwiftUI</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/29</span><a class="archive-post-title" href= "/2021/07/29/Swift-Version-History.html" >Swift版本更新API介绍</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/26</span><a class="archive-post-title" href= "/2021/07/26/RunLoop-Reposted-From-ibireme.html" >[转] 深入理解RunLoop—ibireme</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/25</span><a class="archive-post-title" href= "/2021/07/25/Protocol-Buffer.html" >Protocol Buffer的基本介绍</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/24</span><a class="archive-post-title" href= "/2021/07/24/base64.html" >Base64编码及iOS中的Base64</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/23</span><a class="archive-post-title" href= "/2021/07/23/chinese-encode.html" >[转] 彻底弄懂常见的7种中文字符编码</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/10</span><a class="archive-post-title" href= "/2021/07/10/p-npc-np.html" >P问题、NP问题、NPC、NP-Hard、P=NP?</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/30</span><a class="archive-post-title" href= "/2021/06/30/probability.html" >(六) 概率算法</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/28</span><a class="archive-post-title" href= "/2021/06/28/branch-bound.html" >(五) 分支限界算法</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/26</span><a class="archive-post-title" href= "/2021/06/26/back-track.html" >(四) 回溯法(试探算法)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/24</span><a class="archive-post-title" href= "/2021/06/24/greed.html" >(三) 贪心算法</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/22</span><a class="archive-post-title" href= "/2021/06/22/dynamic-programming.html" >(二) 动态规划算法</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/20</span><a class="archive-post-title" href= "/2021/06/20/divide-and-conquer.html" >(一) 分治算法及减治、变治算法</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/18</span><a class="archive-post-title" href= "/2021/06/18/several-programming.html" >穷举、递推、迭代(辗转法)、递归算法</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/15</span><a class="archive-post-title" href= "/2021/06/15/datastruction-overview.html" >数据结构与算法概述</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/06</span><a class="archive-post-title" href= "/2021/06/06/Web-Module.html" >前端各种模块化方案总结</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/27</span><a class="archive-post-title" href= "/2021/05/27/Fiber.html" >[转] 最通俗的 React Fiber(时间分片)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/27</span><a class="archive-post-title" href= "/2021/05/27/Coroutine.html" >[转] 什么是协程</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/19</span><a class="archive-post-title" href= "/2021/05/19/DSL.html" >[转] 谈谈DSL以及DSL的应用（以CocoaPods 为例）</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/03</span><a class="archive-post-title" href= "/2021/05/03/iOS-private-pod.html" >私有Pod库部署</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/29</span><a class="archive-post-title" href= "/2021/04/29/iOS-ComRouter.html" >[转] iOS的组件化方案</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/27</span><a class="archive-post-title" href= "/2021/04/27/iOS-CI.html" >iOS的持续集成</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/26</span><a class="archive-post-title" href= "/2021/04/26/Containers.html" >常见的容器概念：Linux容器、Docker容器、服务器容器</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/24</span><a class="archive-post-title" href= "/2021/04/24/Dock-Reprinted-from-RuanYIFeng.html" >[转] Docker入门教程</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/20</span><a class="archive-post-title" href= "/2021/04/20/Sync-Async.html" >同步和异步解读及编程中的使用场景</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/17</span><a class="archive-post-title" href= "/2021/04/17/Arm64-Handbook.html" >ARM64指令简易手册</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/16</span><a class="archive-post-title" href= "/2021/04/16/Arm64-Introduce.html" >iOS需要了解的ARM64汇编</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/13</span><a class="archive-post-title" href= "/2021/04/13/Command-Line.html" >CLI Shell、Terminal、脚本(语言)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/10</span><a class="archive-post-title" href= "/2021/04/10/Ins-SysCall-Kernel-Shell.html" >指令、系统调用、库、Shell、APP的层次关系</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/08</span><a class="archive-post-title" href= "/2021/04/08/ISA-Microarch-Soc.html" >指令集、微架构、手机芯片(Soc)及ARM的介绍</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/02</span><a class="archive-post-title" href= "/2021/04/02/Engineering.html" >工程化、动态化、容器化、组件化</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/01</span><a class="archive-post-title" href= "/2021/04/01/GithubPages-Hexo.html" >使用Hexo+Github Pages搭建个人博客</a>
+        </li>
+    
+    
+    
+    
+    
+        </ul>
+    
+    <div class="archive-year"> 2020 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/22</span><a class="archive-post-title" href= "/2020/12/22/aes.html" >数据加密 — 对称加密(以AES为例)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/21</span><a class="archive-post-title" href= "/2020/12/21/aes-standard.html" >[转] AES标准及Rijndael算法解析</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/20</span><a class="archive-post-title" href= "/2020/12/20/asymmetric.html" >数据加密 — 非对称加密(加签/加密，以RSA为例)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/09</span><a class="archive-post-title" href= "/2020/12/09/pki.html" >常见的PKI标准(X.509、PKCS)及证书相关介绍</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/28</span><a class="archive-post-title" href= "/2020/10/28/runtime-data-structure.html" >Objc Runtime总结</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/11</span><a class="archive-post-title" href= "/2020/09/11/GCD.html" >Objective-C — 深入浅出GCD常用API</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/06</span><a class="archive-post-title" href= "/2020/09/06/oc-block.html" >Objective-C — Block</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/26</span><a class="archive-post-title" href= "/2020/08/26/AutoreleasePool.html" >AutoreleasePool</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/24</span><a class="archive-post-title" href= "/2020/08/24/oc-memory-manage.html" >Objective-C — 内存管理</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/01</span><a class="archive-post-title" href= "/2020/08/01/ui-navigation-bar.html" >[转] 导航栏的架构介绍及使用</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/15</span><a class="archive-post-title" href= "/2020/07/15/symbol-decl.html" >变量声明、函数声明的作用</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/01</span><a class="archive-post-title" href= "/2020/07/01/ios-apns.html" >iOS APNS接收逻辑梳理</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/13</span><a class="archive-post-title" href= "/2020/06/13/ios-vest.html" >iOS制作马甲总结</a>
+        </li>
+    
+    </div>
+  </div>
+        <div class="sidebar-panel-tags">
+    <div class="sidebar-tags-name">
+    
+        <span class="sidebar-tag-name" data-tags="AutoreleasePool"><span class="iconfont-archer">&#xe606;</span>AutoreleasePool</span>
+    
+        <span class="sidebar-tag-name" data-tags="GCD"><span class="iconfont-archer">&#xe606;</span>GCD</span>
+    
+        <span class="sidebar-tag-name" data-tags="hexo"><span class="iconfont-archer">&#xe606;</span>hexo</span>
+    
+        <span class="sidebar-tag-name" data-tags="ISA"><span class="iconfont-archer">&#xe606;</span>ISA</span>
+    
+        <span class="sidebar-tag-name" data-tags="Microarch"><span class="iconfont-archer">&#xe606;</span>Microarch</span>
+    
+        <span class="sidebar-tag-name" data-tags="Soc"><span class="iconfont-archer">&#xe606;</span>Soc</span>
+    
+        <span class="sidebar-tag-name" data-tags="CLI"><span class="iconfont-archer">&#xe606;</span>CLI</span>
+    
+        <span class="sidebar-tag-name" data-tags="Shell"><span class="iconfont-archer">&#xe606;</span>Shell</span>
+    
+        <span class="sidebar-tag-name" data-tags="ARM64"><span class="iconfont-archer">&#xe606;</span>ARM64</span>
+    
+        <span class="sidebar-tag-name" data-tags="多线程"><span class="iconfont-archer">&#xe606;</span>多线程</span>
+    
+        <span class="sidebar-tag-name" data-tags="Docker"><span class="iconfont-archer">&#xe606;</span>Docker</span>
+    
+        <span class="sidebar-tag-name" data-tags="DSL"><span class="iconfont-archer">&#xe606;</span>DSL</span>
+    
+        <span class="sidebar-tag-name" data-tags="协程"><span class="iconfont-archer">&#xe606;</span>协程</span>
+    
+        <span class="sidebar-tag-name" data-tags="Fiber"><span class="iconfont-archer">&#xe606;</span>Fiber</span>
+    
+        <span class="sidebar-tag-name" data-tags="dp"><span class="iconfont-archer">&#xe606;</span>dp</span>
+    
+        <span class="sidebar-tag-name" data-tags="SwiftUI"><span class="iconfont-archer">&#xe606;</span>SwiftUI</span>
+    
+        <span class="sidebar-tag-name" data-tags="RunLoop"><span class="iconfont-archer">&#xe606;</span>RunLoop</span>
+    
+        <span class="sidebar-tag-name" data-tags="Swift-Syntax"><span class="iconfont-archer">&#xe606;</span>Swift-Syntax</span>
+    
+        <span class="sidebar-tag-name" data-tags="LagMonitor"><span class="iconfont-archer">&#xe606;</span>LagMonitor</span>
+    
+        <span class="sidebar-tag-name" data-tags="CrashMonitor"><span class="iconfont-archer">&#xe606;</span>CrashMonitor</span>
+    
+        <span class="sidebar-tag-name" data-tags="Log"><span class="iconfont-archer">&#xe606;</span>Log</span>
+    
+        <span class="sidebar-tag-name" data-tags="AFN"><span class="iconfont-archer">&#xe606;</span>AFN</span>
+    
+    </div>
+    <div class="iconfont-archer sidebar-tags-empty">&#xe678;</div>
+    <div class="tag-load-fail" style="display: none; color: #ccc; font-size: 0.6rem;">
+    缺失模块。<br/>
+    1、请确保node版本大于6.2<br/>
+    2、在博客根目录（注意不是archer根目录）执行以下命令：<br/>
+    <span style="color: #f75357; font-size: 1rem; line-height: 2rem;">npm i hexo-generator-json-content --save</span><br/>
+    3、在根目录_config.yml里添加配置：
+    <pre style="color: #787878; font-size: 0.6rem;">
+jsonContent:
+  meta: false
+  pages: false
+  posts:
+    title: true
+    date: true
+    path: true
+    text: false
+    raw: false
+    content: false
+    slug: false
+    updated: false
+    comments: false
+    link: false
+    permalink: false
+    excerpt: false
+    categories: true
+    tags: true</pre>
+    </div> 
+    <div class="sidebar-tags-list"></div>
+</div>
+    </div>
+</div> 
+    <script>
+    var siteMeta = {
+        root: "/",
+        author: "Tenloy"
+    }
+</script>
+    <!-- CDN failover -->
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js"></script>
+    <script type="text/javascript">
+        if (typeof window.$ === 'undefined')
+        {
+            console.warn('jquery load from jsdelivr failed, will load local script')
+            document.write('<script src="/lib/jquery.min.js">\x3C/script>')
+        }
+    </script>
+    <script src="/scripts/main.js"></script>
+    <!-- algolia -->
+    
+        <div class="site-search">
+  <div class="algolia-popup popup">
+    <div class="algolia-search">
+      <div class="algolia-search-input-icon">
+        <i class="fa fa-search"></i>
+      </div>
+      <div class="algolia-search-input" id="algolia-search-input"></div>
+    </div>
+
+    <div class="algolia-results">
+      <div id="algolia-stats"></div>
+      <div id="algolia-hits"></div>
+      <div id="algolia-pagination" class="algolia-pagination"></div>
+    </div>
+
+    <span class="popup-btn-close">
+      <i class="iconfont-archer">&#xe609;</i>
+    </span>
+  </div>
+</div>
+        <script src="https://cdn.jsdelivr.net/npm/instantsearch.js@2.8.0/dist/instantsearch.min.js" defer></script>
+        <script src="/scripts/search.js" defer></script>
+    
+    <!-- busuanzi  -->
+    
+    <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    
+    <!-- CNZZ  -->
+    
+    </div>
+    <!-- async load share.js -->
+    
+        <script src="/scripts/share.js" async></script>    
+     
+    </body>
+</html>
+
+

@@ -1,0 +1,2434 @@
+<!DOCTYPE html>
+<html lang="en">
+    <!-- title -->
+
+
+
+
+<!-- keywords -->
+
+
+
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" >
+    <meta name="author" content="Tenloy">
+    <meta name="renderer" content="webkit">
+    <meta name="copyright" content="Tenloy">
+    
+    <meta name="keywords" content="Tenloy,iOS,Swift">
+    
+    <meta name="description" content="学习 生活 记录 回忆">
+    <meta name="description" content="一、Autorelease简介iOS开发中的Autorelease机制是为了延时释放对象。自动释放的概念看上去很像ARC，但实际上这更类似于C语言中自动变量的特性。 自动变量：在超出变量作用域后将被废弃； 自动释放池：在超出释放池生命周期后，向其管理的对象实例的发送release消息。 1.1 MRC下使用自动释放池在MRC环境中使用自动释放池需要用到NSAutoreleasePool对象，其生命">
+<meta property="og:type" content="article">
+<meta property="og:title" content="AutoreleasePool">
+<meta property="og:url" content="https://tenloy.github.io/2020/08/26/AutoreleasePool.html">
+<meta property="og:site_name" content="Tenloy&#39;s Blog">
+<meta property="og:description" content="一、Autorelease简介iOS开发中的Autorelease机制是为了延时释放对象。自动释放的概念看上去很像ARC，但实际上这更类似于C语言中自动变量的特性。 自动变量：在超出变量作用域后将被废弃； 自动释放池：在超出释放池生命周期后，向其管理的对象实例的发送release消息。 1.1 MRC下使用自动释放池在MRC环境中使用自动释放池需要用到NSAutoreleasePool对象，其生命">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://tenloy.github.io/images/RunLoop/AutoreleasePool5.png">
+<meta property="og:image" content="https://tenloy.github.io/images/RunLoop/AutoreleasePool4.png">
+<meta property="og:image" content="https://tenloy.github.io/images/RunLoop/AutoreleasePool3.png">
+<meta property="og:image" content="https://tenloy.github.io/images/RunLoop/AutoreleasePool2.png">
+<meta property="og:image" content="https://tenloy.github.io/images/RunLoop/AutoreleasePool.png">
+<meta property="article:published_time" content="2020-08-25T22:19:21.000Z">
+<meta property="article:modified_time" content="2024-04-07T11:38:00.501Z">
+<meta property="article:author" content="Tenloy">
+<meta property="article:tag" content="AutoreleasePool">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://tenloy.github.io/images/RunLoop/AutoreleasePool5.png">
+    <meta http-equiv="Cache-control" content="no-cache">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"/>
+    
+    <title>AutoreleasePool · Tenloy&#39;s Blog</title>
+    <style type="text/css">
+    @font-face {
+        font-family: 'Oswald-Regular';
+        src: url("/font/Oswald-Regular.ttf");
+    }
+
+    body {
+        margin: 0;
+    }
+
+    header,
+    footer,
+    .back-top,
+    .sidebar,
+    .container,
+    .site-intro-meta,
+    .toc-wrapper {
+        display: none;
+    }
+
+    .site-intro {
+        position: relative;
+        z-index: 3;
+        width: 100%;
+        /* height: 50vh; */
+        overflow: hidden;
+    }
+
+    .site-intro-placeholder {
+        position: absolute;
+        z-index: -2;
+        top: 0;
+        left: 0;
+        width: calc(100% + 300px);
+        height: 100%;
+        background: repeating-linear-gradient(-45deg, #444 0, #444 80px, #333 80px, #333 160px);
+        background-position: center center;
+        transform: translate3d(-226px, 0, 0);
+        animation: gradient-move 2.5s ease-out 0s infinite;
+    }
+
+    @keyframes gradient-move {
+        0% {
+            transform: translate3d(-226px, 0, 0);
+        }
+        100% {
+            transform: translate3d(0, 0, 0);
+        }
+    }
+
+</style>
+
+    <link rel="preload" href= "/css/style.css?v=20180824" as="style" onload="this.onload=null;this.rel='stylesheet'" />
+    <link rel="stylesheet" href= "/css/mobile.css?v=20180824" media="(max-width: 980px)">
+    
+    <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.2.5/jquery.fancybox.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'" />
+    
+    <!-- /*! loadCSS. [c]2017 Filament Group, Inc. MIT License */
+/* This file is meant as a standalone workflow for
+- testing support for link[rel=preload]
+- enabling async CSS loading in browsers that do not support rel=preload
+- applying rel preload css once loaded, whether supported or not.
+*/ -->
+<script>
+(function( w ){
+	"use strict";
+	// rel=preload support test
+	if( !w.loadCSS ){
+		w.loadCSS = function(){};
+	}
+	// define on the loadCSS obj
+	var rp = loadCSS.relpreload = {};
+	// rel=preload feature support test
+	// runs once and returns a function for compat purposes
+	rp.support = (function(){
+		var ret;
+		try {
+			ret = w.document.createElement( "link" ).relList.supports( "preload" );
+		} catch (e) {
+			ret = false;
+		}
+		return function(){
+			return ret;
+		};
+	})();
+
+	// if preload isn't supported, get an asynchronous load by using a non-matching media attribute
+	// then change that media back to its intended value on load
+	rp.bindMediaToggle = function( link ){
+		// remember existing media attr for ultimate state, or default to 'all'
+		var finalMedia = link.media || "all";
+
+		function enableStylesheet(){
+			link.media = finalMedia;
+		}
+
+		// bind load handlers to enable media
+		if( link.addEventListener ){
+			link.addEventListener( "load", enableStylesheet );
+		} else if( link.attachEvent ){
+			link.attachEvent( "onload", enableStylesheet );
+		}
+
+		// Set rel and non-applicable media type to start an async request
+		// note: timeout allows this to happen async to let rendering continue in IE
+		setTimeout(function(){
+			link.rel = "stylesheet";
+			link.media = "only x";
+		});
+		// also enable media after 3 seconds,
+		// which will catch very old browsers (android 2.x, old firefox) that don't support onload on link
+		setTimeout( enableStylesheet, 3000 );
+	};
+
+	// loop through link elements in DOM
+	rp.poly = function(){
+		// double check this to prevent external calls from running
+		if( rp.support() ){
+			return;
+		}
+		var links = w.document.getElementsByTagName( "link" );
+		for( var i = 0; i < links.length; i++ ){
+			var link = links[ i ];
+			// qualify links to those with rel=preload and as=style attrs
+			if( link.rel === "preload" && link.getAttribute( "as" ) === "style" && !link.getAttribute( "data-loadcss" ) ){
+				// prevent rerunning on link
+				link.setAttribute( "data-loadcss", true );
+				// bind listeners to toggle media back
+				rp.bindMediaToggle( link );
+			}
+		}
+	};
+
+	// if unsupported, run the polyfill
+	if( !rp.support() ){
+		// run once at least
+		rp.poly();
+
+		// rerun poly on an interval until onload
+		var run = w.setInterval( rp.poly, 500 );
+		if( w.addEventListener ){
+			w.addEventListener( "load", function(){
+				rp.poly();
+				w.clearInterval( run );
+			} );
+		} else if( w.attachEvent ){
+			w.attachEvent( "onload", function(){
+				rp.poly();
+				w.clearInterval( run );
+			} );
+		}
+	}
+
+
+	// commonjs
+	if( typeof exports !== "undefined" ){
+		exports.loadCSS = loadCSS;
+	}
+	else {
+		w.loadCSS = loadCSS;
+	}
+}( typeof global !== "undefined" ? global : this ) );
+</script>
+
+    <link rel="icon" href= "/assets/favicon.ico" />
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.min.js" as="script" />
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js" as="script" />
+    <link rel="preload" href="/scripts/main.js" as="script" />
+    <link rel="preload" as="font" href="/font/Oswald-Regular.ttf" crossorigin>
+    <link rel="preload" as="font" href="https://at.alicdn.com/t/font_327081_1dta1rlogw17zaor.woff" crossorigin>
+    
+        <!-- algolia -->
+        <script>
+            
+            var hits = JSON.parse('{"per_page":10}')
+            var labels = JSON.parse('{"input_placeholder":"Search for Posts","hits_empty":"没有找到任何搜索结果: ${query}","hits_stats":"找到约${hits}条结果（用时${time}ms）"}')
+
+            var algolia = {
+                applicationID: 'V0HYXBS9FB',
+                apiKey: '6550d5de786935564142097c3e78c380',
+                indexName: 'law_blog_index',
+                hits: hits,
+                labels: labels
+            }
+        </script>
+    
+    <!-- fancybox -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.2.5/jquery.fancybox.min.js" defer></script>
+    <!-- 百度统计  -->
+    
+    <!-- 谷歌统计  -->
+    
+<meta name="generator" content="Hexo 5.4.0"><link rel="alternate" href="/atom.xml" title="Tenloy's Blog" type="application/atom+xml">
+</head>
+
+    
+        <body class="post-body">
+    
+    
+<header class="header">
+
+    <div class="read-progress"></div>
+    <div class="header-sidebar-menu">&#xe775;</div>
+    <!-- post页的toggle banner  -->
+    
+    <div class="banner">
+            <div class="blog-title">
+                <a href="/" >Tenloy&#39;s Blog</a>
+            </div>
+            <div class="post-title">
+                <a href="#" class="post-name">AutoreleasePool</a>
+            </div>
+    </div>
+    
+    <!-- 将home-link的操作改为应用到header-top-right上 -->
+    <div class="header-top-right">
+        <!-- search  -->
+        
+            <div class="site-search popup-trigger tl-search">
+                <span class="iconfont-jian tl-search-icon">&#xe7fc;搜索</span>
+            </div>
+            
+        <a class="home-link" href=/>Tenloy's Blog</a>
+    </div>
+</header>
+    <div class="wrapper">
+        <div class="site-intro" style="
+
+
+
+
+
+
+
+height:40vh;
+">
+    
+    <!-- 主页  -->
+    
+    
+    <!-- 404页  -->
+            
+    <div class="site-intro-placeholder"></div>
+    <div class="site-intro-img" style="background-image: url(/intro/post-bg.jpg)"></div>
+    <div class="site-intro-meta">
+        <!-- 标题  -->
+        <h1 class="intro-title">
+            <!-- 主页  -->
+            
+            AutoreleasePool
+            <!-- 404 -->
+            
+        </h1>
+        <!-- 副标题 -->
+        <p class="intro-subtitle">
+            <!-- 主页副标题  -->
+            
+            
+            <!-- 404 -->
+            
+        </p>
+        <!-- 文章页meta -->
+        
+            <div class="post-intros">
+                <!-- 文章页标签  -->
+                
+                    <div class= post-intro-tags >
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags = "AutoreleasePool">AutoreleasePool</a>
+    
+</div>
+                
+                
+                    <div class="post-intro-read">
+                        <span>Word count: <span class="post-count word-count">4.9k</span>Reading time: <span class="post-count reading-time">19 min</span></span>
+                    </div>
+                
+                <div class="post-intro-meta">
+                    <span class="post-intro-calander iconfont-archer">&#xe676;</span>
+                    <span class="post-intro-time">2020/08/26</span>
+                    
+                    <span id="busuanzi_container_page_pv" class="busuanzi-pv">
+                        <span class="iconfont-archer">&#xe602;</span>
+                        <span id="busuanzi_value_page_pv"></span>
+                    </span>
+                    
+                    <span class="shareWrapper">
+                        <span class="iconfont-archer shareIcon">&#xe71d;</span>
+                        <span class="shareText">Share</span>
+                        <ul class="shareList">
+                            <li class="iconfont-archer share-qr" data-type="qr">&#xe75b;
+                                <div class="share-qrcode"></div>
+                            </li>
+                            <li class="iconfont-archer" data-type="weibo">&#xe619;</li>
+                            <li class="iconfont-archer" data-type="qzone">&#xe62e;</li>
+                            <li class="iconfont-archer" data-type="twitter">&#xe634;</li>
+                            <li class="iconfont-archer" data-type="facebook">&#xe67a;</li>
+                        </ul>
+                    </span>
+                </div>
+            </div>
+        
+    </div>
+</div>
+        <script>
+ 
+  // get user agent
+  var browser = {
+    versions: function () {
+      var u = window.navigator.userAgent;
+      return {
+        userAgent: u,
+        trident: u.indexOf('Trident') > -1, //IE内核
+        presto: u.indexOf('Presto') > -1, //opera内核
+        webKit: u.indexOf('AppleWebKit') > -1, //苹果、谷歌内核
+        gecko: u.indexOf('Gecko') > -1 && u.indexOf('KHTML') == -1, //火狐内核
+        mobile: !!u.match(/AppleWebKit.*Mobile.*/), //是否为移动终端
+        ios: !!u.match(/\(i[^;]+;( U;)? CPU.+Mac OS X/), //ios终端
+        android: u.indexOf('Android') > -1 || u.indexOf('Linux') > -1, //android终端或者uc浏览器
+        iPhone: u.indexOf('iPhone') > -1 || u.indexOf('Mac') > -1, //是否为iPhone或者安卓QQ浏览器
+        iPad: u.indexOf('iPad') > -1, //是否为iPad
+        webApp: u.indexOf('Safari') == -1, //是否为web应用程序，没有头部与底部
+        weixin: u.indexOf('MicroMessenger') == -1, //是否为微信浏览器
+        uc: u.indexOf('UCBrowser') > -1 //是否为android下的UC浏览器
+      };
+    }()
+  }
+  console.log("userAgent:" + browser.versions.userAgent);
+
+  // callback
+  function fontLoaded() {
+    console.log('font loaded');
+    if (document.getElementsByClassName('site-intro-meta')) {
+      document.getElementsByClassName('intro-title')[0].classList.add('intro-fade-in');
+      document.getElementsByClassName('intro-subtitle')[0].classList.add('intro-fade-in');
+      var postIntros = document.getElementsByClassName('post-intros')[0]
+      if (postIntros) {
+        postIntros.classList.add('post-fade-in');
+      }
+    }
+  }
+
+  // UC不支持跨域，所以直接显示
+  function asyncCb(){
+    if (browser.versions.uc) {
+      console.log("UCBrowser");
+      fontLoaded();
+    } else {
+      WebFont.load({
+        custom: {
+          families: ['Oswald-Regular']
+        },
+        loading: function () {  //所有字体开始加载
+          // console.log('loading');
+        },
+        active: function () {  //所有字体已渲染
+          fontLoaded();
+        },
+        inactive: function () { //字体预加载失败，无效字体或浏览器不支持加载
+          console.log('inactive: timeout');
+          fontLoaded();
+        },
+        timeout: 5000 // Set the timeout to two seconds
+      });
+    }
+  }
+
+  function asyncErr(){
+    console.warn('script load from CDN failed, will load local script')
+  }
+
+  // load webfont-loader async, and add callback function
+  function async(u, cb, err) {
+    var d = document, t = 'script',
+      o = d.createElement(t),
+      s = d.getElementsByTagName(t)[0];
+    o.src = u;
+    if (cb) { o.addEventListener('load', function (e) { cb(null, e); }, false); }
+    if (err) { o.addEventListener('error', function (e) { err(null, e); }, false); }
+    s.parentNode.insertBefore(o, s);
+  }
+
+  var asyncLoadWithFallBack = function(arr, success, reject) {
+      var currReject = function(){
+        reject()
+        arr.shift()
+        if(arr.length)
+          async(arr[0], success, currReject)
+        }
+
+      async(arr[0], success, currReject)
+  }
+
+  asyncLoadWithFallBack([
+    "https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.min.js", 
+    "https://cdn.bootcss.com/webfont/1.6.28/webfontloader.js",
+    "/lib/webfontloader.min.js"
+  ], asyncCb, asyncErr)
+</script>        
+        <img class="loading" src="/assets/loading.svg" style="display: block; margin: 6rem auto 0 auto; width: 6rem; height: 6rem;" />
+        <div class="container container-unloaded">
+            <main class="main post-page">
+    <article class="article-entry">
+        <h2 id="一、Autorelease简介"><a href="#一、Autorelease简介" class="headerlink" title="一、Autorelease简介"></a>一、Autorelease简介</h2><p>iOS开发中的Autorelease机制是为了延时释放对象。自动释放的概念看上去很像ARC，但实际上这更类似于C语言中自动变量的特性。</p>
+<p>自动变量：在超出变量作用域后将被废弃；<br> 自动释放池：在超出释放池生命周期后，向其管理的对象实例的发送<code>release</code>消息。</p>
+<h3 id="1-1-MRC下使用自动释放池"><a href="#1-1-MRC下使用自动释放池" class="headerlink" title="1.1 MRC下使用自动释放池"></a>1.1 MRC下使用自动释放池</h3><p>在MRC环境中使用自动释放池需要用到<code>NSAutoreleasePool</code>对象，其生命周期就相当于C语言变量的作用域。对于所有调用过<code>autorelease</code>方法的对象，在废弃<code>NSAutoreleasePool</code>对象时，都将调用<code>release</code>实例方法。用源代码表示如下：</p>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//MRC环境下的测试：</span></span><br><span class="line"><span class="comment">//第一步：生成并持有释放池NSAutoreleasePool对象;</span></span><br><span class="line"><span class="type">NSAutoreleasePool</span> <span class="operator">*</span>pool <span class="operator">=</span> [[<span class="type">NSAutoreleasePool</span> alloc] <span class="keyword">init</span>];</span><br><span class="line"></span><br><span class="line"><span class="comment">//第二步：调用对象的autorelease实例方法;</span></span><br><span class="line">id obj <span class="operator">=</span> [[<span class="type">NSObject</span> alloc] <span class="keyword">init</span>];</span><br><span class="line">[obj autorelease];</span><br><span class="line"></span><br><span class="line"><span class="comment">//第三步：废弃NSAutoreleasePool对象;</span></span><br><span class="line">[pool drain];   <span class="comment">//向pool管理的所有对象发送消息，相当于[obj release]</span></span><br><span class="line"></span><br><span class="line"><span class="comment">//obi已经释放，再次调用会崩溃(Thread 1: EXC_BAD_ACCESS (code=EXC_I386_GPFLT))</span></span><br><span class="line"><span class="type">NSLog</span>(@<span class="string">&quot;打印obj：%@&quot;</span>, obj); </span><br></pre></td></tr></table></figure>
+
+<p>理解<code>NSAutoreleasePool</code>对象的生命周期，如下图所示：</p>
+<img src="/images/RunLoop/AutoreleasePool5.png" width = "50%" alt="" align=center />
+
+<h3 id="1-2-ARC下使用自动释放池"><a href="#1-2-ARC下使用自动释放池" class="headerlink" title="1.2 ARC下使用自动释放池"></a>1.2 ARC下使用自动释放池</h3><p>ARC环境不能使用<code>NSAutoreleasePool</code>类也不能调用<code>autorelease</code>方法，代替它们实现对象自动释放的是<code>@autoreleasepool</code>块和<code>__autoreleasing</code>修饰符。比较两种环境下的代码差异如下图：</p>
+<img src="/images/RunLoop/AutoreleasePool4.png" width = "60%" alt="" align=center />
+
+<p>如图所示，<code>@autoreleasepool</code>块替换了<code>NSAutoreleasePoool</code>类对象的生成、持有及废弃这一过程。而附有<code>__autoreleasing</code>修饰符的变量替代了<code>autorelease</code>方法，将对象注册到了<code>Autoreleasepool</code>；由于ARC的优化，<code>__autorelease</code>是可以被省略的，所以简化后的ARC代码如下：</p>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//ARC环境下的测试：</span></span><br><span class="line"><span class="meta">@autoreleasepool</span> &#123;</span><br><span class="line">    id obj <span class="operator">=</span> [[<span class="type">NSObject</span> alloc] <span class="keyword">init</span>];</span><br><span class="line">    <span class="type">NSLog</span>(@<span class="string">&quot;打印obj：%@&quot;</span>, obj); </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>显式使用<code>__autoreleasing</code>修饰符的情况非常少见，这是因为ARC的很多情况下，即使是不显式的使用<code>__autoreleasing</code>，也能实现对象被注册到释放池中。主要包括以下几种情况：</p>
+<ol>
+<li>编译器会进行优化，检查方法名是否以<code>alloc/new/copy/mutableCopy</code>开始，如果不是则自动将返回对象注册到<code>Autoreleasepool</code>;</li>
+<li>访问附有<code>__weak</code>修饰符的变量时，实际上必定要访问注册到<code>Autoreleasepool</code>的对象，即会自动加入<code>Autoreleasepool</code>;</li>
+<li>id的指针或对象的指针(id*，NSError **)，在没有显式地指定修饰符时候，会被默认附加上<code>__autoreleasing</code>修饰符，加入<code>Autoreleasepool</code></li>
+</ol>
+<p><strong>注意：</strong>如果编译器版本为LLVM.3.0以上，即使ARC无效<code>@autoreleasepool</code>块也能够使用；如下源码所示：</p>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//MRC环境下的测试：</span></span><br><span class="line"><span class="meta">@autoreleasepool</span>&#123;</span><br><span class="line">    id obj <span class="operator">=</span> [[<span class="type">NSObject</span> alloc] <span class="keyword">init</span>];</span><br><span class="line">    [obj autorelease];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="二、AutoRelease原理"><a href="#二、AutoRelease原理" class="headerlink" title="二、AutoRelease原理"></a>二、AutoRelease原理</h2><h3 id="2-1-使用-autoreleasepool"><a href="#2-1-使用-autoreleasepool" class="headerlink" title="2.1 使用@autoreleasepool{}"></a>2.1 使用@autoreleasepool{}</h3><p>我们在<code>main</code>函数中写入自动释放池相关的测试代码如下：</p>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">int main(int argc, const char <span class="operator">*</span> argv[]) &#123;</span><br><span class="line">    <span class="meta">@autoreleasepool</span> &#123;</span><br><span class="line">        <span class="type">NSLog</span>(@<span class="string">&quot;Hello, World!&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>为了探究释放池的底层实现，我们在终端使用<code>clang -rewrite-objc + 文件名</code>命令将上述OC代码转化为C++源码：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">(<span class="keyword">int</span> argc, <span class="keyword">const</span> <span class="keyword">char</span> * argv[])</span> </span>&#123;</span><br><span class="line">    <span class="comment">/* @autoreleasepool */</span></span><br><span class="line">    &#123;</span><br><span class="line">        __AtAutoreleasePool __autoreleasepool;</span><br><span class="line">        NSLog((NSString *)&amp;__NSConstantStringImpl__var_folders_3f_crl5bnj956d806cp7d3ctqhm0000gn_T_main_d37e0d_mi_0);</span><br><span class="line">     &#125;<span class="comment">//大括号对应释放池的作用域</span></span><br><span class="line">     </span><br><span class="line">     <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>在经过编译器<code>clang</code>命令转化后，我们看到的所谓的<code>@autoreleasePool</code>块，其实对应着<code>__AtAutoreleasePool</code>的结构体。</p>
+<h3 id="2-2-分析结构体-AtAutoreleasePool的具体实现"><a href="#2-2-分析结构体-AtAutoreleasePool的具体实现" class="headerlink" title="2.2 分析结构体__AtAutoreleasePool的具体实现"></a>2.2 分析结构体__AtAutoreleasePool的具体实现</h3><p>在源码中找到<code>__AtAutoreleasePool</code>结构体的实现代码，具体如下：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">extern</span> <span class="string">&quot;C&quot;</span> __declspec(dllimport) <span class="function"><span class="keyword">void</span> * <span class="title">objc_autoreleasePoolPush</span><span class="params">(<span class="keyword">void</span>)</span></span>;</span><br><span class="line"><span class="keyword">extern</span> <span class="string">&quot;C&quot;</span> __declspec(dllimport) <span class="function"><span class="keyword">void</span> <span class="title">objc_autoreleasePoolPop</span><span class="params">(<span class="keyword">void</span> *)</span></span>;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">struct</span> __<span class="title">AtAutoreleasePool</span> &#123;</span></span><br><span class="line">  __AtAutoreleasePool() &#123;atautoreleasepoolobj = objc_autoreleasePoolPush();&#125;</span><br><span class="line">  ~__AtAutoreleasePool() &#123;objc_autoreleasePoolPop(atautoreleasepoolobj);&#125;</span><br><span class="line">  <span class="keyword">void</span> * atautoreleasepoolobj;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<p><code>__AtAutoreleasePool</code>结构体包含了：构造函数、析构函数和一个边界对象：</p>
+<ul>
+<li>构造函数内部调用：<code>objc_autoreleasePoolPush()</code>方法，返回边界对象<code>atautoreleasepoolobj</code></li>
+<li>析构函数内部调用：<code>objc_autoreleasePoolPop()</code>方法，传入边界对象<code>atautoreleasepoolobj</code></li>
+</ul>
+<p>分析<code>main</code>函数中<code>__autoreleasepool</code>结构体实例的生命周期是这样的：</p>
+<ul>
+<li><code>__autoreleasepool</code>是一个自动变量，其构造函数是在程序执行到声明这个对象的位置时调用的，而其析构函数则是在程序执行到离开这个对象的作用域时调用。</li>
+</ul>
+<p>所以，我们可以将上面<code>main</code>函数的代码简化如下：</p>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">int main(int argc, const char <span class="operator">*</span> argv[]) &#123;</span><br><span class="line">    <span class="comment">/* @autoreleasepool */</span> &#123;</span><br><span class="line">        void <span class="operator">*</span>atautoreleasepoolobj <span class="operator">=</span> objc_autoreleasePoolPush();</span><br><span class="line">        <span class="type">NSLog</span>((<span class="type">NSString</span> <span class="operator">*</span>)<span class="operator">&amp;</span>__NSConstantStringImpl__var_folders_kb_06b822gn59df4d1zt99361xw0000gn_T_main_d39a79_mi_0);</span><br><span class="line">        objc_autoreleasePoolPop(atautoreleasepoolobj);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="2-3-objc-autoreleasePoolPush与objc-autoreleasePoolPop"><a href="#2-3-objc-autoreleasePoolPush与objc-autoreleasePoolPop" class="headerlink" title="2.3 objc_autoreleasePoolPush与objc_autoreleasePoolPop"></a>2.3 objc_autoreleasePoolPush与objc_autoreleasePoolPop</h3><p>进一步观察自动释放池构造函数与析构函数的实现，其实它们都只是对<code>AutoreleasePoolPage</code>对应静态方法<code>push</code>和<code>pop</code>的封装</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> *<span class="title">objc_autoreleasePoolPush</span><span class="params">(<span class="keyword">void</span>)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> AutoreleasePoolPage::push();</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">objc_autoreleasePoolPop</span><span class="params">(<span class="keyword">void</span> *ctxt)</span> </span>&#123;</span><br><span class="line">    AutoreleasePoolPage::pop(ctxt);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="2-4-理解AutoreleasePoolPage"><a href="#2-4-理解AutoreleasePoolPage" class="headerlink" title="2.4 理解AutoreleasePoolPage"></a>2.4 理解AutoreleasePoolPage</h3><p><code>AutoreleasePoolPage</code>是一个C++中的类，打开<code>Runtime</code>的源码工程，在<code>NSObject.mm</code>文件中可以找到它的定义，摘取其中的关键代码如下：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//大致在641行代码开始</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">AutoreleasePoolPage</span> &#123;</span></span><br><span class="line"><span class="meta">#   <span class="meta-keyword">define</span> EMPTY_POOL_PLACEHOLDER ((id*)1)  <span class="comment">//空池占位</span></span></span><br><span class="line"><span class="meta">#   <span class="meta-keyword">define</span> POOL_BOUNDARY nil                <span class="comment">//边界对象(即哨兵对象）</span></span></span><br><span class="line">    <span class="keyword">static</span> <span class="keyword">pthread_key_t</span> <span class="keyword">const</span> key = AUTORELEASE_POOL_KEY;</span><br><span class="line">    <span class="keyword">static</span> <span class="keyword">uint8_t</span> <span class="keyword">const</span> SCRIBBLE = <span class="number">0xA3</span>;  <span class="comment">// 0xA3A3A3A3 after releasing</span></span><br><span class="line">    <span class="keyword">static</span> <span class="keyword">size_t</span> <span class="keyword">const</span> SIZE = </span><br><span class="line"><span class="meta">#<span class="meta-keyword">if</span> PROTECT_AUTORELEASEPOOL</span></span><br><span class="line">        PAGE_MAX_SIZE;  <span class="comment">// must be multiple of vm page size</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">else</span></span></span><br><span class="line">        PAGE_MAX_SIZE;  <span class="comment">// size and alignment, power of 2</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">endif</span></span></span><br><span class="line">    <span class="keyword">static</span> <span class="keyword">size_t</span> <span class="keyword">const</span> COUNT = SIZE / <span class="keyword">sizeof</span>(id);</span><br><span class="line">    <span class="keyword">magic_t</span> <span class="keyword">const</span> magic;                  <span class="comment">//校验AutoreleasePagePoolPage结构是否完整</span></span><br><span class="line">    id *next;                             <span class="comment">//指向新加入的autorelease对象的下一个位置，初始化时指向begin()</span></span><br><span class="line">    <span class="keyword">pthread_t</span> <span class="keyword">const</span> thread;               <span class="comment">//当前所在线程，AutoreleasePool是和线程一一对应的</span></span><br><span class="line">    AutoreleasePoolPage * <span class="keyword">const</span> parent;   <span class="comment">//指向父节点page，第一个结点的parent值为nil</span></span><br><span class="line">    AutoreleasePoolPage *child;           <span class="comment">//指向子节点page，最后一个结点的child值为nil</span></span><br><span class="line">    <span class="keyword">uint32_t</span> <span class="keyword">const</span> depth;                 <span class="comment">//链表深度，节点个数</span></span><br><span class="line">    <span class="keyword">uint32_t</span> hiwat;                       <span class="comment">//数据容纳的一个上限</span></span><br><span class="line">    <span class="comment">//......</span></span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<p>其实，<strong>每个自动释放池都是是由若干个<code>AutoreleasePoolPage</code>组成的双向链表结构</strong>，如下图所示:</p>
+<img src="/images/RunLoop/AutoreleasePool3.png" width = "90%" alt="" align=center />
+
+<p><code>AutoreleasePoolPage</code>中拥有<code>parent</code>和<code>child</code>指针，分别指向上一个和下一个<code>page</code>；当前一个<code>page</code>的空间被占满(每个<code>AutorelePoolPage</code>的大小为4096字节)时，就会新建一个<code>AutorelePoolPage</code>对象并连接到链表中，后来的  Autorelease对象也会添加到新的<code>page</code>中；</p>
+<p>另外，当<code>next== begin()</code>时，表示<code>AutoreleasePoolPage</code>为空；当<code>next == end()</code>，表示<code>AutoreleasePoolPage</code>已满。</p>
+<h3 id="2-5-理解哨兵对象-边界对象-POOL-BOUNDARY-的作用"><a href="#2-5-理解哨兵对象-边界对象-POOL-BOUNDARY-的作用" class="headerlink" title="2.5 理解哨兵对象/边界对象(POOL_BOUNDARY)的作用"></a>2.5 理解哨兵对象/边界对象(POOL_BOUNDARY)的作用</h3><p>在<code>AutoreleasePoolPage</code>的源码中，我们很容易找到边界对象(哨兵对象)的定义：</p>
+<figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">define</span> POOL_BOUNDARY nil</span></span><br></pre></td></tr></table></figure>
+
+<p>边界对象其实就是<code>nil</code>的别名，而它的作用事实上也就是为了起到一个标识的作用。</p>
+<p>每当自动释放池初始化调用<code>objc_autoreleasePoolPush</code>方法时，总会通过<code>AutoreleasePoolPage</code>的<code>push</code>方法，将<code>POOL_BOUNDARY</code>放到当前<code>page</code>的栈顶，并且返回这个边界对象；</p>
+<p>而在自动释放池释放调用<code>objc_autoreleasePoolPop</code>方法时，又会将边界对象以参数传入，这样自动释放池就会向释放池中对象发送<code>release</code>消息，直至找到第一个边界对象为止。</p>
+<h3 id="2-6-理解objc-autoreleasePoolPush方法"><a href="#2-6-理解objc-autoreleasePoolPush方法" class="headerlink" title="2.6 理解objc_autoreleasePoolPush方法"></a>2.6 理解objc_autoreleasePoolPush方法</h3><p>经过前面的分析，<code>objc_autoreleasePoolPush</code>最终调用的是    <code>AutoreleasePoolPage</code>的<code>push</code>方法，该方法的具体实现如下：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">inline</span> <span class="keyword">void</span> *<span class="title">push</span><span class="params">()</span> </span>&#123;</span><br><span class="line">   <span class="keyword">return</span> autoreleaseFast(POOL_BOUNDARY);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">inline</span> id *<span class="title">autoreleaseFast</span><span class="params">(id obj)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">   AutoreleasePoolPage *page = hotPage();</span><br><span class="line">   <span class="keyword">if</span> (page &amp;&amp; !page-&gt;full()) &#123;</span><br><span class="line">       <span class="keyword">return</span> page-&gt;add(obj);</span><br><span class="line">   &#125; <span class="keyword">else</span> <span class="keyword">if</span> (page) &#123;</span><br><span class="line">       <span class="keyword">return</span> autoreleaseFullPage(obj, page);</span><br><span class="line">   &#125; <span class="keyword">else</span> &#123;</span><br><span class="line"><span class="number">1.</span>        <span class="keyword">return</span> autoreleaseNoPage(obj);</span><br><span class="line">   &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">//压栈操作：将对象加入AutoreleaseNoPage并移动栈顶的指针</span></span><br><span class="line"><span class="function">id *<span class="title">add</span><span class="params">(id obj)</span> </span>&#123;</span><br><span class="line">    id *ret = next;</span><br><span class="line">    *next = obj;</span><br><span class="line">    next++;</span><br><span class="line">    <span class="keyword">return</span> ret;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">//当前hotPage已满时调用</span></span><br><span class="line"><span class="function"><span class="keyword">static</span> id *<span class="title">autoreleaseFullPage</span><span class="params">(id obj, AutoreleasePoolPage *page)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">do</span> &#123;</span><br><span class="line">        <span class="keyword">if</span> (page-&gt;child) page = page-&gt;child;</span><br><span class="line">        <span class="keyword">else</span> page = <span class="keyword">new</span> AutoreleasePoolPage(page);</span><br><span class="line">    &#125; <span class="keyword">while</span> (page-&gt;full());</span><br><span class="line"></span><br><span class="line">    setHotPage(page);</span><br><span class="line">    <span class="keyword">return</span> page-&gt;add(obj);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">//当前hotpage不存在时调用</span></span><br><span class="line"><span class="function"><span class="keyword">static</span> id *<span class="title">autoreleaseNoPage</span><span class="params">(id obj)</span> </span>&#123;</span><br><span class="line">    AutoreleasePoolPage *page = <span class="keyword">new</span> AutoreleasePoolPage(nil);</span><br><span class="line">    setHotPage(page);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (obj != POOL_SENTINEL) &#123;</span><br><span class="line">        page-&gt;add(POOL_SENTINEL);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> page-&gt;add(obj);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>观察上述代码，每次调用<code>push</code>其实就是创建一个新的AutoreleasePool，在对应的<code>AutoreleasePoolPage</code>中插入一个<code>POOL_BOUNDARY</code> ，并且返回插入的<code>POOL_BOUNDARY</code> 的内存地址。<code>push</code>方法内部调用的是<code>autoreleaseFast</code>方法，并传入边界对象(<code>POOL_BOUNDARY</code>)。<code>hotPage</code>可以理解为当前正在使用的<code>AutoreleasePoolPage</code>。</p>
+<p>自动释放池最终都会通过<code>page-&gt;add(obj)</code>方法将边界对象添加到释放池中，而这一过程在<code>autoreleaseFast</code>方法中被分为三种情况：</p>
+<ol>
+<li>当前<code>page</code>存在且不满，调用<code>page-&gt;add(obj)</code>方法将对象添加至<code>page</code>的栈中，即<code>next</code>指向的位置</li>
+<li>当前<code>page</code>存在但是已满，调用<code>autoreleaseFullPage</code>初始化一个新的<code>page</code>，调用<code>page-&gt;add(obj)</code>方法将对象添加至<code>page</code>的栈中</li>
+<li>当前<code>page</code>不存在时，调用<code>autoreleaseNoPage</code>创建一个<code>hotPage</code>，再调用<code>page-&gt;add(obj)</code> 方法将对象添加至<code>page</code>的栈中</li>
+</ol>
+<h3 id="2-7-objc-autoreleasePoolPop方法"><a href="#2-7-objc-autoreleasePoolPop方法" class="headerlink" title="2.7 objc_autoreleasePoolPop方法"></a>2.7 objc_autoreleasePoolPop方法</h3><p>AutoreleasePool的释放调用的是<code>objc_autoreleasePoolPop</code>方法，此时需要传入边界对象作为参数。这个边界对象正是每次执行<code>objc_autoreleasePoolPush</code>方法返回的对象<code>atautoreleasepoolobj</code>；</p>
+<p>同理，我们找到<code>objc_autoreleasePoolPop</code>最终调用的方法，即<code>AutoreleasePoolPage</code>的<code>pop</code>方法，该方法的具体实现如下：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">inline</span> <span class="keyword">void</span> <span class="title">pop</span><span class="params">(<span class="keyword">void</span> *token)</span>   <span class="comment">//POOL_BOUNDARY的地址</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    AutoreleasePoolPage *page;</span><br><span class="line">    id *stop;</span><br><span class="line"></span><br><span class="line">    page = pageForPointer(token);   <span class="comment">//通过POOL_BOUNDARY找到对应的page</span></span><br><span class="line">    stop = (id *)token;</span><br><span class="line">    <span class="keyword">if</span> (DebugPoolAllocation  &amp;&amp;  *stop != POOL_SENTINEL) &#123;</span><br><span class="line">        <span class="comment">// This check is not valid with DebugPoolAllocation off</span></span><br><span class="line">        <span class="comment">// after an autorelease with a pool page but no pool in place.</span></span><br><span class="line">        _objc_fatal(<span class="string">&quot;invalid or prematurely-freed autorelease pool %p; &quot;</span>, </span><br><span class="line">                    token);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (PrintPoolHiwat) printHiwat();   <span class="comment">// 记录最高水位标记</span></span><br><span class="line"></span><br><span class="line">    page-&gt;releaseUntil(stop);   <span class="comment">//向栈中的对象发送release消息，直到遇到第一个哨兵对象</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">// memory: delete empty children</span></span><br><span class="line">    <span class="comment">// 删除空掉的节点</span></span><br><span class="line">    <span class="keyword">if</span> (DebugPoolAllocation  &amp;&amp;  page-&gt;empty()) &#123;</span><br><span class="line">        <span class="comment">// special case: delete everything during page-per-pool debugging</span></span><br><span class="line">        AutoreleasePoolPage *parent = page-&gt;parent;</span><br><span class="line">        page-&gt;kill();</span><br><span class="line">        setHotPage(parent);</span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (DebugMissingPools  &amp;&amp;  page-&gt;empty()  &amp;&amp;  !page-&gt;parent) &#123;</span><br><span class="line">        <span class="comment">// special case: delete everything for pop(top) </span></span><br><span class="line">        <span class="comment">// when debugging missing autorelease pools</span></span><br><span class="line">        page-&gt;kill();</span><br><span class="line">        setHotPage(nil);</span><br><span class="line">    &#125; </span><br><span class="line">    <span class="keyword">else</span> <span class="keyword">if</span> (page-&gt;child) &#123;</span><br><span class="line">        <span class="comment">// hysteresis: keep one empty child if page is more than half full</span></span><br><span class="line">        <span class="keyword">if</span> (page-&gt;lessThanHalfFull()) &#123;</span><br><span class="line">            page-&gt;child-&gt;kill();</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">else</span> <span class="keyword">if</span> (page-&gt;child-&gt;child) &#123;</span><br><span class="line">            page-&gt;child-&gt;child-&gt;kill();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>上述代码中，首先根据传入的边界对象地址找到边界对象所处的<code>page</code>；然后选择当前<code>page</code>中最新加入的对象一直向前清理，可以向前跨越若干个<code>page</code>，直到边界所在的位置；清理的方式是向这些对象发送一次<code>release</code>消息，使其引用计数减一；</p>
+<p>另外，清空<code>page</code>对象还会遵循一些原则：</p>
+<ol>
+<li>如果当前的<code>page</code>中存放的对象少于一半，则子<code>page</code>全部删除；</li>
+<li>如果当前的<code>page</code>存放的多余一半（意味着马上将要满），则保留一个子<code>page</code>，节省创建新<code>page</code>的开销;</li>
+</ol>
+<h3 id="2-8-autorelease方法"><a href="#2-8-autorelease方法" class="headerlink" title="2.8 autorelease方法"></a>2.8 autorelease方法</h3><p>上述是对自动释放池整个生命周期的分析，现在我们来理解延时释放对象<code>autorelease</code>方法的实现，首先查看该方法的调用栈：</p>
+<figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">- [<span class="built_in">NSObject</span> autorelease]</span><br><span class="line">└── <span class="keyword">id</span> objc_object::rootAutorelease()</span><br><span class="line">    └── <span class="keyword">id</span> objc_object::rootAutorelease2()</span><br><span class="line">        └── <span class="keyword">static</span> <span class="keyword">id</span> AutoreleasePoolPage::autorelease(<span class="keyword">id</span> obj)</span><br><span class="line">            └── <span class="keyword">static</span> <span class="keyword">id</span> AutoreleasePoolPage::autoreleaseFast(<span class="keyword">id</span> obj)</span><br><span class="line">                ├── <span class="keyword">id</span> *add(<span class="keyword">id</span> obj)</span><br><span class="line">                ├── <span class="keyword">static</span> <span class="keyword">id</span> *autoreleaseFullPage(<span class="keyword">id</span> obj, AutoreleasePoolPage *page)</span><br><span class="line">                │   ├── AutoreleasePoolPage(AutoreleasePoolPage *newParent)</span><br><span class="line">                │   └── <span class="keyword">id</span> *add(<span class="keyword">id</span> obj)</span><br><span class="line">                └── <span class="keyword">static</span> <span class="keyword">id</span> *autoreleaseNoPage(<span class="keyword">id</span> obj)</span><br><span class="line">                    ├── AutoreleasePoolPage(AutoreleasePoolPage *newParent)</span><br><span class="line">                    └── <span class="keyword">id</span> *add(<span class="keyword">id</span> obj)</span><br></pre></td></tr></table></figure>
+
+<p>如上所示，<code>autorelease</code>方法最终也会调用上面提到的 <code>autoreleaseFast</code>方法，将当前对象加到<code>AutoreleasePoolPage</code>中。关于<code>autoreleaseFast</code>的分析这里不再累述，我们主要来考虑一下两次调用的区别：</p>
+<p><code>autorelease</code>函数和<code>push</code>函数一样，关键代码都是调用<code>autoreleaseFast</code>函数向自动释放池的链表栈中添加一个对象，不过<code>push</code>函数入栈的是一个边界对象，而<code>autorelease</code>函数入栈的是一个具体的Autorelease的对象。</p>
+<h2 id="三、AutoreleasePool与NSThread、NSRunLoop的关系"><a href="#三、AutoreleasePool与NSThread、NSRunLoop的关系" class="headerlink" title="三、AutoreleasePool与NSThread、NSRunLoop的关系"></a>三、AutoreleasePool与NSThread、NSRunLoop的关系</h2><p>由于<code>AppKit</code>和<code>UIKit</code>框架的优化，我们很少需要显式的创建一个自动释放池块。这其中就涉及到<code>AutoreleasePool</code>与<code>NSThread</code>、<code>NSRunLoop</code>的关系。</p>
+<h3 id="3-1-RunLoop和NSThread的关系"><a href="#3-1-RunLoop和NSThread的关系" class="headerlink" title="3.1 RunLoop和NSThread的关系"></a>3.1 RunLoop和NSThread的关系</h3><p><code>RunLoop</code>是用于控制线程生命周期并接收事件进行处理的机制，其实质是一个<code>do-While</code>循环。在苹果文档找到关于<a target="_blank" rel="noopener" href="https://links.jianshu.com/go?to=https://developer.apple.com/documentation/foundation/nsrunloop%23//apple_ref/doc/constant_group/Run_Loop_Modes">NSRunLoop</a>的介绍如下：</p>
+<blockquote>
+<p>Your application neither creates or explicitly manages NSRunLoop objects. Each NSThread object—including the application’s main thread—has an NSRunLoop object automatically created for it as needed. If you need to access the current thread’s run loop, you do so with the class method currentRunLoop.</p>
+</blockquote>
+<p>总结<code>RunLoop</code>与<code>NSThread</code>(线程)之间的关系如下：</p>
+<ol>
+<li><code>RunLoop</code>与线程是一一对应关系，每个线程(包括主线程)都有一个对应的<code>RunLoop</code>对象；其对应关系保存在一个全局的Dictionary里；</li>
+<li>主线程的<code>RunLoop</code>默认由系统自动创建并启动；而其他线程在创建时并没有<code>RunLoop</code>，若该线程一直不主动获取，就一直不会有<code>RunLoop</code>；</li>
+<li>苹果不提供直接创建<code>RunLoop</code>的方法；所谓其他线程<code>Runloop</code>的创建其实是发生在第一次获取的时候，系统判断当前线程没有<code>RunLoop</code>就会自动创建；</li>
+<li>当前线程结束时，其对应的<code>Runloop</code>也被销毁；</li>
+</ol>
+<h3 id="3-2-RunLoop和AutoreleasePool的关系"><a href="#3-2-RunLoop和AutoreleasePool的关系" class="headerlink" title="3.2 RunLoop和AutoreleasePool的关系"></a>3.2 RunLoop和AutoreleasePool的关系</h3><p>在<a target="_blank" rel="noopener" href="https://links.jianshu.com/go?to=https://developer.apple.com/library/ios/documentation/Cocoa/Reference/Foundation/Classes/NSAutoreleasePool_Class/index.html%23//apple_ref/doc/uid/TP40003623">苹果文档</a>中找到两者关系的介绍如下：</p>
+<blockquote>
+<p>The Application Kit creates an autorelease pool on the main thread at the beginning of every cycle of the event loop, and drains it at the end, thereby releasing any autoreleased objects generated while processing an event.</p>
+</blockquote>
+<p>如上所述，主线程的<code>NSRunLoop</code>在监测到事件响应开启每一次<code>event loop</code>之前，会自动创建一个<code>autorelease pool</code>，并且会在<code>event loop</code>结束的时候执行<code>drain</code>操作，释放其中的对象。</p>
+<h3 id="3-3-Thread和AutoreleasePool的关系"><a href="#3-3-Thread和AutoreleasePool的关系" class="headerlink" title="3.3 Thread和AutoreleasePool的关系"></a>3.3 Thread和AutoreleasePool的关系</h3><p>在<a target="_blank" rel="noopener" href="https://links.jianshu.com/go?to=https://developer.apple.com/library/ios/documentation/Cocoa/Reference/Foundation/Classes/NSAutoreleasePool_Class/index.html%23//apple_ref/doc/uid/TP40003623">苹果文档</a>中找到两者关系的介绍如下：</p>
+<blockquote>
+<p>Each thread (including the main thread) maintains its own stack of NSAutoreleasePool objects (see Threads). As new pools are created, they get added to the top of the stack. When pools are deallocated, they are removed from the stack. Autoreleased objects are placed into the top autorelease pool for the current thread. When a thread terminates, it automatically drains all of the autorelease pools associated with itself.</p>
+</blockquote>
+<p>如上所述， 包括主线程在内的所有线程都维护有它自己的自动释放池的堆栈结构。新的自动释放池被创建的时候，它们会被添加到栈的顶部，而当池子销毁的时候，会从栈移除。对于当前线程来说，Autoreleased对象会被放到栈顶的自动释放池中。当一个线程线程停止，它会自动释放掉与其关联的所有自动释放池。</p>
+<h2 id="四、AutoreleasePool在主线程上的释放时机"><a href="#四、AutoreleasePool在主线程上的释放时机" class="headerlink" title="四、AutoreleasePool在主线程上的释放时机"></a>四、AutoreleasePool在主线程上的释放时机</h2><h3 id="4-1-理解主线程上的自动释放过程"><a href="#4-1-理解主线程上的自动释放过程" class="headerlink" title="4.1 理解主线程上的自动释放过程"></a>4.1 理解主线程上的自动释放过程</h3><p>分析主线程<code>RunLoop</code>管理自动释放池并释放对象的详细过程，我们在如下Demo中的主线程中设置断点，并执行lldb命令：<code>po [NSRunLoop currentRunLoop]</code>，具体效果如下：</p>
+<img src="/images/RunLoop/AutoreleasePool2.png" width = "70%" alt="" align=center />
+
+<p>我们看到主线程<code>RunLoop</code>中有两个与自动释放池相关的<code>Observer</code>，它们的 <code>activities</code>分别为<code>0x1</code>和<code>0xa0</code>这两个十六进制的数，转为二进制分别为<code>1</code>和<code>10100000</code>，对应<code>CFRunLoopActivity</code>的类型如下：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/* Run Loop Observer Activities */</span></span><br><span class="line"><span class="function"><span class="keyword">typedef</span> <span class="title">CF_OPTIONS</span><span class="params">(CFOptionFlags, CFRunLoopActivity)</span> </span>&#123;</span><br><span class="line">    kCFRunLoopEntry = (<span class="number">1UL</span> &lt;&lt; <span class="number">0</span>),          <span class="comment">//0x1，启动Runloop循环</span></span><br><span class="line">    kCFRunLoopBeforeTimers = (<span class="number">1UL</span> &lt;&lt; <span class="number">1</span>),            </span><br><span class="line">    kCFRunLoopBeforeSources = (<span class="number">1UL</span> &lt;&lt; <span class="number">2</span>),        </span><br><span class="line">    kCFRunLoopBeforeWaiting = (<span class="number">1UL</span> &lt;&lt; <span class="number">5</span>),  <span class="comment">//0xa0，即将进入休眠     </span></span><br><span class="line">    kCFRunLoopAfterWaiting = (<span class="number">1UL</span> &lt;&lt; <span class="number">6</span>),   </span><br><span class="line">    kCFRunLoopExit = (<span class="number">1UL</span> &lt;&lt; <span class="number">7</span>),           <span class="comment">//0xa0，退出RunLoop循环  </span></span><br><span class="line">    kCFRunLoopAllActivities = <span class="number">0x0FFFFFFF</span>U</span><br><span class="line">    &#125;;</span><br></pre></td></tr></table></figure>
+
+<p>结合RunLoop监听的事件类型，分析主线程上自动释放池的使用过程如下：</p>
+<ol>
+<li>App启动后，苹果在主线程<code>RunLoop</code>里注册了两个<code>Observer</code>，其回调都是 <code>_wrapRunLoopWithAutoreleasePoolHandler()</code>;</li>
+<li>第一个<code>Observer</code>监视的事件是<code>Entry</code>(即将进入Loop)，其回调内会调用 <code>_objc_autoreleasePoolPush()</code>创建自动释放池。<code>order = -2147483647</code>(即32位整数最小值)表示其优先级最高，可以保证创建释放池发生在其他所有回调之前;</li>
+<li>第二个<code>Observer</code>监视了两个事件<code>BeforeWaiting</code>(准备进入休眠)时调用<code>_objc_autoreleasePoolPop()</code>和<code>_objc_autoreleasePoolPush()</code>释放旧的池并创建新池；<code>Exit</code>(即将退出Loop) 时调用 <code>_objc_autoreleasePoolPop()</code>来释放自动释放池。<code>order = 2147483647</code>(即32位整数的最大值)表示其优先级最低，保证其释放池子发生在其他所有回调之后;</li>
+<li>在主线程执行的代码，通常是写在诸如事件回调、Timer回调内的。这些回调会被 <code>RunLoop</code>创建好的<code>AutoreleasePool</code>环绕着，所以不会出现内存泄漏，开发者也不必显示创建<code>AutoreleasePool</code>了;</li>
+</ol>
+<p>最后，也可以结合图示理解主线程上自动释放对象的具体流程：</p>
+<img src="/images/RunLoop/AutoreleasePool.png" width = "70%" alt="" align=center />
+
+<ol>
+<li>程序启动到加载完成后，主线程对应的<code>RunLoop</code>会停下来等待用户交互</li>
+<li>用户的每一次交互都会启动一次运行循环，来处理用户所有的点击事件、触摸事件。</li>
+<li><code>RunLoop</code>检测到事件后，就会创建自动释放池;</li>
+<li>所有的延迟释放对象都会被添加到这个池子中;</li>
+<li>在一次完整的运行循环结束之前，会向池中所有对象发送<code>release</code>消息，然后自动释放池被销毁;</li>
+</ol>
+<h3 id="4-2-测试主线程上的对象自动释放过程"><a href="#4-2-测试主线程上的对象自动释放过程" class="headerlink" title="4.2 测试主线程上的对象自动释放过程"></a>4.2 测试主线程上的对象自动释放过程</h3><p>下面的代码创建了一个Autorelease对象<code>string</code>，并且通过<code>weakString</code>进行弱引用(不增加引用计数，所以不会影响对象的生命周期)，具体如下：</p>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@interface</span> <span class="type">TestMemoryVC</span> ()</span><br><span class="line"><span class="meta">@property</span> (nonatomic,<span class="keyword">weak</span>)<span class="type">NSString</span> <span class="operator">*</span>weakString;</span><br><span class="line"><span class="meta">@end</span></span><br><span class="line"></span><br><span class="line"><span class="meta">@implementation</span> <span class="type">TestMemoryVC</span></span><br><span class="line"><span class="operator">-</span> (void)viewDidLoad &#123;</span><br><span class="line">    [<span class="keyword">super</span> viewDidLoad];</span><br><span class="line">    <span class="type">NSString</span> <span class="operator">*</span>string <span class="operator">=</span> [<span class="type">NSString</span> stringWithFormat:@<span class="string">&quot;%@&quot;</span>,@<span class="string">&quot;WUYUBEICHEN&quot;</span>];</span><br><span class="line">    <span class="keyword">self</span>.weakString <span class="operator">=</span> string;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="operator">-</span> (void)viewWillAppear:(<span class="type">BOOL</span>)animated &#123;</span><br><span class="line">    [<span class="keyword">super</span> viewWillAppear:animated];</span><br><span class="line">    <span class="type">NSLog</span>(@<span class="string">&quot;viewWillAppear:%@&quot;</span>, <span class="keyword">self</span>.weakString);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="operator">-</span> (void)viewDidAppear:(<span class="type">BOOL</span>)animated &#123;</span><br><span class="line">    [<span class="keyword">super</span> viewDidAppear:animated];</span><br><span class="line">    <span class="type">NSLog</span>(@<span class="string">&quot;viewDidAppear:%@&quot;</span>, <span class="keyword">self</span>.weakString);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="meta">@end</span></span><br><span class="line"></span><br><span class="line"><span class="comment">//打印结果：</span></span><br><span class="line"><span class="comment">//viewWillAppear:WUYUBEICHEN</span></span><br><span class="line"><span class="comment">//viewDidAppear:(null)</span></span><br></pre></td></tr></table></figure>
+
+<p><strong>代码分析：</strong>自动变量的<code>string</code>在离开<code>viewDidLoad</code>的作用域后，会依靠当前主线程上的<code>RunLoop</code>迭代自动释放。最终<code>string</code>对象在<code>viewDidAppear</code>方法执行前被释放(<code>RunLoop</code>完成此次迭代)。</p>
+<h2 id="五、AutoreleasePool子线程上的释放时机"><a href="#五、AutoreleasePool子线程上的释放时机" class="headerlink" title="五、AutoreleasePool子线程上的释放时机"></a>五、AutoreleasePool子线程上的释放时机</h2><p>子线程默认不开启<code>RunLoo</code>p，那么其中的延时对象该如何释放呢？其实这依然要从<code>Thread</code>和<code>AutoreleasePool</code>的关系来考虑：</p>
+<blockquote>
+<p>Each thread (including the main thread) maintains its own stack of NSAutoreleasePool objects.</p>
+</blockquote>
+<p>也就是说，每一个线程都会维护自己的 <code>Autoreleasepool</code>栈，所以子线程虽然默认没有开启<code>RunLoop</code>，但是依然存在<code>AutoreleasePool</code>，在子线程退出的时候会去释放<code>autorelease</code>对象。</p>
+<p>前面讲到过，ARC会根据一些情况进行优化，添加<code>__autoreleasing</code>修饰符，其实这就相当于对需要延时释放的对象调用了<code>autorelease</code>方法。从源码分析的角度来看，如果子线程中没有创建<code>AutoreleasePool</code> ，而一旦产生了<code>Autorelease</code>对象，就会调用<code>autoreleaseNoPage</code>方法自动创建<code>hotpage</code>，并将对象加入到其栈中。所以，一般情况下，子线程中即使我们不手动添加自动释放池，也不会产生内存泄漏。</p>
+<h2 id="六、AutoreleasePool需要手动添加的情况"><a href="#六、AutoreleasePool需要手动添加的情况" class="headerlink" title="六、AutoreleasePool需要手动添加的情况"></a>六、AutoreleasePool需要手动添加的情况</h2><p>尽管ARC已经做了诸多优化，但是有些情况我们必须手动创建<code>AutoreleasePool</code>，而其中的延时对象将在当前释放池的作用域结束时释放。<a target="_blank" rel="noopener" href="https://links.jianshu.com/go?to=https://developer.apple.com/library/archive/documentation/Cocoa/Conceptual/MemoryMgmt/Articles/mmAutoreleasePools.html%23//apple_ref/doc/uid/20000047">苹果文档</a>中说明了三种情况，我们可能会需要手动添加自动释放池：</p>
+<ol>
+<li>编写的不是基于UI框架的程序，例如命令行工具；</li>
+<li>通过循环方式创建大量临时对象；</li>
+<li>使用非Cocoa程序创建的子线程；</li>
+</ol>
+<p>而在ARC环境下的实际开发中，我们最常遇到的也是第二种情况，以下面的代码为例：</p>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="operator">-</span> (void)viewDidLoad &#123;</span><br><span class="line">    [<span class="keyword">super</span> viewDidLoad];</span><br><span class="line">    <span class="keyword">for</span> (int i <span class="operator">=</span> <span class="number">0</span>; i <span class="operator">&lt;</span> <span class="number">1000000</span>; i<span class="operator">++</span>) &#123;</span><br><span class="line">        <span class="type">NSObject</span> <span class="operator">*</span>obj <span class="operator">=</span> [[<span class="type">NSObject</span> alloc] <span class="keyword">init</span>];</span><br><span class="line">        <span class="type">NSLog</span>(@<span class="string">&quot;打印obj：%@&quot;</span>, obj);</span><br><span class="line">    &#125;</span><br><span class="line"> &#125;</span><br></pre></td></tr></table></figure>
+
+<p>上述代码中，<code>obj</code>因为离开作用域所以会被加入最近一次创建的自动释放池中，而这个释放池就是主线程上的<code>RunLoop</code>管理的；因为<code>for</code>循环在当前线程没有执行完毕，<code>Runloop</code>也就没有完成当前这一次的迭代，所以导致大量对象被延时释放。释放池中的对象将会在<code>viewDidAppear</code>方法执行前就被销毁。在此情况下，我们就有必要通过手动干预的方式及时释放不需要的对象，减少内存消耗；优化的代码如下：</p>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="operator">-</span> (void)viewDidLoad &#123;</span><br><span class="line">    [<span class="keyword">super</span> viewDidLoad];</span><br><span class="line">    <span class="keyword">for</span> (int i <span class="operator">=</span> <span class="number">0</span>; i <span class="operator">&lt;</span> <span class="number">1000000</span>; i<span class="operator">++</span>) &#123;</span><br><span class="line">        <span class="meta">@autoreleasepool</span>&#123;</span><br><span class="line">             <span class="type">NSObject</span> <span class="operator">*</span>obj <span class="operator">=</span> [[<span class="type">NSObject</span> alloc] <span class="keyword">init</span>];</span><br><span class="line">             <span class="type">NSLog</span>(@<span class="string">&quot;打印obj：%@&quot;</span>, obj);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"> &#125;</span><br></pre></td></tr></table></figure>
+    </article>
+    <!-- license  -->
+    
+        <div class="license-wrapper">
+            <p>Author：<a href="https://tenloy.github.io">Tenloy</a>
+            <p>原文链接：<a href="https://tenloy.github.io/2020/08/26/AutoreleasePool.html">https://tenloy.github.io/2020/08/26/AutoreleasePool.html</a>
+            <p>发表日期：2020.08.26 , 6:19 AM</p>
+            <p>更新日期：2024.04.07 , 7:38 PM</p>
+            <p>版权声明：本文采用<a rel="license noopener" target="_blank" href="http://creativecommons.org/licenses/by-nc/4.0/">Crative Commons 4.0 许可协议</a>进行许可</p>
+        </div>
+    
+    <!-- paginator  -->
+    <ul class="post-paginator">
+        <li class="next">
+            
+                <div class="nextSlogan">Next Post</div>
+                <a href= "/2020/09/06/oc-block.html" title= "Objective-C — Block">
+                    <div class="nextTitle">Objective-C — Block</div>
+                </a>
+            
+        </li>
+        <li class="previous">
+            
+                <div class="prevSlogan">Previous Post</div>
+                <a href= "/2020/08/24/oc-memory-manage.html" title= "Objective-C — 内存管理">
+                    <div class="prevTitle">Objective-C — 内存管理</div>
+                </a>
+            
+        </li>
+    </ul>
+    <!-- 评论插件 -->
+    <!-- 来必力City版安装代码 -->
+
+<!-- City版安装代码已完成 -->
+    
+    
+    <!-- gitalk评论 -->
+
+    <!-- utteranc评论 -->
+
+    <!-- partial('_partial/comment/changyan') -->
+    <!--PC版-->
+
+
+    
+    
+
+    <!-- 评论 -->
+</main>
+            <!-- profile -->
+            
+        </div>
+        <footer class="footer footer-unloaded">
+    <!-- social  -->
+    
+    <div class="social">
+        
+    
+        
+            
+                <a href="mailto:luotengoto@163.com" class="iconfont-archer email" title=email ></a>
+            
+        
+    
+        
+            
+                <a href="//github.com/Tenloy" class="iconfont-archer github" target="_blank" title=github></a>
+            
+        
+    
+        
+            
+                <a href="https://www.jianshu.com/u/8db1bc12db9f" class="iconfont-jian jianshu" target="_blank" title=jianshu></a>
+            
+        
+    
+        
+            
+                <a href="/atom.xml" class="iconfont-archer rss" target="_blank" title=rss></a>
+            
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+
+    </div>
+    
+    <!-- powered by Hexo  -->
+    <div class="copyright">
+        <span id="hexo-power">Powered by <a href="https://hexo.io/" target="_blank">Hexo</a></span><span class="iconfont-archer power">&#xe635;</span><span id="theme-info">theme <a href="https://github.com/fi3ework/hexo-theme-archer" target="_blank">Archer</a></span>
+    </div>
+    <!-- 不蒜子  -->
+    
+    <div class="busuanzi-container">
+    
+     
+    <span id="busuanzi_container_site_pv">PV: <span id="busuanzi_value_site_pv"></span> :)</span>
+    
+    </div>
+    
+</footer>
+    </div>
+    <!-- toc -->
+    
+    <div class="toc-wrapper" style=
+    
+
+
+
+
+
+
+
+top:40vh;
+
+    >
+        <div class="toc-catalog">
+            <span class="iconfont-archer catalog-icon">&#xe613;</span><span>CATALOG</span>
+        </div>
+        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E3%80%81Autorelease%E7%AE%80%E4%BB%8B"><span class="toc-text">一、Autorelease简介</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-1-MRC%E4%B8%8B%E4%BD%BF%E7%94%A8%E8%87%AA%E5%8A%A8%E9%87%8A%E6%94%BE%E6%B1%A0"><span class="toc-text">1.1 MRC下使用自动释放池</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-2-ARC%E4%B8%8B%E4%BD%BF%E7%94%A8%E8%87%AA%E5%8A%A8%E9%87%8A%E6%94%BE%E6%B1%A0"><span class="toc-text">1.2 ARC下使用自动释放池</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8C%E3%80%81AutoRelease%E5%8E%9F%E7%90%86"><span class="toc-text">二、AutoRelease原理</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#2-1-%E4%BD%BF%E7%94%A8-autoreleasepool"><span class="toc-text">2.1 使用@autoreleasepool{}</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-2-%E5%88%86%E6%9E%90%E7%BB%93%E6%9E%84%E4%BD%93-AtAutoreleasePool%E7%9A%84%E5%85%B7%E4%BD%93%E5%AE%9E%E7%8E%B0"><span class="toc-text">2.2 分析结构体__AtAutoreleasePool的具体实现</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-3-objc-autoreleasePoolPush%E4%B8%8Eobjc-autoreleasePoolPop"><span class="toc-text">2.3 objc_autoreleasePoolPush与objc_autoreleasePoolPop</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-4-%E7%90%86%E8%A7%A3AutoreleasePoolPage"><span class="toc-text">2.4 理解AutoreleasePoolPage</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-5-%E7%90%86%E8%A7%A3%E5%93%A8%E5%85%B5%E5%AF%B9%E8%B1%A1-%E8%BE%B9%E7%95%8C%E5%AF%B9%E8%B1%A1-POOL-BOUNDARY-%E7%9A%84%E4%BD%9C%E7%94%A8"><span class="toc-text">2.5 理解哨兵对象&#x2F;边界对象(POOL_BOUNDARY)的作用</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-6-%E7%90%86%E8%A7%A3objc-autoreleasePoolPush%E6%96%B9%E6%B3%95"><span class="toc-text">2.6 理解objc_autoreleasePoolPush方法</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-7-objc-autoreleasePoolPop%E6%96%B9%E6%B3%95"><span class="toc-text">2.7 objc_autoreleasePoolPop方法</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-8-autorelease%E6%96%B9%E6%B3%95"><span class="toc-text">2.8 autorelease方法</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%89%E3%80%81AutoreleasePool%E4%B8%8ENSThread%E3%80%81NSRunLoop%E7%9A%84%E5%85%B3%E7%B3%BB"><span class="toc-text">三、AutoreleasePool与NSThread、NSRunLoop的关系</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#3-1-RunLoop%E5%92%8CNSThread%E7%9A%84%E5%85%B3%E7%B3%BB"><span class="toc-text">3.1 RunLoop和NSThread的关系</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-2-RunLoop%E5%92%8CAutoreleasePool%E7%9A%84%E5%85%B3%E7%B3%BB"><span class="toc-text">3.2 RunLoop和AutoreleasePool的关系</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-3-Thread%E5%92%8CAutoreleasePool%E7%9A%84%E5%85%B3%E7%B3%BB"><span class="toc-text">3.3 Thread和AutoreleasePool的关系</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9B%9B%E3%80%81AutoreleasePool%E5%9C%A8%E4%B8%BB%E7%BA%BF%E7%A8%8B%E4%B8%8A%E7%9A%84%E9%87%8A%E6%94%BE%E6%97%B6%E6%9C%BA"><span class="toc-text">四、AutoreleasePool在主线程上的释放时机</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#4-1-%E7%90%86%E8%A7%A3%E4%B8%BB%E7%BA%BF%E7%A8%8B%E4%B8%8A%E7%9A%84%E8%87%AA%E5%8A%A8%E9%87%8A%E6%94%BE%E8%BF%87%E7%A8%8B"><span class="toc-text">4.1 理解主线程上的自动释放过程</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-2-%E6%B5%8B%E8%AF%95%E4%B8%BB%E7%BA%BF%E7%A8%8B%E4%B8%8A%E7%9A%84%E5%AF%B9%E8%B1%A1%E8%87%AA%E5%8A%A8%E9%87%8A%E6%94%BE%E8%BF%87%E7%A8%8B"><span class="toc-text">4.2 测试主线程上的对象自动释放过程</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%94%E3%80%81AutoreleasePool%E5%AD%90%E7%BA%BF%E7%A8%8B%E4%B8%8A%E7%9A%84%E9%87%8A%E6%94%BE%E6%97%B6%E6%9C%BA"><span class="toc-text">五、AutoreleasePool子线程上的释放时机</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%AD%E3%80%81AutoreleasePool%E9%9C%80%E8%A6%81%E6%89%8B%E5%8A%A8%E6%B7%BB%E5%8A%A0%E7%9A%84%E6%83%85%E5%86%B5"><span class="toc-text">六、AutoreleasePool需要手动添加的情况</span></a></li></ol>
+    </div>
+    
+    <div class="back-top iconfont-archer">&#xe639;</div>
+    <div class="sidebar sidebar-hide">
+    <ul class="sidebar-tabs sidebar-tabs-active-0">
+        <li class="sidebar-tab-categories"><span class="iconfont-archer">&#xe666;</span><span class="tab-name">Cate</span></li>
+        <li class="sidebar-tab-archives"><span class="iconfont-archer">&#xe67d;</span><span class="tab-name">Archive</span></li>
+        <li class="sidebar-tab-tags"><span class="iconfont-archer">&#xe61b;</span><span class="tab-name">Tag</span></li>
+    </ul>
+    <div class="sidebar-content sidebar-content-show-archive">
+        <div class="sidebar-panel-categories">
+    <div class="sidebar-categories-name">
+    
+    
+    
+    
+    
+        <span class="sidebar-category-name" data-categories="数据结构与算法"><span class="iconfont-archer">&#xe60a;</span>数据结构与算法</span>
+    
+        <span class="sidebar-category-name" data-categories="计算机组成原理"><span class="iconfont-archer">&#xe60a;</span>计算机组成原理</span>
+    
+        <span class="sidebar-category-name" data-categories="计算机网络"><span class="iconfont-archer">&#xe60a;</span>计算机网络</span>
+    
+        <span class="sidebar-category-name" data-categories="汇编语言"><span class="iconfont-archer">&#xe60a;</span>汇编语言</span>
+    
+        <span class="sidebar-category-name" data-categories="数据的存储与传输"><span class="iconfont-archer">&#xe60a;</span>数据的存储与传输</span>
+    
+        <span class="sidebar-category-name" data-categories="操作系统"><span class="iconfont-archer">&#xe60a;</span>操作系统</span>
+    
+        <span class="sidebar-category-name" data-categories="互联网标准RFC"><span class="iconfont-archer">&#xe60a;</span>互联网标准RFC</span>
+    
+        <span class="sidebar-category-name" data-categories="编译链接与装载"><span class="iconfont-archer">&#xe60a;</span>编译链接与装载</span>
+    
+        <span class="sidebar-category-name" data-categories="iOS"><span class="iconfont-archer">&#xe60a;</span>iOS</span>
+    
+        <span class="sidebar-category-name" data-categories="架构与设计模式"><span class="iconfont-archer">&#xe60a;</span>架构与设计模式</span>
+    
+        <span class="sidebar-category-name" data-categories="图形处理与渲染"><span class="iconfont-archer">&#xe60a;</span>图形处理与渲染</span>
+    
+        <span class="sidebar-category-name" data-categories="软件工程"><span class="iconfont-archer">&#xe60a;</span>软件工程</span>
+    
+        <span class="sidebar-category-name" data-categories="音视频处理"><span class="iconfont-archer">&#xe60a;</span>音视频处理</span>
+    
+        <span class="sidebar-category-name" data-categories="DSL"><span class="iconfont-archer">&#xe60a;</span>DSL</span>
+    
+        <span class="sidebar-category-name" data-categories="Swift"><span class="iconfont-archer">&#xe60a;</span>Swift</span>
+    
+        <span class="sidebar-category-name" data-categories="Git"><span class="iconfont-archer">&#xe60a;</span>Git</span>
+    
+        <span class="sidebar-category-name" data-categories="Web"><span class="iconfont-archer">&#xe60a;</span>Web</span>
+    
+    </div>
+    <div class="iconfont-archer sidebar-categories-empty">&#xe678;</div>
+    <div class="sidebar-categories-list"></div>
+</div>
+          <div class="sidebar-panel-archives">
+    <!-- 在ejs中将archive按照时间排序 -->
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    <div class="total-and-search">
+        <div class="total-archive">
+        Total : 76
+        </div>
+        <!-- search  -->
+        
+            <div class="site-search popup-trigger tl-side-search"> 
+                <span class="iconfont-jian search-icon">&#xe7fc;搜索</span>
+            </div>
+        
+    </div>
+    
+    <div class="post-archive">
+    
+    
+    
+    
+    <div class="archive-year"> 2022 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/05</span><a class="archive-post-title" href= "/2022/05/05/sqlite.html" >iOS SQLite的使用与优化</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/28</span><a class="archive-post-title" href= "/2022/04/28/mmap.html" >内存映射mmap函数的原理与应用</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/18</span><a class="archive-post-title" href= "/2022/03/18/avfoundation.html" >AVFoundation Programming Guide(译)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/17</span><a class="archive-post-title" href= "/2022/03/17/avframework.html" >iOS音视频库概述</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/09</span><a class="archive-post-title" href= "/2022/02/09/OAuth.html" >[转] OAuth 2.0简述</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/18</span><a class="archive-post-title" href= "/2022/01/18/wkwebview-buges.html" >WKWebView使用过程中遇到的坑</a>
+        </li>
+    
+    
+    
+    
+    
+        </ul>
+    
+    <div class="archive-year"> 2021 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/22</span><a class="archive-post-title" href= "/2021/11/22/bit-calculation.html" >[转] 位运算实现加、减、乘、除运算</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/10</span><a class="archive-post-title" href= "/2021/11/10/git-use.html" >Git的使用总结</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/21</span><a class="archive-post-title" href= "/2021/10/21/dyld-objc.html" >(七) dyld与Objc—_objc_init、map_images、load_images</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/18</span><a class="archive-post-title" href= "/2021/10/18/compile-dynamic-link.html" >(六) Mach-O 文件的动态链接、库、Dyld(含dlopen)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/14</span><a class="archive-post-title" href= "/2021/10/14/compile-vm-asrl.html" >(五) Mach-O 文件之进程(虚拟)地址空间、ASLR</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/10</span><a class="archive-post-title" href= "/2021/10/10/compile-load.html" >(四) Mach-O 文件的装载</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/08</span><a class="archive-post-title" href= "/2021/10/08/compile-static-link.html" >(三) Mach-O 文件的静态链接</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/06</span><a class="archive-post-title" href= "/2021/10/06/compile-macho.html" >(二) Mach-O 文件结构</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/05</span><a class="archive-post-title" href= "/2021/10/05/compile-clang-llvm.html" >(一) Clang/LLVM 介绍、OC 程序的编译过程</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/02</span><a class="archive-post-title" href= "/2021/10/02/makefile.html" >[转] Make 命令的使用与NodeJS案例</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/28</span><a class="archive-post-title" href= "/2021/09/28/architectural-pattern.html" >常见架构模式: MVC、MVP、MVVM、VIPER</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/25</span><a class="archive-post-title" href= "/2021/09/25/design-pattern.html" >常见的设计模式</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/20</span><a class="archive-post-title" href= "/2021/09/20/program-thought.html" >常见的编程范式</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/15</span><a class="archive-post-title" href= "/2021/09/15/graphics-processing-case.html" >图形处理(三) - 图形处理实践案例</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/15</span><a class="archive-post-title" href= "/2021/09/15/graphics-processing.html" >图形处理(二) - 图形与视频处理相关的框架</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/13</span><a class="archive-post-title" href= "/2021/09/13/image-encode-decode.html" >图形处理(一) - 图片的加载与编解码</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/12</span><a class="archive-post-title" href= "/2021/09/12/iOS-Render.html" >[转] iOS离屏渲染原理及优化</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/11</span><a class="archive-post-title" href= "/2021/09/11/core-animation03.html" >Core-Animation(三) - 渲染流程探究及性能分析</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/09</span><a class="archive-post-title" href= "/2021/09/09/core-animation02.html" >Core Animation(二) - 隐式动画、CATransaction与CAAction</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/07</span><a class="archive-post-title" href= "/2021/09/07/core-animation01.html" >Core Animation(一) - UIView与CALayer、布局与绘制</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/05</span><a class="archive-post-title" href= "/2021/09/05/AFN-Analyse.html" >[转] AFN框架实现解析</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/04</span><a class="archive-post-title" href= "/2021/09/04/nrl-session.html" >NSURLSession概述</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/02</span><a class="archive-post-title" href= "/2021/09/02/Log.html" >移动端日志库设计</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/01</span><a class="archive-post-title" href= "/2021/08/01/Crash-Monitor.html" >iOS崩溃监控与分析</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/30</span><a class="archive-post-title" href= "/2021/07/30/Lag-Monitor.html" >iOS卡顿监控</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/29</span><a class="archive-post-title" href= "/2021/07/29/SwiftUI.html" >SwiftUI</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/29</span><a class="archive-post-title" href= "/2021/07/29/Swift-Version-History.html" >Swift版本更新API介绍</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/26</span><a class="archive-post-title" href= "/2021/07/26/RunLoop-Reposted-From-ibireme.html" >[转] 深入理解RunLoop—ibireme</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/25</span><a class="archive-post-title" href= "/2021/07/25/Protocol-Buffer.html" >Protocol Buffer的基本介绍</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/24</span><a class="archive-post-title" href= "/2021/07/24/base64.html" >Base64编码及iOS中的Base64</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/23</span><a class="archive-post-title" href= "/2021/07/23/chinese-encode.html" >[转] 彻底弄懂常见的7种中文字符编码</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/10</span><a class="archive-post-title" href= "/2021/07/10/p-npc-np.html" >P问题、NP问题、NPC、NP-Hard、P=NP?</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/30</span><a class="archive-post-title" href= "/2021/06/30/probability.html" >(六) 概率算法</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/28</span><a class="archive-post-title" href= "/2021/06/28/branch-bound.html" >(五) 分支限界算法</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/26</span><a class="archive-post-title" href= "/2021/06/26/back-track.html" >(四) 回溯法(试探算法)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/24</span><a class="archive-post-title" href= "/2021/06/24/greed.html" >(三) 贪心算法</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/22</span><a class="archive-post-title" href= "/2021/06/22/dynamic-programming.html" >(二) 动态规划算法</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/20</span><a class="archive-post-title" href= "/2021/06/20/divide-and-conquer.html" >(一) 分治算法及减治、变治算法</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/18</span><a class="archive-post-title" href= "/2021/06/18/several-programming.html" >穷举、递推、迭代(辗转法)、递归算法</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/15</span><a class="archive-post-title" href= "/2021/06/15/datastruction-overview.html" >数据结构与算法概述</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/06</span><a class="archive-post-title" href= "/2021/06/06/Web-Module.html" >前端各种模块化方案总结</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/27</span><a class="archive-post-title" href= "/2021/05/27/Fiber.html" >[转] 最通俗的 React Fiber(时间分片)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/27</span><a class="archive-post-title" href= "/2021/05/27/Coroutine.html" >[转] 什么是协程</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/19</span><a class="archive-post-title" href= "/2021/05/19/DSL.html" >[转] 谈谈DSL以及DSL的应用（以CocoaPods 为例）</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/03</span><a class="archive-post-title" href= "/2021/05/03/iOS-private-pod.html" >私有Pod库部署</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/29</span><a class="archive-post-title" href= "/2021/04/29/iOS-ComRouter.html" >[转] iOS的组件化方案</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/27</span><a class="archive-post-title" href= "/2021/04/27/iOS-CI.html" >iOS的持续集成</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/26</span><a class="archive-post-title" href= "/2021/04/26/Containers.html" >常见的容器概念：Linux容器、Docker容器、服务器容器</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/24</span><a class="archive-post-title" href= "/2021/04/24/Dock-Reprinted-from-RuanYIFeng.html" >[转] Docker入门教程</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/20</span><a class="archive-post-title" href= "/2021/04/20/Sync-Async.html" >同步和异步解读及编程中的使用场景</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/17</span><a class="archive-post-title" href= "/2021/04/17/Arm64-Handbook.html" >ARM64指令简易手册</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/16</span><a class="archive-post-title" href= "/2021/04/16/Arm64-Introduce.html" >iOS需要了解的ARM64汇编</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/13</span><a class="archive-post-title" href= "/2021/04/13/Command-Line.html" >CLI Shell、Terminal、脚本(语言)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/10</span><a class="archive-post-title" href= "/2021/04/10/Ins-SysCall-Kernel-Shell.html" >指令、系统调用、库、Shell、APP的层次关系</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/08</span><a class="archive-post-title" href= "/2021/04/08/ISA-Microarch-Soc.html" >指令集、微架构、手机芯片(Soc)及ARM的介绍</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/02</span><a class="archive-post-title" href= "/2021/04/02/Engineering.html" >工程化、动态化、容器化、组件化</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/01</span><a class="archive-post-title" href= "/2021/04/01/GithubPages-Hexo.html" >使用Hexo+Github Pages搭建个人博客</a>
+        </li>
+    
+    
+    
+    
+    
+        </ul>
+    
+    <div class="archive-year"> 2020 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/22</span><a class="archive-post-title" href= "/2020/12/22/aes.html" >数据加密 — 对称加密(以AES为例)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/21</span><a class="archive-post-title" href= "/2020/12/21/aes-standard.html" >[转] AES标准及Rijndael算法解析</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/20</span><a class="archive-post-title" href= "/2020/12/20/asymmetric.html" >数据加密 — 非对称加密(加签/加密，以RSA为例)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/09</span><a class="archive-post-title" href= "/2020/12/09/pki.html" >常见的PKI标准(X.509、PKCS)及证书相关介绍</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/28</span><a class="archive-post-title" href= "/2020/10/28/runtime-data-structure.html" >Objc Runtime总结</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/11</span><a class="archive-post-title" href= "/2020/09/11/GCD.html" >Objective-C — 深入浅出GCD常用API</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/06</span><a class="archive-post-title" href= "/2020/09/06/oc-block.html" >Objective-C — Block</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/26</span><a class="archive-post-title" href= "/2020/08/26/AutoreleasePool.html" >AutoreleasePool</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/24</span><a class="archive-post-title" href= "/2020/08/24/oc-memory-manage.html" >Objective-C — 内存管理</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/01</span><a class="archive-post-title" href= "/2020/08/01/ui-navigation-bar.html" >[转] 导航栏的架构介绍及使用</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/15</span><a class="archive-post-title" href= "/2020/07/15/symbol-decl.html" >变量声明、函数声明的作用</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/01</span><a class="archive-post-title" href= "/2020/07/01/ios-apns.html" >iOS APNS接收逻辑梳理</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/13</span><a class="archive-post-title" href= "/2020/06/13/ios-vest.html" >iOS制作马甲总结</a>
+        </li>
+    
+    </div>
+  </div>
+        <div class="sidebar-panel-tags">
+    <div class="sidebar-tags-name">
+    
+        <span class="sidebar-tag-name" data-tags="AutoreleasePool"><span class="iconfont-archer">&#xe606;</span>AutoreleasePool</span>
+    
+        <span class="sidebar-tag-name" data-tags="GCD"><span class="iconfont-archer">&#xe606;</span>GCD</span>
+    
+        <span class="sidebar-tag-name" data-tags="hexo"><span class="iconfont-archer">&#xe606;</span>hexo</span>
+    
+        <span class="sidebar-tag-name" data-tags="ISA"><span class="iconfont-archer">&#xe606;</span>ISA</span>
+    
+        <span class="sidebar-tag-name" data-tags="Microarch"><span class="iconfont-archer">&#xe606;</span>Microarch</span>
+    
+        <span class="sidebar-tag-name" data-tags="Soc"><span class="iconfont-archer">&#xe606;</span>Soc</span>
+    
+        <span class="sidebar-tag-name" data-tags="CLI"><span class="iconfont-archer">&#xe606;</span>CLI</span>
+    
+        <span class="sidebar-tag-name" data-tags="Shell"><span class="iconfont-archer">&#xe606;</span>Shell</span>
+    
+        <span class="sidebar-tag-name" data-tags="ARM64"><span class="iconfont-archer">&#xe606;</span>ARM64</span>
+    
+        <span class="sidebar-tag-name" data-tags="多线程"><span class="iconfont-archer">&#xe606;</span>多线程</span>
+    
+        <span class="sidebar-tag-name" data-tags="Docker"><span class="iconfont-archer">&#xe606;</span>Docker</span>
+    
+        <span class="sidebar-tag-name" data-tags="DSL"><span class="iconfont-archer">&#xe606;</span>DSL</span>
+    
+        <span class="sidebar-tag-name" data-tags="协程"><span class="iconfont-archer">&#xe606;</span>协程</span>
+    
+        <span class="sidebar-tag-name" data-tags="Fiber"><span class="iconfont-archer">&#xe606;</span>Fiber</span>
+    
+        <span class="sidebar-tag-name" data-tags="dp"><span class="iconfont-archer">&#xe606;</span>dp</span>
+    
+        <span class="sidebar-tag-name" data-tags="SwiftUI"><span class="iconfont-archer">&#xe606;</span>SwiftUI</span>
+    
+        <span class="sidebar-tag-name" data-tags="RunLoop"><span class="iconfont-archer">&#xe606;</span>RunLoop</span>
+    
+        <span class="sidebar-tag-name" data-tags="Swift-Syntax"><span class="iconfont-archer">&#xe606;</span>Swift-Syntax</span>
+    
+        <span class="sidebar-tag-name" data-tags="LagMonitor"><span class="iconfont-archer">&#xe606;</span>LagMonitor</span>
+    
+        <span class="sidebar-tag-name" data-tags="CrashMonitor"><span class="iconfont-archer">&#xe606;</span>CrashMonitor</span>
+    
+        <span class="sidebar-tag-name" data-tags="Log"><span class="iconfont-archer">&#xe606;</span>Log</span>
+    
+        <span class="sidebar-tag-name" data-tags="AFN"><span class="iconfont-archer">&#xe606;</span>AFN</span>
+    
+    </div>
+    <div class="iconfont-archer sidebar-tags-empty">&#xe678;</div>
+    <div class="tag-load-fail" style="display: none; color: #ccc; font-size: 0.6rem;">
+    缺失模块。<br/>
+    1、请确保node版本大于6.2<br/>
+    2、在博客根目录（注意不是archer根目录）执行以下命令：<br/>
+    <span style="color: #f75357; font-size: 1rem; line-height: 2rem;">npm i hexo-generator-json-content --save</span><br/>
+    3、在根目录_config.yml里添加配置：
+    <pre style="color: #787878; font-size: 0.6rem;">
+jsonContent:
+  meta: false
+  pages: false
+  posts:
+    title: true
+    date: true
+    path: true
+    text: false
+    raw: false
+    content: false
+    slug: false
+    updated: false
+    comments: false
+    link: false
+    permalink: false
+    excerpt: false
+    categories: true
+    tags: true</pre>
+    </div> 
+    <div class="sidebar-tags-list"></div>
+</div>
+    </div>
+</div> 
+    <script>
+    var siteMeta = {
+        root: "/",
+        author: "Tenloy"
+    }
+</script>
+    <!-- CDN failover -->
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js"></script>
+    <script type="text/javascript">
+        if (typeof window.$ === 'undefined')
+        {
+            console.warn('jquery load from jsdelivr failed, will load local script')
+            document.write('<script src="/lib/jquery.min.js">\x3C/script>')
+        }
+    </script>
+    <script src="/scripts/main.js"></script>
+    <!-- algolia -->
+    
+        <div class="site-search">
+  <div class="algolia-popup popup">
+    <div class="algolia-search">
+      <div class="algolia-search-input-icon">
+        <i class="fa fa-search"></i>
+      </div>
+      <div class="algolia-search-input" id="algolia-search-input"></div>
+    </div>
+
+    <div class="algolia-results">
+      <div id="algolia-stats"></div>
+      <div id="algolia-hits"></div>
+      <div id="algolia-pagination" class="algolia-pagination"></div>
+    </div>
+
+    <span class="popup-btn-close">
+      <i class="iconfont-archer">&#xe609;</i>
+    </span>
+  </div>
+</div>
+        <script src="https://cdn.jsdelivr.net/npm/instantsearch.js@2.8.0/dist/instantsearch.min.js" defer></script>
+        <script src="/scripts/search.js" defer></script>
+    
+    <!-- busuanzi  -->
+    
+    <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    
+    <!-- CNZZ  -->
+    
+    </div>
+    <!-- async load share.js -->
+    
+        <script src="/scripts/share.js" async></script>    
+     
+    </body>
+</html>
+
+
