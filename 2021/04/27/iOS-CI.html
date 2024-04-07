@@ -1,0 +1,2620 @@
+<!DOCTYPE html>
+<html lang="en">
+    <!-- title -->
+
+
+
+
+<!-- keywords -->
+
+
+
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" >
+    <meta name="author" content="Tenloy">
+    <meta name="renderer" content="webkit">
+    <meta name="copyright" content="Tenloy">
+    
+    <meta name="keywords" content="Tenloy,iOS,Swift">
+    
+    <meta name="description" content="学习 生活 记录 回忆">
+    <meta name="description" content="在iOS的开发过程中总是免不了要不停的打包，通常的打包方式是这样的 XCode-&gt;Archive-&gt;Export，期间还要选择对应的证书与pp文件，进行一次打包会花不少的时间，在打包的过程中我们是不能修改源代码的。 下面有几种方案，可以让我们简化我们的打包操作，以及使得我们可以在打包时，继续开发。 一、自动化打包&#x2F;构建1.1 xcodebuildxcodebuild 指令是苹果官方提供">
+<meta property="og:type" content="article">
+<meta property="og:title" content="iOS的持续集成">
+<meta property="og:url" content="https://tenloy.github.io/2021/04/27/iOS-CI.html">
+<meta property="og:site_name" content="Tenloy&#39;s Blog">
+<meta property="og:description" content="在iOS的开发过程中总是免不了要不停的打包，通常的打包方式是这样的 XCode-&gt;Archive-&gt;Export，期间还要选择对应的证书与pp文件，进行一次打包会花不少的时间，在打包的过程中我们是不能修改源代码的。 下面有几种方案，可以让我们简化我们的打包操作，以及使得我们可以在打包时，继续开发。 一、自动化打包&#x2F;构建1.1 xcodebuildxcodebuild 指令是苹果官方提供">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://tenloy.github.io/images/se/cicd/fastlane.jpg">
+<meta property="og:image" content="https://tenloy.github.io/images/se/cicd/ci.jpg">
+<meta property="og:image" content="https://tenloy.github.io/images/se/cicd/cicd.jpg">
+<meta property="og:image" content="https://tenloy.github.io/images/se/cicd/cdcd.jpg">
+<meta property="og:image" content="https://tenloy.github.io/images/se/cicd/jenkins.png">
+<meta property="og:image" content="https://tenloy.github.io/images/se/cicd/jenkins.jpg">
+<meta property="article:published_time" content="2021-04-27T02:09:20.000Z">
+<meta property="article:modified_time" content="2024-04-07T11:53:34.916Z">
+<meta property="article:author" content="Tenloy">
+<meta property="article:tag" content="Tenloy, iOS, Tenloy Blog, 博客，Swift, 编译, 计算机">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://tenloy.github.io/images/se/cicd/fastlane.jpg">
+    <meta http-equiv="Cache-control" content="no-cache">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"/>
+    
+    <title>iOS的持续集成 · Tenloy&#39;s Blog</title>
+    <style type="text/css">
+    @font-face {
+        font-family: 'Oswald-Regular';
+        src: url("/font/Oswald-Regular.ttf");
+    }
+
+    body {
+        margin: 0;
+    }
+
+    header,
+    footer,
+    .back-top,
+    .sidebar,
+    .container,
+    .site-intro-meta,
+    .toc-wrapper {
+        display: none;
+    }
+
+    .site-intro {
+        position: relative;
+        z-index: 3;
+        width: 100%;
+        /* height: 50vh; */
+        overflow: hidden;
+    }
+
+    .site-intro-placeholder {
+        position: absolute;
+        z-index: -2;
+        top: 0;
+        left: 0;
+        width: calc(100% + 300px);
+        height: 100%;
+        background: repeating-linear-gradient(-45deg, #444 0, #444 80px, #333 80px, #333 160px);
+        background-position: center center;
+        transform: translate3d(-226px, 0, 0);
+        animation: gradient-move 2.5s ease-out 0s infinite;
+    }
+
+    @keyframes gradient-move {
+        0% {
+            transform: translate3d(-226px, 0, 0);
+        }
+        100% {
+            transform: translate3d(0, 0, 0);
+        }
+    }
+
+</style>
+
+    <link rel="preload" href= "/css/style.css?v=20180824" as="style" onload="this.onload=null;this.rel='stylesheet'" />
+    <link rel="stylesheet" href= "/css/mobile.css?v=20180824" media="(max-width: 980px)">
+    
+    <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.2.5/jquery.fancybox.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'" />
+    
+    <!-- /*! loadCSS. [c]2017 Filament Group, Inc. MIT License */
+/* This file is meant as a standalone workflow for
+- testing support for link[rel=preload]
+- enabling async CSS loading in browsers that do not support rel=preload
+- applying rel preload css once loaded, whether supported or not.
+*/ -->
+<script>
+(function( w ){
+	"use strict";
+	// rel=preload support test
+	if( !w.loadCSS ){
+		w.loadCSS = function(){};
+	}
+	// define on the loadCSS obj
+	var rp = loadCSS.relpreload = {};
+	// rel=preload feature support test
+	// runs once and returns a function for compat purposes
+	rp.support = (function(){
+		var ret;
+		try {
+			ret = w.document.createElement( "link" ).relList.supports( "preload" );
+		} catch (e) {
+			ret = false;
+		}
+		return function(){
+			return ret;
+		};
+	})();
+
+	// if preload isn't supported, get an asynchronous load by using a non-matching media attribute
+	// then change that media back to its intended value on load
+	rp.bindMediaToggle = function( link ){
+		// remember existing media attr for ultimate state, or default to 'all'
+		var finalMedia = link.media || "all";
+
+		function enableStylesheet(){
+			link.media = finalMedia;
+		}
+
+		// bind load handlers to enable media
+		if( link.addEventListener ){
+			link.addEventListener( "load", enableStylesheet );
+		} else if( link.attachEvent ){
+			link.attachEvent( "onload", enableStylesheet );
+		}
+
+		// Set rel and non-applicable media type to start an async request
+		// note: timeout allows this to happen async to let rendering continue in IE
+		setTimeout(function(){
+			link.rel = "stylesheet";
+			link.media = "only x";
+		});
+		// also enable media after 3 seconds,
+		// which will catch very old browsers (android 2.x, old firefox) that don't support onload on link
+		setTimeout( enableStylesheet, 3000 );
+	};
+
+	// loop through link elements in DOM
+	rp.poly = function(){
+		// double check this to prevent external calls from running
+		if( rp.support() ){
+			return;
+		}
+		var links = w.document.getElementsByTagName( "link" );
+		for( var i = 0; i < links.length; i++ ){
+			var link = links[ i ];
+			// qualify links to those with rel=preload and as=style attrs
+			if( link.rel === "preload" && link.getAttribute( "as" ) === "style" && !link.getAttribute( "data-loadcss" ) ){
+				// prevent rerunning on link
+				link.setAttribute( "data-loadcss", true );
+				// bind listeners to toggle media back
+				rp.bindMediaToggle( link );
+			}
+		}
+	};
+
+	// if unsupported, run the polyfill
+	if( !rp.support() ){
+		// run once at least
+		rp.poly();
+
+		// rerun poly on an interval until onload
+		var run = w.setInterval( rp.poly, 500 );
+		if( w.addEventListener ){
+			w.addEventListener( "load", function(){
+				rp.poly();
+				w.clearInterval( run );
+			} );
+		} else if( w.attachEvent ){
+			w.attachEvent( "onload", function(){
+				rp.poly();
+				w.clearInterval( run );
+			} );
+		}
+	}
+
+
+	// commonjs
+	if( typeof exports !== "undefined" ){
+		exports.loadCSS = loadCSS;
+	}
+	else {
+		w.loadCSS = loadCSS;
+	}
+}( typeof global !== "undefined" ? global : this ) );
+</script>
+
+    <link rel="icon" href= "/assets/favicon.ico" />
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.min.js" as="script" />
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js" as="script" />
+    <link rel="preload" href="/scripts/main.js" as="script" />
+    <link rel="preload" as="font" href="/font/Oswald-Regular.ttf" crossorigin>
+    <link rel="preload" as="font" href="https://at.alicdn.com/t/font_327081_1dta1rlogw17zaor.woff" crossorigin>
+    
+        <!-- algolia -->
+        <script>
+            
+            var hits = JSON.parse('{"per_page":10}')
+            var labels = JSON.parse('{"input_placeholder":"Search for Posts","hits_empty":"没有找到任何搜索结果: ${query}","hits_stats":"找到约${hits}条结果（用时${time}ms）"}')
+
+            var algolia = {
+                applicationID: 'V0HYXBS9FB',
+                apiKey: '6550d5de786935564142097c3e78c380',
+                indexName: 'law_blog_index',
+                hits: hits,
+                labels: labels
+            }
+        </script>
+    
+    <!-- fancybox -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.2.5/jquery.fancybox.min.js" defer></script>
+    <!-- 百度统计  -->
+    
+    <!-- 谷歌统计  -->
+    
+<meta name="generator" content="Hexo 5.4.0"><link rel="alternate" href="/atom.xml" title="Tenloy's Blog" type="application/atom+xml">
+</head>
+
+    
+        <body class="post-body">
+    
+    
+<header class="header">
+
+    <div class="read-progress"></div>
+    <div class="header-sidebar-menu">&#xe775;</div>
+    <!-- post页的toggle banner  -->
+    
+    <div class="banner">
+            <div class="blog-title">
+                <a href="/" >Tenloy&#39;s Blog</a>
+            </div>
+            <div class="post-title">
+                <a href="#" class="post-name">iOS的持续集成</a>
+            </div>
+    </div>
+    
+    <!-- 将home-link的操作改为应用到header-top-right上 -->
+    <div class="header-top-right">
+        <!-- search  -->
+        
+            <div class="site-search popup-trigger tl-search">
+                <span class="iconfont-jian tl-search-icon">&#xe7fc;搜索</span>
+            </div>
+            
+        <a class="home-link" href=/>Tenloy's Blog</a>
+    </div>
+</header>
+    <div class="wrapper">
+        <div class="site-intro" style="
+
+
+
+
+
+
+
+height:40vh;
+">
+    
+    <!-- 主页  -->
+    
+    
+    <!-- 404页  -->
+            
+    <div class="site-intro-placeholder"></div>
+    <div class="site-intro-img" style="background-image: url(/intro/post-bg.jpg)"></div>
+    <div class="site-intro-meta">
+        <!-- 标题  -->
+        <h1 class="intro-title">
+            <!-- 主页  -->
+            
+            iOS的持续集成
+            <!-- 404 -->
+            
+        </h1>
+        <!-- 副标题 -->
+        <p class="intro-subtitle">
+            <!-- 主页副标题  -->
+            
+            
+            <!-- 404 -->
+            
+        </p>
+        <!-- 文章页meta -->
+        
+            <div class="post-intros">
+                <!-- 文章页标签  -->
+                
+                
+                    <div class="post-intro-read">
+                        <span>Word count: <span class="post-count word-count">11.2k</span>Reading time: <span class="post-count reading-time">47 min</span></span>
+                    </div>
+                
+                <div class="post-intro-meta">
+                    <span class="post-intro-calander iconfont-archer">&#xe676;</span>
+                    <span class="post-intro-time">2021/04/27</span>
+                    
+                    <span id="busuanzi_container_page_pv" class="busuanzi-pv">
+                        <span class="iconfont-archer">&#xe602;</span>
+                        <span id="busuanzi_value_page_pv"></span>
+                    </span>
+                    
+                    <span class="shareWrapper">
+                        <span class="iconfont-archer shareIcon">&#xe71d;</span>
+                        <span class="shareText">Share</span>
+                        <ul class="shareList">
+                            <li class="iconfont-archer share-qr" data-type="qr">&#xe75b;
+                                <div class="share-qrcode"></div>
+                            </li>
+                            <li class="iconfont-archer" data-type="weibo">&#xe619;</li>
+                            <li class="iconfont-archer" data-type="qzone">&#xe62e;</li>
+                            <li class="iconfont-archer" data-type="twitter">&#xe634;</li>
+                            <li class="iconfont-archer" data-type="facebook">&#xe67a;</li>
+                        </ul>
+                    </span>
+                </div>
+            </div>
+        
+    </div>
+</div>
+        <script>
+ 
+  // get user agent
+  var browser = {
+    versions: function () {
+      var u = window.navigator.userAgent;
+      return {
+        userAgent: u,
+        trident: u.indexOf('Trident') > -1, //IE内核
+        presto: u.indexOf('Presto') > -1, //opera内核
+        webKit: u.indexOf('AppleWebKit') > -1, //苹果、谷歌内核
+        gecko: u.indexOf('Gecko') > -1 && u.indexOf('KHTML') == -1, //火狐内核
+        mobile: !!u.match(/AppleWebKit.*Mobile.*/), //是否为移动终端
+        ios: !!u.match(/\(i[^;]+;( U;)? CPU.+Mac OS X/), //ios终端
+        android: u.indexOf('Android') > -1 || u.indexOf('Linux') > -1, //android终端或者uc浏览器
+        iPhone: u.indexOf('iPhone') > -1 || u.indexOf('Mac') > -1, //是否为iPhone或者安卓QQ浏览器
+        iPad: u.indexOf('iPad') > -1, //是否为iPad
+        webApp: u.indexOf('Safari') == -1, //是否为web应用程序，没有头部与底部
+        weixin: u.indexOf('MicroMessenger') == -1, //是否为微信浏览器
+        uc: u.indexOf('UCBrowser') > -1 //是否为android下的UC浏览器
+      };
+    }()
+  }
+  console.log("userAgent:" + browser.versions.userAgent);
+
+  // callback
+  function fontLoaded() {
+    console.log('font loaded');
+    if (document.getElementsByClassName('site-intro-meta')) {
+      document.getElementsByClassName('intro-title')[0].classList.add('intro-fade-in');
+      document.getElementsByClassName('intro-subtitle')[0].classList.add('intro-fade-in');
+      var postIntros = document.getElementsByClassName('post-intros')[0]
+      if (postIntros) {
+        postIntros.classList.add('post-fade-in');
+      }
+    }
+  }
+
+  // UC不支持跨域，所以直接显示
+  function asyncCb(){
+    if (browser.versions.uc) {
+      console.log("UCBrowser");
+      fontLoaded();
+    } else {
+      WebFont.load({
+        custom: {
+          families: ['Oswald-Regular']
+        },
+        loading: function () {  //所有字体开始加载
+          // console.log('loading');
+        },
+        active: function () {  //所有字体已渲染
+          fontLoaded();
+        },
+        inactive: function () { //字体预加载失败，无效字体或浏览器不支持加载
+          console.log('inactive: timeout');
+          fontLoaded();
+        },
+        timeout: 5000 // Set the timeout to two seconds
+      });
+    }
+  }
+
+  function asyncErr(){
+    console.warn('script load from CDN failed, will load local script')
+  }
+
+  // load webfont-loader async, and add callback function
+  function async(u, cb, err) {
+    var d = document, t = 'script',
+      o = d.createElement(t),
+      s = d.getElementsByTagName(t)[0];
+    o.src = u;
+    if (cb) { o.addEventListener('load', function (e) { cb(null, e); }, false); }
+    if (err) { o.addEventListener('error', function (e) { err(null, e); }, false); }
+    s.parentNode.insertBefore(o, s);
+  }
+
+  var asyncLoadWithFallBack = function(arr, success, reject) {
+      var currReject = function(){
+        reject()
+        arr.shift()
+        if(arr.length)
+          async(arr[0], success, currReject)
+        }
+
+      async(arr[0], success, currReject)
+  }
+
+  asyncLoadWithFallBack([
+    "https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.min.js", 
+    "https://cdn.bootcss.com/webfont/1.6.28/webfontloader.js",
+    "/lib/webfontloader.min.js"
+  ], asyncCb, asyncErr)
+</script>        
+        <img class="loading" src="/assets/loading.svg" style="display: block; margin: 6rem auto 0 auto; width: 6rem; height: 6rem;" />
+        <div class="container container-unloaded">
+            <main class="main post-page">
+    <article class="article-entry">
+        <p>在iOS的开发过程中总是免不了要不停的打包，通常的打包方式是这样的 <code>XCode-&gt;Archive-&gt;Export</code>，期间还要选择对应的证书与pp文件，进行一次打包会花不少的时间，在打包的过程中我们是不能修改源代码的。</p>
+<p>下面有几种方案，可以让我们简化我们的打包操作，以及使得我们可以在打包时，继续开发。</p>
+<h1 id="一、自动化打包-构建"><a href="#一、自动化打包-构建" class="headerlink" title="一、自动化打包/构建"></a>一、自动化打包/构建</h1><h2 id="1-1-xcodebuild"><a href="#1-1-xcodebuild" class="headerlink" title="1.1 xcodebuild"></a>1.1 xcodebuild</h2><p>xcodebuild 指令是苹果官方提供的命令行打包工具，你可以使用此命令来进行clean、build、test、archive。</p>
+<p>要查看官方的使用指南，可以通过命令 man xcodebuild来查看</p>
+<h3 id="1-1-1-project构建"><a href="#1-1-1-project构建" class="headerlink" title="1.1.1 project构建"></a>1.1.1 project构建</h3><p>要构建xcode项目需要在工程所在目录运行xcodebuild指令，如果目录中含有多个preoject的话，就需要使用-project指令来指定需要构建的工程。默认情况下xcodebuild会以工程里默认的configuration来build工程里的第一个target。</p>
+<h3 id="1-1-2-workspace构建"><a href="#1-1-2-workspace构建" class="headerlink" title="1.1.2 workspace构建"></a>1.1.2 workspace构建</h3><p>要构建workspce，需要设置-workspace与-scheme来定义构建，scheme用于指定要构建的targt以及怎样构建，也可以传递其他参数对scheme进行覆盖。</p>
+<p>我们可以通过以下选项来查看工程中的环境</p>
+<ul>
+<li>-list 查看当前工程的信息，如：target列表、configuration列表、scheme列表，同时能看到默认的configuration</li>
+<li>-showBuildSettings 查看构建设置</li>
+<li>-showdestinations 仅对workspace有效</li>
+<li>-showsdks 查看SDK列表</li>
+<li>-usage 使用示例</li>
+<li>-version 查看当前版本</li>
+</ul>
+<p>xcodebuild 所有指令默认的configuration都是Release</p>
+<h3 id="1-1-3-证书、描述文件"><a href="#1-1-3-证书、描述文件" class="headerlink" title="1.1.3 证书、描述文件"></a>1.1.3 证书、描述文件</h3><p>要用命令打包，但是证书一大堆的让人头疼，有一个比较简单的方法。</p>
+<p>首先，把代码下载到要打包的电脑上，用xcode打开，使用xcode自动配置，然后先把ipa包用xcode打出来，最后导出来ipa包后，导出的文件夹下有一个ExportOptions.plist文件，把此文件复制到一个固定的文件夹下，供后面命令打包使用。</p>
+<p>注意：不同的打包方式ad-hoc或者appstore生成的ExportOptions.plist不同，所以都要先生成一下。</p>
+<h3 id="1-1-4-常用子命令、选项"><a href="#1-1-4-常用子命令、选项" class="headerlink" title="1.1.4 常用子命令、选项"></a>1.1.4 常用子命令、选项</h3><h4 id="1-clean"><a href="#1-clean" class="headerlink" title="1. clean"></a>1. clean</h4><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 清理构建目录 默认的configuration为Release</span></span><br><span class="line">xcodebuild clean</span><br><span class="line"><span class="comment"># 也可以指定configuration</span></span><br><span class="line">xcodebuild clean -configuration Debug</span><br></pre></td></tr></table></figure>
+
+<h4 id="2-build"><a href="#2-build" class="headerlink" title="2. build"></a>2. build</h4><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 默认构建</span></span><br><span class="line">xcodebuild build</span><br><span class="line"><span class="comment"># 指定configuration</span></span><br><span class="line">xcodebuild build -configuration Debug</span><br></pre></td></tr></table></figure>
+
+<h4 id="3-test"><a href="#3-test" class="headerlink" title="3. test"></a>3. test</h4><p>test指令需要指定scheme，同时还需要指定destination。 可以通过-showdestinations指令来获取可用的destination</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">xcodebuild -showdestinations -scheme demo_xocdebuild</span><br><span class="line">xcodebuild <span class="built_in">test</span> -scheme demo_xocdebuild -destination <span class="string">&quot;platform=iOS Simulator,name=iPhone 8&quot;</span></span><br></pre></td></tr></table></figure>
+
+<h4 id="4-archive"><a href="#4-archive" class="headerlink" title="4. archive"></a>4. archive</h4><p>需要注意的archive时要指定scheme才行</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#project的archive</span></span><br><span class="line">xcodebuild archive -scheme demo_xocdebuild -archivePath <span class="built_in">test</span></span><br></pre></td></tr></table></figure>
+
+<h4 id="5-exportArchive"><a href="#5-exportArchive" class="headerlink" title="5. -exportArchive"></a>5. -exportArchive</h4><p>此指令用于导出ipa包，必填参数archivePath、exportPath、exportOptionsPlist</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># option.plist用于指定打包的method等，此文件可以通过用xcode打包后生成</span></span><br><span class="line">xcodebuild -exportArchive  -archivePath test.xcarchive -exportPath <span class="built_in">test</span>   -exportOptionsPlist <span class="string">&#x27;ExportOptions.plist&#x27;</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="1-1-5-脚本示例"><a href="#1-1-5-脚本示例" class="headerlink" title="1.1.5 脚本示例"></a>1.1.5 脚本示例</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#!/bin/sh</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 注意事项</span></span><br><span class="line"><span class="comment"># 1、如果提示permission denied: ./package.sh ， 则先附加权限，命令如下：chmod 777 package.sh</span></span><br><span class="line"><span class="comment"># 2、请根据自己项目的情况选择使用 workspace 还是 project 形式，目前默认为 workspace 形式</span></span><br><span class="line"></span><br><span class="line"><span class="comment">### 需要根据自己项目的情况进行修改，XXX都是需要进行修改的，可搜索进行修改 ###</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># Project名称</span></span><br><span class="line">PROJECT_NAME=XXX</span><br><span class="line"></span><br><span class="line"><span class="comment">## Scheme名</span></span><br><span class="line">SCHEME_NAME=XXX</span><br><span class="line"></span><br><span class="line"><span class="comment">## 编译类型 Debug/Release二选一</span></span><br><span class="line">BUILD_TYPE=XXX</span><br><span class="line"></span><br><span class="line"><span class="comment">## 项目根路径，xcodeproj/xcworkspace所在路径</span></span><br><span class="line">PROJECT_ROOT_PATH=XXX</span><br><span class="line"></span><br><span class="line"><span class="comment">## 打包生成路径</span></span><br><span class="line">PRODUCT_PATH=XXX</span><br><span class="line"></span><br><span class="line"><span class="comment">## ExportOptions.plist文件的存放路径，该文件描述了导出ipa文件所需要的配置</span></span><br><span class="line"><span class="comment">## 如果不知道如何配置该plist，可直接使用xcode打包ipa结果文件夹的ExportOptions.plist文件</span></span><br><span class="line">EXPORTOPTIONSPLIST_PATH=XXX</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment">## workspace路径</span></span><br><span class="line">WORKSPACE_PATH=<span class="variable">$&#123;PROJECT_ROOT_PATH&#125;</span>/<span class="variable">$&#123;PROJECT_NAME&#125;</span>.xcworkspace</span><br><span class="line"></span><br><span class="line"><span class="comment">## project路径</span></span><br><span class="line">PROJECT_PATH=<span class="variable">$&#123;PROJECT_ROOT_PATH&#125;</span>/<span class="variable">$&#123;PROJECT_NAME&#125;</span>.xcodeproj</span><br><span class="line"></span><br><span class="line"><span class="comment">### 编译打包过程 ###</span></span><br><span class="line"></span><br><span class="line"><span class="built_in">echo</span> <span class="string">&quot;============Build Clean Begin============&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="comment">## 清理缓存</span></span><br><span class="line"></span><br><span class="line"><span class="comment">## project形式</span></span><br><span class="line"><span class="comment"># xcodebuild clean -project $&#123;PROJECT_PATH&#125; -scheme $&#123;SCHEME_NAME&#125; -configuration $&#123;BUILD_TYPE&#125; || exit</span></span><br><span class="line"></span><br><span class="line"><span class="comment">## workspace形式</span></span><br><span class="line">xcodebuild clean -workspace <span class="variable">$&#123;WORKSPACE_PATH&#125;</span> -scheme <span class="variable">$&#123;SCHEME_NAME&#125;</span> -configuration <span class="variable">$&#123;BUILD_TYPE&#125;</span> || <span class="built_in">exit</span></span><br><span class="line"></span><br><span class="line"><span class="built_in">echo</span> <span class="string">&quot;============Build Clean End============&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="comment">#获取Version</span></span><br><span class="line">VERSION_NUMBER=`sed -n <span class="string">&#x27;/MARKETING_VERSION = /&#123;s/MARKETING_VERSION = //;s/;//;s/^[[:space:]]*//;p;q;&#125;&#x27;</span> <span class="variable">$&#123;PROJECT_PATH&#125;</span>/project.pbxproj`</span><br><span class="line"><span class="comment"># 获取build</span></span><br><span class="line">BUILD_NUMBER=`sed -n <span class="string">&#x27;/CURRENT_PROJECT_VERSION = /&#123;s/CURRENT_PROJECT_VERSION = //;s/;//;s/^[[:space:]]*//;p;q;&#125;&#x27;</span> <span class="variable">$&#123;PROJECT_PATH&#125;</span>/project.pbxproj`</span><br><span class="line"></span><br><span class="line"><span class="comment">## 编译开始时间,注意不可以使用标点符号和空格</span></span><br><span class="line">BUILD_START_DATE=<span class="string">&quot;<span class="subst">$(date +&#x27;%Y-%m-%d_%H-%M&#x27;)</span>&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="comment">## IPA所在目录路径</span></span><br><span class="line">IPA_DIR_NAME=<span class="variable">$&#123;VERSION_NUMBER&#125;</span>_<span class="variable">$&#123;BUILD_NUMBER&#125;</span>_<span class="variable">$&#123;BUILD_START_DATE&#125;</span></span><br><span class="line"></span><br><span class="line"><span class="comment">##xcarchive文件的存放路径</span></span><br><span class="line">ARCHIVE_PATH=<span class="variable">$&#123;PRODUCT_PATH&#125;</span>/IPA/<span class="variable">$&#123;IPA_DIR_NAME&#125;</span>/<span class="variable">$&#123;SCHEME_NAME&#125;</span>.xcarchive</span><br><span class="line"><span class="comment">## ipa文件的存放路径</span></span><br><span class="line">IPA_PATH=<span class="variable">$&#123;PRODUCT_PATH&#125;</span>/IPA/<span class="variable">$&#123;IPA_DIR_NAME&#125;</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 解锁钥匙串 -p后跟为电脑密码</span></span><br><span class="line">security unlock-keychain -p XXX</span><br><span class="line"></span><br><span class="line"><span class="built_in">echo</span>  <span class="string">&quot;============Build Archive Begin============&quot;</span></span><br><span class="line"><span class="comment">## 导出archive包</span></span><br><span class="line"></span><br><span class="line"><span class="comment">## project形式</span></span><br><span class="line"><span class="comment"># xcodebuild archive -project $&#123;PROJECT_PATH&#125; -scheme $&#123;SCHEME_NAME&#125; -archivePath $&#123;ARCHIVE_PATH&#125;</span></span><br><span class="line"></span><br><span class="line"><span class="comment">## workspace形式</span></span><br><span class="line">xcodebuild archive -workspace <span class="variable">$&#123;WORKSPACE_PATH&#125;</span> -scheme <span class="variable">$&#123;SCHEME_NAME&#125;</span> -archivePath <span class="variable">$&#123;ARCHIVE_PATH&#125;</span> -quiet || <span class="built_in">exit</span></span><br><span class="line"></span><br><span class="line"><span class="built_in">echo</span> <span class="string">&quot;============Build Archive Success============&quot;</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="built_in">echo</span> <span class="string">&quot;============Export IPA Begin============&quot;</span></span><br><span class="line"><span class="comment">## 导出IPA包</span></span><br><span class="line">xcodebuild -exportArchive -archivePath <span class="variable">$ARCHIVE_PATH</span> -exportPath <span class="variable">$&#123;IPA_PATH&#125;</span> -exportOptionsPlist <span class="variable">$&#123;EXPORTOPTIONSPLIST_PATH&#125;</span> -quiet || <span class="built_in">exit</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> [ -e <span class="variable">$&#123;IPA_PATH&#125;</span>/<span class="variable">$&#123;SCHEME_NAME&#125;</span>.ipa ];</span><br><span class="line">    <span class="keyword">then</span></span><br><span class="line">    <span class="built_in">echo</span> <span class="string">&quot;============Export IPA SUCCESS============&quot;</span></span><br><span class="line">    open <span class="variable">$&#123;IPA_PATH&#125;</span></span><br><span class="line">    <span class="keyword">else</span></span><br><span class="line">    <span class="built_in">echo</span> <span class="string">&quot;============Export IPA FAIL============&quot;</span></span><br><span class="line"><span class="keyword">fi</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment"># 删除Archive文件，可根据各自情况选择是否保留</span></span><br><span class="line"><span class="comment"># rm -r $&#123;ARCHIVE_PATH&#125;</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment">### 上传过程 ###</span></span><br><span class="line"></span><br><span class="line"><span class="comment">## 上传app store</span></span><br><span class="line"></span><br><span class="line"><span class="comment">## 验证</span></span><br><span class="line"><span class="comment">## xcrun altool --validate-app -f $&#123;IPA_PATH&#125;/$&#123;SCHEME_NAME&#125;.ipa -t ios --apiKey xxx --apiIssuer xxx --verbose</span></span><br><span class="line"></span><br><span class="line"><span class="comment">## 上传</span></span><br><span class="line"><span class="comment">## xcrun altool --upload-app -f $&#123;IPA_PATH&#125;/$&#123;SCHEME_NAME&#125;.ipa -t ios --apiKey xxx --apiIssuer xxx --verbose</span></span><br><span class="line"></span><br><span class="line"><span class="comment">## 上传到蒲公英</span></span><br><span class="line"><span class="built_in">echo</span> <span class="string">&quot;============Upload PGYER Begin============&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="comment">## 具体参数可见 http://www.pgyer.com/doc/view/api#uploadApp</span></span><br><span class="line">PGYER_UPLOAD_RESULT=`curl \</span><br><span class="line">-F <span class="string">&quot;file=@<span class="variable">$&#123;IPA_PATH&#125;</span>/<span class="variable">$&#123;SCHEME_NAME&#125;</span>.ipa&quot;</span> \</span><br><span class="line">-F <span class="string">&quot;buildInstallType=XXX&quot;</span> \</span><br><span class="line">-F <span class="string">&quot;buildPassword=XXX&quot;</span> \</span><br><span class="line">-F <span class="string">&quot;buildUpdateDescription=XXX&quot;</span> \</span><br><span class="line">-F <span class="string">&quot;_api_key=XXX&quot;</span> \</span><br><span class="line">https://www.pgyer.com/apiv2/app/upload`</span><br><span class="line"></span><br><span class="line"><span class="built_in">echo</span> <span class="string">&quot;============Upload PGYER SUCCESS============&quot;</span></span><br><span class="line"><span class="comment">## 返回结果码，其中0为成功上传，因为返回结果中带回来的有中文显示乱码，无法利用jq解析</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment">## 如需上传到fim，可查阅 https://www.betaqr.com/docs/publish 文档</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment">### 如需脚本在执行过程中给用户提供选择，可使用以下Demo ###</span></span><br><span class="line"></span><br><span class="line"><span class="comment">#echo &quot;Place enter the number you want to export? [ 1:app-store 2:ad-hoc] &quot;</span></span><br><span class="line"><span class="comment">#read number</span></span><br><span class="line"><span class="comment">#    while([[ $number != 1 ]] &amp;&amp; [[ $number != 2 ]])</span></span><br><span class="line"><span class="comment">#    do</span></span><br><span class="line"><span class="comment">#        echo &quot;Error! Should enter 1 or 2&quot;</span></span><br><span class="line"><span class="comment">#        echo &quot;Place enter the number you want to export ? [ 1:app-store 2:ad-hoc] &quot;</span></span><br><span class="line"><span class="comment">#        read number</span></span><br><span class="line"><span class="comment">#    done</span></span><br><span class="line"><span class="comment">#if [ $number == 1 ];</span></span><br><span class="line"><span class="comment">#    then</span></span><br><span class="line"><span class="comment">#    ####</span></span><br><span class="line"><span class="comment">#    else</span></span><br><span class="line"><span class="comment">#    ####</span></span><br><span class="line"><span class="comment">#fi</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="1-2-fastlane"><a href="#1-2-fastlane" class="headerlink" title="1.2 fastlane"></a>1.2 fastlane</h2><h3 id="1-2-1-Fastlane是什么"><a href="#1-2-1-Fastlane是什么" class="headerlink" title="1.2.1 Fastlane是什么"></a>1.2.1 Fastlane是什么</h3><blockquote>
+<p>fastlane 是让你的 iOS 和 Android 应用程序 测试版部署、发布 实现自动化的最简单方法。它处理所有繁琐的任务，例如生成屏幕截图、处理代码签名和发布您的应用程序。</p>
+</blockquote>
+<p><a target="_blank" rel="noopener" href="https://fastlane.tools/">Fastlane</a>是一套非常实用而强大的组件，其目的主要是为了实现iOS和Android的发布流程的自动化，极大地节省在发布流程中需要花费的时间。</p>
+<ul>
+<li>Fastlane实际上是<strong>一系列Ruby脚本的集合</strong>，里面的每一个工具实际就是一个Ruby脚本，用于执行特定的工作任务。</li>
+<li>开发者通过定制配置文件(类似ruby语法)，组合不同的工具，将你的工作目标形成一个自动化流程。例如整个iOS应用的发布流程。</li>
+</ul>
+<blockquote>
+<p>GitHub上Fastlane已经超过了2w个star。很多著名的软件均在使用fastlane或者开发对fastlane的支持。跟我们比较接近的就有Jenkins。</p>
+</blockquote>
+<h3 id="1-2-2-Fastlane能干什么"><a href="#1-2-2-Fastlane能干什么" class="headerlink" title="1.2.2 Fastlane能干什么"></a>1.2.2 Fastlane能干什么</h3><p>Fastlane 基本上涵盖了打包，签名，测试，部署，发布，库管理等等移动开发中涉及到的内容。 同时该套件也支持与 Jenkins 、CocoaPods、xctools 等其他第三方工具的集成。</p>
+<p>简单来说，以iOS应用发布流程为例，整个流程的各部分工作Fastlane都能帮你完成，当然除了写代码以外。</p>
+<p>fastlane 的大概流程和功能：</p>
+<img src="/images/se/cicd/fastlane.jpg" style="zoom:65%;" />
+
+<p>常用的action（都是别名，真实action name更能体现其功能）：</p>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://docs.fastlane.tools/actions/scan/">scan</a>(<code>run_tests</code>)：自动运行测试工具，并且可以生成漂亮的HTML报告</li>
+<li><a target="_blank" rel="noopener" href="https://docs.fastlane.tools/actions/cert/">cert</a>(<code>get_certificates</code>)：自动创建和管理iOS签名证书<code>(Certificates)</code></li>
+<li><a target="_blank" rel="noopener" href="https://docs.fastlane.tools/actions/sigh/">sigh</a>(<code>get_provisioning_profile</code>)：创建、更新、下载、修复<code>Provisioning Profiles</code> 的工具</li>
+<li><a target="_blank" rel="noopener" href="https://docs.fastlane.tools/actions/pem/">pem</a>(<code>get_push_certificate</code>)：自动生成、更新推送证书<code>Push Services</code>.</li>
+<li><a target="_blank" rel="noopener" href="https://docs.fastlane.tools/actions/match/">match</a>(<code>sync_code_signing</code>)： 一个新的自动创建和管理iOS签名证书和<code>Provisioning Profiles</code>工具(推荐团队使用)<ul>
+<li>一般情况下，团队每个成员都各有一套P12证书文件、一个描述文件。每次添加新设备或证书过期时，每个人都必须手动更新和下载最新的 provisioning profiles 集。此外，如果是配置一台新机器时，花费的时间更多。</li>
+<li><em>match</em> 是 <a target="_blank" rel="noopener" href="https://codesigning.guide/">codesigning.guide concept</a> 的实现。match 创建所有必需的 certificates 和 provisioning profiles，并将它们存储在单独的 git 存储库、Google Cloud 或 Amazon S3 中。每个有权访问该存储库的团队成员都可以使用这些文件进行代码签名。 match 还会自动修复损坏和过期的证书/描述文件。这是跨团队共享签名凭据的最简单方法。</li>
+<li>从仓库获取cert与p12文件时，会根据指定类型比如 <code>:type=enterprise</code>，那么会遍历仓库的 <code>/certs/enterprise/</code> 目录下的所有文件，将文件名符合 <code>*.cer</code> 格式的最后一个当做签名证书，将文件名符合 <code>*.p12</code> 格式的最后一个当做其对应私钥。<a target="_blank" rel="noopener" href="https://www.jianshu.com/p/deaf0f8d1f02">Fastlane证书管理（二）：match</a></li>
+<li>match命令是结合了cert命令和sigh命令。</li>
+</ul>
+</li>
+<li><a target="_blank" rel="noopener" href="https://docs.fastlane.tools/actions/snapshot/">snapshot</a>(<code>capture_ios_screenshots</code>)：自动为每台设备上的 APP 截取本地化屏幕截图。（基于Xcode7推出的<code>UI test</code>）</li>
+<li><a target="_blank" rel="noopener" href="https://docs.fastlane.tools/actions/frameit/">frameit</a>(<code>frame_screenshots</code>)：在屏幕截图周围放置一个iPhone设备框。</li>
+<li><a target="_blank" rel="noopener" href="https://docs.fastlane.tools/actions/gym/">gym</a>(<code>build_app</code>)：构建和打包iOS程序</li>
+<li><a target="_blank" rel="noopener" href="https://docs.fastlane.tools/actions/produce/">produce</a>(<code>create_app_online</code>)：需要很少的信息，就可以在iTunes Connect(iTC)或者Apple Developer Center(ADC)上创建新的 iOS 应用程序。</li>
+<li><a target="_blank" rel="noopener" href="https://docs.fastlane.tools/actions/pilot/">pilot</a>(<code>upload_to_testflight</code>)：将你的应用发布到TestFlight进行测试。功能：<ul>
+<li>上传和分发构建</li>
+<li>添加和删除测试人员</li>
+<li>检索有关测试人员和设备的信息</li>
+<li>导入/导出所有可用的测试仪</li>
+</ul>
+</li>
+<li><a target="_blank" rel="noopener" href="https://docs.fastlane.tools/actions/deliver/">deliver</a>(<code>upload_to_app_store</code>)：将你的应用的二进制文件、屏幕截图和元数据上传到iTunes Connect<ul>
+<li>完全自动上传数百个本地化截图</li>
+<li>在将应用元数据和屏幕截图上传到 iTC 之前，可以得到一个获取到的元数据的 HTML 预览。</li>
+<li>自动使用预检查 <a target="_blank" rel="noopener" href="https://docs.fastlane.tools/actions/precheck/"><em>precheck</em></a> ，提高通过应用审核的几率。</li>
+</ul>
+</li>
+<li><a target="_blank" rel="noopener" href="https://github.com/fastlane/watchbuild">WatchBuild</a>：一个独立的iTC监控工具，开启WatchBuild可以监控iTC上的文件状态，弹出MacOS自带的Notification</li>
+</ul>
+<p>…其实还有很多很突出也很实用的功能，几乎你能想到的正常的需求都做了，到目前为止已有共计超过210个actions。如果还不够，你还可以寻找额外的plugin，至少有超过250个额外的plugin你可以使用。</p>
+<blockquote>
+<p>区分两个词语：</p>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://developer.apple.com/account">Apple Developer Portal</a>(门户)，有时也叫做Apple Developer Center(ADC)，是我们管理账号、团队成员、开发证书、APPIDs、Profile文件等等的地方。</li>
+<li><a target="_blank" rel="noopener" href="https://appstoreconnect.apple.com/">App Store Connect</a>，是我们管理那些发布到App Store上的APP的地方。简称IDC</li>
+</ul>
+</blockquote>
+<h3 id="1-2-3-安装与配置"><a href="#1-2-3-安装与配置" class="headerlink" title="1.2.3 安装与配置"></a>1.2.3 安装与配置</h3><h4 id="1-安装"><a href="#1-安装" class="headerlink" title="1. 安装"></a>1. 安装</h4><p>支持三种方式安装</p>
+<ul>
+<li><p>使用brew安装</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">brew install fastlane</span><br></pre></td></tr></table></figure></li>
+<li><p>使用gem安装</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo gem install fastlane</span><br></pre></td></tr></table></figure></li>
+<li><p>下载安装包安装</p>
+<p><a href="https://link.juejin.cn/?target=https://download.fastlane.tools/">fastlane下载</a>，下载完了之后打开<code>install</code>脚本即可安装</p>
+</li>
+</ul>
+<p>安装完成之后命令行输入<code>fastlane -v</code>，可以看到fastlane的版本信息说明安装成功了，接下来可以继续设置步骤</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">$ fastlane -v</span><br><span class="line">fastlane installation at path:</span><br><span class="line">/Users/aron/.rvm/gems/ruby-2.3.0@global/gems/fastlane-2.62.0/bin/fastlane</span><br><span class="line">-----------------------------</span><br><span class="line">fastlane 2.62.0</span><br></pre></td></tr></table></figure>
+
+<h4 id="2-初始化"><a href="#2-初始化" class="headerlink" title="2. 初始化"></a>2. 初始化</h4><p>cd 打开工程所在目录，执行<code>fastlane init</code>。（默认生成的Fastfile文件是Ruby编写的，如果想使用 Swift 编写，可以使用 <code>fastlane init swift</code>，目前还是 Beta， **<a target="_blank" rel="noopener" href="https://docs.fastlane.tools/getting-started/ios/fastlane-swift/">Fastlane.swift docs</a>**）</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">[14:19:14]: What would you like to use fastlane <span class="keyword">for</span>?</span><br><span class="line">1. 📸  Automate screenshots  -- 自动化截图 (基于UITests)</span><br><span class="line">2. 👩‍✈️  Automate beta distribution to TestFlight  -- 将测试版分发到TestFlight</span><br><span class="line">3. 🚀  Automate App Store distribution  -- 自动上传、发布到App Store</span><br><span class="line">4. 🛠  Manual setup - manually setup your project to automate your tasks -- 手动设置</span><br><span class="line"><span class="comment"># 如果选择4，生成的目录是最简的，如果是其他选项，那么会有一系列的设置，包含了登录apple账号，确认fastlane检测到的项目信息确认，登录iTunesConnect和从iTunesConnect拉取项目已存在的信息。</span></span><br></pre></td></tr></table></figure>
+
+<p>根据选择的设置类型，将设置不同的文件。如果选择下载现有的应用元数据，最终会得到如下所示的新文件夹：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line">$ fastlane tree</span><br><span class="line">.</span><br><span class="line">├── Appfile</span><br><span class="line">├── Deliverfile</span><br><span class="line">├── Fastfile</span><br><span class="line">├── metadata</span><br><span class="line">│   ├── app_icon.jpg</span><br><span class="line">│   ├── copyright.txt</span><br><span class="line">│   └── zh-Hans</span><br><span class="line">│       ├── description.txt</span><br><span class="line">│       ├── keywords.txt</span><br><span class="line">│       ├── marketing_url.txt</span><br><span class="line">│       ├── name.txt</span><br><span class="line">│       ├── privacy_url.txt</span><br><span class="line">│       ├── promotional_text.txt</span><br><span class="line">│       ├── release_notes.txt</span><br><span class="line">│       ├── subtitle.txt</span><br><span class="line">│       └── support_url.txt</span><br><span class="line">└── screenshots</span><br><span class="line">    ├── README.txt</span><br><span class="line">    └── zh-Hans</span><br><span class="line">        ├── 1_iphone58_1.X1_1.jpg</span><br><span class="line">        ├── 1_iphone6Plus_1.1.png</span><br><span class="line">        ├── 2_iphone58_2.X2_1.jpg</span><br><span class="line">        ├── 2_iphone6Plus_2.2.png</span><br><span class="line">        ├── 3_iphone58_3.X3_1.jpg</span><br><span class="line">        ├── 3_iphone6Plus_3.3.png</span><br><span class="line">        ├── 4_iphone58_4.X5_1.jpg</span><br><span class="line">        ├── 4_iphone6Plus_4.4.png</span><br><span class="line">        └── 5_iphone6Plus_5.5.png</span><br><span class="line"></span><br><span class="line">8 directories, 62 files</span><br></pre></td></tr></table></figure>
+
+<p>最重要的是Appfile文件、Fastfile文件和Deliverfile文件</p>
+<ul>
+<li><p>Appfile文件保存了APP相关的信息</p>
+<figure class="highlight ruby"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">app_identifier <span class="string">&quot;com.XX.XX&quot;</span> <span class="comment"># The bundle identifier of your app</span></span><br><span class="line">apple_id <span class="string">&quot;appid&quot;</span>           <span class="comment"># Your Apple email address</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># You can uncomment the lines below and add your own</span></span><br><span class="line"><span class="comment"># team selection in case you&#x27;re in multiple teams</span></span><br><span class="line"><span class="comment"># team_name &quot;Felix Krause&quot;</span></span><br><span class="line"><span class="comment"># team_id &quot;Q2CBPJ58CA&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># To select a team for App Store Connect use  如果你拥有多个team，在配置中会选择team，以及itc_team_name</span></span><br><span class="line"><span class="comment"># itc_team_name &quot;Company Name&quot;</span></span><br><span class="line"><span class="comment"># itc_team_id &quot;18742801&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># For more information about the Appfile, see: https://docs.fastlane.tools/advanced/#appfile</span></span><br></pre></td></tr></table></figure></li>
+<li><p>Deliverfile文件保存了apple账号信息和teamid信息，该文件的信息用于上传appStore使用</p>
+</li>
+<li><p>Fastfile文件定义了一些列的action，包含了项目打包设置、项目打包、项目截图、项目上传测试平台、项目发布、项目打包完成后期的一些操作。(<em>我们主要是编写这个文件内容</em>)</p>
+<figure class="highlight ruby"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">default_platform(<span class="symbol">:ios</span>)</span><br><span class="line"></span><br><span class="line">platform <span class="symbol">:ios</span> <span class="keyword">do</span></span><br><span class="line">  desc <span class="string">&quot;Description of what the lane does&quot;</span></span><br><span class="line">  lane <span class="symbol">:custom_lane</span> <span class="keyword">do</span></span><br><span class="line">    <span class="comment"># add actions here: https://docs.fastlane.tools/actions</span></span><br><span class="line">  <span class="keyword">end</span></span><br><span class="line"><span class="keyword">end</span></span><br></pre></td></tr></table></figure></li>
+</ul>
+<p>Fastline的使用：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ <span class="built_in">cd</span> project_path      <span class="comment"># 进入项目主目录</span></span><br><span class="line">$ fastlane custom_lane <span class="comment"># lane名称(可以理解为任务名)</span></span><br></pre></td></tr></table></figure>
+
+<h4 id="3-简单的Fastlane书写"><a href="#3-简单的Fastlane书写" class="headerlink" title="3. 简单的Fastlane书写"></a>3. 简单的Fastlane书写</h4><figure class="highlight ruby"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">default_platform <span class="symbol">:ios</span></span><br><span class="line"></span><br><span class="line">desc <span class="string">&quot;打包&quot;</span>                  <span class="comment"># 该任务的描述</span></span><br><span class="line">lane <span class="symbol">:build</span> <span class="keyword">do</span> <span class="params">| options |</span>  <span class="comment"># option用于接收我们的外部参数，这里可以传入参数</span></span><br><span class="line">    gym(<span class="symbol">export_method:</span> <span class="string">&#x27;enterprise&#x27;</span>)</span><br><span class="line"><span class="keyword">end</span></span><br><span class="line"></span><br><span class="line">lane <span class="symbol">:to_appStore</span> <span class="keyword">do</span> <span class="params">| options |</span></span><br><span class="line">    customLane  <span class="comment"># 调用其他自定义的lane</span></span><br><span class="line">    gym(<span class="symbol">workspace:</span> <span class="string">&quot;expample.xcworkspace&quot;</span>, <span class="symbol">scheme:</span> <span class="string">&quot;example&quot;</span>)  <span class="comment"># 构建App</span></span><br><span class="line">    deliver     <span class="comment"># 上传到appstore</span></span><br><span class="line"><span class="keyword">end</span></span><br></pre></td></tr></table></figure>
+
+<p>把证书设置好，然后在终端执行 <code>cd project_path</code> 进入项目主目录，执行 <code>fastlane build</code>，如果一切顺利，打包完成后你会在项目主目录得到一个ipa文件。</p>
+<p>gym的常用参数：</p>
+<figure class="highlight ruby"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">lane <span class="symbol">:build</span> <span class="keyword">do</span> <span class="params">| options |</span></span><br><span class="line">    gym(</span><br><span class="line">        <span class="symbol">clean:</span> <span class="literal">true</span>,</span><br><span class="line">        <span class="symbol">output_directory:</span> <span class="string">&#x27;./fastlane/build&#x27;</span>,</span><br><span class="line">        <span class="symbol">output_name:</span><span class="string">&quot;RS.ipa&quot;</span>,</span><br><span class="line">        <span class="symbol">scheme:</span> <span class="string">&#x27;RS&#x27;</span>,</span><br><span class="line">        <span class="symbol">configuration:</span> <span class="string">&#x27;Debug&#x27;</span>,<span class="comment">###########</span></span><br><span class="line">        <span class="comment"># sdk:&quot;iOS 12.0&quot;,</span></span><br><span class="line">        <span class="comment"># archive_path:&quot;./fastlane/Archive&quot;, #如果不指定，会存储在Xcode默认路径中</span></span><br><span class="line">        <span class="comment"># include_symbols:true,</span></span><br><span class="line">        <span class="symbol">export_options:</span> &#123;</span><br><span class="line">            <span class="symbol">method:</span> <span class="string">&#x27;development&#x27;</span>,<span class="comment">#测试包</span></span><br><span class="line">            <span class="symbol">provisioningProfiles:</span> &#123;</span><br><span class="line">              <span class="string">&quot;com.shuqu.by&quot;</span> =&gt; <span class="string">&quot;iOS-DEV&quot;</span>, <span class="comment">#测试打包描述文件</span></span><br><span class="line">              <span class="string">&quot;com.shuqu.by.jpush&quot;</span> =&gt; <span class="string">&quot;JPUSH_DEV&quot;</span></span><br><span class="line">            &#125;,</span><br><span class="line">        &#125;</span><br><span class="line">    )</span><br><span class="line"><span class="keyword">end</span></span><br></pre></td></tr></table></figure>
+
+<h4 id="4-env文件"><a href="#4-env文件" class="headerlink" title="4. .env文件"></a>4. .env文件</h4><p>我们可以在Fastlane的同级目录下手动创建一个名为<code>.env</code> 的文件，自定义所需的环境变量。（这些环境变量通过 <a target="_blank" rel="noopener" href="https://github.com/bkeepers/dotenv">dotenv</a> 这个Ruby Gem(工具包)来加载）</p>
+<figure class="highlight ruby"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">WORKSPACE=YourApp.xcworkspace</span><br><span class="line">HOCKEYAPP_API_TOKEN=your-hockey-api-token</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>执行时默认会读取 <code>.env</code> 和 <code>.env.default</code> 文件里的配置。</li>
+<li>fastlane 有一个 <code>--env</code> 选项，允许在加载上面两个文件之后，加载环境特定的 dotenv 文件。文件的命名约定是 <code>.env.&lt;environment&gt;</code>。</li>
+<li>相同的变量名会被后面的覆盖。</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">fastlane &lt;lane-name&gt; --env development <span class="comment"># will load .env, .env.default, and .env.development</span></span><br></pre></td></tr></table></figure>
+
+<p>想在Appfile、Deliverfile、Fastfile等调用，直接使用 <code>ENV[&#39;keyName&#39;]</code> 即可。</p>
+<p>设置环境变量的其他方式：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 方式一：</span></span><br><span class="line">DELIVER_USER=<span class="string">&quot;felix@krausefx.com&quot;</span> fastlane <span class="built_in">test</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 方式二：</span></span><br><span class="line"><span class="built_in">export</span> DELIVER_USER=<span class="string">&quot;felix@krausefx.com&quot;</span>;</span><br><span class="line">fastlane <span class="built_in">test</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 方式三：在 Fastfile 中设置。但这违背了环境变量的初衷（不在任何其它文件中包含它们的内容）</span></span><br><span class="line">ENV[<span class="string">&quot;DELIVER_USER&quot;</span>] = <span class="string">&quot;felix@krausefx.com&quot;</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="1-2-4-块、lane、action"><a href="#1-2-4-块、lane、action" class="headerlink" title="1.2.4 块、lane、action"></a>1.2.4 块、lane、action</h3><h4 id="1-块类型"><a href="#1-块类型" class="headerlink" title="1. 块类型"></a>1. 块类型</h4><p><code>Fastfile</code>里面包含的块类型有以下几种：</p>
+<ul>
+<li><code>before_all</code>块：用于执行任务之前的操作，比如使用cocopods更新pod库，只执行一次</li>
+<li><code>before_each</code>块：每次执行 lane 之前都会执行一次</li>
+<li><code>lane</code>块：定义用户的主要任务流程。例如打包ipa，执行测试等等</li>
+<li><code>after_each</code>块：每次执行 lane 之后都会执行一次</li>
+<li><code>after_all</code>块：用于执行任务之后的操作，比如发送邮件，通知之类的</li>
+<li><code>error</code>块：在执行上述情况，任意环境报错都会中止并执行一次</li>
+</ul>
+<h4 id="2-lane与platform"><a href="#2-lane与platform" class="headerlink" title="2. lane与platform"></a>2. lane与platform</h4><p>我们通俗的把一个lane理解为一个任务，每个任务都负责一个功能。 然后我们调用不同的任务，来实现打包、上传到testFlight、上传到app store等功能。 </p>
+<p>lane里可以调用action(可以理解为封装好的功能模块/函数)。fastlane预定义了很多很有用的action，如果不够还可以使用第三方提供的插件调用第三方的action。</p>
+<p>lane之间，可以相互调用，与action的调用相似，直接输入名字即可。注意，在fastlane中，并不是所有lane都能相互调用，需要满足下面两个条件之一：</p>
+<ul>
+<li><strong>两个lane同属于同一个platform</strong></li>
+<li><strong>被调用的lane不属于任何platform</strong>。（这种lane叫做通用lane，可以被所有的lane调用）</li>
+</ul>
+<p>platform的作用和lane的作用类似，lane的作用是绑定多个action，而platform则是绑定多个lane。</p>
+<p>由于fastlane目前可以在iOS、android和Mac这三个平台使用，所以可能在同一个Fastfile中存在不同平台的lane，使用platform可以使得lane的使用范围更加明确。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line">lane :lane0 <span class="keyword">do</span></span><br><span class="line">    puts <span class="string">&quot;\nlane0&quot;</span></span><br><span class="line">end</span><br><span class="line"></span><br><span class="line">platform :ios <span class="keyword">do</span></span><br><span class="line">    lane :lane1 <span class="keyword">do</span></span><br><span class="line">        puts <span class="string">&quot;\nlane1&quot;</span></span><br><span class="line">        lane2          <span class="comment"># lane1中调用了lane2</span></span><br><span class="line">    end </span><br><span class="line">    </span><br><span class="line">    lane :lane2 <span class="keyword">do</span></span><br><span class="line">        puts <span class="string">&quot;\nlane2&quot;</span></span><br><span class="line">    end </span><br><span class="line">end</span><br><span class="line"></span><br><span class="line">platform :android <span class="keyword">do</span></span><br><span class="line">    lane :lane3 <span class="keyword">do</span></span><br><span class="line">        puts <span class="string">&quot;\nlane3&quot;</span></span><br><span class="line">    end </span><br><span class="line">    </span><br><span class="line">    lane :lane4 <span class="keyword">do</span></span><br><span class="line">        puts <span class="string">&quot;\nlane4&quot;</span></span><br><span class="line">    end </span><br><span class="line">end</span><br></pre></td></tr></table></figure>
+
+<p>这个时候，如果在终端执行<code>fastlane lane1</code>，fastlane会告诉你它找不到lane1</p>
+<figure class="highlight csharp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[<span class="meta">!</span>] Could <span class="keyword">not</span> find <span class="string">&#x27;lane1&#x27;</span>. Available lanes: lane0, ios lane1, ios lane2, android lane3, android lane4</span><br></pre></td></tr></table></figure>
+
+<p>但是，fastlane在错误信息里面指出可用的lanes有这些：<strong>lane0, ios lane1, ios lane2, android lane3, android lane4</strong>。</p>
+<p>经过多次试验，可以发现：</p>
+<ul>
+<li>当lane被定义在platform之内时，需要使用类似<code>fastlane platform_name lane_name</code>的命令结构来调用。比如调用lane1，则需要执行<code>fastlane ios lane1</code>；调用lane3，则需要执行<code>fastlane android lane3</code>；</li>
+<li>对于定义在platform之外的lane0，可以直接执行<code>fastlane lane0</code>。</li>
+</ul>
+<p>在实际使用中，很少有人会去执行带platform的命令，一般是执行命令<code>fastlane lane_name</code>，这是因为fastlane还提供了另一个方法：<code>default_platform</code>。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">default_platform :ios</span><br></pre></td></tr></table></figure>
+
+<h4 id="3-action"><a href="#3-action" class="headerlink" title="3. action"></a>3. action</h4><p>下面介绍几个fastlane中预定的action：</p>
+<ul>
+<li>scan：自动运行测试工具，并且可以生成漂亮的HTML报告</li>
+<li>cert：自动创建和管理iOS签名证书(Certificates)</li>
+<li>sigh：创建、更新、下载、修复Provisioning Profiles的工具</li>
+<li>pem：自动生成、更新推送配置文件</li>
+<li>match：一个新的自动创建和管理iOS签名证书和Provisioning Profiles工具(推荐团队使用) 🌟</li>
+<li>snapshot：用Xcode7推出的UI test功能实现自动化截图</li>
+<li>frameit：给截屏套上一层外边框</li>
+<li><strong>gym</strong>：编译打包生成ipa文件，又名build_ios_app或build_app。常用的配置项：<ul>
+<li>workspace：如果项目是一个workspace，则是该项目的workspace路径  </li>
+<li>project：项目的project路径 </li>
+<li>scheme：项目的scheme，注意指定的scheme需要被指定为shared，/-&gt;Manage Schemes-&gt;Shared复选框需要打钩</li>
+<li>output_directory：打包保存路径 </li>
+<li>output_name：打包保存的文件名 </li>
+<li>clean：每次执行前是否清空工程; </li>
+<li>configuration：The configuration to use when building the app. Defaults to ‘Release’ </li>
+<li>export_options：导出时配置项，及发布证书相关；</li>
+</ul>
+</li>
+<li>set_info_plist_value：是设置修改info.plist文件的 action，一次调用该action只能设置一个值，可以多次调用该命令来设置多个值，他有以下常用的参数：<ul>
+<li>path：info.plist文件路径</li>
+<li>key：info.plist文件中的key</li>
+<li>value：key对应的值</li>
+<li>可以动态配置info.plist中的内容，以实现动态配置ipa包的一些信息。</li>
+</ul>
+</li>
+<li>produce：如果你的产品还没在iTunes Connect(iTC)或者Apple Developer Center(ADC)建立，produce可以自动帮你完成这些工作</li>
+<li>pilot：是上传到TestFlight的 action，是 <code>upload_to_testflight</code> action的别名，没有特殊需求可以不指定参数</li>
+<li><strong>deliver</strong>：自动上传截图，APP的元数据，二进制(ipa)文件到iTunes Connect。是 <code>upload_to_app_store</code> action的别名，没有特殊需求可以不指定参数，会从Deliverfile文件读取账号信息登录到ITunesConnect从./fastlane/metadata ./fastlane/screenshots 文件夹中读取配置的App信息元数据然后上传</li>
+<li>WatchBuild：一个独立的iTC监控工具，开启WatchBuild可以监控iTC上的文件状态，弹出MacOS自带的Notification</li>
+</ul>
+<p><em>更多Action的使用可以参考 <a target="_blank" rel="noopener" href="https://docs.fastlane.tools/actions/">fastlane actions Doc</a></em></p>
+<p>使用 <code>fastlane action &lt;action_name&gt;</code> 命令查找某个action的使用方法和参数。</p>
+<h3 id="1-2-5-Fastfile调用shell"><a href="#1-2-5-Fastfile调用shell" class="headerlink" title="1.2.5 Fastfile调用shell"></a>1.2.5 Fastfile调用shell</h3><p>如果您的操作需要运行 shell 命令，有几种方法。您可以轻松确定命令的退出状态并捕获命令的所有终端输出。</p>
+<ul>
+<li><p>使用 Ruby <code>system</code>方法调用来调用命令字符串。这不会重定向标准输入、标准输出或标准错误，因此输出格式将不受影响。它在子shell中执行命令。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">system <span class="string">&quot;cat fastlane/Fastfile&quot;</span> </span><br><span class="line"><span class="comment"># 命令完成后，该方法返回 true 或 false 以指示完成状态。</span></span><br></pre></td></tr></table></figure></li>
+<li><p>使用反引号，可以捕获命令的输出</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">pod_cmd = `<span class="built_in">which</span> pod`</span><br><span class="line">UI.important <span class="string">&quot;&#x27;pod&#x27; command not found&quot;</span> <span class="keyword">if</span> pod_cmd.empty?</span><br><span class="line"><span class="comment"># 因为您正在捕获标准输出，所以命令输出不会出现在终端上，除非您使用 `UI` 记录它。捕获命令输出时可能会丢失格式。</span></span><br></pre></td></tr></table></figure></li>
+<li><p>使用内置的 sh 方法</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sh <span class="string">&quot;pwd&quot;</span></span><br></pre></td></tr></table></figure></li>
+</ul>
+<p>使用 shellwords 将参数转义到 shell 命令。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">`git commit -aqm <span class="comment">#&#123;Shellwords.escape commit_message&#125;`</span></span><br><span class="line"></span><br><span class="line">system <span class="string">&quot;cat #&#123;path.shellescape&#125;&quot;</span></span><br></pre></td></tr></table></figure>
+
+<p>更多详细信息，查看 <a target="_blank" rel="noopener" href="https://docs.fastlane.tools/advanced/actions/">Invoking shell commands</a></p>
+<h3 id="1-2-6-初始的Fastfile解读"><a href="#1-2-6-初始的Fastfile解读" class="headerlink" title="1.2.6 初始的Fastfile解读"></a>1.2.6 初始的Fastfile解读</h3><p>以初始的Fastfile文件为例，其大致如下，可以看到 <code>lane :release</code> 包含了</p>
+<ul>
+<li><code>snapshot</code> action用于截屏</li>
+<li><code>gym</code> action用于打包</li>
+<li><code>deliver</code> action用于上传到App Store</li>
+<li><code>frameit</code> action用于给截屏添加边框</li>
+</ul>
+<p>after_all 块中的<code>slack</code> action 则是负责打包成功之后发送信息到slack</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line">fastlane_version <span class="string">&quot;2.62.0&quot;</span></span><br><span class="line"></span><br><span class="line">default_platform :ios</span><br><span class="line"></span><br><span class="line">platform :ios <span class="keyword">do</span></span><br><span class="line"></span><br><span class="line">  desc <span class="string">&quot;Deploy a new version to the App Store&quot;</span></span><br><span class="line">  lane :release <span class="keyword">do</span></span><br><span class="line">    <span class="comment"># match(type: &quot;appstore&quot;)</span></span><br><span class="line">    <span class="comment"># snapshot</span></span><br><span class="line">    gym(scheme: <span class="string">&quot;PlushGame&quot;</span>) <span class="comment"># Build your app - more options available</span></span><br><span class="line">    deliver(force: <span class="literal">true</span>)</span><br><span class="line">    <span class="comment"># frameit</span></span><br><span class="line">  end</span><br><span class="line"></span><br><span class="line">  <span class="comment"># You can define as many lanes as you want</span></span><br><span class="line"></span><br><span class="line">  after_all <span class="keyword">do</span> |lane|</span><br><span class="line">    <span class="comment"># This block is called, only if the executed lane was successful</span></span><br><span class="line"></span><br><span class="line">    <span class="comment"># slack(</span></span><br><span class="line">    <span class="comment">#   message: &quot;Successfully deployed new App Update.&quot;</span></span><br><span class="line">    <span class="comment"># )</span></span><br><span class="line">  end</span><br><span class="line">end</span><br></pre></td></tr></table></figure>
+
+<p>接下来是为我们自己的项目编写符合业务需求的Fastfile了。</p>
+<h3 id="1-2-7-第三方插件、action"><a href="#1-2-7-第三方插件、action" class="headerlink" title="1.2.7 第三方插件、action"></a>1.2.7 第三方插件、action</h3><p> Fastlane的插件是一个或者一组action的打包，单独发布在fastlane之外。</p>
+<h4 id="1-查找插件"><a href="#1-查找插件" class="headerlink" title="1. 查找插件"></a>1. 查找插件</h4><p>使用<code>fastlane search_plugins</code>查找所有插件，使用<code>fastlane search_plugins [query]</code>查找指定插件</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">$ fastlane search_plugins pgyer</span><br><span class="line">...</span><br><span class="line">+----------------+----------------------+-----------+</span><br><span class="line">|             fastlane plugins <span class="string">&#x27;pgyer&#x27;</span>              |</span><br><span class="line">+----------------+----------------------+-----------+</span><br><span class="line">| Name           | Description          | Downloads |</span><br><span class="line">+----------------+----------------------+-----------+</span><br><span class="line">| pgyer          | distribute app to    | 18497     |</span><br><span class="line">|                | pgyer beta testing   |           |</span><br><span class="line">|                | service              |           |</span><br><span class="line">| pgyer-password | distribute app to    | 1065      |</span><br><span class="line">|                | pgyer beta testing   |           |</span><br><span class="line">|                | service              |           |</span><br><span class="line">| ding_talk      | Auto send the pgyer  | 659       |</span><br><span class="line">|                | app qr code to the   |           |</span><br><span class="line">|                | ding talk.           |           |</span><br><span class="line">+----------------+----------------------+-----------+</span><br></pre></td></tr></table></figure>
+
+<h4 id="2-安装插件"><a href="#2-安装插件" class="headerlink" title="2. 安装插件"></a>2. 安装插件</h4><p>使用<code>fastlane add_plugin [name]</code>安装插件</p>
+<p>下面会用到的两个插件:</p>
+<ul>
+<li><code>fastlane-plugin-versioning</code>：用来修改build版本号和version版本号。</li>
+<li><code>fastlane-plugin-pgyer</code>：用来上传ipa包到蒲公英。</li>
+</ul>
+<p>安装成功后在fastlane目录下会多出一个.Pluginfile文件</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># Autogenerated by fastlane</span></span><br><span class="line"><span class="comment">#</span></span><br><span class="line"><span class="comment"># Ensure this file is checked in to source control!</span></span><br><span class="line"></span><br><span class="line">gem <span class="string">&#x27;fastlane-plugin-pgyer&#x27;</span></span><br><span class="line">gem <span class="string">&#x27;fastlane-plugin-versioning&#x27;</span> //删除这一行就是删除了此插件</span><br></pre></td></tr></table></figure>
+
+<h3 id="1-2-8-Fastfile案例"><a href="#1-2-8-Fastfile案例" class="headerlink" title="1.2.8 Fastfile案例"></a>1.2.8 Fastfile案例</h3><h4 id="案例一：打包-钉钉"><a href="#案例一：打包-钉钉" class="headerlink" title="案例一：打包+钉钉"></a>案例一：打包+钉钉</h4><p>实现效果：一行命令自动打包、发布到蒲公英、然后自动发钉钉消息通知测试。(钉钉，建立的开发测试群，每次自动打包发版后，系统机器人就会自动提示)</p>
+<blockquote>
+<p> <a target="_blank" rel="noopener" href="https://juejin.cn/post/7008553785672859656">iOS+Fastlane自动打包发布测试、消息通知，完美结合！</a></p>
+</blockquote>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line">default_platform(:iOS)</span><br><span class="line">platform :iOS <span class="keyword">do</span></span><br><span class="line">  lane :hs_test <span class="keyword">do</span></span><br><span class="line">    <span class="comment"># add actions here: https://docs.fastlane.tools/actions</span></span><br><span class="line">	gym(</span><br><span class="line">		  clean: <span class="literal">true</span>,</span><br><span class="line">		  output_directory: <span class="string">&#x27;./fastlane/build&#x27;</span>,</span><br><span class="line">		  output_name:<span class="string">&quot;XX.ipa&quot;</span>,</span><br><span class="line">		  scheme: <span class="string">&#x27;XXX&#x27;</span>,</span><br><span class="line">		  configuration: <span class="string">&#x27;Debug&#x27;</span>,<span class="comment">###########</span></span><br><span class="line">		  <span class="comment"># sdk:&quot;iOS 12.0&quot;,</span></span><br><span class="line">		  <span class="comment"># archive_path:&quot;./fastlane/Archive&quot;,</span></span><br><span class="line">		  include_symbols:<span class="literal">true</span>,</span><br><span class="line">		  export_options: &#123;</span><br><span class="line">			    method: <span class="string">&#x27;development&#x27;</span>,<span class="comment">#测试包</span></span><br><span class="line">			    provisioningProfiles: &#123;</span><br><span class="line">				      <span class="string">&quot;com.xxxx.xxx&quot;</span> =&gt; <span class="string">&quot;20210906_dev&quot;</span> <span class="comment">#测试打包描述文件</span></span><br><span class="line">			    &#125;,</span><br><span class="line">		  &#125;</span><br><span class="line">	)</span><br><span class="line">	</span><br><span class="line">	updateVersionDes = <span class="string">&quot;提到蒲公英的版本更新信息;&quot;</span></span><br><span class="line">	pgyer(</span><br><span class="line">		api_key: <span class="string">&quot;蒲公英API Key&quot;</span>, </span><br><span class="line">		user_key: <span class="string">&quot;蒲公英user_key&quot;</span></span><br><span class="line">		update_description: updateVersionDes</span><br><span class="line">	)</span><br><span class="line">	end</span><br><span class="line">end</span><br></pre></td></tr></table></figure>
+
+<h4 id="案例二：多渠道打包"><a href="#案例二：多渠道打包" class="headerlink" title="案例二：多渠道打包"></a>案例二：多渠道打包</h4><p>业务场景要求多渠道打包，并且不同渠道对应的配置有差异（info.plist文件配置不同和图标不同），打包支持上传到fir测试平台，不同渠道打包的命名方式是【时间+渠道+名称.ipa】格式，最后还需要把对应的dsym文件和ipa文件压缩归档为一个zip包文件。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br><span class="line">147</span><br><span class="line">148</span><br><span class="line">149</span><br><span class="line">150</span><br><span class="line">151</span><br><span class="line">152</span><br><span class="line">153</span><br><span class="line">154</span><br><span class="line">155</span><br><span class="line">156</span><br><span class="line">157</span><br><span class="line">158</span><br><span class="line">159</span><br><span class="line">160</span><br><span class="line">161</span><br><span class="line">162</span><br><span class="line">163</span><br><span class="line">164</span><br><span class="line">165</span><br><span class="line">166</span><br><span class="line">167</span><br><span class="line">168</span><br><span class="line">169</span><br><span class="line">170</span><br><span class="line">171</span><br><span class="line">172</span><br><span class="line">173</span><br><span class="line">174</span><br><span class="line">175</span><br><span class="line">176</span><br><span class="line">177</span><br><span class="line">178</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># Customise this file, documentation can be found here:</span></span><br><span class="line"><span class="comment"># https://docs.fastlane.tools/actions/</span></span><br><span class="line"><span class="comment"># All available actions: https://docs.fastlane.tools/actions</span></span><br><span class="line"><span class="comment"># can also be listed using the `fastlane actions` command</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># Change the syntax highlighting to Ruby</span></span><br><span class="line"><span class="comment"># All lines starting with a # are ignored when running `fastlane`</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># If you want to automatically update fastlane if a new version is available:</span></span><br><span class="line"><span class="comment"># update_fastlane</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># This is the minimum version number required.</span></span><br><span class="line"><span class="comment"># Update this, if you use features of a newer version</span></span><br><span class="line">fastlane_version <span class="string">&quot;2.62.0&quot;</span></span><br><span class="line"></span><br><span class="line">default_platform :ios</span><br><span class="line"></span><br><span class="line">platform :ios <span class="keyword">do</span></span><br><span class="line">  before_all <span class="keyword">do</span></span><br><span class="line">    <span class="comment"># ENV[&quot;SLACK_URL&quot;] = &quot;https://hooks.slack.com/services/...&quot;</span></span><br><span class="line">    <span class="comment"># cocoapods</span></span><br><span class="line">    <span class="comment"># carthage</span></span><br><span class="line">  end</span><br><span class="line"></span><br><span class="line">  desc <span class="string">&quot;Runs all the tests&quot;</span></span><br><span class="line">  lane :<span class="built_in">test</span> <span class="keyword">do</span></span><br><span class="line">    scan</span><br><span class="line">  end</span><br><span class="line"></span><br><span class="line">  <span class="comment"># 定义全局参数：项目名称</span></span><br><span class="line">  projName = <span class="string">&quot;Plush&quot;</span></span><br><span class="line">  <span class="comment"># 定义全局参数：Assets路径</span></span><br><span class="line">  projAssetsPath = <span class="string">&quot;../#&#123;projName&#125;/Resources/Assets.xcassets&quot;</span></span><br><span class="line">  <span class="comment"># 定义全局参数：Info.plist路径</span></span><br><span class="line">  plistPath = <span class="string">&quot;./#&#123;projName&#125;/Resources/Info.plist&quot;</span></span><br><span class="line">  <span class="comment"># 定义全局参数：包名（接收之后压缩使用）</span></span><br><span class="line">  pkgName = <span class="string">&quot;&quot;</span></span><br><span class="line">  <span class="comment"># 定义全局参数：基本包名</span></span><br><span class="line">  basePkgName = <span class="string">&quot;Plush&quot;</span></span><br><span class="line">  <span class="comment"># 定义全局参数：输出目录，对应output_directory配置</span></span><br><span class="line">  outputBaseDir = <span class="string">&quot;output&quot;</span>  </span><br><span class="line"></span><br><span class="line">  desc <span class="string">&quot;自定义的渠道打包&quot;</span></span><br><span class="line">  desc <span class="string">&quot;使用方式：苹果助手：`bundle exec fastlane customChannelBeta ch:pgzs shouldUp:0`&quot;</span></span><br><span class="line">  desc <span class="string">&quot;使用方式：91助手：`bundle exec fastlane customChannelBeta ch:91zs shouldUp:0`&quot;</span></span><br><span class="line">  desc <span class="string">&quot;op 支持参数： ch:渠道类型[pgzs, 91zs, AppStore(默认)]&quot;</span></span><br><span class="line">  desc <span class="string">&quot;op 支持参数： shouldUp:是否需要上传[0, 1]&quot;</span></span><br><span class="line">  desc <span class="string">&quot;op 支持参数： up:上传类型[testflight, fir]&quot;</span></span><br><span class="line">  desc <span class="string">&quot;op 支持参数： exportMethod: export_method 配置[app-store, ad-hoc, package, enterprise, development（默认）, developer-id] ** up为testflight需要制定为app-store **&quot;</span></span><br><span class="line">  desc <span class="string">&quot;op 支持参数： version:版本(可选)&quot;</span></span><br><span class="line">  desc <span class="string">&quot;op 支持参数： build:构建版本(可选，testflight和appstore这个参数需要制定一个不重复的)&quot;</span></span><br><span class="line">  lane :customChannelBeta <span class="keyword">do</span> |op|</span><br><span class="line">    </span><br><span class="line">    <span class="comment"># 渠道</span></span><br><span class="line">    channel = op[:ch]</span><br><span class="line">    <span class="keyword">if</span> channel.nil? || channel.empty?</span><br><span class="line">      channel = <span class="string">&quot;AppStore&quot;</span></span><br><span class="line">    end</span><br><span class="line"></span><br><span class="line">    <span class="comment"># 打包名字</span></span><br><span class="line">    time = Time.new</span><br><span class="line">    dateTimeStr = <span class="string">&quot;#&#123;time.year&#125;-#&#123;time.month&#125;-#&#123;time.day&#125;_#&#123;time.hour&#125;-#&#123;time.min&#125;&quot;</span></span><br><span class="line">    pkgName = <span class="string">&quot;#&#123;dateTimeStr&#125;_#&#123;channel&#125;_#&#123;basePkgName&#125;.ipa&quot;</span></span><br><span class="line"></span><br><span class="line">    <span class="comment"># match(type: &quot;appstore&quot;) # more information: https://codesigning.guide</span></span><br><span class="line">    <span class="comment">#设置plist，此处传入plist路径，可以用来做环境配置</span></span><br><span class="line">    set_info_plist_value(path: plistPath, key: <span class="string">&quot;pt_channel&quot;</span>, value: channel)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    <span class="comment"># # 设置AppIcon</span></span><br><span class="line">    <span class="comment"># iconPath = op[:iconPath]</span></span><br><span class="line">    <span class="comment"># if iconPath.nil? || iconPath.empty?</span></span><br><span class="line">    <span class="comment">#   iconPath = &quot;channel_config/#&#123;channel&#125;/icon1024.png&quot;</span></span><br><span class="line">    <span class="comment">#   iconPath = &quot;channel_config/91zs/icon1024.png&quot;</span></span><br><span class="line">    <span class="comment"># end</span></span><br><span class="line">    <span class="comment"># puts &quot;iconPath = #&#123;iconPath&#125;&quot;</span></span><br><span class="line">    <span class="comment"># appicon(appicon_image_file: iconPath,</span></span><br><span class="line">    <span class="comment"># appicon_devices: [:ipad, :iphone, :ios_marketing, :watch, :watch_marketing])</span></span><br><span class="line"></span><br><span class="line">    <span class="comment"># 拷贝AppIcon.appiconset替换图标</span></span><br><span class="line">    iconAssetPath = op[:iconPath]</span><br><span class="line">    <span class="keyword">if</span> iconAssetPath.nil? || iconAssetPath.empty?</span><br><span class="line">      iconAssetPath = <span class="string">&quot;../channel_config/#&#123;channel&#125;/AppIcon.appiconset&quot;</span></span><br><span class="line">    end</span><br><span class="line">    cpCmd = <span class="string">&quot;cp -fRv #&#123;iconAssetPath&#125; #&#123;projAssetsPath&#125;&quot;</span></span><br><span class="line">    `<span class="comment">#&#123;cpCmd&#125;`</span></span><br><span class="line">    puts <span class="string">&quot;cpCmd = #&#123;cpCmd&#125;&quot;</span></span><br><span class="line"></span><br><span class="line">    <span class="comment"># 设置显示版本和构建版本</span></span><br><span class="line">    version = op[:version]</span><br><span class="line">    build = op[:build]</span><br><span class="line">    <span class="keyword">if</span> version.nil? || version.empty?</span><br><span class="line">    <span class="keyword">else</span></span><br><span class="line">      increment_version_number(version_number: version)</span><br><span class="line">    end</span><br><span class="line">    <span class="keyword">if</span> build.nil? || build.empty?</span><br><span class="line">    <span class="keyword">else</span></span><br><span class="line">      increment_build_number(build_number: build)</span><br><span class="line">    end</span><br><span class="line"></span><br><span class="line">    exportMethod = op[:exportMethod]</span><br><span class="line">    <span class="keyword">if</span> exportMethod.nil? || exportMethod.empty?</span><br><span class="line">      exportMethod = <span class="string">&quot;development&quot;</span></span><br><span class="line">    end</span><br><span class="line"></span><br><span class="line">    puts <span class="string">&quot;exportMethod = #&#123;exportMethod&#125;  pkgName = #&#123;pkgName&#125;  outputBaseDir = #&#123;outputBaseDir&#125;&quot;</span></span><br><span class="line"></span><br><span class="line">    <span class="comment"># build_ios_app 参数配置</span></span><br><span class="line">    gym(</span><br><span class="line">      export_method: exportMethod, <span class="comment"># 相当于配置 Archives-&gt;Export-&gt;mehtod:[app-store, ad-hoc, package, enterprise, development(默认), developer-id]</span></span><br><span class="line">      output_name: pkgName,</span><br><span class="line">      configuration: <span class="string">&quot;Release&quot;</span>, <span class="comment"># 相当于配置Scheme-&gt;Build Configuration:[Release, Debug]，Release会生成dsym文件，而Debug不会</span></span><br><span class="line">      output_directory: outputBaseDir,</span><br><span class="line">      scheme: <span class="string">&quot;Plush&quot;</span>,</span><br><span class="line">    )</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    <span class="comment"># 是否需要上传配置，默认不上传</span></span><br><span class="line">    shouldUp = op[:shouldUp]</span><br><span class="line">    <span class="keyword">if</span> shouldUp == <span class="string">&quot;1&quot;</span></span><br><span class="line">      <span class="comment"># 上传测试包到测试平台类型，默认上传到fir，可以支持多种测试平台使用逗号分隔</span></span><br><span class="line">      <span class="comment"># testflight, fir</span></span><br><span class="line">      upType = op[:up]</span><br><span class="line">      <span class="keyword">if</span> upType.nil? || upType.empty?</span><br><span class="line">        upType = <span class="string">&quot;fir&quot;</span></span><br><span class="line">      end</span><br><span class="line">      <span class="keyword">if</span> upType.include? <span class="string">&quot;testflight&quot;</span></span><br><span class="line">        pilot <span class="comment"># 上传到testflight</span></span><br><span class="line">      elsif upType.include? <span class="string">&quot;fir&quot;</span></span><br><span class="line">        firim(firim_api_token: <span class="string">&quot;xxxxxxxx&quot;</span>)<span class="comment">#上传fir，如果是新项目，fir会自动创建</span></span><br><span class="line">      end</span><br><span class="line">    end</span><br><span class="line">  end</span><br><span class="line"></span><br><span class="line">  desc <span class="string">&quot;上传到 App Store&quot;</span></span><br><span class="line">  lane :release <span class="keyword">do</span></span><br><span class="line">    <span class="comment"># match(type: &quot;appstore&quot;)</span></span><br><span class="line">    <span class="comment"># snapshot</span></span><br><span class="line">    gym(</span><br><span class="line">      export_method: <span class="string">&quot;app-store&quot;</span>, <span class="comment"># 相当于配置 Archives-&gt;Export-&gt;mehtod:[app-store, ad-hoc, package, enterprise, development, developer-id]</span></span><br><span class="line">      output_name: pkgName,</span><br><span class="line">      configuration: <span class="string">&quot;Release&quot;</span>, <span class="comment"># 相当于配置Scheme-&gt;Build Configuration:[Release, Debug]，Release会生成dsym文件，而Debug不会</span></span><br><span class="line">      output_directory: outputBaseDir,</span><br><span class="line">      scheme: <span class="string">&quot;Plush&quot;</span>,</span><br><span class="line">    )</span><br><span class="line">    deliver(force: <span class="literal">true</span>)</span><br><span class="line">    <span class="comment"># frameit</span></span><br><span class="line">  end</span><br><span class="line"></span><br><span class="line">  <span class="comment"># You can define as many lanes as you want</span></span><br><span class="line"></span><br><span class="line">  after_all <span class="keyword">do</span> |lane, op|</span><br><span class="line">    <span class="comment"># This block is called, only if the executed lane was successful</span></span><br><span class="line"></span><br><span class="line">    <span class="comment"># slack(</span></span><br><span class="line">    <span class="comment">#   message: &quot;Successfully deployed new App Update.&quot;</span></span><br><span class="line">    <span class="comment"># )</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> !pkgName.empty?</span><br><span class="line">      fileName = pkgName.gsub(<span class="string">&quot;.ipa&quot;</span>, <span class="string">&quot;&quot;</span>)</span><br><span class="line">      dsymName = <span class="string">&quot;#&#123;fileName&#125;.app.dSYM.zip&quot;</span></span><br><span class="line">      zipFileName = <span class="string">&quot;#&#123;fileName&#125;.zip&quot;</span></span><br><span class="line"></span><br><span class="line">      <span class="comment"># 使用zip命令压缩</span></span><br><span class="line">      zipCmd = <span class="string">&quot;zip ../#&#123;outputBaseDir&#125;/#&#123;zipFileName&#125; ../#&#123;outputBaseDir&#125;/#&#123;dsymName&#125; ../#&#123;outputBaseDir&#125;/#&#123;pkgName&#125;&quot;</span></span><br><span class="line">      puts <span class="string">&quot;begin zip #&#123;zipCmd&#125;&quot;</span></span><br><span class="line">      `<span class="comment">#&#123;zipCmd&#125;`</span></span><br><span class="line">    end</span><br><span class="line"></span><br><span class="line">  end</span><br><span class="line"></span><br><span class="line">  error <span class="keyword">do</span> |lane, exception|</span><br><span class="line">    <span class="comment"># slack(</span></span><br><span class="line">    <span class="comment">#   message: exception.message,</span></span><br><span class="line">    <span class="comment">#   success: false</span></span><br><span class="line">    <span class="comment"># )</span></span><br><span class="line">  end</span><br><span class="line">end</span><br></pre></td></tr></table></figure>
+
+<h4 id="案例三：UI模块实现交互"><a href="#案例三：UI模块实现交互" class="headerlink" title="案例三：UI模块实现交互"></a>案例三：UI模块实现交互</h4><blockquote>
+<p><a target="_blank" rel="noopener" href="https://www.jianshu.com/p/1e26a6688b8a">iOS开发fastlane从入门到入土(一):自动打包</a></p>
+</blockquote>
+<p>下面使用了.env配置方式：</p>
+<figure class="highlight ruby"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">APP_IDENTIFIER = <span class="string">&quot;com.xxx.xx&quot;</span> <span class="comment"># APP唯一标识符</span></span><br><span class="line">APPLE_ID = <span class="string">&quot;xx@xxx.com&quot;</span>       <span class="comment"># 苹果开发者账号</span></span><br><span class="line">TEAM_ID = <span class="string">&quot;CN*****SEU&quot;</span>        <span class="comment"># ADC Team ID</span></span><br><span class="line">ITC_TEAM_ID = <span class="string">&quot;11*****89&quot;</span>     <span class="comment"># ITC Team ID</span></span><br><span class="line"></span><br><span class="line">LANG = <span class="string">&quot;en_US.UTF-8&quot;</span>          <span class="comment"># 设置shell的语言环境</span></span><br><span class="line">LC_ALL = <span class="string">&quot;en_US.UTF-8&quot;</span></span><br><span class="line"></span><br><span class="line">SCHEME_NAME = <span class="string">&quot;YourProjectName&quot;</span> <span class="comment"># 工程名称</span></span><br><span class="line">METADATA_PATH = <span class="string">&quot;./metadata&quot;</span>    <span class="comment"># App 元数据及截图存放路径</span></span><br><span class="line">SCREENSHOTS_PATH = <span class="string">&quot;./screenshots&quot;</span></span><br><span class="line">OUTPUT_DIRECTORY = <span class="string">&quot;/Users/xx/Desktop/xxx/ipa&quot;</span> <span class="comment"># ipa输出文件夹路径</span></span><br><span class="line">DELIER_FORCE_OVERWRITE= <span class="literal">true</span>                   <span class="comment"># App 元数据及截图下载时 直接覆盖 不询问</span></span><br><span class="line">UPDATE_DESCRIPTION = <span class="string">&quot;fastlane自动打包上传测试&quot;</span>   <span class="comment"># 更新描述</span></span><br><span class="line">SUBMIT_FOR_REVIEW = <span class="literal">false</span>                      <span class="comment"># 自动提交审核</span></span><br><span class="line">AUTOMATIC_RELEASE = <span class="literal">false</span>                      <span class="comment"># 审核通过后立刻发布</span></span><br><span class="line"></span><br><span class="line">PP_ADHOC = <span class="string">&quot;xxxxxx_ADHoc&quot;</span>       <span class="comment"># PP文件</span></span><br><span class="line">PP_APPSTORE = <span class="string">&quot;xxxxxx_Distribution&quot;</span></span><br></pre></td></tr></table></figure>
+
+<figure class="highlight ruby"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br><span class="line">147</span><br><span class="line">148</span><br><span class="line">149</span><br><span class="line">150</span><br><span class="line">151</span><br><span class="line">152</span><br><span class="line">153</span><br><span class="line">154</span><br><span class="line">155</span><br><span class="line">156</span><br><span class="line">157</span><br><span class="line">158</span><br><span class="line">159</span><br><span class="line">160</span><br><span class="line">161</span><br><span class="line">162</span><br><span class="line">163</span><br><span class="line">164</span><br><span class="line">165</span><br><span class="line">166</span><br><span class="line">167</span><br><span class="line">168</span><br><span class="line">169</span><br><span class="line">170</span><br><span class="line">171</span><br><span class="line">172</span><br><span class="line">173</span><br><span class="line">174</span><br><span class="line">175</span><br><span class="line">176</span><br><span class="line">177</span><br><span class="line">178</span><br><span class="line">179</span><br><span class="line">180</span><br><span class="line">181</span><br><span class="line">182</span><br><span class="line">183</span><br><span class="line">184</span><br><span class="line">185</span><br><span class="line">186</span><br><span class="line">187</span><br><span class="line">188</span><br><span class="line">189</span><br><span class="line">190</span><br><span class="line">191</span><br><span class="line">192</span><br><span class="line">193</span><br><span class="line">194</span><br><span class="line">195</span><br><span class="line">196</span><br><span class="line">197</span><br><span class="line">198</span><br><span class="line">199</span><br><span class="line">200</span><br><span class="line">201</span><br><span class="line">202</span><br><span class="line">203</span><br><span class="line">204</span><br><span class="line">205</span><br><span class="line">206</span><br><span class="line">207</span><br><span class="line">208</span><br><span class="line">209</span><br><span class="line">210</span><br><span class="line">211</span><br><span class="line">212</span><br><span class="line">213</span><br><span class="line">214</span><br><span class="line">215</span><br><span class="line">216</span><br><span class="line">217</span><br><span class="line">218</span><br><span class="line">219</span><br><span class="line">220</span><br><span class="line">221</span><br><span class="line">222</span><br><span class="line">223</span><br><span class="line">224</span><br><span class="line">225</span><br><span class="line">226</span><br><span class="line">227</span><br><span class="line">228</span><br><span class="line">229</span><br><span class="line">230</span><br><span class="line">231</span><br><span class="line">232</span><br><span class="line">233</span><br><span class="line">234</span><br><span class="line">235</span><br><span class="line">236</span><br><span class="line">237</span><br><span class="line">238</span><br><span class="line">239</span><br><span class="line">240</span><br><span class="line">241</span><br><span class="line">242</span><br><span class="line">243</span><br><span class="line">244</span><br><span class="line">245</span><br><span class="line">246</span><br><span class="line">247</span><br><span class="line">248</span><br><span class="line">249</span><br><span class="line">250</span><br><span class="line">251</span><br><span class="line">252</span><br><span class="line">253</span><br><span class="line">254</span><br><span class="line">255</span><br><span class="line">256</span><br><span class="line">257</span><br><span class="line">258</span><br><span class="line">259</span><br><span class="line">260</span><br><span class="line">261</span><br><span class="line">262</span><br><span class="line">263</span><br><span class="line">264</span><br><span class="line">265</span><br><span class="line">266</span><br><span class="line">267</span><br><span class="line">268</span><br><span class="line">269</span><br><span class="line">270</span><br><span class="line">271</span><br><span class="line">272</span><br></pre></td><td class="code"><pre><span class="line">default_platform(<span class="symbol">:ios</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 定义全局参数 大写开头为常量，小写、_开头为变量，$开头为全局变量(直接用#访问)</span></span><br><span class="line">SCHEME_NAME        = ENV[<span class="string">&#x27;SCHEME_NAME&#x27;</span>]           <span class="comment"># scheme名</span></span><br><span class="line">WORKSPACE_NAME     = <span class="string">&quot;<span class="subst">#&#123;SCHEME_NAME&#125;</span>.xcworkspace&quot;</span> <span class="comment"># workspace名</span></span><br><span class="line">APP_IDENTIFIER     = ENV[<span class="string">&#x27;APP_IDENTIFIER&#x27;</span>]        <span class="comment"># Bundle ID</span></span><br><span class="line">APP_NAME           = <span class="string">&#x27;FastLaneDemo&#x27;</span>               <span class="comment"># app名</span></span><br><span class="line">INFO_PLIST_PATH    = <span class="string">&quot;<span class="subst">#&#123;SCHEME_NAME&#125;</span>/Info.plist&quot;</span>  <span class="comment"># plist文件路径</span></span><br><span class="line"><span class="variable">$VERSION_NUMBER</span>    = <span class="string">&quot;&quot;</span>                           <span class="comment"># 版本号</span></span><br><span class="line"><span class="variable">$BUILD_NUMBER</span>      = <span class="string">&quot;&quot;</span>                           <span class="comment"># 构建版本号</span></span><br><span class="line"><span class="variable">$OUTPUT_DIRECTORY</span>  = ENV[<span class="string">&#x27;OUTPUT_DIRECTORY&#x27;</span>]      <span class="comment"># ipa导出路径</span></span><br><span class="line"><span class="variable">$IPA_PATH</span>          = <span class="string">&quot;&quot;</span>                           <span class="comment"># ipa安装包路径</span></span><br><span class="line"><span class="variable">$PREPARE_COMPLETED</span> = <span class="literal">false</span>                        <span class="comment"># 是否准备完成</span></span><br><span class="line">PGYER_API_KEY      = <span class="string">&#x27;xxxxxxx&#x27;</span>                    <span class="comment"># 蒲公英 api_key user_key</span></span><br><span class="line">PGYER_USER_KEY     = <span class="string">&#x27;xxxxxxx&#x27;</span></span><br><span class="line">  </span><br><span class="line">platform <span class="symbol">:ios</span> <span class="keyword">do</span></span><br><span class="line">  before_all <span class="keyword">do</span></span><br><span class="line">    <span class="comment"># ENV[&quot;SLACK_URL&quot;] = &quot;https://hooks.slack.com/services/...&quot;</span></span><br><span class="line">    <span class="comment"># 拉取远程最新代码</span></span><br><span class="line">    <span class="comment"># git_pull</span></span><br><span class="line">    <span class="comment"># 执行 pod instasll</span></span><br><span class="line">    <span class="comment"># cocoapods</span></span><br><span class="line">    <span class="comment"># carthage</span></span><br><span class="line">  <span class="keyword">end</span></span><br><span class="line"></span><br><span class="line">  desc <span class="string">&#x27;打包前的准备工作&#x27;</span></span><br><span class="line">  lane <span class="symbol">:prepare</span> <span class="keyword">do</span> <span class="params">|options|</span></span><br><span class="line">    <span class="keyword">if</span> !<span class="variable">$PREPARE</span>_COMPLETED</span><br><span class="line">      puts <span class="string">&quot;\033[32m====================即将开始打包====================\033[0m\n&quot;</span></span><br><span class="line">      puts <span class="string">&#x27;您好，我是智能机器人邓逼逼，即将为你自动打包&#x27;</span></span><br><span class="line">    <span class="keyword">end</span></span><br><span class="line"></span><br><span class="line">    export_method = options[<span class="symbol">:export_method</span>]</span><br><span class="line">    select_method = <span class="string">&#x27;-1&#x27;</span></span><br><span class="line">    <span class="comment"># =&gt; 如果没有选择打包方式，提示选择打包方式</span></span><br><span class="line">    <span class="keyword">if</span> export_method.<span class="literal">nil</span>? <span class="params">||</span> export_method.empty?</span><br><span class="line">      puts <span class="string">&quot;请选择打包方式 \033[33m1:上传appstore(默认)  2:打包adHoc上传蒲公英  3:打包Inhouse上传蒲公英  0:结束打包  回车表示使用默认打包\033[0m&quot;</span></span><br><span class="line">      select_method = STDIN.gets.chomp</span><br><span class="line">      <span class="keyword">if</span> select_method!=<span class="string">&#x27;1&#x27;</span> &amp;&amp; select_method!=<span class="string">&#x27;2&#x27;</span> &amp;&amp; select_method!=<span class="string">&#x27;3&#x27;</span> &amp;&amp; !select_method.empty?</span><br><span class="line">        <span class="comment"># supported [:select, :message, :verbose, :error, :password, :input, :success, :important, :command, :user_error!, :command_output, :deprecated, :header, :content_error, :interactive?, :confirm, :crash!, :not_implemented, :shell_error!, :build_failure!, :test_failure!, :abort_with_message!]</span></span><br><span class="line">          UI.user_error!(<span class="string">&quot;您已取消打包 🚀&quot;</span>)</span><br><span class="line">      <span class="keyword">end</span></span><br><span class="line">    <span class="keyword">end</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> !<span class="variable">$PREPARE</span>_COMPLETED</span><br><span class="line">      currentVersion = get_info_plist_value(<span class="symbol">path:</span> <span class="string">&quot;<span class="subst">#&#123;INFO_PLIST_PATH&#125;</span>&quot;</span>, <span class="symbol">key:</span> <span class="string">&quot;CFBundleShortVersionString&quot;</span>)</span><br><span class="line">      currentBuild = get_info_plist_value(<span class="symbol">path:</span> <span class="string">&quot;<span class="subst">#&#123;INFO_PLIST_PATH&#125;</span>&quot;</span>, <span class="symbol">key:</span> <span class="string">&quot;CFBundleVersion&quot;</span>)</span><br><span class="line">      puts <span class="string">&quot;当前工程的版本号是:\033[33m<span class="subst">#&#123;currentVersion&#125;</span>\033[0m 构建版本号是:\033[33m<span class="subst">#&#123;currentBuild&#125;</span>\033[0m&quot;</span></span><br><span class="line">      version = options[<span class="symbol">:version</span>]</span><br><span class="line">      build = options[<span class="symbol">:build</span>]</span><br><span class="line">      output_directory = options[<span class="symbol">:output_directory</span>]</span><br><span class="line">      </span><br><span class="line">      <span class="comment"># =&gt; 如果没有选择版本号，提示是否需要输入版本号</span></span><br><span class="line">      <span class="keyword">if</span> version.<span class="literal">nil</span>? <span class="params">||</span> version.empty?</span><br><span class="line">        puts <span class="string">&quot;请输入版本号，回车表示使用当前版本号\033[33m<span class="subst">#&#123;currentVersion&#125;</span>\033[0m&quot;</span></span><br><span class="line">        version = STDIN.gets.chomp</span><br><span class="line">        <span class="keyword">if</span> version == <span class="string">&#x27;&#x27;</span> <span class="comment"># 回车</span></span><br><span class="line">          <span class="variable">$VERSION_NUMBER</span> = currentVersion</span><br><span class="line">        <span class="keyword">else</span></span><br><span class="line">          <span class="variable">$VERSION_NUMBER</span> = version</span><br><span class="line">        <span class="keyword">end</span></span><br><span class="line">      <span class="keyword">else</span></span><br><span class="line">        <span class="variable">$VERSION_NUMBER</span> = version</span><br><span class="line">      <span class="keyword">end</span></span><br><span class="line">      <span class="comment"># =&gt; 如果没有选择构建版本号，提示是否需要输入构建版本号</span></span><br><span class="line">      <span class="keyword">if</span> build.<span class="literal">nil</span>? <span class="params">||</span> build.empty?</span><br><span class="line">        puts <span class="string">&quot;请输入构建版本号，回车表示使用默认自动生成构建版本号&quot;</span></span><br><span class="line">        build = STDIN.gets.chomp</span><br><span class="line">        <span class="keyword">if</span> build == <span class="string">&#x27;&#x27;</span> <span class="comment"># 回车</span></span><br><span class="line">          <span class="comment"># $BUILD_NUMBER = AUTO_BUILD_NUMBER</span></span><br><span class="line">        <span class="keyword">else</span></span><br><span class="line">          <span class="variable">$BUILD_NUMBER</span> = build</span><br><span class="line">        <span class="keyword">end</span></span><br><span class="line">      <span class="keyword">else</span></span><br><span class="line">        <span class="variable">$BUILD_NUMBER</span> = build</span><br><span class="line">      <span class="keyword">end</span></span><br><span class="line">      <span class="comment"># =&gt; 如果没有选择ipa输出目录，提示是否需要输入打包路径</span></span><br><span class="line">      <span class="keyword">if</span> output_directory.<span class="literal">nil</span>? <span class="params">||</span> output_directory.empty?</span><br><span class="line">        puts <span class="string">&quot;请指定ipa包输出路径，回车表示使用默认输出路径:\033[33m#$OUTPUT_DIRECTORY\033[0m&quot;</span></span><br><span class="line">        output_directory = STDIN.gets.chomp</span><br><span class="line">        <span class="keyword">if</span> output_directory == <span class="string">&#x27;&#x27;</span> <span class="comment"># 回车</span></span><br><span class="line">        <span class="keyword">else</span></span><br><span class="line">          <span class="variable">$OUTPUT_DIRECTORY</span> = output_directory</span><br><span class="line">        <span class="keyword">end</span></span><br><span class="line">      <span class="keyword">else</span></span><br><span class="line">        <span class="variable">$OUTPUT_DIRECTORY</span> = output_directory</span><br><span class="line">      <span class="keyword">end</span></span><br><span class="line">    <span class="keyword">end</span></span><br><span class="line">    </span><br><span class="line">    <span class="variable">$PREPARE_COMPLETED</span> = <span class="literal">true</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> select_method != <span class="string">&#x27;-1&#x27;</span> <span class="comment"># 已选择</span></span><br><span class="line">      <span class="keyword">case</span> select_method</span><br><span class="line">      <span class="keyword">when</span> <span class="string">&#x27;1&#x27;</span>,<span class="string">&#x27;&#x27;</span></span><br><span class="line">        <span class="comment"># 发布到appstore</span></span><br><span class="line">        release_appstore(options)</span><br><span class="line">      <span class="keyword">when</span> <span class="string">&#x27;2&#x27;</span></span><br><span class="line">        puts <span class="string">&quot;发布到蒲公英&quot;</span></span><br><span class="line">        <span class="comment"># 打包adhoc发布到蒲公英</span></span><br><span class="line">        release_adhoc(options)</span><br><span class="line">      <span class="keyword">when</span> <span class="string">&#x27;3&#x27;</span></span><br><span class="line">        <span class="comment"># 打包inhouse发布到蒲公英</span></span><br><span class="line">        </span><br><span class="line">      <span class="keyword">end</span></span><br><span class="line">      <span class="keyword">next</span></span><br><span class="line">    <span class="keyword">end</span></span><br><span class="line">    </span><br><span class="line">    <span class="comment"># =&gt; 详细信息</span></span><br><span class="line">    summary(options)</span><br><span class="line"></span><br><span class="line">  <span class="keyword">end</span></span><br><span class="line"></span><br><span class="line">  desc <span class="string">&quot;信息确认&quot;</span></span><br><span class="line">  lane <span class="symbol">:summary</span> <span class="keyword">do</span> <span class="params">|options|</span></span><br><span class="line">    puts <span class="string">&quot;\033[32m====================信息确认====================\033[0m\n&quot;</span></span><br><span class="line">    puts <span class="string">&quot;您设置的包输出路径为:&quot;</span></span><br><span class="line">    <span class="comment"># supported [:select, :message, :verbose, :error, :password, :input, :success, :important, :command, :user_error!, :command_output, :deprecated, :header, :content_error, :interactive?, :confirm, :crash!, :not_implemented, :shell_error!, :build_failure!, :test_failure!, :abort_with_message!]</span></span><br><span class="line">    UI.important <span class="string">&quot;#$OUTPUT_DIRECTORY&quot;</span></span><br><span class="line">    puts <span class="string">&quot;您选择的打包方式为:&quot;</span></span><br><span class="line">    UI.important <span class="string">&quot;<span class="subst">#&#123;options[<span class="symbol">:export_method</span>]&#125;</span>&quot;</span></span><br><span class="line">    puts <span class="string">&quot;指定的发布版本号为:&quot;</span></span><br><span class="line">    UI.important <span class="string">&quot;#$VERSION_NUMBER&quot;</span></span><br><span class="line">    confirm = UI.confirm <span class="string">&quot;确认信息是否正确,输入y继续打包&quot;</span></span><br><span class="line">    <span class="keyword">if</span> !confirm</span><br><span class="line">      UI.user_error!(<span class="string">&quot;您已取消打包 🚀&quot;</span>)</span><br><span class="line">    <span class="keyword">end</span></span><br><span class="line">    puts <span class="string">&quot;\033[32m====================信息确认====================\033[0m\n&quot;</span></span><br><span class="line">    puts <span class="string">&quot;3s后开始自动打包...&quot;</span></span><br><span class="line">    sleep(<span class="number">3</span>)</span><br><span class="line">  <span class="keyword">end</span></span><br><span class="line"></span><br><span class="line">  desc <span class="string">&quot;更新版本号&quot;</span></span><br><span class="line">  lane <span class="symbol">:update_version</span> <span class="keyword">do</span></span><br><span class="line">    puts(<span class="string">&quot;*************| 更新version #$VERSION_NUMBER |*************&quot;</span>)</span><br><span class="line">    increment_version_number_in_plist(</span><br><span class="line">      <span class="symbol">target:</span> SCHEME_NAME,</span><br><span class="line">      <span class="symbol">version_number:</span> <span class="variable">$VERSION</span>_NUMBER</span><br><span class="line">    )</span><br><span class="line">    puts(<span class="string">&quot;*************| 更新build #$BUILD_NUMBER |*************&quot;</span>)</span><br><span class="line">    increment_build_number_in_plist(</span><br><span class="line">       <span class="symbol">target:</span> SCHEME_NAME,</span><br><span class="line">       <span class="symbol">build_number:</span> <span class="variable">$BUILD</span>_NUMBER</span><br><span class="line">    )</span><br><span class="line">  <span class="keyword">end</span></span><br><span class="line"></span><br><span class="line">  desc <span class="string">&quot;打包发布&quot;</span></span><br><span class="line">  lane <span class="symbol">:release</span> <span class="keyword">do</span> <span class="params">|options|</span></span><br><span class="line">    prepare(options)</span><br><span class="line">  <span class="keyword">end</span></span><br><span class="line"></span><br><span class="line">  desc <span class="string">&quot;发布到appstore&quot;</span></span><br><span class="line">  lane <span class="symbol">:release_appstore</span> <span class="keyword">do</span> <span class="params">|options|</span></span><br><span class="line">    options[<span class="symbol">:export_method</span>] = <span class="string">&quot;app-store&quot;</span></span><br><span class="line">    prepare(options)</span><br><span class="line">    build(options)</span><br><span class="line">    deliver_appstore</span><br><span class="line">  <span class="keyword">end</span></span><br><span class="line"></span><br><span class="line">  desc <span class="string">&quot;发布ad-hoc&quot;</span></span><br><span class="line">  lane <span class="symbol">:release_adhoc</span> <span class="keyword">do</span> <span class="params">|options|</span></span><br><span class="line">    options[<span class="symbol">:export_method</span>] = <span class="string">&quot;ad-hoc&quot;</span></span><br><span class="line">    prepare(options)</span><br><span class="line">    build(options)</span><br><span class="line">    deliver_pgyer</span><br><span class="line">  <span class="keyword">end</span></span><br><span class="line"></span><br><span class="line">  desc <span class="string">&quot;上传到蒲公英&quot;</span></span><br><span class="line">  lane <span class="symbol">:deliver_pgyer</span> <span class="keyword">do</span> <span class="params">|options|</span></span><br><span class="line">    pgyer( </span><br><span class="line">       <span class="symbol">api_key:</span> PGYER_API_KEY, <span class="comment"># 从蒲公英项目详情中获取的apikey</span></span><br><span class="line">       <span class="symbol">user_key:</span> PGYER_USER_KEY, <span class="comment"># 从蒲公英项目详情中获取的 userkey</span></span><br><span class="line">       <span class="symbol">ipa:</span> <span class="variable">$IPA_PATH</span>, <span class="comment">#ipa包路径</span></span><br><span class="line">       <span class="comment">#password: &quot;123456&quot;, #设置安装密码</span></span><br><span class="line">       <span class="comment">#install_type: &quot;2&quot;, #1：公开，2：密码安装，3：邀请安装，4：回答问题安装。默认为1公开</span></span><br><span class="line">       <span class="symbol">update_description:</span> ENV[<span class="string">&#x27;UPDATE_DESCRIPTION&#x27;</span>]</span><br><span class="line">    )</span><br><span class="line">  <span class="keyword">end</span></span><br><span class="line">  </span><br><span class="line">desc <span class="string">&quot;上传到appstore&quot;</span></span><br><span class="line">  lane <span class="symbol">:deliver_appstore</span> <span class="keyword">do</span> <span class="params">|options|</span></span><br><span class="line">    deliver( </span><br><span class="line">       <span class="symbol">username:</span> ENV[<span class="string">&#x27;APPLE_ID&#x27;</span>], <span class="comment"># 开发者账号</span></span><br><span class="line">       <span class="symbol">team_id:</span> ENV[<span class="string">&#x27;ITC_TEAM_ID&#x27;</span>], <span class="comment"># ITC Team ID</span></span><br><span class="line">       <span class="symbol">dev_portal_team_id:</span> ENV[<span class="string">&#x27;TEAM_ID&#x27;</span>], <span class="comment"># ADC Team ID</span></span><br><span class="line">       <span class="symbol">app_identifier:</span> ENV[<span class="string">&#x27;APP_IDENTIFIER&#x27;</span>], <span class="comment"># bundle ID</span></span><br><span class="line">       <span class="symbol">ipa:</span> <span class="variable">$IPA_PATH</span>, <span class="comment"># ipa包路径</span></span><br><span class="line">       <span class="symbol">app_version:</span> <span class="variable">$VERSION_NUMBER</span>, <span class="comment"># 更新版本号</span></span><br><span class="line">       <span class="symbol">release_notes:</span> &#123;</span><br><span class="line">         <span class="string">&#x27;zh-Hans&#x27;</span> =&gt; <span class="string">&quot;这是第一个版本哦&quot;</span></span><br><span class="line">       &#125;,</span><br><span class="line">       <span class="symbol">force:</span> <span class="literal">true</span>, <span class="comment"># 设置true，会跳过预览页面，直接上架</span></span><br><span class="line">       <span class="symbol">skip_screenshots:</span> <span class="literal">true</span>, <span class="comment"># 不上传截图</span></span><br><span class="line">       <span class="symbol">skip_metadata:</span> <span class="literal">true</span>, <span class="comment"># 不上传元数据</span></span><br><span class="line">    )</span><br><span class="line">  <span class="keyword">end</span></span><br><span class="line"></span><br><span class="line">  desc <span class="string">&quot;打包&quot;</span></span><br><span class="line">  lane <span class="symbol">:build</span> <span class="keyword">do</span> <span class="params">|options|</span></span><br><span class="line">    <span class="comment"># gym用来编译ipa</span></span><br><span class="line">    <span class="comment"># 编译时间</span></span><br><span class="line">    build_time = Time.now.strftime(<span class="string">&quot;%Y-%m-%d %H-%M-%S&quot;</span>)</span><br><span class="line">    <span class="comment"># 自动生成的build版本号</span></span><br><span class="line">    auto_build_number = Time.now.strftime(<span class="string">&quot;%Y%m%d%H%M%S&quot;</span>)</span><br><span class="line">    <span class="keyword">if</span> <span class="variable">$BUILD_NUMBER</span>.empty?</span><br><span class="line">      <span class="variable">$BUILD_NUMBER</span> = auto_build_number</span><br><span class="line">    <span class="keyword">end</span></span><br><span class="line"></span><br><span class="line">    <span class="comment"># 更新版本号</span></span><br><span class="line">    update_version</span><br><span class="line"></span><br><span class="line">    <span class="comment"># 获取打包方式</span></span><br><span class="line">    export_method = options[<span class="symbol">:export_method</span>]</span><br><span class="line">    <span class="comment"># 配置项</span></span><br><span class="line">    configuration = <span class="string">&#x27;Release&#x27;</span></span><br><span class="line">    <span class="comment"># pp文件</span></span><br><span class="line">    provisioningProfiles = ENV[<span class="string">&#x27;PP_APPSTORE&#x27;</span>]</span><br><span class="line">    <span class="comment"># 输出目录</span></span><br><span class="line">    outputDir = <span class="string">&#x27;&#x27;</span></span><br><span class="line">    <span class="comment"># 输出文件名</span></span><br><span class="line">    outputName = <span class="string">&quot;<span class="subst">#&#123;SCHEME_NAME&#125;</span>_#$VERSION_NUMBER_#$BUILD_NUMBER_<span class="subst">#&#123;export_method&#125;</span>.ipa&quot;</span></span><br><span class="line">    <span class="keyword">case</span> export_method</span><br><span class="line">    <span class="keyword">when</span> <span class="string">&#x27;development&#x27;</span></span><br><span class="line">      configuration = <span class="string">&#x27;Debug&#x27;</span></span><br><span class="line">      outputDir = <span class="string">&quot;#$OUTPUT_DIRECTORY/Development/<span class="subst">#&#123;SCHEME_NAME&#125;</span>-<span class="subst">#&#123;build_time&#125;</span>&quot;</span></span><br><span class="line">    <span class="keyword">when</span> <span class="string">&#x27;app-store&#x27;</span></span><br><span class="line">      outputDir = <span class="string">&quot;#$OUTPUT_DIRECTORY/Appstore/<span class="subst">#&#123;SCHEME_NAME&#125;</span>-<span class="subst">#&#123;build_time&#125;</span>&quot;</span></span><br><span class="line">    <span class="keyword">when</span> <span class="string">&#x27;ad-hoc&#x27;</span></span><br><span class="line">       provisioningProfiles = ENV[<span class="string">&#x27;PP_ADHOC&#x27;</span>]</span><br><span class="line">       outputDir = <span class="string">&quot;#$OUTPUT_DIRECTORY/Pgyer/<span class="subst">#&#123;SCHEME_NAME&#125;</span>-<span class="subst">#&#123;build_time&#125;</span>&quot;</span></span><br><span class="line">    <span class="keyword">when</span> <span class="string">&#x27;enterprise&#x27;</span></span><br><span class="line">       provisioningProfiles = ENV[<span class="string">&#x27;PP_ENTERPRISE&#x27;</span>]</span><br><span class="line">       outputDir = <span class="string">&quot;#$OUTPUT_DIRECTORY/Pgyer/<span class="subst">#&#123;SCHEME_NAME&#125;</span>-<span class="subst">#&#123;build_time&#125;</span>&quot;</span></span><br><span class="line">    <span class="keyword">end</span></span><br><span class="line">   </span><br><span class="line">    <span class="variable">$IPA_PATH</span> = gym(</span><br><span class="line">       <span class="symbol">clean:</span> <span class="string">&#x27;true&#x27;</span>, <span class="comment"># 在打包前是否先执行clean。</span></span><br><span class="line">       <span class="symbol">scheme:</span> <span class="string">&quot;<span class="subst">#&#123;SCHEME_NAME&#125;</span>&quot;</span>, <span class="comment"># 指定项目的scheme名称</span></span><br><span class="line">       <span class="symbol">workspace:</span> <span class="string">&quot;<span class="subst">#&#123;WORKSPACE_NAME&#125;</span>&quot;</span>, <span class="comment"># 指定.xcworkspace文件的路径。</span></span><br><span class="line">       <span class="symbol">configuration:</span> <span class="string">&quot;<span class="subst">#&#123;configuration&#125;</span>&quot;</span>, <span class="comment"># 指定打包时的配置项，默认为Release</span></span><br><span class="line">       <span class="symbol">output_name:</span> <span class="string">&quot;<span class="subst">#&#123;outputName&#125;</span>&quot;</span>, <span class="comment"># 指定生成的.ipa文件的名称，应包含文件扩展名。</span></span><br><span class="line">       <span class="symbol">output_directory:</span> <span class="string">&quot;<span class="subst">#&#123;outputDir&#125;</span>&quot;</span>, <span class="comment"># 指定.ipa文件的输出目录</span></span><br><span class="line">       <span class="symbol">include_symbols:</span> <span class="string">&#x27;true&#x27;</span>, <span class="comment"># 是否导出符号表</span></span><br><span class="line">       <span class="comment"># include_bitcode: &#x27;false&#x27;,  # 是否使用bitcode打包</span></span><br><span class="line">       <span class="symbol">export_xcargs:</span> <span class="string">&quot;-allowProvisioningUpdates&quot;</span>, <span class="comment">#访问钥匙串</span></span><br><span class="line">       <span class="symbol">silent:</span> <span class="literal">true</span>,  <span class="comment"># 是否隐藏打包时不需要的信息。</span></span><br><span class="line">       <span class="symbol">buildlog_path:</span> <span class="string">&quot;<span class="subst">#&#123;outputDir&#125;</span>&quot;</span>, <span class="comment"># 指定编译日志文件的输出目录</span></span><br><span class="line">       <span class="symbol">export_options:</span> &#123;</span><br><span class="line">        <span class="symbol">method:</span> <span class="string">&quot;<span class="subst">#&#123;export_method&#125;</span>&quot;</span>, <span class="comment"># 指定导出.ipa时使用的方法，可用选项：app-store,ad-hoc,enterprise,development</span></span><br><span class="line">        <span class="symbol">thinning:</span> <span class="string">&quot;&lt;none&gt;&quot;</span>,  <span class="comment"># 是否瘦身</span></span><br><span class="line">        <span class="symbol">provisioningProfiles:</span> &#123;  <span class="comment"># 指定pp文件</span></span><br><span class="line">          <span class="string">&quot;<span class="subst">#&#123;APP_IDENTIFIER&#125;</span>&quot;</span> =&gt; <span class="string">&quot;<span class="subst">#&#123;provisioningProfiles&#125;</span>&quot;</span></span><br><span class="line">        &#125;,</span><br><span class="line">        <span class="symbol">signingStyle:</span> <span class="string">&quot;manual&quot;</span> <span class="comment"># 手动签名</span></span><br><span class="line">       &#125;</span><br><span class="line">    )</span><br><span class="line">  <span class="keyword">end</span></span><br><span class="line"></span><br><span class="line">  after_all <span class="keyword">do</span> <span class="params">|lane|</span></span><br><span class="line">    <span class="comment">#slack(</span></span><br><span class="line">    <span class="comment">#   message: &quot;Successfully deployed new App Update.&quot;</span></span><br><span class="line">    <span class="comment">#)</span></span><br><span class="line">  <span class="keyword">end</span></span><br><span class="line"></span><br><span class="line">  error <span class="keyword">do</span> <span class="params">|lane, exception|</span></span><br><span class="line">     <span class="comment">#slack(</span></span><br><span class="line">     <span class="comment">#  message: exception.message,</span></span><br><span class="line">     <span class="comment">#  success: false</span></span><br><span class="line">     <span class="comment">#)</span></span><br><span class="line">  <span class="keyword">end</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">end</span></span><br></pre></td></tr></table></figure>
+
+<h1 id="二、CI-CD"><a href="#二、CI-CD" class="headerlink" title="二、CI CD"></a>二、CI CD</h1><h2 id="2-1-CI-CD是什么"><a href="#2-1-CI-CD是什么" class="headerlink" title="2.1 CI CD是什么"></a>2.1 CI CD是什么</h2><blockquote>
+<p>CI(Continuous integration) 指持续集成，它属于开发人员的自动化流程。</p>
+<p>CD指持续交付(Continuous Delivery)和/或持续部署(continuous deployment)，这些相关概念有时会交叉使用。两者都事关管道后续阶段的自动化，但它们有时也会单独使用，用于说明自动化程度。</p>
+</blockquote>
+<h3 id="2-1-1-持续集成"><a href="#2-1-1-持续集成" class="headerlink" title="2.1.1 持续集成"></a>2.1.1 持续集成</h3><p><strong>持续集成(Continuous integration)<strong>指的是，频繁地（一天多次）将代码集成到主干。</strong>持续集成强调开发人员提交了新代码之后，立刻进行构建、（单元）测试。</strong>根据测试结果，我们可以确定新代码和原有代码能否正确地集成在一起。</p>
+<p>它的好处主要有两个。</p>
+<ul>
+<li><strong>快速发现错误。</strong>每完成一点更新，就集成到主干，可以快速发现错误，定位错误也比较容易。</li>
+<li><strong>防止分支大幅偏离主干。</strong>如果不是经常集成，主干又在不断更新，会导致以后集成的难度变大，甚至难以集成。</li>
+</ul>
+<p><strong>持续集成的目的，就是让产品可以快速迭代，同时还能保持高质量。它的核心措施是，代码集成到主干之前，必须通过自动化测试。只要有一个测试用例失败，就不能集成。</strong></p>
+<p>下图反应了CI的工作模式：</p>
+<img src="/images/se/cicd/ci.jpg" style="zoom:75%;" />
+
+<h3 id="2-1-2-持续交付"><a href="#2-1-2-持续交付" class="headerlink" title="2.1.2 持续交付"></a>2.1.2 持续交付</h3><p><strong>持续交付（Continuous delivery）指的是，频繁地将软件的新版本，交付给质量团队或者用户，以供评审。</strong>如果评审通过，代码就进入生产阶段。</p>
+<p>持续交付可以看作持续集成的下一步。将集成后的代码部署到更贴近真实运行环境(类生产环境)中。比如，我们完成单元测试后，可以把代码部署到连接数据库的Staging环境中更多的测试。如果代码没有问题，可以继续手动部署到生产环境。</p>
+<p>它强调的是，不管怎么更新，软件是随时随地可以交付的。</p>
+<img src="/images/se/cicd/cicd.jpg" style="zoom:75%;" />
+
+<h3 id="2-1-3-持续部署"><a href="#2-1-3-持续部署" class="headerlink" title="2.1.3 持续部署"></a>2.1.3 持续部署</h3><p><strong>持续部署（continuous deployment）是持续交付的下一步，指的是代码通过评审以后，自动部署到生产环境。</strong></p>
+<p>持续部署的目标是，代码在任何时刻都是可部署的，可以进入生产阶段。</p>
+<p>持续部署的前提是能自动化完成测试、构建、部署等步骤。</p>
+<p>它与持续交付的区别，可以参考下图。（持续交付是手动部署，持续部署是自动）</p>
+<img src="/images/se/cicd/cdcd.jpg" style="zoom:100%;" />
+
+<h2 id="2-2-CI-CD的两种分类"><a href="#2-2-CI-CD的两种分类" class="headerlink" title="2.2 CI/CD的两种分类"></a>2.2 CI/CD的两种分类</h2><p><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/67805669">参考链接：谁才是世界上最好的 CI/CD 工具？</a></p>
+<ul>
+<li><strong>On-Premise</strong> 需要用户搭建自己的服务器来运行 CI/CD 工具。</li>
+<li><strong>Hosted</strong> CI/CD 工具是一个 SaaS 服务，不需要用户搭建自己的服务器。</li>
+</ul>
+<p>常见的 CI/CD 工具：</p>
+<ul>
+<li>TeamCity 和 <strong>Jenkins</strong> 属于 “On-Premise” 阵营</li>
+<li><strong>Travis CI</strong> 属于 “Hosted” 阵营</li>
+<li>AppVeyor 和 Azure Pipelines 则是既能 “On-Premise” 又能 “Hosted” </li>
+</ul>
+<p>如果在 CI/CD 过程中，需要连接到不同的内网服务。那么 On-Premise 的 CI/CD 工具适合这样的使用场景，你可以把 Build Agent 部署在内网的机器上，这样可以轻松地连接内网资源。</p>
+<p>如果你不需要连接内网资源，那么 Hosted CI/CD Service 就是你的最佳选择了，有以下几个优势：</p>
+<ul>
+<li>维护成本：Hosted CI/CD Service 可以说是零维护成本了，整个运行环境都由服务商托管。相比于 On-Premise 的CI/CD 工具，使用者需要自己花大量时间搭建与维护服务器，对于 Hosted CI/CD Service 来说，使用者完全不需要担心背后服务器的维护。</li>
+<li>Clean的运行环境：假设你在为你的 Python 项目寻求一个 CI/CD 工具，而你的 Python 项目需要同时对 Python 2.7, 3.6, 3.7 进行持续集成，那么 Hosted CI/CD Service 完全可以满足你的需要。On-Premise 的机器上，你需要对不同的 Python 版本而烦恼，而 Hosted CI/CD Service 每次都会创建一个新的运行环境，想用哪个 Python 版本就用哪个。</li>
+<li>预装的软件和运行时：每一个项目在做持续集成时，往往会需要依赖不同的运行时和工具链，Hosted CI/CD Service 会帮你预装好许多常用的软件和运行时，大大减少了搭建环境的时间。</li>
+<li>价格：价格成本也是我们在技术选型要重点考虑的一点。<ul>
+<li>On-Premise 的 TeamCity 和 Jenkins：虽然他们都是免费使用的，但是使用者都需要搭建自己的服务器，不论是用自己的物理机还是使用 Azure 或是 AWS 上的虚拟机，这都是一个花费。特别是对于大规模的持续集成的需求下，这会是个很大的价格成本。</li>
+<li>对于开源项目，Hosted CI/CD Service 有着很大的优势，Travis CI、AppVeyor 和 Azure Pipelines 对于开源项目都是完全免费的。</li>
+<li>对于私有项目，Travis CI 和 AppVeyor 是收费的，而 Azure Pipelines 有一个月 1800 分钟的免费额度。可见，对于私有项目，Azure Pipelines 有很大的优势。</li>
+</ul>
+</li>
+</ul>
+<h1 id="三、Fastlane-Jenkins"><a href="#三、Fastlane-Jenkins" class="headerlink" title="三、Fastlane + Jenkins"></a>三、Fastlane + Jenkins</h1><p><strong>Jenkins</strong>是一个独立的开源软件项目，是基于Java开发的一种持续集成工具，前身是Hudson是一个可扩展的持续集成引擎。</p>
+<p>主要功能是将项目中重复执行的工作，<strong>持续地、自动化地执行</strong>，如软件的构建、测试和部署、在配置文件下设置的job。</p>
+<p>通常与版本管理工具(SCM)、构建工具结合使用。常用的版本控制工具有SVN、GIT，构建工具有Maven、Ant、Gradle。</p>
+<p><strong>Jenkins中的任务（Job）和构建(build)：</strong></p>
+<p>任务(Job)是Jenkins的一个执行计划，是一系列操作的集合，构建是Jenkins的任务的一次运行。</p>
+<h2 id="3-1-思维导图"><a href="#3-1-思维导图" class="headerlink" title="3.1 思维导图"></a>3.1 思维导图</h2><blockquote>
+<p><a target="_blank" rel="noopener" href="https://www.jianshu.com/p/5f671aca2b5a">Jenkins详细教程</a></p>
+</blockquote>
+<img src="/images/se/cicd/jenkins.png" style="zoom:70%;" />
+
+<h2 id="3-2-安装"><a href="#3-2-安装" class="headerlink" title="3.2 安装"></a>3.2 安装</h2><ul>
+<li>方法一：Jenkins直接安装到Mac OS系统机器上</li>
+<li>方法二：Jenkins部署在Linux或者Windows机器上，添加一个MacOS构建节点。(这种Jenkins部署机器+节点的方式适用于构建任务较多的场景，大厂会有专门的打包集群)。</li>
+</ul>
+<p>Mac OS系统的机器，可以选择一台 Mac，更多的是Mac Mini(主机盒子)。（<em>不建议使用黑苹果，有可能出现Android没问题、iOS打包失败等一些奇怪的问题。</em>）</p>
+<p>如果所在公司可能没有专门的MacOS打包机，感觉就没有必要在自己的机器上再安装 jenkins 了，直接在终端执行脚本就可以了。步骤如下：</p>
+<ol>
+<li>建立新的打包目录，其中包含源代码、打包脚本以及打包生成文件等目录；(不要直接使用开发工程目录，否则打包的时候还是不可以修改代码）</li>
+<li>代码提交后，执行打包目录下的打包脚本，脚本内部需要添加拉取最新代码操作，拉取之后进行打包。</li>
+</ol>
+<h2 id="3-3-构建方案的选择"><a href="#3-3-构建方案的选择" class="headerlink" title="3.3 构建方案的选择"></a>3.3 构建方案的选择</h2><p><strong>Jenkins的重点是持续地、自动化的集成/部署，监听到某种行为后/定时执行某个工作流。但其中一些节点，比如构建节点，需要我们指定具体的操作命令。</strong></p>
+<ul>
+<li>方案一：jenkins安装 xcode 相关插件，以构建出 xcode 打包环境，以及配置证书、认证文件、钥匙串的相关插件。<ul>
+<li>管理本地的keychain和iOS证书的插件 <a target="_blank" rel="noopener" href="https://updates.jenkins.io/download/plugins/kpp-management-plugin/1.0.0/kpp-management-plugin.hpi">Keychains and Provisioning Profiles Management</a></li>
+<li>用于xcode构建的插件 <a target="_blank" rel="noopener" href="https://updates.jenkins.io/download/plugins/xcode-plugin/2.0.4/xcode-plugin.hpi">Xcode integration</a></li>
+<li>缺点：整体流程比较繁琐，稍有流程顺序和配置出错都会导致打包失败，而且听说 jenkins 的 xcode 插件更新频率极慢，可能不能满足最新版 xcode 的使用（<em>打包测试版本，然后推送到托管平台还好，但是发布到 appstore 有些坑</em>）。</li>
+</ul>
+</li>
+<li>方案二：脚本构建 — xcode</li>
+<li>方案三：脚本构建 — fastlane（推荐）</li>
+</ul>
+<h2 id="3-4-大致流程"><a href="#3-4-大致流程" class="headerlink" title="3.4 大致流程"></a>3.4 大致流程</h2><p>大致流程：</p>
+<ol>
+<li>开发者提交代码到 <code>gitlab</code>；</li>
+<li>可在 <code>gitlab</code> 配置相应的触发条件，如 <code>push</code>、<code>tag</code> 等，满足触发条件会发送 <code>webhook</code> 消息到 <code>jenkins</code>（<code>webhook</code>地址是提前在 <code>jenkins</code> 中配置好的）；</li>
+<li><code>jenkins</code> 收到通知后，就会执行配置好的构建任务；</li>
+<li>构建任务内部拉取最新代码，进行一系列操作，如根据 <code>jenkins</code> 任务参数修改代码中的一些参数等，最后进行打包</li>
+<li>打包成功后，将安装包上传到分发平台（蒲公英等外部平台或者自研的内部平台），上传成功后便可以将下载链接等相关信息通过 <code>webhook</code> 发送到企业微信群、钉钉群等团队沟通工具中，通知相关人员打包成功。</li>
+</ol>
+<img src="/images/se/cicd/jenkins.jpg" style="zoom:70%;" />
+
+<h1 id="四、补充两个很全面的链接"><a href="#四、补充两个很全面的链接" class="headerlink" title="四、补充两个很全面的链接"></a>四、补充两个很全面的链接</h1><ul>
+<li><a target="_blank" rel="noopener" href="https://halfrost.com/ios_jenkins/">手把手教你利用 Jenkins 持续集成 iOS 项目</a></li>
+<li><a target="_blank" rel="noopener" href="https://halfrost.com/ios_multienvironments/">手把手教你给一个 iOS app 配置多个环境变量</a></li>
+</ul>
+
+    </article>
+    <!-- license  -->
+    
+        <div class="license-wrapper">
+            <p>Author：<a href="https://tenloy.github.io">Tenloy</a>
+            <p>原文链接：<a href="https://tenloy.github.io/2021/04/27/iOS-CI.html">https://tenloy.github.io/2021/04/27/iOS-CI.html</a>
+            <p>发表日期：2021.04.27 , 10:09 AM</p>
+            <p>更新日期：2024.04.07 , 7:53 PM</p>
+            <p>版权声明：本文采用<a rel="license noopener" target="_blank" href="http://creativecommons.org/licenses/by-nc/4.0/">Crative Commons 4.0 许可协议</a>进行许可</p>
+        </div>
+    
+    <!-- paginator  -->
+    <ul class="post-paginator">
+        <li class="next">
+            
+                <div class="nextSlogan">Next Post</div>
+                <a href= "/2021/04/29/iOS-ComRouter.html" title= "[转] iOS的组件化方案">
+                    <div class="nextTitle">[转] iOS的组件化方案</div>
+                </a>
+            
+        </li>
+        <li class="previous">
+            
+                <div class="prevSlogan">Previous Post</div>
+                <a href= "/2021/04/26/Containers.html" title= "常见的容器概念：Linux容器、Docker容器、服务器容器">
+                    <div class="prevTitle">常见的容器概念：Linux容器、Docker容器、服务器容器</div>
+                </a>
+            
+        </li>
+    </ul>
+    <!-- 评论插件 -->
+    <!-- 来必力City版安装代码 -->
+
+<!-- City版安装代码已完成 -->
+    
+    
+    <!-- gitalk评论 -->
+
+    <!-- utteranc评论 -->
+
+    <!-- partial('_partial/comment/changyan') -->
+    <!--PC版-->
+
+
+    
+    
+
+    <!-- 评论 -->
+</main>
+            <!-- profile -->
+            
+        </div>
+        <footer class="footer footer-unloaded">
+    <!-- social  -->
+    
+    <div class="social">
+        
+    
+        
+            
+                <a href="mailto:luotengoto@163.com" class="iconfont-archer email" title=email ></a>
+            
+        
+    
+        
+            
+                <a href="//github.com/Tenloy" class="iconfont-archer github" target="_blank" title=github></a>
+            
+        
+    
+        
+            
+                <a href="https://www.jianshu.com/u/8db1bc12db9f" class="iconfont-jian jianshu" target="_blank" title=jianshu></a>
+            
+        
+    
+        
+            
+                <a href="/atom.xml" class="iconfont-archer rss" target="_blank" title=rss></a>
+            
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+
+    </div>
+    
+    <!-- powered by Hexo  -->
+    <div class="copyright">
+        <span id="hexo-power">Powered by <a href="https://hexo.io/" target="_blank">Hexo</a></span><span class="iconfont-archer power">&#xe635;</span><span id="theme-info">theme <a href="https://github.com/fi3ework/hexo-theme-archer" target="_blank">Archer</a></span>
+    </div>
+    <!-- 不蒜子  -->
+    
+    <div class="busuanzi-container">
+    
+     
+    <span id="busuanzi_container_site_pv">PV: <span id="busuanzi_value_site_pv"></span> :)</span>
+    
+    </div>
+    
+</footer>
+    </div>
+    <!-- toc -->
+    
+    <div class="toc-wrapper" style=
+    
+
+
+
+
+
+
+
+top:40vh;
+
+    >
+        <div class="toc-catalog">
+            <span class="iconfont-archer catalog-icon">&#xe613;</span><span>CATALOG</span>
+        </div>
+        <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%B8%80%E3%80%81%E8%87%AA%E5%8A%A8%E5%8C%96%E6%89%93%E5%8C%85-%E6%9E%84%E5%BB%BA"><span class="toc-text">一、自动化打包&#x2F;构建</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-1-xcodebuild"><span class="toc-text">1.1 xcodebuild</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-1-1-project%E6%9E%84%E5%BB%BA"><span class="toc-text">1.1.1 project构建</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-1-2-workspace%E6%9E%84%E5%BB%BA"><span class="toc-text">1.1.2 workspace构建</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-1-3-%E8%AF%81%E4%B9%A6%E3%80%81%E6%8F%8F%E8%BF%B0%E6%96%87%E4%BB%B6"><span class="toc-text">1.1.3 证书、描述文件</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-1-4-%E5%B8%B8%E7%94%A8%E5%AD%90%E5%91%BD%E4%BB%A4%E3%80%81%E9%80%89%E9%A1%B9"><span class="toc-text">1.1.4 常用子命令、选项</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#1-clean"><span class="toc-text">1. clean</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2-build"><span class="toc-text">2. build</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3-test"><span class="toc-text">3. test</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#4-archive"><span class="toc-text">4. archive</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#5-exportArchive"><span class="toc-text">5. -exportArchive</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-1-5-%E8%84%9A%E6%9C%AC%E7%A4%BA%E4%BE%8B"><span class="toc-text">1.1.5 脚本示例</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#1-2-fastlane"><span class="toc-text">1.2 fastlane</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-2-1-Fastlane%E6%98%AF%E4%BB%80%E4%B9%88"><span class="toc-text">1.2.1 Fastlane是什么</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-2-2-Fastlane%E8%83%BD%E5%B9%B2%E4%BB%80%E4%B9%88"><span class="toc-text">1.2.2 Fastlane能干什么</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-2-3-%E5%AE%89%E8%A3%85%E4%B8%8E%E9%85%8D%E7%BD%AE"><span class="toc-text">1.2.3 安装与配置</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#1-%E5%AE%89%E8%A3%85"><span class="toc-text">1. 安装</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2-%E5%88%9D%E5%A7%8B%E5%8C%96"><span class="toc-text">2. 初始化</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3-%E7%AE%80%E5%8D%95%E7%9A%84Fastlane%E4%B9%A6%E5%86%99"><span class="toc-text">3. 简单的Fastlane书写</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#4-env%E6%96%87%E4%BB%B6"><span class="toc-text">4. .env文件</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-2-4-%E5%9D%97%E3%80%81lane%E3%80%81action"><span class="toc-text">1.2.4 块、lane、action</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#1-%E5%9D%97%E7%B1%BB%E5%9E%8B"><span class="toc-text">1. 块类型</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2-lane%E4%B8%8Eplatform"><span class="toc-text">2. lane与platform</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3-action"><span class="toc-text">3. action</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-2-5-Fastfile%E8%B0%83%E7%94%A8shell"><span class="toc-text">1.2.5 Fastfile调用shell</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-2-6-%E5%88%9D%E5%A7%8B%E7%9A%84Fastfile%E8%A7%A3%E8%AF%BB"><span class="toc-text">1.2.6 初始的Fastfile解读</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-2-7-%E7%AC%AC%E4%B8%89%E6%96%B9%E6%8F%92%E4%BB%B6%E3%80%81action"><span class="toc-text">1.2.7 第三方插件、action</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#1-%E6%9F%A5%E6%89%BE%E6%8F%92%E4%BB%B6"><span class="toc-text">1. 查找插件</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2-%E5%AE%89%E8%A3%85%E6%8F%92%E4%BB%B6"><span class="toc-text">2. 安装插件</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-2-8-Fastfile%E6%A1%88%E4%BE%8B"><span class="toc-text">1.2.8 Fastfile案例</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%A1%88%E4%BE%8B%E4%B8%80%EF%BC%9A%E6%89%93%E5%8C%85-%E9%92%89%E9%92%89"><span class="toc-text">案例一：打包+钉钉</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%A1%88%E4%BE%8B%E4%BA%8C%EF%BC%9A%E5%A4%9A%E6%B8%A0%E9%81%93%E6%89%93%E5%8C%85"><span class="toc-text">案例二：多渠道打包</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%A1%88%E4%BE%8B%E4%B8%89%EF%BC%9AUI%E6%A8%A1%E5%9D%97%E5%AE%9E%E7%8E%B0%E4%BA%A4%E4%BA%92"><span class="toc-text">案例三：UI模块实现交互</span></a></li></ol></li></ol></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%BA%8C%E3%80%81CI-CD"><span class="toc-text">二、CI CD</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#2-1-CI-CD%E6%98%AF%E4%BB%80%E4%B9%88"><span class="toc-text">2.1 CI CD是什么</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#2-1-1-%E6%8C%81%E7%BB%AD%E9%9B%86%E6%88%90"><span class="toc-text">2.1.1 持续集成</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-1-2-%E6%8C%81%E7%BB%AD%E4%BA%A4%E4%BB%98"><span class="toc-text">2.1.2 持续交付</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-1-3-%E6%8C%81%E7%BB%AD%E9%83%A8%E7%BD%B2"><span class="toc-text">2.1.3 持续部署</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-2-CI-CD%E7%9A%84%E4%B8%A4%E7%A7%8D%E5%88%86%E7%B1%BB"><span class="toc-text">2.2 CI&#x2F;CD的两种分类</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%B8%89%E3%80%81Fastlane-Jenkins"><span class="toc-text">三、Fastlane + Jenkins</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#3-1-%E6%80%9D%E7%BB%B4%E5%AF%BC%E5%9B%BE"><span class="toc-text">3.1 思维导图</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-2-%E5%AE%89%E8%A3%85"><span class="toc-text">3.2 安装</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-3-%E6%9E%84%E5%BB%BA%E6%96%B9%E6%A1%88%E7%9A%84%E9%80%89%E6%8B%A9"><span class="toc-text">3.3 构建方案的选择</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-4-%E5%A4%A7%E8%87%B4%E6%B5%81%E7%A8%8B"><span class="toc-text">3.4 大致流程</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%9B%9B%E3%80%81%E8%A1%A5%E5%85%85%E4%B8%A4%E4%B8%AA%E5%BE%88%E5%85%A8%E9%9D%A2%E7%9A%84%E9%93%BE%E6%8E%A5"><span class="toc-text">四、补充两个很全面的链接</span></a></li></ol>
+    </div>
+    
+    <div class="back-top iconfont-archer">&#xe639;</div>
+    <div class="sidebar sidebar-hide">
+    <ul class="sidebar-tabs sidebar-tabs-active-0">
+        <li class="sidebar-tab-categories"><span class="iconfont-archer">&#xe666;</span><span class="tab-name">Cate</span></li>
+        <li class="sidebar-tab-archives"><span class="iconfont-archer">&#xe67d;</span><span class="tab-name">Archive</span></li>
+        <li class="sidebar-tab-tags"><span class="iconfont-archer">&#xe61b;</span><span class="tab-name">Tag</span></li>
+    </ul>
+    <div class="sidebar-content sidebar-content-show-archive">
+        <div class="sidebar-panel-categories">
+    <div class="sidebar-categories-name">
+    
+    
+    
+    
+    
+        <span class="sidebar-category-name" data-categories="数据结构与算法"><span class="iconfont-archer">&#xe60a;</span>数据结构与算法</span>
+    
+        <span class="sidebar-category-name" data-categories="计算机组成原理"><span class="iconfont-archer">&#xe60a;</span>计算机组成原理</span>
+    
+        <span class="sidebar-category-name" data-categories="计算机网络"><span class="iconfont-archer">&#xe60a;</span>计算机网络</span>
+    
+        <span class="sidebar-category-name" data-categories="汇编语言"><span class="iconfont-archer">&#xe60a;</span>汇编语言</span>
+    
+        <span class="sidebar-category-name" data-categories="数据的存储与传输"><span class="iconfont-archer">&#xe60a;</span>数据的存储与传输</span>
+    
+        <span class="sidebar-category-name" data-categories="操作系统"><span class="iconfont-archer">&#xe60a;</span>操作系统</span>
+    
+        <span class="sidebar-category-name" data-categories="互联网标准RFC"><span class="iconfont-archer">&#xe60a;</span>互联网标准RFC</span>
+    
+        <span class="sidebar-category-name" data-categories="编译链接与装载"><span class="iconfont-archer">&#xe60a;</span>编译链接与装载</span>
+    
+        <span class="sidebar-category-name" data-categories="iOS"><span class="iconfont-archer">&#xe60a;</span>iOS</span>
+    
+        <span class="sidebar-category-name" data-categories="架构与设计模式"><span class="iconfont-archer">&#xe60a;</span>架构与设计模式</span>
+    
+        <span class="sidebar-category-name" data-categories="图形处理与渲染"><span class="iconfont-archer">&#xe60a;</span>图形处理与渲染</span>
+    
+        <span class="sidebar-category-name" data-categories="软件工程"><span class="iconfont-archer">&#xe60a;</span>软件工程</span>
+    
+        <span class="sidebar-category-name" data-categories="音视频处理"><span class="iconfont-archer">&#xe60a;</span>音视频处理</span>
+    
+        <span class="sidebar-category-name" data-categories="DSL"><span class="iconfont-archer">&#xe60a;</span>DSL</span>
+    
+        <span class="sidebar-category-name" data-categories="Swift"><span class="iconfont-archer">&#xe60a;</span>Swift</span>
+    
+        <span class="sidebar-category-name" data-categories="Git"><span class="iconfont-archer">&#xe60a;</span>Git</span>
+    
+        <span class="sidebar-category-name" data-categories="Web"><span class="iconfont-archer">&#xe60a;</span>Web</span>
+    
+    </div>
+    <div class="iconfont-archer sidebar-categories-empty">&#xe678;</div>
+    <div class="sidebar-categories-list"></div>
+</div>
+          <div class="sidebar-panel-archives">
+    <!-- 在ejs中将archive按照时间排序 -->
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    <div class="total-and-search">
+        <div class="total-archive">
+        Total : 76
+        </div>
+        <!-- search  -->
+        
+            <div class="site-search popup-trigger tl-side-search"> 
+                <span class="iconfont-jian search-icon">&#xe7fc;搜索</span>
+            </div>
+        
+    </div>
+    
+    <div class="post-archive">
+    
+    
+    
+    
+    <div class="archive-year"> 2022 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/05</span><a class="archive-post-title" href= "/2022/05/05/sqlite.html" >iOS SQLite的使用与优化</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/28</span><a class="archive-post-title" href= "/2022/04/28/mmap.html" >内存映射mmap函数的原理与应用</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/18</span><a class="archive-post-title" href= "/2022/03/18/avfoundation.html" >AVFoundation Programming Guide(译)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/17</span><a class="archive-post-title" href= "/2022/03/17/avframework.html" >iOS音视频库概述</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/09</span><a class="archive-post-title" href= "/2022/02/09/OAuth.html" >[转] OAuth 2.0简述</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/18</span><a class="archive-post-title" href= "/2022/01/18/wkwebview-buges.html" >WKWebView使用过程中遇到的坑</a>
+        </li>
+    
+    
+    
+    
+    
+        </ul>
+    
+    <div class="archive-year"> 2021 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/22</span><a class="archive-post-title" href= "/2021/11/22/bit-calculation.html" >[转] 位运算实现加、减、乘、除运算</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/10</span><a class="archive-post-title" href= "/2021/11/10/git-use.html" >Git的使用总结</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/21</span><a class="archive-post-title" href= "/2021/10/21/dyld-objc.html" >(七) dyld与Objc—_objc_init、map_images、load_images</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/18</span><a class="archive-post-title" href= "/2021/10/18/compile-dynamic-link.html" >(六) Mach-O 文件的动态链接、库、Dyld(含dlopen)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/14</span><a class="archive-post-title" href= "/2021/10/14/compile-vm-asrl.html" >(五) Mach-O 文件之进程(虚拟)地址空间、ASLR</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/10</span><a class="archive-post-title" href= "/2021/10/10/compile-load.html" >(四) Mach-O 文件的装载</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/08</span><a class="archive-post-title" href= "/2021/10/08/compile-static-link.html" >(三) Mach-O 文件的静态链接</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/06</span><a class="archive-post-title" href= "/2021/10/06/compile-macho.html" >(二) Mach-O 文件结构</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/05</span><a class="archive-post-title" href= "/2021/10/05/compile-clang-llvm.html" >(一) Clang/LLVM 介绍、OC 程序的编译过程</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/02</span><a class="archive-post-title" href= "/2021/10/02/makefile.html" >[转] Make 命令的使用与NodeJS案例</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/28</span><a class="archive-post-title" href= "/2021/09/28/architectural-pattern.html" >常见架构模式: MVC、MVP、MVVM、VIPER</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/25</span><a class="archive-post-title" href= "/2021/09/25/design-pattern.html" >常见的设计模式</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/20</span><a class="archive-post-title" href= "/2021/09/20/program-thought.html" >常见的编程范式</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/15</span><a class="archive-post-title" href= "/2021/09/15/graphics-processing-case.html" >图形处理(三) - 图形处理实践案例</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/15</span><a class="archive-post-title" href= "/2021/09/15/graphics-processing.html" >图形处理(二) - 图形与视频处理相关的框架</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/13</span><a class="archive-post-title" href= "/2021/09/13/image-encode-decode.html" >图形处理(一) - 图片的加载与编解码</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/12</span><a class="archive-post-title" href= "/2021/09/12/iOS-Render.html" >[转] iOS离屏渲染原理及优化</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/11</span><a class="archive-post-title" href= "/2021/09/11/core-animation03.html" >Core-Animation(三) - 渲染流程探究及性能分析</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/09</span><a class="archive-post-title" href= "/2021/09/09/core-animation02.html" >Core Animation(二) - 隐式动画、CATransaction与CAAction</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/07</span><a class="archive-post-title" href= "/2021/09/07/core-animation01.html" >Core Animation(一) - UIView与CALayer、布局与绘制</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/05</span><a class="archive-post-title" href= "/2021/09/05/AFN-Analyse.html" >[转] AFN框架实现解析</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/04</span><a class="archive-post-title" href= "/2021/09/04/nrl-session.html" >NSURLSession概述</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/02</span><a class="archive-post-title" href= "/2021/09/02/Log.html" >移动端日志库设计</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/01</span><a class="archive-post-title" href= "/2021/08/01/Crash-Monitor.html" >iOS崩溃监控与分析</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/30</span><a class="archive-post-title" href= "/2021/07/30/Lag-Monitor.html" >iOS卡顿监控</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/29</span><a class="archive-post-title" href= "/2021/07/29/SwiftUI.html" >SwiftUI</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/29</span><a class="archive-post-title" href= "/2021/07/29/Swift-Version-History.html" >Swift版本更新API介绍</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/26</span><a class="archive-post-title" href= "/2021/07/26/RunLoop-Reposted-From-ibireme.html" >[转] 深入理解RunLoop—ibireme</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/25</span><a class="archive-post-title" href= "/2021/07/25/Protocol-Buffer.html" >Protocol Buffer的基本介绍</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/24</span><a class="archive-post-title" href= "/2021/07/24/base64.html" >Base64编码及iOS中的Base64</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/23</span><a class="archive-post-title" href= "/2021/07/23/chinese-encode.html" >[转] 彻底弄懂常见的7种中文字符编码</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/10</span><a class="archive-post-title" href= "/2021/07/10/p-npc-np.html" >P问题、NP问题、NPC、NP-Hard、P=NP?</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/30</span><a class="archive-post-title" href= "/2021/06/30/probability.html" >(六) 概率算法</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/28</span><a class="archive-post-title" href= "/2021/06/28/branch-bound.html" >(五) 分支限界算法</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/26</span><a class="archive-post-title" href= "/2021/06/26/back-track.html" >(四) 回溯法(试探算法)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/24</span><a class="archive-post-title" href= "/2021/06/24/greed.html" >(三) 贪心算法</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/22</span><a class="archive-post-title" href= "/2021/06/22/dynamic-programming.html" >(二) 动态规划算法</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/20</span><a class="archive-post-title" href= "/2021/06/20/divide-and-conquer.html" >(一) 分治算法及减治、变治算法</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/18</span><a class="archive-post-title" href= "/2021/06/18/several-programming.html" >穷举、递推、迭代(辗转法)、递归算法</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/15</span><a class="archive-post-title" href= "/2021/06/15/datastruction-overview.html" >数据结构与算法概述</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/06</span><a class="archive-post-title" href= "/2021/06/06/Web-Module.html" >前端各种模块化方案总结</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/27</span><a class="archive-post-title" href= "/2021/05/27/Fiber.html" >[转] 最通俗的 React Fiber(时间分片)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/27</span><a class="archive-post-title" href= "/2021/05/27/Coroutine.html" >[转] 什么是协程</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/19</span><a class="archive-post-title" href= "/2021/05/19/DSL.html" >[转] 谈谈DSL以及DSL的应用（以CocoaPods 为例）</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/03</span><a class="archive-post-title" href= "/2021/05/03/iOS-private-pod.html" >私有Pod库部署</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/29</span><a class="archive-post-title" href= "/2021/04/29/iOS-ComRouter.html" >[转] iOS的组件化方案</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/27</span><a class="archive-post-title" href= "/2021/04/27/iOS-CI.html" >iOS的持续集成</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/26</span><a class="archive-post-title" href= "/2021/04/26/Containers.html" >常见的容器概念：Linux容器、Docker容器、服务器容器</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/24</span><a class="archive-post-title" href= "/2021/04/24/Dock-Reprinted-from-RuanYIFeng.html" >[转] Docker入门教程</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/20</span><a class="archive-post-title" href= "/2021/04/20/Sync-Async.html" >同步和异步解读及编程中的使用场景</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/17</span><a class="archive-post-title" href= "/2021/04/17/Arm64-Handbook.html" >ARM64指令简易手册</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/16</span><a class="archive-post-title" href= "/2021/04/16/Arm64-Introduce.html" >iOS需要了解的ARM64汇编</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/13</span><a class="archive-post-title" href= "/2021/04/13/Command-Line.html" >CLI Shell、Terminal、脚本(语言)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/10</span><a class="archive-post-title" href= "/2021/04/10/Ins-SysCall-Kernel-Shell.html" >指令、系统调用、库、Shell、APP的层次关系</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/08</span><a class="archive-post-title" href= "/2021/04/08/ISA-Microarch-Soc.html" >指令集、微架构、手机芯片(Soc)及ARM的介绍</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/02</span><a class="archive-post-title" href= "/2021/04/02/Engineering.html" >工程化、动态化、容器化、组件化</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/01</span><a class="archive-post-title" href= "/2021/04/01/GithubPages-Hexo.html" >使用Hexo+Github Pages搭建个人博客</a>
+        </li>
+    
+    
+    
+    
+    
+        </ul>
+    
+    <div class="archive-year"> 2020 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/22</span><a class="archive-post-title" href= "/2020/12/22/aes.html" >数据加密 — 对称加密(以AES为例)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/21</span><a class="archive-post-title" href= "/2020/12/21/aes-standard.html" >[转] AES标准及Rijndael算法解析</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/20</span><a class="archive-post-title" href= "/2020/12/20/asymmetric.html" >数据加密 — 非对称加密(加签/加密，以RSA为例)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/09</span><a class="archive-post-title" href= "/2020/12/09/pki.html" >常见的PKI标准(X.509、PKCS)及证书相关介绍</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/28</span><a class="archive-post-title" href= "/2020/10/28/runtime-data-structure.html" >Objc Runtime总结</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/11</span><a class="archive-post-title" href= "/2020/09/11/GCD.html" >Objective-C — 深入浅出GCD常用API</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/06</span><a class="archive-post-title" href= "/2020/09/06/oc-block.html" >Objective-C — Block</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/26</span><a class="archive-post-title" href= "/2020/08/26/AutoreleasePool.html" >AutoreleasePool</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/24</span><a class="archive-post-title" href= "/2020/08/24/oc-memory-manage.html" >Objective-C — 内存管理</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/01</span><a class="archive-post-title" href= "/2020/08/01/ui-navigation-bar.html" >[转] 导航栏的架构介绍及使用</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/15</span><a class="archive-post-title" href= "/2020/07/15/symbol-decl.html" >变量声明、函数声明的作用</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/01</span><a class="archive-post-title" href= "/2020/07/01/ios-apns.html" >iOS APNS接收逻辑梳理</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/13</span><a class="archive-post-title" href= "/2020/06/13/ios-vest.html" >iOS制作马甲总结</a>
+        </li>
+    
+    </div>
+  </div>
+        <div class="sidebar-panel-tags">
+    <div class="sidebar-tags-name">
+    
+        <span class="sidebar-tag-name" data-tags="AutoreleasePool"><span class="iconfont-archer">&#xe606;</span>AutoreleasePool</span>
+    
+        <span class="sidebar-tag-name" data-tags="GCD"><span class="iconfont-archer">&#xe606;</span>GCD</span>
+    
+        <span class="sidebar-tag-name" data-tags="hexo"><span class="iconfont-archer">&#xe606;</span>hexo</span>
+    
+        <span class="sidebar-tag-name" data-tags="ISA"><span class="iconfont-archer">&#xe606;</span>ISA</span>
+    
+        <span class="sidebar-tag-name" data-tags="Microarch"><span class="iconfont-archer">&#xe606;</span>Microarch</span>
+    
+        <span class="sidebar-tag-name" data-tags="Soc"><span class="iconfont-archer">&#xe606;</span>Soc</span>
+    
+        <span class="sidebar-tag-name" data-tags="ARM64"><span class="iconfont-archer">&#xe606;</span>ARM64</span>
+    
+        <span class="sidebar-tag-name" data-tags="CLI"><span class="iconfont-archer">&#xe606;</span>CLI</span>
+    
+        <span class="sidebar-tag-name" data-tags="Shell"><span class="iconfont-archer">&#xe606;</span>Shell</span>
+    
+        <span class="sidebar-tag-name" data-tags="多线程"><span class="iconfont-archer">&#xe606;</span>多线程</span>
+    
+        <span class="sidebar-tag-name" data-tags="Docker"><span class="iconfont-archer">&#xe606;</span>Docker</span>
+    
+        <span class="sidebar-tag-name" data-tags="DSL"><span class="iconfont-archer">&#xe606;</span>DSL</span>
+    
+        <span class="sidebar-tag-name" data-tags="协程"><span class="iconfont-archer">&#xe606;</span>协程</span>
+    
+        <span class="sidebar-tag-name" data-tags="Fiber"><span class="iconfont-archer">&#xe606;</span>Fiber</span>
+    
+        <span class="sidebar-tag-name" data-tags="dp"><span class="iconfont-archer">&#xe606;</span>dp</span>
+    
+        <span class="sidebar-tag-name" data-tags="SwiftUI"><span class="iconfont-archer">&#xe606;</span>SwiftUI</span>
+    
+        <span class="sidebar-tag-name" data-tags="RunLoop"><span class="iconfont-archer">&#xe606;</span>RunLoop</span>
+    
+        <span class="sidebar-tag-name" data-tags="Swift-Syntax"><span class="iconfont-archer">&#xe606;</span>Swift-Syntax</span>
+    
+        <span class="sidebar-tag-name" data-tags="LagMonitor"><span class="iconfont-archer">&#xe606;</span>LagMonitor</span>
+    
+        <span class="sidebar-tag-name" data-tags="Log"><span class="iconfont-archer">&#xe606;</span>Log</span>
+    
+        <span class="sidebar-tag-name" data-tags="CrashMonitor"><span class="iconfont-archer">&#xe606;</span>CrashMonitor</span>
+    
+        <span class="sidebar-tag-name" data-tags="AFN"><span class="iconfont-archer">&#xe606;</span>AFN</span>
+    
+    </div>
+    <div class="iconfont-archer sidebar-tags-empty">&#xe678;</div>
+    <div class="tag-load-fail" style="display: none; color: #ccc; font-size: 0.6rem;">
+    缺失模块。<br/>
+    1、请确保node版本大于6.2<br/>
+    2、在博客根目录（注意不是archer根目录）执行以下命令：<br/>
+    <span style="color: #f75357; font-size: 1rem; line-height: 2rem;">npm i hexo-generator-json-content --save</span><br/>
+    3、在根目录_config.yml里添加配置：
+    <pre style="color: #787878; font-size: 0.6rem;">
+jsonContent:
+  meta: false
+  pages: false
+  posts:
+    title: true
+    date: true
+    path: true
+    text: false
+    raw: false
+    content: false
+    slug: false
+    updated: false
+    comments: false
+    link: false
+    permalink: false
+    excerpt: false
+    categories: true
+    tags: true</pre>
+    </div> 
+    <div class="sidebar-tags-list"></div>
+</div>
+    </div>
+</div> 
+    <script>
+    var siteMeta = {
+        root: "/",
+        author: "Tenloy"
+    }
+</script>
+    <!-- CDN failover -->
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js"></script>
+    <script type="text/javascript">
+        if (typeof window.$ === 'undefined')
+        {
+            console.warn('jquery load from jsdelivr failed, will load local script')
+            document.write('<script src="/lib/jquery.min.js">\x3C/script>')
+        }
+    </script>
+    <script src="/scripts/main.js"></script>
+    <!-- algolia -->
+    
+        <div class="site-search">
+  <div class="algolia-popup popup">
+    <div class="algolia-search">
+      <div class="algolia-search-input-icon">
+        <i class="fa fa-search"></i>
+      </div>
+      <div class="algolia-search-input" id="algolia-search-input"></div>
+    </div>
+
+    <div class="algolia-results">
+      <div id="algolia-stats"></div>
+      <div id="algolia-hits"></div>
+      <div id="algolia-pagination" class="algolia-pagination"></div>
+    </div>
+
+    <span class="popup-btn-close">
+      <i class="iconfont-archer">&#xe609;</i>
+    </span>
+  </div>
+</div>
+        <script src="https://cdn.jsdelivr.net/npm/instantsearch.js@2.8.0/dist/instantsearch.min.js" defer></script>
+        <script src="/scripts/search.js" defer></script>
+    
+    <!-- busuanzi  -->
+    
+    <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    
+    <!-- CNZZ  -->
+    
+    </div>
+    <!-- async load share.js -->
+    
+        <script src="/scripts/share.js" async></script>    
+     
+    </body>
+</html>
+
+

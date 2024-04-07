@@ -1,0 +1,2472 @@
+<!DOCTYPE html>
+<html lang="en">
+    <!-- title -->
+
+
+
+
+<!-- keywords -->
+
+
+
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" >
+    <meta name="author" content="Tenloy">
+    <meta name="renderer" content="webkit">
+    <meta name="copyright" content="Tenloy">
+    
+    <meta name="keywords" content="Tenloy,iOS,Swift">
+    
+    <meta name="description" content="学习 生活 记录 回忆">
+    <meta name="description" content="原文链接 - iOS图形处理概论：OpenGL ES，Metal，Core Graphics，Core Image，GPUImage，OpenCV等  前言对于刚接触iOS图形相关框架的小白，有一些图形框架在字面上和功能上非常容易混淆。这里旨在总结一下各种框架，区分它们的概念和功能，以作日后进一步细分学习的指引。因而，本文并不会针对具体框架作详解，只作区分引导，读者可自行选择方向继续深造。为此，">
+<meta property="og:type" content="article">
+<meta property="og:title" content="图形处理(二) - 图形与视频处理相关的框架">
+<meta property="og:url" content="https://tenloy.github.io/2021/09/15/graphics-processing.html">
+<meta property="og:site_name" content="Tenloy&#39;s Blog">
+<meta property="og:description" content="原文链接 - iOS图形处理概论：OpenGL ES，Metal，Core Graphics，Core Image，GPUImage，OpenCV等  前言对于刚接触iOS图形相关框架的小白，有一些图形框架在字面上和功能上非常容易混淆。这里旨在总结一下各种框架，区分它们的概念和功能，以作日后进一步细分学习的指引。因而，本文并不会针对具体框架作详解，只作区分引导，读者可自行选择方向继续深造。为此，">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://tenloy.github.io/images/graphics/GraphicsFrames.png">
+<meta property="og:image" content="https://tenloy.github.io/images/iosrender/01.png">
+<meta property="og:image" content="https://tenloy.github.io/images/graphics/architecture_2x.png">
+<meta property="article:published_time" content="2021-09-14T21:54:01.000Z">
+<meta property="article:modified_time" content="2024-04-07T11:53:34.923Z">
+<meta property="article:author" content="Tenloy">
+<meta property="article:tag" content="Tenloy, iOS, Tenloy Blog, 博客，Swift, 编译, 计算机">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://tenloy.github.io/images/graphics/GraphicsFrames.png">
+    <meta http-equiv="Cache-control" content="no-cache">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"/>
+    
+    <title>图形处理(二) - 图形与视频处理相关的框架 · Tenloy&#39;s Blog</title>
+    <style type="text/css">
+    @font-face {
+        font-family: 'Oswald-Regular';
+        src: url("/font/Oswald-Regular.ttf");
+    }
+
+    body {
+        margin: 0;
+    }
+
+    header,
+    footer,
+    .back-top,
+    .sidebar,
+    .container,
+    .site-intro-meta,
+    .toc-wrapper {
+        display: none;
+    }
+
+    .site-intro {
+        position: relative;
+        z-index: 3;
+        width: 100%;
+        /* height: 50vh; */
+        overflow: hidden;
+    }
+
+    .site-intro-placeholder {
+        position: absolute;
+        z-index: -2;
+        top: 0;
+        left: 0;
+        width: calc(100% + 300px);
+        height: 100%;
+        background: repeating-linear-gradient(-45deg, #444 0, #444 80px, #333 80px, #333 160px);
+        background-position: center center;
+        transform: translate3d(-226px, 0, 0);
+        animation: gradient-move 2.5s ease-out 0s infinite;
+    }
+
+    @keyframes gradient-move {
+        0% {
+            transform: translate3d(-226px, 0, 0);
+        }
+        100% {
+            transform: translate3d(0, 0, 0);
+        }
+    }
+
+</style>
+
+    <link rel="preload" href= "/css/style.css?v=20180824" as="style" onload="this.onload=null;this.rel='stylesheet'" />
+    <link rel="stylesheet" href= "/css/mobile.css?v=20180824" media="(max-width: 980px)">
+    
+    <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.2.5/jquery.fancybox.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'" />
+    
+    <!-- /*! loadCSS. [c]2017 Filament Group, Inc. MIT License */
+/* This file is meant as a standalone workflow for
+- testing support for link[rel=preload]
+- enabling async CSS loading in browsers that do not support rel=preload
+- applying rel preload css once loaded, whether supported or not.
+*/ -->
+<script>
+(function( w ){
+	"use strict";
+	// rel=preload support test
+	if( !w.loadCSS ){
+		w.loadCSS = function(){};
+	}
+	// define on the loadCSS obj
+	var rp = loadCSS.relpreload = {};
+	// rel=preload feature support test
+	// runs once and returns a function for compat purposes
+	rp.support = (function(){
+		var ret;
+		try {
+			ret = w.document.createElement( "link" ).relList.supports( "preload" );
+		} catch (e) {
+			ret = false;
+		}
+		return function(){
+			return ret;
+		};
+	})();
+
+	// if preload isn't supported, get an asynchronous load by using a non-matching media attribute
+	// then change that media back to its intended value on load
+	rp.bindMediaToggle = function( link ){
+		// remember existing media attr for ultimate state, or default to 'all'
+		var finalMedia = link.media || "all";
+
+		function enableStylesheet(){
+			link.media = finalMedia;
+		}
+
+		// bind load handlers to enable media
+		if( link.addEventListener ){
+			link.addEventListener( "load", enableStylesheet );
+		} else if( link.attachEvent ){
+			link.attachEvent( "onload", enableStylesheet );
+		}
+
+		// Set rel and non-applicable media type to start an async request
+		// note: timeout allows this to happen async to let rendering continue in IE
+		setTimeout(function(){
+			link.rel = "stylesheet";
+			link.media = "only x";
+		});
+		// also enable media after 3 seconds,
+		// which will catch very old browsers (android 2.x, old firefox) that don't support onload on link
+		setTimeout( enableStylesheet, 3000 );
+	};
+
+	// loop through link elements in DOM
+	rp.poly = function(){
+		// double check this to prevent external calls from running
+		if( rp.support() ){
+			return;
+		}
+		var links = w.document.getElementsByTagName( "link" );
+		for( var i = 0; i < links.length; i++ ){
+			var link = links[ i ];
+			// qualify links to those with rel=preload and as=style attrs
+			if( link.rel === "preload" && link.getAttribute( "as" ) === "style" && !link.getAttribute( "data-loadcss" ) ){
+				// prevent rerunning on link
+				link.setAttribute( "data-loadcss", true );
+				// bind listeners to toggle media back
+				rp.bindMediaToggle( link );
+			}
+		}
+	};
+
+	// if unsupported, run the polyfill
+	if( !rp.support() ){
+		// run once at least
+		rp.poly();
+
+		// rerun poly on an interval until onload
+		var run = w.setInterval( rp.poly, 500 );
+		if( w.addEventListener ){
+			w.addEventListener( "load", function(){
+				rp.poly();
+				w.clearInterval( run );
+			} );
+		} else if( w.attachEvent ){
+			w.attachEvent( "onload", function(){
+				rp.poly();
+				w.clearInterval( run );
+			} );
+		}
+	}
+
+
+	// commonjs
+	if( typeof exports !== "undefined" ){
+		exports.loadCSS = loadCSS;
+	}
+	else {
+		w.loadCSS = loadCSS;
+	}
+}( typeof global !== "undefined" ? global : this ) );
+</script>
+
+    <link rel="icon" href= "/assets/favicon.ico" />
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.min.js" as="script" />
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js" as="script" />
+    <link rel="preload" href="/scripts/main.js" as="script" />
+    <link rel="preload" as="font" href="/font/Oswald-Regular.ttf" crossorigin>
+    <link rel="preload" as="font" href="https://at.alicdn.com/t/font_327081_1dta1rlogw17zaor.woff" crossorigin>
+    
+        <!-- algolia -->
+        <script>
+            
+            var hits = JSON.parse('{"per_page":10}')
+            var labels = JSON.parse('{"input_placeholder":"Search for Posts","hits_empty":"没有找到任何搜索结果: ${query}","hits_stats":"找到约${hits}条结果（用时${time}ms）"}')
+
+            var algolia = {
+                applicationID: 'V0HYXBS9FB',
+                apiKey: '6550d5de786935564142097c3e78c380',
+                indexName: 'law_blog_index',
+                hits: hits,
+                labels: labels
+            }
+        </script>
+    
+    <!-- fancybox -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.2.5/jquery.fancybox.min.js" defer></script>
+    <!-- 百度统计  -->
+    
+    <!-- 谷歌统计  -->
+    
+<meta name="generator" content="Hexo 5.4.0"><link rel="alternate" href="/atom.xml" title="Tenloy's Blog" type="application/atom+xml">
+</head>
+
+    
+        <body class="post-body">
+    
+    
+<header class="header">
+
+    <div class="read-progress"></div>
+    <div class="header-sidebar-menu">&#xe775;</div>
+    <!-- post页的toggle banner  -->
+    
+    <div class="banner">
+            <div class="blog-title">
+                <a href="/" >Tenloy&#39;s Blog</a>
+            </div>
+            <div class="post-title">
+                <a href="#" class="post-name">图形处理(二) - 图形与视频处理相关的框架</a>
+            </div>
+    </div>
+    
+    <!-- 将home-link的操作改为应用到header-top-right上 -->
+    <div class="header-top-right">
+        <!-- search  -->
+        
+            <div class="site-search popup-trigger tl-search">
+                <span class="iconfont-jian tl-search-icon">&#xe7fc;搜索</span>
+            </div>
+            
+        <a class="home-link" href=/>Tenloy's Blog</a>
+    </div>
+</header>
+    <div class="wrapper">
+        <div class="site-intro" style="
+
+
+
+
+
+
+
+height:40vh;
+">
+    
+    <!-- 主页  -->
+    
+    
+    <!-- 404页  -->
+            
+    <div class="site-intro-placeholder"></div>
+    <div class="site-intro-img" style="background-image: url(/intro/post-bg.jpg)"></div>
+    <div class="site-intro-meta">
+        <!-- 标题  -->
+        <h1 class="intro-title">
+            <!-- 主页  -->
+            
+            图形处理(二) - 图形与视频处理相关的框架
+            <!-- 404 -->
+            
+        </h1>
+        <!-- 副标题 -->
+        <p class="intro-subtitle">
+            <!-- 主页副标题  -->
+            
+            
+            <!-- 404 -->
+            
+        </p>
+        <!-- 文章页meta -->
+        
+            <div class="post-intros">
+                <!-- 文章页标签  -->
+                
+                
+                    <div class="post-intro-read">
+                        <span>Word count: <span class="post-count word-count">6.1k</span>Reading time: <span class="post-count reading-time">22 min</span></span>
+                    </div>
+                
+                <div class="post-intro-meta">
+                    <span class="post-intro-calander iconfont-archer">&#xe676;</span>
+                    <span class="post-intro-time">2021/09/15</span>
+                    
+                    <span id="busuanzi_container_page_pv" class="busuanzi-pv">
+                        <span class="iconfont-archer">&#xe602;</span>
+                        <span id="busuanzi_value_page_pv"></span>
+                    </span>
+                    
+                    <span class="shareWrapper">
+                        <span class="iconfont-archer shareIcon">&#xe71d;</span>
+                        <span class="shareText">Share</span>
+                        <ul class="shareList">
+                            <li class="iconfont-archer share-qr" data-type="qr">&#xe75b;
+                                <div class="share-qrcode"></div>
+                            </li>
+                            <li class="iconfont-archer" data-type="weibo">&#xe619;</li>
+                            <li class="iconfont-archer" data-type="qzone">&#xe62e;</li>
+                            <li class="iconfont-archer" data-type="twitter">&#xe634;</li>
+                            <li class="iconfont-archer" data-type="facebook">&#xe67a;</li>
+                        </ul>
+                    </span>
+                </div>
+            </div>
+        
+    </div>
+</div>
+        <script>
+ 
+  // get user agent
+  var browser = {
+    versions: function () {
+      var u = window.navigator.userAgent;
+      return {
+        userAgent: u,
+        trident: u.indexOf('Trident') > -1, //IE内核
+        presto: u.indexOf('Presto') > -1, //opera内核
+        webKit: u.indexOf('AppleWebKit') > -1, //苹果、谷歌内核
+        gecko: u.indexOf('Gecko') > -1 && u.indexOf('KHTML') == -1, //火狐内核
+        mobile: !!u.match(/AppleWebKit.*Mobile.*/), //是否为移动终端
+        ios: !!u.match(/\(i[^;]+;( U;)? CPU.+Mac OS X/), //ios终端
+        android: u.indexOf('Android') > -1 || u.indexOf('Linux') > -1, //android终端或者uc浏览器
+        iPhone: u.indexOf('iPhone') > -1 || u.indexOf('Mac') > -1, //是否为iPhone或者安卓QQ浏览器
+        iPad: u.indexOf('iPad') > -1, //是否为iPad
+        webApp: u.indexOf('Safari') == -1, //是否为web应用程序，没有头部与底部
+        weixin: u.indexOf('MicroMessenger') == -1, //是否为微信浏览器
+        uc: u.indexOf('UCBrowser') > -1 //是否为android下的UC浏览器
+      };
+    }()
+  }
+  console.log("userAgent:" + browser.versions.userAgent);
+
+  // callback
+  function fontLoaded() {
+    console.log('font loaded');
+    if (document.getElementsByClassName('site-intro-meta')) {
+      document.getElementsByClassName('intro-title')[0].classList.add('intro-fade-in');
+      document.getElementsByClassName('intro-subtitle')[0].classList.add('intro-fade-in');
+      var postIntros = document.getElementsByClassName('post-intros')[0]
+      if (postIntros) {
+        postIntros.classList.add('post-fade-in');
+      }
+    }
+  }
+
+  // UC不支持跨域，所以直接显示
+  function asyncCb(){
+    if (browser.versions.uc) {
+      console.log("UCBrowser");
+      fontLoaded();
+    } else {
+      WebFont.load({
+        custom: {
+          families: ['Oswald-Regular']
+        },
+        loading: function () {  //所有字体开始加载
+          // console.log('loading');
+        },
+        active: function () {  //所有字体已渲染
+          fontLoaded();
+        },
+        inactive: function () { //字体预加载失败，无效字体或浏览器不支持加载
+          console.log('inactive: timeout');
+          fontLoaded();
+        },
+        timeout: 5000 // Set the timeout to two seconds
+      });
+    }
+  }
+
+  function asyncErr(){
+    console.warn('script load from CDN failed, will load local script')
+  }
+
+  // load webfont-loader async, and add callback function
+  function async(u, cb, err) {
+    var d = document, t = 'script',
+      o = d.createElement(t),
+      s = d.getElementsByTagName(t)[0];
+    o.src = u;
+    if (cb) { o.addEventListener('load', function (e) { cb(null, e); }, false); }
+    if (err) { o.addEventListener('error', function (e) { err(null, e); }, false); }
+    s.parentNode.insertBefore(o, s);
+  }
+
+  var asyncLoadWithFallBack = function(arr, success, reject) {
+      var currReject = function(){
+        reject()
+        arr.shift()
+        if(arr.length)
+          async(arr[0], success, currReject)
+        }
+
+      async(arr[0], success, currReject)
+  }
+
+  asyncLoadWithFallBack([
+    "https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.min.js", 
+    "https://cdn.bootcss.com/webfont/1.6.28/webfontloader.js",
+    "/lib/webfontloader.min.js"
+  ], asyncCb, asyncErr)
+</script>        
+        <img class="loading" src="/assets/loading.svg" style="display: block; margin: 6rem auto 0 auto; width: 6rem; height: 6rem;" />
+        <div class="container container-unloaded">
+            <main class="main post-page">
+    <article class="article-entry">
+        <blockquote>
+<p>原文链接 - <a target="_blank" rel="noopener" href="https://juejin.cn/post/6844903645272604679">iOS图形处理概论：OpenGL ES，Metal，Core Graphics，Core Image，GPUImage，OpenCV等</a></p>
+</blockquote>
+<h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>对于刚接触iOS图形相关框架的小白，有一些图形框架在字面上和功能上非常容易混淆。这里旨在总结一下各种框架，区分它们的概念和功能，以作日后进一步细分学习的指引。因而，<strong>本文并不会针对具体框架作详解，只作区分引导</strong>，读者可自行选择方向继续深造。为此，笔者总结了一张各种框架关系图，如下所示：</p>
+<img src="/images/graphics/GraphicsFrames.png" alt="GraphicsFrames" style="zoom:59%;" />
+
+<img src="/images/iosrender/01.png" alt="01" style="zoom:90%;" />
+
+<p>总的来说，iOS与图形图像处理相关的框架都在这里了：</p>
+<ul>
+<li>界面图形框架 – UIKit</li>
+<li>核心动画框架 – Core Animation</li>
+<li>苹果封装的图形框架 – Core Graphics &amp; Quartz 2D</li>
+<li>传统跨平台图形框架 – OpenGL ES</li>
+<li>苹果最新力推的图形框架 – Metal</li>
+<li>适合图片的苹果滤镜框架 – Core Image</li>
+<li>适合视频的第三方滤镜方案 – GPUImage</li>
+<li>游戏引擎 – Scene Kit (3D) 和 Sprite Kit (2D)</li>
+<li>计算机视觉在iOS的应用 – OpenCV for iOS</li>
+</ul>
+<h2 id="一、界面图形-—-UIKit"><a href="#一、界面图形-—-UIKit" class="headerlink" title="一、界面图形 — UIKit"></a>一、界面图形 — UIKit</h2><h3 id="1-1-UIKit"><a href="#1-1-UIKit" class="headerlink" title="1.1 UIKit"></a>1.1 UIKit</h3><p>UIKit是一组Objective-C API，为线条图形、Quartz图像和颜色操作提供Objective-C 封装，并提供2D绘制、图像处理及用户接口级别的动画。</p>
+<p>UIKit包括UIBezierPath（绘制线、角度、椭圆及其它图形）、UIImage（显示图像）、UIColor（颜色操作）、UIFont和UIScreen（提供字体和屏幕信息）等类以及在位图图形环境、PDF图形环境上进行绘制和 操作的功能等, 也提供对标准视图的支持，也提供对打印功能的支持。</p>
+<h3 id="1-2-UIKit与Core-Graphics的关系"><a href="#1-2-UIKit与Core-Graphics的关系" class="headerlink" title="1.2 UIKit与Core Graphics的关系"></a>1.2 UIKit与Core Graphics的关系</h3><p>在UIKit中，UIView类本身在绘制时<strong>自动创建一个图形环境，即Core Graphics层的CGContext类型，作为当前的图形绘制环境</strong>。在绘制时可以调用 <code>UIGraphicsGetCurrentContext</code> 函数获得当前的图形环境，例如：</p>
+<figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">- (<span class="keyword">void</span>)drawRect:(<span class="built_in">CGRect</span>)rect &#123;</span><br><span class="line">    <span class="comment">// Drawing code</span></span><br><span class="line">    <span class="built_in">NSLog</span>(<span class="string">@&quot;%s&quot;</span>,__func__);</span><br><span class="line">    <span class="comment">//1.获取上下文</span></span><br><span class="line">    <span class="built_in">CGContextRef</span> contextRef = <span class="built_in">UIGraphicsGetCurrentContext</span>();</span><br><span class="line">    <span class="comment">//2.描述路径</span></span><br><span class="line">    <span class="built_in">UIBezierPath</span> * path = [<span class="built_in">UIBezierPath</span> bezierPath];</span><br><span class="line">    <span class="comment">//起点</span></span><br><span class="line">    [path moveToPoint:<span class="built_in">CGPointMake</span>(<span class="number">10</span>, <span class="number">10</span>)];</span><br><span class="line">    <span class="comment">//终点</span></span><br><span class="line">    [path addLineToPoint:<span class="built_in">CGPointMake</span>(<span class="number">100</span>, <span class="number">100</span>)];</span><br><span class="line">    <span class="comment">//设置颜色</span></span><br><span class="line">    [[<span class="built_in">UIColor</span> whiteColor]setStroke];</span><br><span class="line">    <span class="comment">//3.添加路径</span></span><br><span class="line">    <span class="built_in">CGContextAddPath</span>(contextRef, path.CGPath);</span><br><span class="line">    <span class="comment">//显示路径</span></span><br><span class="line">    <span class="built_in">CGContextStrokePath</span>(contextRef);</span><br><span class="line">    </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这段代码就是在UIView的子类中调用 <code>UIGraphicsGetCurrentContext</code> 函数获得当前的图形环境，然后向该图形环境添加路径，最后绘制。</p>
+<h2 id="二、核心动画-—-Core-Animation"><a href="#二、核心动画-—-Core-Animation" class="headerlink" title="二、核心动画 — Core Animation"></a>二、核心动画 — Core Animation</h2><h3 id="2-1-Core-Animation"><a href="#2-1-Core-Animation" class="headerlink" title="2.1 Core Animation"></a>2.1 Core Animation</h3><p>Core Animation 是一套Objective-C API，实现了一个高性能的复合引擎，并提供一个简单易用的编程接口，给用户UI添加平滑运动和动态反馈能力。</p>
+<p>Core Animation 是 UIKit 实现动画和变换的基础，也负责视图的复合功能。使用Core Animation可以实现定制动画和细粒度的动画控制，创建复杂的、支持动画和变换的layered 2D视图。</p>
+<p>Core Animation 不属于绘制系统，但它是以硬件复合和操作显示内容的基础设施。这个基础设施的核心是layer对象，用来管理和操作显示内容。在 iOS 中 <strong>每一个视图都对应Core Animation的一个层对象</strong>，与视图一样，层之间也组织为层关系树。一个层捕获视图内容为一个被图像硬件容易操作的位图。在多数应用中层作为管理视图的方式使用，但也可以创建独立的层到一个层关系树中来显示视图不够支持的显示内容。</p>
+<p>OpenGL ES的内容也可以与Core Animation内容进行集成。</p>
+<p>为了使用Core Animation实现动画，可以修改 <strong>层的属性值</strong> 来触发一个action对象的执行，不同的action对象实现不同的动画。</p>
+<h3 id="2-2-Core-Animatio相关基类及子类"><a href="#2-2-Core-Animatio相关基类及子类" class="headerlink" title="2.2 Core Animatio相关基类及子类"></a>2.2 Core Animatio相关基类及子类</h3><p>Core Animation 提供了一下一组应用可以采用的类来提供对不同动画类型的支持：</p>
+<ul>
+<li><strong>CAAnimation</strong> 是一个抽象公共基类，CAAnimation采用CAMediaTiming 和CAAction协议为动画提供时间（如周期、速度、重复次数等）和action行为（启动、停止等）。</li>
+<li><strong>CAPropertyAnimation</strong> 是  CAAnimation的抽象子类，为动画提供一个由一个key路径规定的层属性的支持；</li>
+<li><strong>CABasicAnimation</strong> 是CAPropertyAnimation的具体子类，为一个层属性提供简单插入能力。</li>
+<li><strong>CAKeyframeAnimation</strong> 也是CAPropertyAnimation的具体子类，提供key帧动画支持。</li>
+</ul>
+<h2 id="三、苹果封装的绘图框架-—-Core-Graphics-amp-Quartz-2D"><a href="#三、苹果封装的绘图框架-—-Core-Graphics-amp-Quartz-2D" class="headerlink" title="三、苹果封装的绘图框架 — Core Graphics &amp; Quartz 2D"></a>三、苹果封装的绘图框架 — Core Graphics &amp; Quartz 2D</h2><blockquote>
+<p><a target="_blank" rel="noopener" href="https://developer.apple.com/documentation/coregraphics?language=objc">Core Graphics</a> 框架基于 Quartz 高级绘图引擎。 它提供具有无与伦比的输出保真度的低级、轻量级 2D 渲染。 您可以使用此框架来处理基于路径的绘图、转换、离屏渲染、抗锯齿渲染、颜色管理、渐变和阴影、图案、图像数据管理、图像创建和图像遮罩，以及 PDF 文档的创建、显示和解析。 <a target="_blank" rel="noopener" href="https://developer.apple.com/library/archive/documentation/GraphicsImaging/Conceptual/drawingwithquartz2d/Introduction/Introduction.html?language=objc#//apple_ref/doc/uid/TP30001066">Quartz 2D Programming Guide</a></p>
+<p>在 macOS 中，Core Graphics 还包括用于处理显示硬件、低级用户输入事件和窗口系统的服务。</p>
+</blockquote>
+<h3 id="3-1-Core-Graphics"><a href="#3-1-Core-Graphics" class="headerlink" title="3.1 Core Graphics"></a>3.1 Core Graphics</h3><p>Core Graphics是一套C-based API， 支持：</p>
+<ul>
+<li>绘制图形：向量图形、线、三角形、矩形、圆、弧等</li>
+<li>绘制文字</li>
+<li>绘制/生成图案</li>
+<li>截图/裁剪图片</li>
+<li>读取/生成PDF</li>
+<li>自定义UI控件</li>
+</ul>
+<h3 id="3-2-Quartz-2D"><a href="#3-2-Quartz-2D" class="headerlink" title="3.2 Quartz 2D"></a>3.2 Quartz 2D</h3><blockquote>
+<p>苹果中，Quartz 2D 与 Core Graphics 什么关系？</p>
+<ul>
+<li><p>解释1：Core Graphics, also known as Quartz 2D…. — <a target="_blank" rel="noopener" href="https://developer.apple.com/library/archive/documentation/GraphicsImaging/Conceptual/drawingwithquartz2d/Introduction/Introduction.html?language=objc#//apple_ref/doc/uid/TP30001066">官方文档 Quartz 2D Programming Guide</a></p>
+<p>即Core Graphics，也称为 Quartz 2D，是一种先进的二维绘图引擎，可用于 iOS、tvOS 和 macOS 应用程序开发。 </p>
+</li>
+<li><p>解释2：也有一种说法：The Quartz 2D API is part of the Core Graphics framework, so you may see Quartz referred to as Core Graphics or, simply, CG.</p>
+<p>即 Quartz 2D 是 Core Graphics 框架的一部分。这个说法来自Stack Overflow，不过很久之前的解答了，说是也是来自<a target="_blank" rel="noopener" href="http://developer.apple.com/mac/library/documentation/GraphicsImaging/Conceptual/drawingwithquartz2d/Introduction/Introduction.html">Quartz 2D Programming Guide</a>，应该是老版本了。</p>
+</li>
+<li><p>总结：简单把这个两者视为等价吧，绘图引擎。如果说是第二种说法的，麻烦让我瞅一眼官方文档。</p>
+</li>
+</ul>
+</blockquote>
+<p>Quartz 2D是Core Graphics中的2D 绘制呈现引擎。Quartz是资源和设备无关的，提供路径绘制，anti-aliased呈现，剃度填充图案，图像，透明绘制和透明层、遮蔽和阴影、颜色管理，坐标转换，字体、offscreen呈现、pdf文档创建、显示和分析等功能。</p>
+<p>Quartz 2D能够与所有的图形和动画技术（如Core Animation, OpenGL ES, 和 UIKit 等）一起使用。</p>
+<p>Quartz 2D采用paint模式进行绘制。</p>
+<h3 id="3-3-图形环境Context"><a href="#3-3-图形环境Context" class="headerlink" title="3.3 图形环境Context"></a>3.3 图形环境Context</h3><p>Quartz 2D中使用的<strong>图形环境</strong>也由一个类CGContext表示。</p>
+<p>在Quartz 2D中可以把一个图形环境作为一个绘制目标。当使用Quartz 2D进行绘制时，所有设备特定的特性被包含在你使用的特定类型的图形环境中，因此通过给相同的图像操作函数提供不同的图像环境你就能够画相同的图像到不同的设备上，因此做到了图像绘制的设备无关性。</p>
+<p>图形环境Context是个比较抽象的东西，它不仅仅是一个可以绘制的图层，还包含为当前图层设置的参数，如阴影，线条粗细，绘制模式等。可以类比成一个新建的Photoshop图层以及当前笔触，颜色等配置。</p>
+<p>对于移动平台，有三种常见的图形环境Context：</p>
+<ul>
+<li>位图上下文（Bitmap graphics context）：一般用于绘制图片或者自定义控件。<ul>
+<li>View Graphics Context: 由UIView自动创建，你重写UIView drawRect方法时，你的内容会画在这个上下文上。</li>
+<li>Bitmap Graphics Context: 绘制在该上下文的内容会以点阵形式存储在一块内存中。简单说，就是为图片开辟一块内存，然后在里面画东西，上下文帮你把图片内存抽象成一个Context(图层)了。</li>
+</ul>
+</li>
+<li>PDF上下文（PDF graphics context）：用于生成pdf文件。</li>
+<li>图层上下文（Layer graphics context）：用于离屏绘制（ offscreen drawing）。</li>
+<li>其他如Window Graphics Context、Printer Graphics Context……。</li>
+</ul>
+<p>在什么上下文里，操作，生成的就是什么格式的文件（就比如office软件，我们打开word就生成Word文件，打开Excel就生成excel表，打开PPT，就生成PPT）。</p>
+<h3 id="3-4-Quartz-2D提供的主要类包括"><a href="#3-4-Quartz-2D提供的主要类包括" class="headerlink" title="3.4 Quartz 2D提供的主要类包括"></a>3.4 Quartz 2D提供的主要类包括</h3><ul>
+<li>CGContext：表示一个图形环境；</li>
+<li>CGPath：使用向量图形来创建路径，并能够填充和stroke；</li>
+<li>CGImage：用来表示位图；</li>
+<li>CGLayer：用来表示一个能够用于重复绘制和offscreen绘制的绘制层；</li>
+<li>CGPattern：用来表示Pattern，用于重复绘制；</li>
+<li>CGShading和 CGGradient：用于绘制剃度；</li>
+<li>CGColor 和 CGColorSpace；用来进行颜色和颜色空间管理；</li>
+<li>CGFont, 用于绘制文本；</li>
+<li>CGPDFContentStream、CGPDFScanner、CGPDFPage、CGPDFObject,CGPDFStream, CGPDFString等用来进行pdf文件的创建、解析和显示。</li>
+</ul>
+<h2 id="四、传统跨平台图形框架-—-OpenGL-ES"><a href="#四、传统跨平台图形框架-—-OpenGL-ES" class="headerlink" title="四、传统跨平台图形框架 — OpenGL ES"></a>四、传统跨平台图形框架 — OpenGL ES</h2><h3 id="4-1-OpenGL-ES"><a href="#4-1-OpenGL-ES" class="headerlink" title="4.1 OpenGL ES"></a>4.1 OpenGL ES</h3><p>OpenGL ES是一套多功能开放标准的用于嵌入系统的C-based的图形库，用于2D和3D数据的可视化。OpenGL被设计用来转换一组图形调用功能到底层图形硬件（GPU），由GPU执行图形命令，用来实现复杂的图形操作和运算，从而能够高性能、高帧率利用GPU提供的2D和3D绘制能力。</p>
+<p>OpenGL ES规范本身不定义绘制表面和绘制窗口，因此ios为了使用它必须提供和创建一个OpenGL ES 的呈现环境，创建和配置存储绘制命令结果的framebuffer 及创建和配置一个或多个呈现目标。</p>
+<h3 id="4-2-EAGL"><a href="#4-2-EAGL" class="headerlink" title="4.2 EAGL"></a>4.2 EAGL</h3><p>在 iOS中使用EAGL提供的EAGLContext类 来实现和提供一个呈现环境，用来保持OpenGL ES使用到的硬件状态。EAGL是一个Objective-C API，提供使OpenGL ES与Core Animation和UIKIT集成的接口。</p>
+<p>在调用任何OpenGL ES 功能之前必须首先初始化一个EAGLContext 对象。每一个IOS应用的每一个线程都有一个当前context，在调用OpenGL ES函数时，使用或改变此context中的状态。</p>
+<p>EAGLContext 的类方法setCurrentContext: 用来设置当前线程的当前context。EAGLContext 的类方法currentContext 返回当前线程的当前context。在切换相同线程的两个上下文之前，必须调用glFlush函数来确保先前已提交的命令被提交到图形硬件中。</p>
+<h3 id="4-3-GLKit"><a href="#4-3-GLKit" class="headerlink" title="4.3 GLKit"></a>4.3 GLKit</h3><p>可以采用不同的方式使用OpenGL ES以便呈现OpenGL ES内容到不同的目标：GLKit和CAEAGLLayer。</p>
+<p>为了创建全屏幕的视图或使OpenGL ES内容与UIKit视图集成，可以使用GLKit。在使用GLKit时，GLKit提供的类GLKView类本身实现呈现目标及创建和维护一个framebuffer。</p>
+<p>GLKit是一组Objective-C 类，为使用OpenGL ES 提供一个面向对象接口，用来简化OpenGL ES应用的开发。</p>
+<h3 id="4-4-CAEAGLLayer"><a href="#4-4-CAEAGLLayer" class="headerlink" title="4.4 CAEAGLLayer"></a>4.4 CAEAGLLayer</h3><p>为了使OpenGL ES内容作为一个Core Animation层的部分内容时，可以使用CAEAGLLayer 作为呈现目标，并需要另外创建framebuffer以及自己实现和控制整个绘制流程。</p>
+<h3 id="4-5-GLKit支持四个3D应用开发的关键领域"><a href="#4-5-GLKit支持四个3D应用开发的关键领域" class="headerlink" title="4.5 GLKit支持四个3D应用开发的关键领域"></a>4.5 GLKit支持四个3D应用开发的关键领域</h3><ol>
+<li><p>GLKView 和 GLKViewController 类提供一个标准的OpenGL ES视图和相关联的呈现循环。GLKView可以作为OpenGL ES内容的呈现目标，GLKViewController提供内容呈现的控制和动画。视图管理和维护一个framebuffer，应用只需在framebuffer进行绘画即可。</p>
+</li>
+<li><p>GLKTextureLoader 为应用提供从IOS支持的各种图像格式的源自动加载纹理图像到OpenGL ES 图像环境的方式，并能够进行适当的转换，并支持同步和异步加载方式。</p>
+</li>
+<li><p>数学运算库，提供向量、矩阵、四元数的实现和矩阵堆栈操作等OpenGL ES 1.1功能。</p>
+</li>
+<li><p>Effect效果类提供标准的公共着色效果的实现。能够配置效果和相关的顶点数据，然后创建和加载适当的着色器。GLKit 包括三个可配置着色效果类：GLKBaseEffect实现OpenGL ES 1.1规范中的关键的灯光和材料模式, GLKSkyboxEffect提供一个skybox效果的实现, GLKReflectionMapEffect 在GLKBaseEffect基础上包括反射映射支持。</p>
+</li>
+</ol>
+<h2 id="五、苹果最新力推的图形框架-—-Metal"><a href="#五、苹果最新力推的图形框架-—-Metal" class="headerlink" title="五、苹果最新力推的图形框架 — Metal"></a>五、苹果最新力推的图形框架 — Metal</h2><p>Metal框架支持GPU硬件加速、高级3D图形渲染以及大数据并行运算。且提供了先进而精简的API来确保框架的细粒度(fine-grain)，并且在组织架构、程序处理、图形呈现、运算指令以及指令相关数据资源的管理上都支持底层控制。其核心目的是尽可能的减少CPU开销，而将运行时产生的大部分负载交由GPU承担。</p>
+<p>编写基于底层图形 API 的渲染引擎时，除了 Metal 以外的其他选择还有 OpenGL 和 OpenGL ES。</p>
+<p>OpenGL 不仅支持包括 OSX，Windows，Linux 和 Android 在内的几乎所有平台，还有大量的教程，书籍和最佳实践指南等资料。目前，Metal 的资源非常有限，并且仅限于搭载了 64 位处理器的 iPhone 和 iPad。但另外一方面，因为 OpenGL 的限制，其性能与 Metal 相比并不占优势，毕竟后者是专门用来解决这些问题的。</p>
+<p>如果想要一个 iOS 上高性能的并行计算库，答案非常简单。Metal 是唯一的选择。OpenGL 在 iOS 上是私有框架，而 Core Image (使用了 OpenGL) 对这样的任务来说既不够强大又不够灵活。</p>
+<h2 id="六、适合图片的苹果滤镜框架-—-Core-Image"><a href="#六、适合图片的苹果滤镜框架-—-Core-Image" class="headerlink" title="六、适合图片的苹果滤镜框架 — Core Image"></a>六、适合图片的苹果滤镜框架 — Core Image</h2><h3 id="6-1-滤镜术语"><a href="#6-1-滤镜术语" class="headerlink" title="6.1 滤镜术语"></a>6.1 滤镜术语</h3><p>摄影滤光镜，简称滤光镜、滤色镜或滤镜（Filter），是摄影时放在照相机镜头前端的一种玻璃或塑料镜片，能够对光的不同波段进行选择性吸收，从而对摄影作品产生特殊的效果。种类很多。一些图像处理软件也可以向图片中加入滤镜的模拟效果。</p>
+<p>常用滤镜：</p>
+<ul>
+<li>UV镜 可降低紫外线射入镜头，另外常被做为保护镜：以保护镜头前方镜片</li>
+<li>偏振镜 又称PL镜：可消除反光、增加色彩鲜艳</li>
+<li>中性灰度滤镜 又称中灰镜、ND镜或减光镜：可以延长曝光时间，或在强光下可以使用大光圈正确曝光</li>
+<li>渐变中灰滤镜 又称中灰渐变镜：可以应付大光比场景</li>
+<li>暖色滤镜：可以暖化肤色</li>
+</ul>
+<p>一些图像处理软件针对性地提供了一些对传统滤镜效果的模拟功能，使图像达到一种特殊效果。滤镜通常需要同通道、图层、色阶等联合使用，才能使图像取得最佳艺术效果。</p>
+<p>滤镜在软件界面中也直接以“滤镜”（Filter）称呼；日久便约定俗成，软件中将一些特定效果（effect）或预设（preset）以‘滤镜’统一称呼，特别于一些简单化傻瓜化软件中较为常见，如美图秀秀以及智能手机appInstagram等。如今智能手机自带的相机系统中也常见诸多滤镜。</p>
+<h3 id="6-2-Core-Image"><a href="#6-2-Core-Image" class="headerlink" title="6.2 Core Image"></a>6.2 Core Image</h3><blockquote>
+<p><a target="_blank" rel="noopener" href="https://developer.apple.com/library/archive/documentation/GraphicsImaging/Conceptual/CoreImaging/ci_intro/ci_intro.html#//apple_ref/doc/uid/TP30001185-CH1-TPXREF101">Core Image</a> 是一种图像处理和分析技术，旨在为静态和视频图像提供近乎实时的处理。它使用 GPU 或 CPU 渲染路径对来自 Core Graphics、Core Video 和 Image I/O 框架的图像数据类型进行操作。 </p>
+<p>Core Image 通过提供易于使用的应用程序编程接口 (API) 来隐藏底层图形处理的细节。您无需了解 OpenGL、OpenGL ES 或 Metal 的详细信息即可利用 GPU 的强大功能，也无需了解 Grand Central Dispatch (GCD) 的任何相关信息即可获得多核处理的优势。 Core Image 为您处理细节。</p>
+<p>Image I/O 编程接口框架允许应用程序读取和写入大多数图像文件格式。 该框架提供了高效率的色彩管理和对图像元数据的访问。</p>
+</blockquote>
+<img src="/images/graphics/architecture_2x.png" alt="" style="zoom:65%;" />
+
+<p>Core Image 是 iOS5 新加入到 iOS 平台的一个图像处理框架，提供了强大高效的图像处理功能， 用来对基于像素的图像进行操作与分析， 内置了很多强大的滤镜(Filter) (目前数量超过了180种)， 这些Filter 提供了各种各样的效果， 并且还可以通过 <code>滤镜链</code> 将各种效果的 <code>Filter叠加</code> 起来形成强大的自定义效果。</p>
+<p>一个 <strong>滤镜</strong> 是一个对象，有很多输入和输出，并执行一些变换。例如，模糊滤镜可能需要输入图像和一个模糊半径来产生适当的模糊后的输出图像。</p>
+<p>一个 <strong>滤镜链</strong> 是一个链接在一起的滤镜网络，使得一个滤镜的输出可以是另一个滤镜的输入。以这种方式，可以实现精心制作的效果。</p>
+<p>iOS8 之后更是支持自定义 CIFilter，可以定制满足业务需求的复杂效果。</p>
+<p>Core Image 的 API 主要就是三类：</p>
+<ul>
+<li>CIImage 保存图像数据的类，可以通过UIImage，图像文件或者像素数据来创建，包括未处理的像素数据。</li>
+<li>CIFilter 表示应用的滤镜，这个框架中对图片属性进行细节处理的类。它对所有的像素进行操作，用一些键-值设置来决定具体操作的程度。</li>
+<li>CIContext 表示上下文，如 Core Graphics 以及 Core Data 中的上下文用于处理绘制渲染以及处理托管对象一样，Core Image 的上下文也是实现对图像处理的具体对象。可以从其中取得图片的信息。</li>
+</ul>
+<p>Core Image 的另外一个优势，就是可以根据需求选择 CPU 或者 GPU 来处理。</p>
+<figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 创建基于 CPU 的 CIContext 对象 (默认是基于 GPU，CPU 需要额外设置参数)</span></span><br><span class="line">context = [<span class="built_in">CIContext</span> contextWithOptions: [<span class="built_in">NSDictionary</span> dictionaryWithObject:[<span class="built_in">NSNumber</span> numberWithBool:<span class="literal">YES</span>] forKey:kCIContextUseSoftwareRenderer]];</span><br><span class="line"></span><br><span class="line"><span class="comment">// 创建基于 GPU 的 CIContext 对象</span></span><br><span class="line">context = [<span class="built_in">CIContext</span> contextWithOptions: <span class="literal">nil</span>];</span><br><span class="line"></span><br><span class="line"><span class="comment">// 创建基于 GPU 的 CIContext 对象</span></span><br><span class="line">EAGLContext *eaglctx = [[EAGLContext alloc] initWithAPI:kEAGLRenderingAPIOpenGLES2];</span><br><span class="line">context = [<span class="built_in">CIContext</span> contextWithEAGLContext:eaglctx];</span><br></pre></td></tr></table></figure>
+
+<h3 id="6-3-常见应用"><a href="#6-3-常见应用" class="headerlink" title="6.3 常见应用"></a>6.3 常见应用</h3><p>图片的存储，实际上，是存储的RGB和alpha透明度的数据。</p>
+<p>对图片的美化，实际上就是操作改变的RGB以及透明度，其中牵扯到好多算法，比如最常见的磨皮：磨皮的本质实际上是模糊。而在图像处理领域，模糊就是将像素点的取值与周边的像素点取值相关联。而我们常见的高斯模糊 ，它的像素点取值则是由周边像素点求加权平均所得，而权重系数则是像素间的距离的高斯函数，大致关系是距离越小、权重系数越大。</p>
+<p>目前该领域有很多已经很成熟的库，比如：实现直播项目中添加美颜滤镜的功能，相关 SDK和开源代码有：视决、涂图、七牛、金山云、videoCore、基于GPUImage实现的 BeautifyFaceDemo （据说从综合成本/效果/对项目侵入性方面考虑，还挺不错） 等。</p>
+<h2 id="七、适合视频的第三方滤镜方案-—-GPUImage"><a href="#七、适合视频的第三方滤镜方案-—-GPUImage" class="headerlink" title="七、适合视频的第三方滤镜方案 — GPUImage"></a>七、适合视频的第三方滤镜方案 — GPUImage</h2><p>GPUImage 优势： 最低支持 iOS 4.0，iOS 5.0 之后就支持自定义滤镜。 在低端机型上，GPUImage 有更好的表现。（这个我没用真正的设备对比过，GPUImage 的主页上是这么说的） GPUImage 在视频处理上有更好的表现。 GPUImage 的代码完成公开，实现透明。 可以根据自己的业务需求，定制更加复杂的管线操作。可定制程度高。</p>
+<h2 id="八、游戏引擎-—-Scene-Kit-3D-和-Sprite-Kit-2D"><a href="#八、游戏引擎-—-Scene-Kit-3D-和-Sprite-Kit-2D" class="headerlink" title="八、游戏引擎 — Scene Kit (3D) 和 Sprite Kit (2D)"></a>八、游戏引擎 — <a href="https://link.juejin.cn/?target=https://developer.apple.com/library/ios/documentation/SceneKit/Reference/SceneKit_Framework/">Scene Kit</a> (3D) 和 <a href="https://link.juejin.cn/?target=https://developer.apple.com/library/ios/documentation/GraphicsAnimation/Conceptual/SpriteKit_PG/Introduction/Introduction.html">Sprite Kit</a> (2D)</h2><p>对于寻找游戏引擎的开发者来说，Metal 不是最佳选择。苹果官方的的 <a href="https://link.juejin.cn/?target=https://developer.apple.com/library/ios/documentation/SceneKit/Reference/SceneKit_Framework/">Scene Kit</a> (3D) 和 <a href="https://link.juejin.cn/?target=https://developer.apple.com/library/ios/documentation/GraphicsAnimation/Conceptual/SpriteKit_PG/Introduction/Introduction.html">Sprite Kit</a> (2D) 是更好的选择。这些 API 提供了包括物理模拟在内的更高级别的游戏引擎。</p>
+<p>另外还有功能更全面的 3D 引擎，例如 Epic 的 <a href="https://link.juejin.cn/?target=https://www.unrealengine.com/">Unreal Engine</a> 或 <a href="https://link.juejin.cn/?target=http://unity3d.com/">Unity</a>，二者都是跨平台的。使用这些引擎，你无需直接使用 Metal 的 API，就可以从 Metal 中获益。</p>
+<h3 id="8-1-2D渲染-–-SpriteKit"><a href="#8-1-2D渲染-–-SpriteKit" class="headerlink" title="8.1 2D渲染 – SpriteKit"></a>8.1 2D渲染 – SpriteKit</h3><p>SpriteKit 让开发者可以开发高性能、省电节能的 2D 游戏。在 iOS 8 中，我们新添了多项增强功能，这将使 2D 游戏体验更加精彩。这些新技术有助于使游戏角色的动作更加自然，并让开发者可以更轻松地在游戏中加入力场、检测碰撞和生成新的灯光效果。</p>
+<h3 id="8-2-3D渲染-–-SceneKit"><a href="#8-2-3D渲染-–-SceneKit" class="headerlink" title="8.2 3D渲染 – SceneKit"></a>8.2 3D渲染 – SceneKit</h3><p>SceneKit 专为休闲 3D 游戏而设计，可让开发者渲染 3D 游戏场景。SceneKit 内置了物理引擎、粒子发生器和各种易用工具，可以轻松快捷地为 3D 物体编写动作。不仅如此，它还与 SpriteKit 完全集成，所以开发者可以直接在 3D 游戏中加入 SpriteKit 的素材。</p>
+<h2 id="九、计算机视觉在iOS的应用-—-OpenCV-for-iOS"><a href="#九、计算机视觉在iOS的应用-—-OpenCV-for-iOS" class="headerlink" title="九、计算机视觉在iOS的应用 — OpenCV for iOS"></a>九、计算机视觉在iOS的应用 — OpenCV for iOS</h2><blockquote>
+<p>OpenCV的全称是：Open Source Computer Vision Library。OpenCV是一个基于（开源）发行的跨平台计算机视觉库，可以运行在Linux、Windows和Mac OS操作系统上。它轻量级而且高效——由一系列 C 函数和少量 C++ 类构成，同时提供了Python、Ruby、MATLAB等语言的接口，实现了图像处理和计算机视觉方面的很多通用算法。</p>
+</blockquote>
+<p>OpenCV 的 API 是 C++ 的。它由不同的模块组成，这些模块中包含范围极为广泛的各种方法，从底层的图像颜色空间转换到高层的机器学习工具。这里提供一个入门PDF文档 <a href="https://link.juejin.cn/?target=http://www.opencv.org.cn/forum.php?mod=viewthread&tid=33549">下载入口</a>。</p>
+<p>使用 C++ API 并不是绝大多数 iOS 开发者每天都做的事，你需要使用 Objective-C++ 文件来调用 OpenCV 的函数。 也就是说，你不能在 Swift 或者 Objective-C 语言内调用 OpenCV 的函数。 这篇 OpenCV 的 <a href="https://link.juejin.cn/?target=http://docs.opencv.org/doc/tutorials/ios/video_processing/video_processing.html%23opencviosvideoprocessing">iOS 教程</a>告诉你只要把所有用到 OpenCV 的类的文件后缀名改为 <code>.mm</code> 就行了，包括视图控制器类也是如此。这么干或许能行得通，却不是什么好主意。正确的方式是给所有你要在 app 中使用到的 OpenCV 功能写一层 Objective-C++ 封装。这些 Objective-C++ 封装把 OpenCV 的 C++ API 转化为安全的 Objective-C API，以方便地在所有 Objective-C 类中使用。</p>
+<p>走封装的路子，你的工程中就可以只在这些封装中调用 C++ 代码，从而避免掉很多让人头痛的问题，比如直接改文件后缀名会因为在错误的文件中引用了一个 C++ 头文件而产生难以追踪的编译错误。</p>
+<p>OpenCV 声明了命名空间 <code>cv</code>，因此 OpenCV 的类的前面会有个 <code>cv::</code> 前缀，就像 <code>cv::Mat</code>、 <code>cv::Algorithm</code> 等等。你也可以在 <code>.mm</code> 文件中使用 <code>using namespace cv</code> 来避免在一堆类名前使用 <code>cv::</code>前缀。但是，在某些类名前你必须使用命名空间前缀，比如 <code>cv::Rect</code> 和 <code>cv::Point</code>，因为它们会跟定义在 <code>MacTypes.h</code> 中的 <code>Rect</code> 和 <code>Point</code> 相冲突。尽管这只是个人偏好问题，我还是偏向在任何地方都使用 <code>cv::</code>以保持一致性。</p>
+<p>一般讲的OpenCV是基于CPU的，相关资料和支持也是最完善的。当然，也有基于GPU模块，但提供的接口非常坑爹，相当一部分不支持浮点类型（像histogram、integral这类常用的都不支持）；又如，遇到阈值判断的地方，就必须传回cpu处理，因为gpu函数都是并行处理的，每改写完一个算法模块，就测试一下运行效率，有的时候是振奋人心，有的时候则是当头棒喝——比CPU还慢。详情可参阅 <a href="https://link.juejin.cn/?target=https://blog.csdn.net/kelvin_yan/article/details/41804357">这里</a>。</p>
+<h2 id="十、参考文献"><a href="#十、参考文献" class="headerlink" title="十、参考文献"></a>十、参考文献</h2><ul>
+<li>Core Animations<ul>
+<li><a target="_blank" rel="noopener" href="https://www.sohu.com/a/203987045_468740">https://www.sohu.com/a/203987045_468740</a> </li>
+<li><a target="_blank" rel="noopener" href="https://blog.csdn.net/huangznian/article/details/42919221">https://blog.csdn.net/huangznian/article/details/42919221</a> </li>
+<li><a target="_blank" rel="noopener" href="https://www.jianshu.com/p/446a6b72f981">https://www.jianshu.com/p/446a6b72f981</a> </li>
+<li><a target="_blank" rel="noopener" href="https://www.jianshu.com/p/439e158b44de">https://www.jianshu.com/p/439e158b44de</a></li>
+</ul>
+</li>
+<li>Metal<ul>
+<li><a target="_blank" rel="noopener" href="https://juejin.cn/post/6844903494072139789">https://juejin.cn/post/6844903494072139789</a> </li>
+<li><a target="_blank" rel="noopener" href="https://www.jianshu.com/p/ce53d0178f20">https://www.jianshu.com/p/ce53d0178f20</a> </li>
+<li><a target="_blank" rel="noopener" href="https://blog.csdn.net/pizi0475/article/details/50232029">https://blog.csdn.net/pizi0475/article/details/50232029</a> </li>
+<li><a target="_blank" rel="noopener" href="https://baike.baidu.com/item/Metal/10917053?fr=aladdin">https://baike.baidu.com/item/Metal/10917053?fr=aladdin</a> </li>
+<li><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/24623380?utm_source=tuicool&amp;utm_medium=referral">https://zhuanlan.zhihu.com/p/24623380?utm_source=tuicool&amp;utm_medium=referral</a></li>
+</ul>
+</li>
+<li>Core Image<ul>
+<li><a target="_blank" rel="noopener" href="https://objccn.io/issue-21-6/">https://objccn.io/issue-21-6/</a> </li>
+<li><a target="_blank" rel="noopener" href="http://colin1994.github.io/2016/10/21/Core-Image-OverView/?utm_source=tuicool&amp;utm_medium=referral">http://colin1994.github.io/2016/10/21/Core-Image-OverView/?utm_source=tuicool&amp;utm_medium=referral</a> </li>
+<li><a target="_blank" rel="noopener" href="https://blog.csdn.net/jingcheng345413/article/details/54967640">https://blog.csdn.net/jingcheng345413/article/details/54967640</a> </li>
+<li><a target="_blank" rel="noopener" href="https://www.cnblogs.com/try2do-neo/p/3601546.html">https://www.cnblogs.com/try2do-neo/p/3601546.html</a></li>
+</ul>
+</li>
+<li>Core Graphics<ul>
+<li><a target="_blank" rel="noopener" href="https://www.jianshu.com/p/e7a50dcbe7c8">https://www.jianshu.com/p/e7a50dcbe7c8</a> </li>
+<li><a target="_blank" rel="noopener" href="https://www.jianshu.com/p/55cc1587e618">https://www.jianshu.com/p/55cc1587e618</a> </li>
+<li><a target="_blank" rel="noopener" href="https://www.jianshu.com/p/494c57f49479">https://www.jianshu.com/p/494c57f49479</a> </li>
+<li><a target="_blank" rel="noopener" href="https://my.oschina.net/flyfishbay/blog/1504698">https://my.oschina.net/flyfishbay/blog/1504698</a></li>
+</ul>
+</li>
+<li>OpenCV<ul>
+<li><a target="_blank" rel="noopener" href="https://blog.csdn.net/zhonggaorong/article/details/78191514">https://blog.csdn.net/zhonggaorong/article/details/78191514</a> </li>
+<li><a target="_blank" rel="noopener" href="http://www.opencv.org.cn/forum.php?mod=viewthread&amp;tid=33549">http://www.opencv.org.cn/forum.php?mod=viewthread&amp;tid=33549</a> </li>
+<li><a target="_blank" rel="noopener" href="https://blog.csdn.net/kelvin_yan/article/details/41804357">https://blog.csdn.net/kelvin_yan/article/details/41804357</a> </li>
+<li><a target="_blank" rel="noopener" href="https://blog.csdn.net/sinat_31135199/article/details/53053188">https://blog.csdn.net/sinat_31135199/article/details/53053188</a> </li>
+<li><a target="_blank" rel="noopener" href="https://blog.csdn.net/liyuefeilong/article/details/46292339">https://blog.csdn.net/liyuefeilong/article/details/46292339</a></li>
+</ul>
+</li>
+<li>GPUImage<ul>
+<li><a target="_blank" rel="noopener" href="https://blog.csdn.net/fanbird2008/article/details/51707430">https://blog.csdn.net/fanbird2008/article/details/51707430</a></li>
+</ul>
+</li>
+<li>其它<ul>
+<li><a target="_blank" rel="noopener" href="https://blog.csdn.net/goohong/article/details/40743883">https://blog.csdn.net/goohong/article/details/40743883</a></li>
+</ul>
+</li>
+</ul>
+
+    </article>
+    <!-- license  -->
+    
+        <div class="license-wrapper">
+            <p>Author：<a href="https://tenloy.github.io">Tenloy</a>
+            <p>原文链接：<a href="https://tenloy.github.io/2021/09/15/graphics-processing.html">https://tenloy.github.io/2021/09/15/graphics-processing.html</a>
+            <p>发表日期：2021.09.15 , 5:54 AM</p>
+            <p>更新日期：2024.04.07 , 7:53 PM</p>
+            <p>版权声明：本文采用<a rel="license noopener" target="_blank" href="http://creativecommons.org/licenses/by-nc/4.0/">Crative Commons 4.0 许可协议</a>进行许可</p>
+        </div>
+    
+    <!-- paginator  -->
+    <ul class="post-paginator">
+        <li class="next">
+            
+                <div class="nextSlogan">Next Post</div>
+                <a href= "/2021/09/15/graphics-processing-case.html" title= "图形处理(三) - 图形处理实践案例">
+                    <div class="nextTitle">图形处理(三) - 图形处理实践案例</div>
+                </a>
+            
+        </li>
+        <li class="previous">
+            
+                <div class="prevSlogan">Previous Post</div>
+                <a href= "/2021/09/13/image-encode-decode.html" title= "图形处理(一) - 图片的加载与编解码">
+                    <div class="prevTitle">图形处理(一) - 图片的加载与编解码</div>
+                </a>
+            
+        </li>
+    </ul>
+    <!-- 评论插件 -->
+    <!-- 来必力City版安装代码 -->
+
+<!-- City版安装代码已完成 -->
+    
+    
+    <!-- gitalk评论 -->
+
+    <!-- utteranc评论 -->
+
+    <!-- partial('_partial/comment/changyan') -->
+    <!--PC版-->
+
+
+    
+    
+
+    <!-- 评论 -->
+</main>
+            <!-- profile -->
+            
+        </div>
+        <footer class="footer footer-unloaded">
+    <!-- social  -->
+    
+    <div class="social">
+        
+    
+        
+            
+                <a href="mailto:luotengoto@163.com" class="iconfont-archer email" title=email ></a>
+            
+        
+    
+        
+            
+                <a href="//github.com/Tenloy" class="iconfont-archer github" target="_blank" title=github></a>
+            
+        
+    
+        
+            
+                <a href="https://www.jianshu.com/u/8db1bc12db9f" class="iconfont-jian jianshu" target="_blank" title=jianshu></a>
+            
+        
+    
+        
+            
+                <a href="/atom.xml" class="iconfont-archer rss" target="_blank" title=rss></a>
+            
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+
+    </div>
+    
+    <!-- powered by Hexo  -->
+    <div class="copyright">
+        <span id="hexo-power">Powered by <a href="https://hexo.io/" target="_blank">Hexo</a></span><span class="iconfont-archer power">&#xe635;</span><span id="theme-info">theme <a href="https://github.com/fi3ework/hexo-theme-archer" target="_blank">Archer</a></span>
+    </div>
+    <!-- 不蒜子  -->
+    
+    <div class="busuanzi-container">
+    
+     
+    <span id="busuanzi_container_site_pv">PV: <span id="busuanzi_value_site_pv"></span> :)</span>
+    
+    </div>
+    
+</footer>
+    </div>
+    <!-- toc -->
+    
+    <div class="toc-wrapper" style=
+    
+
+
+
+
+
+
+
+top:40vh;
+
+    >
+        <div class="toc-catalog">
+            <span class="iconfont-archer catalog-icon">&#xe613;</span><span>CATALOG</span>
+        </div>
+        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%89%8D%E8%A8%80"><span class="toc-text">前言</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E3%80%81%E7%95%8C%E9%9D%A2%E5%9B%BE%E5%BD%A2-%E2%80%94-UIKit"><span class="toc-text">一、界面图形 — UIKit</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-1-UIKit"><span class="toc-text">1.1 UIKit</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-2-UIKit%E4%B8%8ECore-Graphics%E7%9A%84%E5%85%B3%E7%B3%BB"><span class="toc-text">1.2 UIKit与Core Graphics的关系</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8C%E3%80%81%E6%A0%B8%E5%BF%83%E5%8A%A8%E7%94%BB-%E2%80%94-Core-Animation"><span class="toc-text">二、核心动画 — Core Animation</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#2-1-Core-Animation"><span class="toc-text">2.1 Core Animation</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-2-Core-Animatio%E7%9B%B8%E5%85%B3%E5%9F%BA%E7%B1%BB%E5%8F%8A%E5%AD%90%E7%B1%BB"><span class="toc-text">2.2 Core Animatio相关基类及子类</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%89%E3%80%81%E8%8B%B9%E6%9E%9C%E5%B0%81%E8%A3%85%E7%9A%84%E7%BB%98%E5%9B%BE%E6%A1%86%E6%9E%B6-%E2%80%94-Core-Graphics-amp-Quartz-2D"><span class="toc-text">三、苹果封装的绘图框架 — Core Graphics &amp; Quartz 2D</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#3-1-Core-Graphics"><span class="toc-text">3.1 Core Graphics</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-2-Quartz-2D"><span class="toc-text">3.2 Quartz 2D</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-3-%E5%9B%BE%E5%BD%A2%E7%8E%AF%E5%A2%83Context"><span class="toc-text">3.3 图形环境Context</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-4-Quartz-2D%E6%8F%90%E4%BE%9B%E7%9A%84%E4%B8%BB%E8%A6%81%E7%B1%BB%E5%8C%85%E6%8B%AC"><span class="toc-text">3.4 Quartz 2D提供的主要类包括</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9B%9B%E3%80%81%E4%BC%A0%E7%BB%9F%E8%B7%A8%E5%B9%B3%E5%8F%B0%E5%9B%BE%E5%BD%A2%E6%A1%86%E6%9E%B6-%E2%80%94-OpenGL-ES"><span class="toc-text">四、传统跨平台图形框架 — OpenGL ES</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#4-1-OpenGL-ES"><span class="toc-text">4.1 OpenGL ES</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-2-EAGL"><span class="toc-text">4.2 EAGL</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-3-GLKit"><span class="toc-text">4.3 GLKit</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-4-CAEAGLLayer"><span class="toc-text">4.4 CAEAGLLayer</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-5-GLKit%E6%94%AF%E6%8C%81%E5%9B%9B%E4%B8%AA3D%E5%BA%94%E7%94%A8%E5%BC%80%E5%8F%91%E7%9A%84%E5%85%B3%E9%94%AE%E9%A2%86%E5%9F%9F"><span class="toc-text">4.5 GLKit支持四个3D应用开发的关键领域</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%94%E3%80%81%E8%8B%B9%E6%9E%9C%E6%9C%80%E6%96%B0%E5%8A%9B%E6%8E%A8%E7%9A%84%E5%9B%BE%E5%BD%A2%E6%A1%86%E6%9E%B6-%E2%80%94-Metal"><span class="toc-text">五、苹果最新力推的图形框架 — Metal</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%AD%E3%80%81%E9%80%82%E5%90%88%E5%9B%BE%E7%89%87%E7%9A%84%E8%8B%B9%E6%9E%9C%E6%BB%A4%E9%95%9C%E6%A1%86%E6%9E%B6-%E2%80%94-Core-Image"><span class="toc-text">六、适合图片的苹果滤镜框架 — Core Image</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#6-1-%E6%BB%A4%E9%95%9C%E6%9C%AF%E8%AF%AD"><span class="toc-text">6.1 滤镜术语</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-2-Core-Image"><span class="toc-text">6.2 Core Image</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-3-%E5%B8%B8%E8%A7%81%E5%BA%94%E7%94%A8"><span class="toc-text">6.3 常见应用</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%83%E3%80%81%E9%80%82%E5%90%88%E8%A7%86%E9%A2%91%E7%9A%84%E7%AC%AC%E4%B8%89%E6%96%B9%E6%BB%A4%E9%95%9C%E6%96%B9%E6%A1%88-%E2%80%94-GPUImage"><span class="toc-text">七、适合视频的第三方滤镜方案 — GPUImage</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%AB%E3%80%81%E6%B8%B8%E6%88%8F%E5%BC%95%E6%93%8E-%E2%80%94-Scene-Kit-3D-%E5%92%8C-Sprite-Kit-2D"><span class="toc-text">八、游戏引擎 — Scene Kit (3D) 和 Sprite Kit (2D)</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#8-1-2D%E6%B8%B2%E6%9F%93-%E2%80%93-SpriteKit"><span class="toc-text">8.1 2D渲染 – SpriteKit</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#8-2-3D%E6%B8%B2%E6%9F%93-%E2%80%93-SceneKit"><span class="toc-text">8.2 3D渲染 – SceneKit</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B9%9D%E3%80%81%E8%AE%A1%E7%AE%97%E6%9C%BA%E8%A7%86%E8%A7%89%E5%9C%A8iOS%E7%9A%84%E5%BA%94%E7%94%A8-%E2%80%94-OpenCV-for-iOS"><span class="toc-text">九、计算机视觉在iOS的应用 — OpenCV for iOS</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8D%81%E3%80%81%E5%8F%82%E8%80%83%E6%96%87%E7%8C%AE"><span class="toc-text">十、参考文献</span></a></li></ol>
+    </div>
+    
+    <div class="back-top iconfont-archer">&#xe639;</div>
+    <div class="sidebar sidebar-hide">
+    <ul class="sidebar-tabs sidebar-tabs-active-0">
+        <li class="sidebar-tab-categories"><span class="iconfont-archer">&#xe666;</span><span class="tab-name">Cate</span></li>
+        <li class="sidebar-tab-archives"><span class="iconfont-archer">&#xe67d;</span><span class="tab-name">Archive</span></li>
+        <li class="sidebar-tab-tags"><span class="iconfont-archer">&#xe61b;</span><span class="tab-name">Tag</span></li>
+    </ul>
+    <div class="sidebar-content sidebar-content-show-archive">
+        <div class="sidebar-panel-categories">
+    <div class="sidebar-categories-name">
+    
+    
+    
+    
+    
+        <span class="sidebar-category-name" data-categories="数据结构与算法"><span class="iconfont-archer">&#xe60a;</span>数据结构与算法</span>
+    
+        <span class="sidebar-category-name" data-categories="计算机组成原理"><span class="iconfont-archer">&#xe60a;</span>计算机组成原理</span>
+    
+        <span class="sidebar-category-name" data-categories="计算机网络"><span class="iconfont-archer">&#xe60a;</span>计算机网络</span>
+    
+        <span class="sidebar-category-name" data-categories="汇编语言"><span class="iconfont-archer">&#xe60a;</span>汇编语言</span>
+    
+        <span class="sidebar-category-name" data-categories="数据的存储与传输"><span class="iconfont-archer">&#xe60a;</span>数据的存储与传输</span>
+    
+        <span class="sidebar-category-name" data-categories="操作系统"><span class="iconfont-archer">&#xe60a;</span>操作系统</span>
+    
+        <span class="sidebar-category-name" data-categories="互联网标准RFC"><span class="iconfont-archer">&#xe60a;</span>互联网标准RFC</span>
+    
+        <span class="sidebar-category-name" data-categories="编译链接与装载"><span class="iconfont-archer">&#xe60a;</span>编译链接与装载</span>
+    
+        <span class="sidebar-category-name" data-categories="iOS"><span class="iconfont-archer">&#xe60a;</span>iOS</span>
+    
+        <span class="sidebar-category-name" data-categories="架构与设计模式"><span class="iconfont-archer">&#xe60a;</span>架构与设计模式</span>
+    
+        <span class="sidebar-category-name" data-categories="图形处理与渲染"><span class="iconfont-archer">&#xe60a;</span>图形处理与渲染</span>
+    
+        <span class="sidebar-category-name" data-categories="软件工程"><span class="iconfont-archer">&#xe60a;</span>软件工程</span>
+    
+        <span class="sidebar-category-name" data-categories="音视频处理"><span class="iconfont-archer">&#xe60a;</span>音视频处理</span>
+    
+        <span class="sidebar-category-name" data-categories="DSL"><span class="iconfont-archer">&#xe60a;</span>DSL</span>
+    
+        <span class="sidebar-category-name" data-categories="Swift"><span class="iconfont-archer">&#xe60a;</span>Swift</span>
+    
+        <span class="sidebar-category-name" data-categories="Git"><span class="iconfont-archer">&#xe60a;</span>Git</span>
+    
+        <span class="sidebar-category-name" data-categories="Web"><span class="iconfont-archer">&#xe60a;</span>Web</span>
+    
+    </div>
+    <div class="iconfont-archer sidebar-categories-empty">&#xe678;</div>
+    <div class="sidebar-categories-list"></div>
+</div>
+          <div class="sidebar-panel-archives">
+    <!-- 在ejs中将archive按照时间排序 -->
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    <div class="total-and-search">
+        <div class="total-archive">
+        Total : 76
+        </div>
+        <!-- search  -->
+        
+            <div class="site-search popup-trigger tl-side-search"> 
+                <span class="iconfont-jian search-icon">&#xe7fc;搜索</span>
+            </div>
+        
+    </div>
+    
+    <div class="post-archive">
+    
+    
+    
+    
+    <div class="archive-year"> 2022 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/05</span><a class="archive-post-title" href= "/2022/05/05/sqlite.html" >iOS SQLite的使用与优化</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/28</span><a class="archive-post-title" href= "/2022/04/28/mmap.html" >内存映射mmap函数的原理与应用</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/18</span><a class="archive-post-title" href= "/2022/03/18/avfoundation.html" >AVFoundation Programming Guide(译)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/17</span><a class="archive-post-title" href= "/2022/03/17/avframework.html" >iOS音视频库概述</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/09</span><a class="archive-post-title" href= "/2022/02/09/OAuth.html" >[转] OAuth 2.0简述</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/18</span><a class="archive-post-title" href= "/2022/01/18/wkwebview-buges.html" >WKWebView使用过程中遇到的坑</a>
+        </li>
+    
+    
+    
+    
+    
+        </ul>
+    
+    <div class="archive-year"> 2021 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/22</span><a class="archive-post-title" href= "/2021/11/22/bit-calculation.html" >[转] 位运算实现加、减、乘、除运算</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/10</span><a class="archive-post-title" href= "/2021/11/10/git-use.html" >Git的使用总结</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/21</span><a class="archive-post-title" href= "/2021/10/21/dyld-objc.html" >(七) dyld与Objc—_objc_init、map_images、load_images</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/18</span><a class="archive-post-title" href= "/2021/10/18/compile-dynamic-link.html" >(六) Mach-O 文件的动态链接、库、Dyld(含dlopen)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/14</span><a class="archive-post-title" href= "/2021/10/14/compile-vm-asrl.html" >(五) Mach-O 文件之进程(虚拟)地址空间、ASLR</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/10</span><a class="archive-post-title" href= "/2021/10/10/compile-load.html" >(四) Mach-O 文件的装载</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/08</span><a class="archive-post-title" href= "/2021/10/08/compile-static-link.html" >(三) Mach-O 文件的静态链接</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/06</span><a class="archive-post-title" href= "/2021/10/06/compile-macho.html" >(二) Mach-O 文件结构</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/05</span><a class="archive-post-title" href= "/2021/10/05/compile-clang-llvm.html" >(一) Clang/LLVM 介绍、OC 程序的编译过程</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/02</span><a class="archive-post-title" href= "/2021/10/02/makefile.html" >[转] Make 命令的使用与NodeJS案例</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/28</span><a class="archive-post-title" href= "/2021/09/28/architectural-pattern.html" >常见架构模式: MVC、MVP、MVVM、VIPER</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/25</span><a class="archive-post-title" href= "/2021/09/25/design-pattern.html" >常见的设计模式</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/20</span><a class="archive-post-title" href= "/2021/09/20/program-thought.html" >常见的编程范式</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/15</span><a class="archive-post-title" href= "/2021/09/15/graphics-processing-case.html" >图形处理(三) - 图形处理实践案例</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/15</span><a class="archive-post-title" href= "/2021/09/15/graphics-processing.html" >图形处理(二) - 图形与视频处理相关的框架</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/13</span><a class="archive-post-title" href= "/2021/09/13/image-encode-decode.html" >图形处理(一) - 图片的加载与编解码</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/12</span><a class="archive-post-title" href= "/2021/09/12/iOS-Render.html" >[转] iOS离屏渲染原理及优化</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/11</span><a class="archive-post-title" href= "/2021/09/11/core-animation03.html" >Core-Animation(三) - 渲染流程探究及性能分析</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/09</span><a class="archive-post-title" href= "/2021/09/09/core-animation02.html" >Core Animation(二) - 隐式动画、CATransaction与CAAction</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/07</span><a class="archive-post-title" href= "/2021/09/07/core-animation01.html" >Core Animation(一) - UIView与CALayer、布局与绘制</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/05</span><a class="archive-post-title" href= "/2021/09/05/AFN-Analyse.html" >[转] AFN框架实现解析</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/04</span><a class="archive-post-title" href= "/2021/09/04/nrl-session.html" >NSURLSession概述</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/02</span><a class="archive-post-title" href= "/2021/09/02/Log.html" >移动端日志库设计</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/01</span><a class="archive-post-title" href= "/2021/08/01/Crash-Monitor.html" >iOS崩溃监控与分析</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/30</span><a class="archive-post-title" href= "/2021/07/30/Lag-Monitor.html" >iOS卡顿监控</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/29</span><a class="archive-post-title" href= "/2021/07/29/SwiftUI.html" >SwiftUI</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/29</span><a class="archive-post-title" href= "/2021/07/29/Swift-Version-History.html" >Swift版本更新API介绍</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/26</span><a class="archive-post-title" href= "/2021/07/26/RunLoop-Reposted-From-ibireme.html" >[转] 深入理解RunLoop—ibireme</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/25</span><a class="archive-post-title" href= "/2021/07/25/Protocol-Buffer.html" >Protocol Buffer的基本介绍</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/24</span><a class="archive-post-title" href= "/2021/07/24/base64.html" >Base64编码及iOS中的Base64</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/23</span><a class="archive-post-title" href= "/2021/07/23/chinese-encode.html" >[转] 彻底弄懂常见的7种中文字符编码</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/10</span><a class="archive-post-title" href= "/2021/07/10/p-npc-np.html" >P问题、NP问题、NPC、NP-Hard、P=NP?</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/30</span><a class="archive-post-title" href= "/2021/06/30/probability.html" >(六) 概率算法</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/28</span><a class="archive-post-title" href= "/2021/06/28/branch-bound.html" >(五) 分支限界算法</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/26</span><a class="archive-post-title" href= "/2021/06/26/back-track.html" >(四) 回溯法(试探算法)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/24</span><a class="archive-post-title" href= "/2021/06/24/greed.html" >(三) 贪心算法</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/22</span><a class="archive-post-title" href= "/2021/06/22/dynamic-programming.html" >(二) 动态规划算法</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/20</span><a class="archive-post-title" href= "/2021/06/20/divide-and-conquer.html" >(一) 分治算法及减治、变治算法</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/18</span><a class="archive-post-title" href= "/2021/06/18/several-programming.html" >穷举、递推、迭代(辗转法)、递归算法</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/15</span><a class="archive-post-title" href= "/2021/06/15/datastruction-overview.html" >数据结构与算法概述</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/06</span><a class="archive-post-title" href= "/2021/06/06/Web-Module.html" >前端各种模块化方案总结</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/27</span><a class="archive-post-title" href= "/2021/05/27/Fiber.html" >[转] 最通俗的 React Fiber(时间分片)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/27</span><a class="archive-post-title" href= "/2021/05/27/Coroutine.html" >[转] 什么是协程</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/19</span><a class="archive-post-title" href= "/2021/05/19/DSL.html" >[转] 谈谈DSL以及DSL的应用（以CocoaPods 为例）</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/03</span><a class="archive-post-title" href= "/2021/05/03/iOS-private-pod.html" >私有Pod库部署</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/29</span><a class="archive-post-title" href= "/2021/04/29/iOS-ComRouter.html" >[转] iOS的组件化方案</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/27</span><a class="archive-post-title" href= "/2021/04/27/iOS-CI.html" >iOS的持续集成</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/26</span><a class="archive-post-title" href= "/2021/04/26/Containers.html" >常见的容器概念：Linux容器、Docker容器、服务器容器</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/24</span><a class="archive-post-title" href= "/2021/04/24/Dock-Reprinted-from-RuanYIFeng.html" >[转] Docker入门教程</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/20</span><a class="archive-post-title" href= "/2021/04/20/Sync-Async.html" >同步和异步解读及编程中的使用场景</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/17</span><a class="archive-post-title" href= "/2021/04/17/Arm64-Handbook.html" >ARM64指令简易手册</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/16</span><a class="archive-post-title" href= "/2021/04/16/Arm64-Introduce.html" >iOS需要了解的ARM64汇编</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/13</span><a class="archive-post-title" href= "/2021/04/13/Command-Line.html" >CLI Shell、Terminal、脚本(语言)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/10</span><a class="archive-post-title" href= "/2021/04/10/Ins-SysCall-Kernel-Shell.html" >指令、系统调用、库、Shell、APP的层次关系</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/08</span><a class="archive-post-title" href= "/2021/04/08/ISA-Microarch-Soc.html" >指令集、微架构、手机芯片(Soc)及ARM的介绍</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/02</span><a class="archive-post-title" href= "/2021/04/02/Engineering.html" >工程化、动态化、容器化、组件化</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/01</span><a class="archive-post-title" href= "/2021/04/01/GithubPages-Hexo.html" >使用Hexo+Github Pages搭建个人博客</a>
+        </li>
+    
+    
+    
+    
+    
+        </ul>
+    
+    <div class="archive-year"> 2020 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/22</span><a class="archive-post-title" href= "/2020/12/22/aes.html" >数据加密 — 对称加密(以AES为例)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/21</span><a class="archive-post-title" href= "/2020/12/21/aes-standard.html" >[转] AES标准及Rijndael算法解析</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/20</span><a class="archive-post-title" href= "/2020/12/20/asymmetric.html" >数据加密 — 非对称加密(加签/加密，以RSA为例)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/09</span><a class="archive-post-title" href= "/2020/12/09/pki.html" >常见的PKI标准(X.509、PKCS)及证书相关介绍</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/28</span><a class="archive-post-title" href= "/2020/10/28/runtime-data-structure.html" >Objc Runtime总结</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/11</span><a class="archive-post-title" href= "/2020/09/11/GCD.html" >Objective-C — 深入浅出GCD常用API</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/06</span><a class="archive-post-title" href= "/2020/09/06/oc-block.html" >Objective-C — Block</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/26</span><a class="archive-post-title" href= "/2020/08/26/AutoreleasePool.html" >AutoreleasePool</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/24</span><a class="archive-post-title" href= "/2020/08/24/oc-memory-manage.html" >Objective-C — 内存管理</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/01</span><a class="archive-post-title" href= "/2020/08/01/ui-navigation-bar.html" >[转] 导航栏的架构介绍及使用</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/15</span><a class="archive-post-title" href= "/2020/07/15/symbol-decl.html" >变量声明、函数声明的作用</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/01</span><a class="archive-post-title" href= "/2020/07/01/ios-apns.html" >iOS APNS接收逻辑梳理</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/13</span><a class="archive-post-title" href= "/2020/06/13/ios-vest.html" >iOS制作马甲总结</a>
+        </li>
+    
+    </div>
+  </div>
+        <div class="sidebar-panel-tags">
+    <div class="sidebar-tags-name">
+    
+        <span class="sidebar-tag-name" data-tags="AutoreleasePool"><span class="iconfont-archer">&#xe606;</span>AutoreleasePool</span>
+    
+        <span class="sidebar-tag-name" data-tags="GCD"><span class="iconfont-archer">&#xe606;</span>GCD</span>
+    
+        <span class="sidebar-tag-name" data-tags="hexo"><span class="iconfont-archer">&#xe606;</span>hexo</span>
+    
+        <span class="sidebar-tag-name" data-tags="ISA"><span class="iconfont-archer">&#xe606;</span>ISA</span>
+    
+        <span class="sidebar-tag-name" data-tags="Microarch"><span class="iconfont-archer">&#xe606;</span>Microarch</span>
+    
+        <span class="sidebar-tag-name" data-tags="Soc"><span class="iconfont-archer">&#xe606;</span>Soc</span>
+    
+        <span class="sidebar-tag-name" data-tags="ARM64"><span class="iconfont-archer">&#xe606;</span>ARM64</span>
+    
+        <span class="sidebar-tag-name" data-tags="CLI"><span class="iconfont-archer">&#xe606;</span>CLI</span>
+    
+        <span class="sidebar-tag-name" data-tags="Shell"><span class="iconfont-archer">&#xe606;</span>Shell</span>
+    
+        <span class="sidebar-tag-name" data-tags="多线程"><span class="iconfont-archer">&#xe606;</span>多线程</span>
+    
+        <span class="sidebar-tag-name" data-tags="Docker"><span class="iconfont-archer">&#xe606;</span>Docker</span>
+    
+        <span class="sidebar-tag-name" data-tags="DSL"><span class="iconfont-archer">&#xe606;</span>DSL</span>
+    
+        <span class="sidebar-tag-name" data-tags="协程"><span class="iconfont-archer">&#xe606;</span>协程</span>
+    
+        <span class="sidebar-tag-name" data-tags="Fiber"><span class="iconfont-archer">&#xe606;</span>Fiber</span>
+    
+        <span class="sidebar-tag-name" data-tags="dp"><span class="iconfont-archer">&#xe606;</span>dp</span>
+    
+        <span class="sidebar-tag-name" data-tags="SwiftUI"><span class="iconfont-archer">&#xe606;</span>SwiftUI</span>
+    
+        <span class="sidebar-tag-name" data-tags="RunLoop"><span class="iconfont-archer">&#xe606;</span>RunLoop</span>
+    
+        <span class="sidebar-tag-name" data-tags="Swift-Syntax"><span class="iconfont-archer">&#xe606;</span>Swift-Syntax</span>
+    
+        <span class="sidebar-tag-name" data-tags="LagMonitor"><span class="iconfont-archer">&#xe606;</span>LagMonitor</span>
+    
+        <span class="sidebar-tag-name" data-tags="Log"><span class="iconfont-archer">&#xe606;</span>Log</span>
+    
+        <span class="sidebar-tag-name" data-tags="CrashMonitor"><span class="iconfont-archer">&#xe606;</span>CrashMonitor</span>
+    
+        <span class="sidebar-tag-name" data-tags="AFN"><span class="iconfont-archer">&#xe606;</span>AFN</span>
+    
+    </div>
+    <div class="iconfont-archer sidebar-tags-empty">&#xe678;</div>
+    <div class="tag-load-fail" style="display: none; color: #ccc; font-size: 0.6rem;">
+    缺失模块。<br/>
+    1、请确保node版本大于6.2<br/>
+    2、在博客根目录（注意不是archer根目录）执行以下命令：<br/>
+    <span style="color: #f75357; font-size: 1rem; line-height: 2rem;">npm i hexo-generator-json-content --save</span><br/>
+    3、在根目录_config.yml里添加配置：
+    <pre style="color: #787878; font-size: 0.6rem;">
+jsonContent:
+  meta: false
+  pages: false
+  posts:
+    title: true
+    date: true
+    path: true
+    text: false
+    raw: false
+    content: false
+    slug: false
+    updated: false
+    comments: false
+    link: false
+    permalink: false
+    excerpt: false
+    categories: true
+    tags: true</pre>
+    </div> 
+    <div class="sidebar-tags-list"></div>
+</div>
+    </div>
+</div> 
+    <script>
+    var siteMeta = {
+        root: "/",
+        author: "Tenloy"
+    }
+</script>
+    <!-- CDN failover -->
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js"></script>
+    <script type="text/javascript">
+        if (typeof window.$ === 'undefined')
+        {
+            console.warn('jquery load from jsdelivr failed, will load local script')
+            document.write('<script src="/lib/jquery.min.js">\x3C/script>')
+        }
+    </script>
+    <script src="/scripts/main.js"></script>
+    <!-- algolia -->
+    
+        <div class="site-search">
+  <div class="algolia-popup popup">
+    <div class="algolia-search">
+      <div class="algolia-search-input-icon">
+        <i class="fa fa-search"></i>
+      </div>
+      <div class="algolia-search-input" id="algolia-search-input"></div>
+    </div>
+
+    <div class="algolia-results">
+      <div id="algolia-stats"></div>
+      <div id="algolia-hits"></div>
+      <div id="algolia-pagination" class="algolia-pagination"></div>
+    </div>
+
+    <span class="popup-btn-close">
+      <i class="iconfont-archer">&#xe609;</i>
+    </span>
+  </div>
+</div>
+        <script src="https://cdn.jsdelivr.net/npm/instantsearch.js@2.8.0/dist/instantsearch.min.js" defer></script>
+        <script src="/scripts/search.js" defer></script>
+    
+    <!-- busuanzi  -->
+    
+    <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    
+    <!-- CNZZ  -->
+    
+    </div>
+    <!-- async load share.js -->
+    
+        <script src="/scripts/share.js" async></script>    
+     
+    </body>
+</html>
+
+

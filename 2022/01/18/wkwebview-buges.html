@@ -1,0 +1,2641 @@
+<!DOCTYPE html>
+<html lang="en">
+    <!-- title -->
+
+
+
+
+<!-- keywords -->
+
+
+
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" >
+    <meta name="author" content="Tenloy">
+    <meta name="renderer" content="webkit">
+    <meta name="copyright" content="Tenloy">
+    
+    <meta name="keywords" content="Tenloy,iOS,Swift">
+    
+    <meta name="description" content="学习 生活 记录 回忆">
+    <meta name="description" content="一、WKWebView的使用1.1 属性关于 extendedLayoutIncludesOpaqueBars 和 automaticallyAdjustsScrollViewInsets  这两个属性属于UIViewController 默认情况下extendedLayoutIncludesOpaqueBars &#x3D; false 扩展布局不包含导航栏 默认情况下automaticallyAdjus">
+<meta property="og:type" content="article">
+<meta property="og:title" content="WKWebView使用过程中遇到的坑">
+<meta property="og:url" content="https://tenloy.github.io/2022/01/18/wkwebview-buges.html">
+<meta property="og:site_name" content="Tenloy&#39;s Blog">
+<meta property="og:description" content="一、WKWebView的使用1.1 属性关于 extendedLayoutIncludesOpaqueBars 和 automaticallyAdjustsScrollViewInsets  这两个属性属于UIViewController 默认情况下extendedLayoutIncludesOpaqueBars &#x3D; false 扩展布局不包含导航栏 默认情况下automaticallyAdjus">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://tenloy.github.io/images/webkit/webview-body-lost.png">
+<meta property="article:published_time" content="2022-01-18T09:39:45.000Z">
+<meta property="article:modified_time" content="2024-04-07T11:53:34.927Z">
+<meta property="article:author" content="Tenloy">
+<meta property="article:tag" content="Tenloy, iOS, Tenloy Blog, 博客，Swift, 编译, 计算机">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://tenloy.github.io/images/webkit/webview-body-lost.png">
+    <meta http-equiv="Cache-control" content="no-cache">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"/>
+    
+    <title>WKWebView使用过程中遇到的坑 · Tenloy&#39;s Blog</title>
+    <style type="text/css">
+    @font-face {
+        font-family: 'Oswald-Regular';
+        src: url("/font/Oswald-Regular.ttf");
+    }
+
+    body {
+        margin: 0;
+    }
+
+    header,
+    footer,
+    .back-top,
+    .sidebar,
+    .container,
+    .site-intro-meta,
+    .toc-wrapper {
+        display: none;
+    }
+
+    .site-intro {
+        position: relative;
+        z-index: 3;
+        width: 100%;
+        /* height: 50vh; */
+        overflow: hidden;
+    }
+
+    .site-intro-placeholder {
+        position: absolute;
+        z-index: -2;
+        top: 0;
+        left: 0;
+        width: calc(100% + 300px);
+        height: 100%;
+        background: repeating-linear-gradient(-45deg, #444 0, #444 80px, #333 80px, #333 160px);
+        background-position: center center;
+        transform: translate3d(-226px, 0, 0);
+        animation: gradient-move 2.5s ease-out 0s infinite;
+    }
+
+    @keyframes gradient-move {
+        0% {
+            transform: translate3d(-226px, 0, 0);
+        }
+        100% {
+            transform: translate3d(0, 0, 0);
+        }
+    }
+
+</style>
+
+    <link rel="preload" href= "/css/style.css?v=20180824" as="style" onload="this.onload=null;this.rel='stylesheet'" />
+    <link rel="stylesheet" href= "/css/mobile.css?v=20180824" media="(max-width: 980px)">
+    
+    <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.2.5/jquery.fancybox.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'" />
+    
+    <!-- /*! loadCSS. [c]2017 Filament Group, Inc. MIT License */
+/* This file is meant as a standalone workflow for
+- testing support for link[rel=preload]
+- enabling async CSS loading in browsers that do not support rel=preload
+- applying rel preload css once loaded, whether supported or not.
+*/ -->
+<script>
+(function( w ){
+	"use strict";
+	// rel=preload support test
+	if( !w.loadCSS ){
+		w.loadCSS = function(){};
+	}
+	// define on the loadCSS obj
+	var rp = loadCSS.relpreload = {};
+	// rel=preload feature support test
+	// runs once and returns a function for compat purposes
+	rp.support = (function(){
+		var ret;
+		try {
+			ret = w.document.createElement( "link" ).relList.supports( "preload" );
+		} catch (e) {
+			ret = false;
+		}
+		return function(){
+			return ret;
+		};
+	})();
+
+	// if preload isn't supported, get an asynchronous load by using a non-matching media attribute
+	// then change that media back to its intended value on load
+	rp.bindMediaToggle = function( link ){
+		// remember existing media attr for ultimate state, or default to 'all'
+		var finalMedia = link.media || "all";
+
+		function enableStylesheet(){
+			link.media = finalMedia;
+		}
+
+		// bind load handlers to enable media
+		if( link.addEventListener ){
+			link.addEventListener( "load", enableStylesheet );
+		} else if( link.attachEvent ){
+			link.attachEvent( "onload", enableStylesheet );
+		}
+
+		// Set rel and non-applicable media type to start an async request
+		// note: timeout allows this to happen async to let rendering continue in IE
+		setTimeout(function(){
+			link.rel = "stylesheet";
+			link.media = "only x";
+		});
+		// also enable media after 3 seconds,
+		// which will catch very old browsers (android 2.x, old firefox) that don't support onload on link
+		setTimeout( enableStylesheet, 3000 );
+	};
+
+	// loop through link elements in DOM
+	rp.poly = function(){
+		// double check this to prevent external calls from running
+		if( rp.support() ){
+			return;
+		}
+		var links = w.document.getElementsByTagName( "link" );
+		for( var i = 0; i < links.length; i++ ){
+			var link = links[ i ];
+			// qualify links to those with rel=preload and as=style attrs
+			if( link.rel === "preload" && link.getAttribute( "as" ) === "style" && !link.getAttribute( "data-loadcss" ) ){
+				// prevent rerunning on link
+				link.setAttribute( "data-loadcss", true );
+				// bind listeners to toggle media back
+				rp.bindMediaToggle( link );
+			}
+		}
+	};
+
+	// if unsupported, run the polyfill
+	if( !rp.support() ){
+		// run once at least
+		rp.poly();
+
+		// rerun poly on an interval until onload
+		var run = w.setInterval( rp.poly, 500 );
+		if( w.addEventListener ){
+			w.addEventListener( "load", function(){
+				rp.poly();
+				w.clearInterval( run );
+			} );
+		} else if( w.attachEvent ){
+			w.attachEvent( "onload", function(){
+				rp.poly();
+				w.clearInterval( run );
+			} );
+		}
+	}
+
+
+	// commonjs
+	if( typeof exports !== "undefined" ){
+		exports.loadCSS = loadCSS;
+	}
+	else {
+		w.loadCSS = loadCSS;
+	}
+}( typeof global !== "undefined" ? global : this ) );
+</script>
+
+    <link rel="icon" href= "/assets/favicon.ico" />
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.min.js" as="script" />
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js" as="script" />
+    <link rel="preload" href="/scripts/main.js" as="script" />
+    <link rel="preload" as="font" href="/font/Oswald-Regular.ttf" crossorigin>
+    <link rel="preload" as="font" href="https://at.alicdn.com/t/font_327081_1dta1rlogw17zaor.woff" crossorigin>
+    
+        <!-- algolia -->
+        <script>
+            
+            var hits = JSON.parse('{"per_page":10}')
+            var labels = JSON.parse('{"input_placeholder":"Search for Posts","hits_empty":"没有找到任何搜索结果: ${query}","hits_stats":"找到约${hits}条结果（用时${time}ms）"}')
+
+            var algolia = {
+                applicationID: 'V0HYXBS9FB',
+                apiKey: '6550d5de786935564142097c3e78c380',
+                indexName: 'law_blog_index',
+                hits: hits,
+                labels: labels
+            }
+        </script>
+    
+    <!-- fancybox -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.2.5/jquery.fancybox.min.js" defer></script>
+    <!-- 百度统计  -->
+    
+    <!-- 谷歌统计  -->
+    
+<meta name="generator" content="Hexo 5.4.0"><link rel="alternate" href="/atom.xml" title="Tenloy's Blog" type="application/atom+xml">
+</head>
+
+    
+        <body class="post-body">
+    
+    
+<header class="header">
+
+    <div class="read-progress"></div>
+    <div class="header-sidebar-menu">&#xe775;</div>
+    <!-- post页的toggle banner  -->
+    
+    <div class="banner">
+            <div class="blog-title">
+                <a href="/" >Tenloy&#39;s Blog</a>
+            </div>
+            <div class="post-title">
+                <a href="#" class="post-name">WKWebView使用过程中遇到的坑</a>
+            </div>
+    </div>
+    
+    <!-- 将home-link的操作改为应用到header-top-right上 -->
+    <div class="header-top-right">
+        <!-- search  -->
+        
+            <div class="site-search popup-trigger tl-search">
+                <span class="iconfont-jian tl-search-icon">&#xe7fc;搜索</span>
+            </div>
+            
+        <a class="home-link" href=/>Tenloy's Blog</a>
+    </div>
+</header>
+    <div class="wrapper">
+        <div class="site-intro" style="
+
+
+
+
+
+
+
+height:40vh;
+">
+    
+    <!-- 主页  -->
+    
+    
+    <!-- 404页  -->
+            
+    <div class="site-intro-placeholder"></div>
+    <div class="site-intro-img" style="background-image: url(/intro/post-bg.jpg)"></div>
+    <div class="site-intro-meta">
+        <!-- 标题  -->
+        <h1 class="intro-title">
+            <!-- 主页  -->
+            
+            WKWebView使用过程中遇到的坑
+            <!-- 404 -->
+            
+        </h1>
+        <!-- 副标题 -->
+        <p class="intro-subtitle">
+            <!-- 主页副标题  -->
+            
+            
+            <!-- 404 -->
+            
+        </p>
+        <!-- 文章页meta -->
+        
+            <div class="post-intros">
+                <!-- 文章页标签  -->
+                
+                
+                    <div class="post-intro-read">
+                        <span>Word count: <span class="post-count word-count">11.6k</span>Reading time: <span class="post-count reading-time">45 min</span></span>
+                    </div>
+                
+                <div class="post-intro-meta">
+                    <span class="post-intro-calander iconfont-archer">&#xe676;</span>
+                    <span class="post-intro-time">2022/01/18</span>
+                    
+                    <span id="busuanzi_container_page_pv" class="busuanzi-pv">
+                        <span class="iconfont-archer">&#xe602;</span>
+                        <span id="busuanzi_value_page_pv"></span>
+                    </span>
+                    
+                    <span class="shareWrapper">
+                        <span class="iconfont-archer shareIcon">&#xe71d;</span>
+                        <span class="shareText">Share</span>
+                        <ul class="shareList">
+                            <li class="iconfont-archer share-qr" data-type="qr">&#xe75b;
+                                <div class="share-qrcode"></div>
+                            </li>
+                            <li class="iconfont-archer" data-type="weibo">&#xe619;</li>
+                            <li class="iconfont-archer" data-type="qzone">&#xe62e;</li>
+                            <li class="iconfont-archer" data-type="twitter">&#xe634;</li>
+                            <li class="iconfont-archer" data-type="facebook">&#xe67a;</li>
+                        </ul>
+                    </span>
+                </div>
+            </div>
+        
+    </div>
+</div>
+        <script>
+ 
+  // get user agent
+  var browser = {
+    versions: function () {
+      var u = window.navigator.userAgent;
+      return {
+        userAgent: u,
+        trident: u.indexOf('Trident') > -1, //IE内核
+        presto: u.indexOf('Presto') > -1, //opera内核
+        webKit: u.indexOf('AppleWebKit') > -1, //苹果、谷歌内核
+        gecko: u.indexOf('Gecko') > -1 && u.indexOf('KHTML') == -1, //火狐内核
+        mobile: !!u.match(/AppleWebKit.*Mobile.*/), //是否为移动终端
+        ios: !!u.match(/\(i[^;]+;( U;)? CPU.+Mac OS X/), //ios终端
+        android: u.indexOf('Android') > -1 || u.indexOf('Linux') > -1, //android终端或者uc浏览器
+        iPhone: u.indexOf('iPhone') > -1 || u.indexOf('Mac') > -1, //是否为iPhone或者安卓QQ浏览器
+        iPad: u.indexOf('iPad') > -1, //是否为iPad
+        webApp: u.indexOf('Safari') == -1, //是否为web应用程序，没有头部与底部
+        weixin: u.indexOf('MicroMessenger') == -1, //是否为微信浏览器
+        uc: u.indexOf('UCBrowser') > -1 //是否为android下的UC浏览器
+      };
+    }()
+  }
+  console.log("userAgent:" + browser.versions.userAgent);
+
+  // callback
+  function fontLoaded() {
+    console.log('font loaded');
+    if (document.getElementsByClassName('site-intro-meta')) {
+      document.getElementsByClassName('intro-title')[0].classList.add('intro-fade-in');
+      document.getElementsByClassName('intro-subtitle')[0].classList.add('intro-fade-in');
+      var postIntros = document.getElementsByClassName('post-intros')[0]
+      if (postIntros) {
+        postIntros.classList.add('post-fade-in');
+      }
+    }
+  }
+
+  // UC不支持跨域，所以直接显示
+  function asyncCb(){
+    if (browser.versions.uc) {
+      console.log("UCBrowser");
+      fontLoaded();
+    } else {
+      WebFont.load({
+        custom: {
+          families: ['Oswald-Regular']
+        },
+        loading: function () {  //所有字体开始加载
+          // console.log('loading');
+        },
+        active: function () {  //所有字体已渲染
+          fontLoaded();
+        },
+        inactive: function () { //字体预加载失败，无效字体或浏览器不支持加载
+          console.log('inactive: timeout');
+          fontLoaded();
+        },
+        timeout: 5000 // Set the timeout to two seconds
+      });
+    }
+  }
+
+  function asyncErr(){
+    console.warn('script load from CDN failed, will load local script')
+  }
+
+  // load webfont-loader async, and add callback function
+  function async(u, cb, err) {
+    var d = document, t = 'script',
+      o = d.createElement(t),
+      s = d.getElementsByTagName(t)[0];
+    o.src = u;
+    if (cb) { o.addEventListener('load', function (e) { cb(null, e); }, false); }
+    if (err) { o.addEventListener('error', function (e) { err(null, e); }, false); }
+    s.parentNode.insertBefore(o, s);
+  }
+
+  var asyncLoadWithFallBack = function(arr, success, reject) {
+      var currReject = function(){
+        reject()
+        arr.shift()
+        if(arr.length)
+          async(arr[0], success, currReject)
+        }
+
+      async(arr[0], success, currReject)
+  }
+
+  asyncLoadWithFallBack([
+    "https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.min.js", 
+    "https://cdn.bootcss.com/webfont/1.6.28/webfontloader.js",
+    "/lib/webfontloader.min.js"
+  ], asyncCb, asyncErr)
+</script>        
+        <img class="loading" src="/assets/loading.svg" style="display: block; margin: 6rem auto 0 auto; width: 6rem; height: 6rem;" />
+        <div class="container container-unloaded">
+            <main class="main post-page">
+    <article class="article-entry">
+        <h1 id="一、WKWebView的使用"><a href="#一、WKWebView的使用" class="headerlink" title="一、WKWebView的使用"></a>一、WKWebView的使用</h1><h2 id="1-1-属性"><a href="#1-1-属性" class="headerlink" title="1.1 属性"></a>1.1 属性</h2><p>关于 <code>extendedLayoutIncludesOpaqueBars</code> 和 <code>automaticallyAdjustsScrollViewInsets</code></p>
+<ul>
+<li>这两个属性属于UIViewController</li>
+<li>默认情况下extendedLayoutIncludesOpaqueBars = false 扩展布局不包含导航栏</li>
+<li>默认情况下automaticallyAdjustsScrollViewInsets = true 自动计算滚动视图的内容边距</li>
+<li>但是，当 导航栏 是 不透明时，而tabBar为透明的时候，为了正确显示tableView的全部内容，需要重新设置这两个属性的值，然后设置contentInset(参考代码).</li>
+</ul>
+<p>在iOS11 中， UIViewController的 <code>automaticallyAdjustsScrollViewInsets</code> 属性已经不再使用，我们需要使用UIScrollView的 <code>contentInsetAdjustmentBehavior </code> 属性来替代它.</p>
+<p>UIScrollViewContentInsetAdjustmentBehavior 是一个枚举类型，值有以下几种:</p>
+<ul>
+<li>automatic 和scrollableAxes一样，scrollView会自动计算和适应顶部和底部的内边距并且在scrollView 不可滚动时，也会设置内边距.</li>
+<li>scrollableAxes 自动计算内边距.</li>
+<li>never不计算内边距</li>
+<li>always 根据safeAreaInsets 计算内边距一般我们肯定需要设置为 never，我们自己来控制间距，但是在iOS 12的webView中，就会出现开始所说的问题，需要设置为automatic才能解决</li>
+</ul>
+<p><strong>调整WKWebView布局方式，避免调整webView.scrollView.contentInset。实际上，即便在 UIWebView 上也不建议直接调整webView.scrollView.contentInset的值.</strong></p>
+<h2 id="1-2-调整滚动速率"><a href="#1-2-调整滚动速率" class="headerlink" title="1.2 调整滚动速率"></a>1.2 调整滚动速率</h2><p>WKWebView 需要通过 scrollView delegate 调整滚动速率：</p>
+<figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">- (<span class="keyword">void</span>)scrollViewWillBeginDragging:(<span class="built_in">UIScrollView</span> *)scrollView &#123;</span><br><span class="line">  scrollView.decelerationRate = <span class="built_in">UIScrollViewDecelerationRateNormal</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="1-3-视频自动播放"><a href="#1-3-视频自动播放" class="headerlink" title="1.3 视频自动播放"></a>1.3 视频自动播放</h2><p>WKWebView 需要通过WKWebViewConfiguration.mediaPlaybackRequiresUserAction设置是否允许自动播放，但一定要在 WKWebView 初始化之前设置，在 WKWebView 初始化之后设置无效。</p>
+<h2 id="1-4-goBack-API问题"><a href="#1-4-goBack-API问题" class="headerlink" title="1.4 goBack API问题"></a>1.4 goBack API问题</h2><p>WKWebView 上调用 -[WKWebView goBack]， 回退到上一个页面后不会触发window.onload()函数、不会执行JS。</p>
+<h2 id="1-5-WKWebview-NSURLProtocol实现网页缓存"><a href="#1-5-WKWebview-NSURLProtocol实现网页缓存" class="headerlink" title="1.5 WKWebview+NSURLProtocol实现网页缓存"></a>1.5 WKWebview+NSURLProtocol实现网页缓存</h2><h3 id="1-5-1-前言"><a href="#1-5-1-前言" class="headerlink" title="1.5.1 前言"></a>1.5.1 前言</h3><p>出于节省hybrid app的性能，以及加载时间，对app内的一些资源做缓存处理，包括：图片、js文件。<br>首先，我们需要能拦截到这些请求，实验之后，发现<code>NSURLProtocol</code>在<code>WKWebViwe</code>中不生效。<br>本文分一下两个部分：</p>
+<ul>
+<li>让WKWebView支持NSURLProtocol，摘抄了<a target="_blank" rel="noopener" href="https://blog.csdn.net/u011661836/article/details/70241061">这篇博客</a>大篇幅内容，其中有关于<strong>苹果对私有API的监测以及开发人员的应对措施</strong></li>
+<li>对资源做缓存措施</li>
+</ul>
+<h3 id="1-5-2-让WKWebView支持NSURLProtocol"><a href="#1-5-2-让WKWebView支持NSURLProtocol" class="headerlink" title="1.5.2 让WKWebView支持NSURLProtocol"></a>1.5.2 让WKWebView支持NSURLProtocol</h3><p><a target="_blank" rel="noopener" href="https://www.jianshu.com/p/8f5e1082f5e0">NSURLProtocol对WKWebView的处理</a></p>
+<p>在UIWebView中，只需要一行代码<code>[NSURLProtocol registerClass:[customeURLProtocol class]];</code>，就可以对app内所有的网络请求进行拦截处理。</p>
+<p>但是在WKWebView中，除了一开始会调用一下 <code>+ [NSURLProtocol canInitWithRequest:]</code> 方法，之后就全拦截不到了。网上查，说是WKWebView 的请求是在单独的进程里，所以不走 NSURLProtocol。</p>
+<h4 id="1-registerSchemeForCustomProtocol"><a href="#1-registerSchemeForCustomProtocol" class="headerlink" title="1. registerSchemeForCustomProtocol"></a>1. registerSchemeForCustomProtocol</h4><p>从方法名来猜测，它的作用的应该是<strong>注册一个自定义的 scheme</strong>，这样对于 WebKit 进程的所有网络请求，都会先检查是否有匹配的 scheme，有的话再走主进程的 NSURLProtocol 这一套流程。</p>
+<p>博客作者猜测这么做可能是为了保证效率 (<strong>NSURLRequest 的 HTTPBody 属性在 WKWebView 中被忽略了应该也出于这个原因！— 这是个大坑 不能发POST请求了！</strong>)，毕竟 IPC 代价挺高的。详细可以看： <code>WebKit::CustomProtocolManager</code> 和 <code>WebKit::WebProcessPool</code> 等相关源码</p>
+<p>解决方案：</p>
+<figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">Class cls = <span class="built_in">NSClassFromString</span>(<span class="string">@&quot;WKBrowsingContextController&quot;</span>);</span><br><span class="line">SEL sel = <span class="built_in">NSSelectorFromString</span>(<span class="string">@&quot;registerSchemeForCustomProtocol:&quot;</span>);</span><br><span class="line"><span class="keyword">if</span> ([(<span class="keyword">id</span>)cls respondsToSelector:sel]) &#123;</span><br><span class="line">    <span class="comment">// 把 http 和 https 请求交给 NSURLProtocol 处理</span></span><br><span class="line">    [(<span class="keyword">id</span>)cls performSelector:sel withObject:<span class="string">@&quot;http&quot;</span>];</span><br><span class="line">    [(<span class="keyword">id</span>)cls performSelector:sel withObject:<span class="string">@&quot;https&quot;</span>];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>此时，<code>[NSURLProtocol registerClass:[customeURLProtocol class]]</code>就可以生效了</p>
+<h4 id="2-优化-私有API检测"><a href="#2-优化-私有API检测" class="headerlink" title="2. 优化 - 私有API检测"></a>2. 优化 - 私有API检测</h4><h5 id="关于私有-API"><a href="#关于私有-API" class="headerlink" title="关于私有 API"></a>关于私有 API</h5><p>按照 @sunnyxx 的<a target="_blank" rel="noopener" href="http://blog.sunnyxx.com/2015/06/07/fullscreen-pop-gesture/">总结</a>，Apple 检查私有 API 的使用，大概会采取下面几种手段：</p>
+<ul>
+<li>是否 link 了私有 framework 或者公开 framework 中的私有符号，这可以防止开发者把私有 header 都 dump 出来供程序直接调用。</li>
+<li>同上，使用@selector(_private_sel)加上-performSelector:的方式直接调用私有 API。</li>
+<li>扫描所有符号，查看是否有继承自私有类，重载私有方法，方法名是否有重合。</li>
+<li>扫描所有string，看字符串常量段是否出现和私有 API 对应的。</li>
+</ul>
+<figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">Class cls = <span class="built_in">NSClassFromString</span>(<span class="string">@&quot;WKBrowsingContextController&quot;</span>);</span><br><span class="line">SEL sel = <span class="built_in">NSSelectorFromString</span>(<span class="string">@&quot;registerSchemeForCustomProtocol:&quot;</span>);</span><br></pre></td></tr></table></figure>
+
+<p>上面两行代码非常之符合第四条。</p>
+<p>解决方案：</p>
+<p>查询 <a target="_blank" rel="noopener" href="https://github.com/JaviSoto/iOS10-Runtime-Headers/blob/master/Frameworks/WebKit.framework/WKWebView.h">WKWebView.h</a> 可以看到，有个方法 <code>- browsingContextController</code> 的方法名跟 <code>WKBrowsingContextController</code> 长得很像，通过 KVC 取出来（没错，KVC 不但可以取 property 取 ivar，还可以取无入参 selector 的返回值）发现它就是 <code>WKBrowsingContextController</code> 的一个实例，这样一来这个私有类就可以通过 KVC 的方式来得到了：</p>
+<figure class="highlight dart"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Class cls = [[[WKWebView <span class="keyword">new</span>] valueForKey:@<span class="string">&quot;browsingContextController&quot;</span>] <span class="class"><span class="keyword">class</span>];</span></span><br></pre></td></tr></table></figure>
+
+<p><code>valueForKey</code> 比直接使用 <code>NSClassFromString</code>安全了许多。</p>
+<p>其他解决方案：这些字符串也可以不明着写出来，只要运行时算出来就行，比如用 base64 编码啊，图片资源里藏一段啊，甚至通过服务器下发……</p>
+<h5 id="使用私有-API-的另一风险是兼容性问题"><a href="#使用私有-API-的另一风险是兼容性问题" class="headerlink" title="使用私有 API 的另一风险是兼容性问题"></a>使用私有 API 的另一风险是兼容性问题</h5><p>比如上面的 <code>browsingContextController</code> 就只能在 iOS 8.4 以后才能用，反注册 scheme 的方法 <code>unregisterSchemeForCustomProtocol:</code>也是在 iOS 8.4 以后才被添加进来的。</p>
+<p>要支持 iOS 8.0 ~ 8.3 机型的话，只能通过动态生成字符串的方式拿到 <code>WKBrowsingContextControlle</code>，而且还<strong>不能反注册</strong>，不过这些问题都不大。至于向后兼容，这个也不用太担心，因为 iOS 发布新版本之前都会有<strong>开发者预览版</strong>的，那个时候可以提前关注测一下。对于以上的例子来说，如果将来哪个 iOS 版本移除了这个 API，那很可能是因为官方提供了完整的解决方案，到那时候自然也不需要以上的方法了。</p>
+<h3 id="1-5-3-对资源做缓存措施"><a href="#1-5-3-对资源做缓存措施" class="headerlink" title="1.5.3 对资源做缓存措施"></a>1.5.3 对资源做缓存措施</h3><h4 id="1-图片资源"><a href="#1-图片资源" class="headerlink" title="1. 图片资源"></a>1. 图片资源</h4><p>通过<code>response.MIMEType</code>判断如果是: <code>image/gif</code> <code>image/jpeg</code> <code>image/jpg</code> <code>image/png</code>利用SDWebImage提供的缓存api来存储数据：</p>
+<figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">- (<span class="keyword">void</span>)storeImage:(<span class="keyword">nullable</span> <span class="built_in">UIImage</span> *)image</span><br><span class="line">     imageData:(<span class="keyword">nullable</span> <span class="built_in">NSData</span> *)imageData</span><br><span class="line">        forKey:(<span class="keyword">nullable</span> <span class="built_in">NSString</span> *)key</span><br><span class="line">        toDisk:(<span class="built_in">BOOL</span>)toDisk</span><br><span class="line">    completion:(<span class="keyword">nullable</span> SDWebImageNoParamsBlock)completionBlock;    </span><br></pre></td></tr></table></figure>
+
+<h4 id="2-文件"><a href="#2-文件" class="headerlink" title="2. 文件"></a>2. 文件</h4><p>文件之类的我们是使用本地存储来做缓存</p>
+<h3 id="1-5-4-问题及处理"><a href="#1-5-4-问题及处理" class="headerlink" title="1.5.4 问题及处理"></a>1.5.4 问题及处理</h3><ul>
+<li>这么做有隐患，自定义<code>NSURLProtocol</code> 会影响<code>WKWebView</code>中POST请求，所以使用起来还得根据场景来看<ul>
+<li>控制自定义的协议的开关时机</li>
+<li>如果实在冲突可以再创建一个WKWebView、UIWebView的控制器，根据场景分开使用</li>
+</ul>
+</li>
+<li>有一阵，页面上有一些图片资源无法正常加载，下拉刷新无效，怀疑是缓存了错误资源，两个方面：1. CDN资源有问题 2. 缓存策略有问题。</li>
+<li>不会拦截原生AFN请求(也不算问题，一般也没必要)<ul>
+<li>如果监控网络是通过注册NSURLProtocol来进行网络监控的，而且是用的AFN3.0，那么是拦截不到的，通过 <code>sessionWithConfiguration:delegate:delegateQueue:</code>得到的session，他的configuration中已经有一个NSURLProtocol，所以不会走自定义的protocol（通过share得到的session没这个问题)</li>
+</ul>
+</li>
+</ul>
+<p>解决方案：</p>
+<ul>
+<li>我们将NSURLSessionConfiguration的属性<code>protocolClasses的get方法</code>hook掉，通过返回自定义的protocol,这样，我们就能够监控到通过 <code>sessionWithConfiguration:delegate:delegateQueue:</code>得到的session的网络请求</li>
+<li>在AFHTTPSessionManager中注册</li>
+</ul>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">NSMutableArray</span> *protocols = [<span class="built_in">NSMutableArray</span> arrayWithArray:manager.session.configuration.protocolClasses];</span><br><span class="line"></span><br><span class="line">[protocols insertObject:[customeURLProtocol <span class="keyword">class</span>] atIndex:<span class="number">0</span>];</span><br><span class="line">manager.session.configuration.protocolClasses = [protocols <span class="keyword">copy</span>];</span><br><span class="line"></span><br><span class="line"><span class="comment">//manager是你发送请求时的AFHTTPSessionManager类，注意不能用[AFHTTPSessionManager manager]代替[AFHTTPSessionManager manager]其实不是单例，每次调用的时候都会init出一个新的manager，因此只能在每次初始化好manager之后都注册一次NSURLProtocol</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="1-6-WKURLSchemeHandler的使用"><a href="#1-6-WKURLSchemeHandler的使用" class="headerlink" title="1.6 WKURLSchemeHandler的使用"></a>1.6 WKURLSchemeHandler的使用</h2><blockquote>
+<p>看第三部分 WKURLSchemeHandler对比NSURLProtocol的优势，以及使用WKURLSchemeHandler实现请求拦截的问题与解决。</p>
+</blockquote>
+<h2 id="1-7-Cookie的传递"><a href="#1-7-Cookie的传递" class="headerlink" title="1.7 Cookie的传递"></a>1.7 Cookie的传递</h2><p>iOS下的cookie机制：</p>
+<ul>
+<li>iOS平台下每一个APP都有自己的Cookie，APP之间不共享Cookie，一个Cookie 对应一个NSHTTPCookie实体，并通过NSHTTPCookieStrorage进行管理。那些需要持久化的Cookie是存放在<code>~/Library/Cookies/Cookies.binarycookies</code> 文件中的二进制格式。</li>
+<li>cookie是iOS系统默认持久化存储的，一般我们使用到cookie的地方，都要注意cookie的更新，删除。</li>
+</ul>
+<h3 id="1-7-1-UIWebview-相关API"><a href="#1-7-1-UIWebview-相关API" class="headerlink" title="1.7.1 UIWebview 相关API"></a>1.7.1 UIWebview 相关API</h3><figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">@interface</span> <span class="title">NSHTTPCookieStorage</span> : <span class="title">NSObject</span></span></span><br><span class="line"></span><br><span class="line">- (<span class="keyword">nullable</span> <span class="built_in">NSArray</span>&lt;<span class="built_in">NSHTTPCookie</span> *&gt; *)cookiesForURL:(<span class="built_in">NSURL</span> *)URL;</span><br><span class="line">- (<span class="keyword">void</span>)deleteCookie:(<span class="built_in">NSHTTPCookie</span> *)cookie;</span><br><span class="line"></span><br><span class="line"><span class="keyword">@end</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// 这个地方，明明缓存策略是：忽略本地和远程的缓存，重新加载。但是好像还是会取本地存储的，发送上去，也不知道为什么？只能手动清理</span></span><br><span class="line">[webView loadRequest:[<span class="built_in">NSURLRequest</span> requestWithURL: url cachePolicy:<span class="built_in">NSURLRequestReloadIgnoringLocalAndRemoteCacheData</span> timeoutInterval:<span class="number">30</span>]];</span><br></pre></td></tr></table></figure>
+
+<p>Cookie的生成途径有两种：</p>
+<ul>
+<li><p>一种是访问网页，网页返回的是HTTP Header 中有 Set-Cookie指令进行Cookie 的设置，这里Cookie 的本地处理其实是由WebKit 进行的  </p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[[<span class="built_in">NSHTTPCookieStorage</span> sharedHTTPCookieStorage] setCookie:cookie];</span><br></pre></td></tr></table></figure></li>
+<li><p>还有一种途径就是我们客户端通过手动设置的Cookie</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[request setValue:[<span class="built_in">NSString</span> stringWithFormat:<span class="string">@&quot;%@=%@&quot;</span>,[cookie name],[cookie value]] forHTTPHeaderField:<span class="string">@&quot;Cookie&quot;</span>];</span><br></pre></td></tr></table></figure></li>
+</ul>
+<p>以上两种说的是UIWebView的设置方法</p>
+<h3 id="1-7-2-WKWebView相关API"><a href="#1-7-2-WKWebView相关API" class="headerlink" title="1.7.2 WKWebView相关API"></a>1.7.2 WKWebView相关API</h3><p>WKWebView的取、设置，理论详见<a target="_blank" rel="noopener" href="https://mp.weixin.qq.com/s/rhYKLIbXOsUJC_n6dt9UfA">WKWebView 那些坑 — Cookie 问题</a></p>
+<p>业界普遍认为 WKWebView 拥有自己的私有存储，不会将 Cookie 存入到标准的 Cookie 容器 NSHTTPCookieStorage 中。会忽略任何的默认网络存储器(<code>NSURLCache</code>, <code>NSHTTPCookieStorage</code>, <code>NSCredentialStorage</code>) 和一些标准的自定义网络请求类(<code>NSURLProtocol</code>,等等.)，导致<code>NSURLCache</code>和<code>NSHTTPCookieStroage</code>无法操作(WKWebView)WebCore进程的缓存和Cookie</p>
+<p>实践发现 WKWebView 实例其实也会将 Cookie 存储于 NSHTTPCookieStorage 中，但存储时机有延迟，在iOS 8上，当页面跳转的时候，当前页面的 Cookie 会写入 NSHTTPCookieStorage 中，而在 iOS 10 上，JS 执行 document.cookie 或服务器 set-cookie 注入的 Cookie 会很快同步到 NSHTTPCookieStorage 中，FireFox 工程师曾建议通过 reset WKProcessPool 来触发 Cookie 同步到 NSHTTPCookieStorage 中，实践发现不起作用，并可能会引发当前页面 session cookie 丢失等问题。</p>
+<p>WKWebView Cookie 问题在于<strong>WKWebView 发起的请求不会自动带上</strong>存储于 NSHTTPCookieStorage 容器中的 Cookie。而<strong>UIWebView是自动注入cookie</strong>。</p>
+<blockquote>
+<p><strong>更新于2024.01.05.</strong></p>
+<p>测试发现：一个页面上通过 <code>document.cookie</code> 设置的Cookie，关闭WebView后，再次打开还是可以获取到。</p>
+<p>但是：</p>
+<ul>
+<li>document.cookie = ‘uid=lala’; 是指定当前host下的path，才能访问。其他path无法访问。</li>
+<li>document.cookie = ‘uid333=lala; expires=Sat, 01 Jan 2050 00:00:00 GMT; path=/‘; 是当前host下的所有path都可以访问到。</li>
+</ul>
+<p><strong>另外：WKWebview中发起的请求，通过抓包查看，请求头中也是会自动带上这个Cookie的！！</strong></p>
+<p>限制：</p>
+<ul>
+<li>无法跨host访问Cookie</li>
+<li>无法跨APP访问Cookie</li>
+</ul>
+</blockquote>
+<p>与Cookie相同的情况就是WKWebView的缓存、凭据等。WKWebView都拥有自己的私有存储，因此和标准cocoa网络类兼容的不是那么好。</p>
+<h4 id="1-webView设置cookie"><a href="#1-webView设置cookie" class="headerlink" title="1. webView设置cookie"></a>1. webView设置cookie</h4><ul>
+<li>JS注入的Cookie，比如PHP代码在Cookie容器中取是取不到的， javascript document.cookie能读取到，浏览器中也能看到。</li>
+<li>NSMutableURLRequest 注入的PHP等动态语言直接能从$_COOKIE对象中获取到，但是js读取不到，浏览器也看不到。</li>
+</ul>
+<p>解决方案：</p>
+<figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 1.在初始化时，通过js注入添加cookies</span></span><br><span class="line"><span class="comment">// WKUserContentController对象为JavaScript提供了一种方式，可以将消息发送到web视图，并将用户脚本注入到web视图中。</span></span><br><span class="line"><span class="built_in">NSMutableURLRequest</span> *request = [<span class="built_in">NSMutableURLRequest</span> requestWithURL:url];</span><br><span class="line"><span class="comment">//设置cookie，传值给服务端</span></span><br><span class="line"><span class="built_in">NSString</span> *cookie1 = [<span class="built_in">NSString</span> stringWithFormat:<span class="string">@&quot;document.cookie=&#x27;goola_app_latitude=%lf&#x27;&quot;</span>,userLocation.location.coordinate.latitude];</span><br><span class="line"><span class="built_in">NSString</span> *cookie2 = [<span class="built_in">NSString</span> stringWithFormat:<span class="string">@&quot;document.cookie=&#x27;goola_app_longitude=%lf&#x27;&quot;</span>,userLocation.location.coordinate.longitude];</span><br><span class="line">        </span><br><span class="line"><span class="built_in">WKUserContentController</span> *userContentController = <span class="keyword">self</span>.webView.configuration.userContentController;</span><br><span class="line">        </span><br><span class="line"><span class="built_in">WKUserScript</span> *script1 = [[<span class="built_in">WKUserScript</span> alloc] initWithSource:cookie1 injectionTime:<span class="built_in">WKUserScriptInjectionTimeAtDocumentStart</span> forMainFrameOnly:<span class="literal">NO</span>];</span><br><span class="line"><span class="built_in">WKUserScript</span> *script2 = [[<span class="built_in">WKUserScript</span> alloc] initWithSource:cookie2 injectionTime:<span class="built_in">WKUserScriptInjectionTimeAtDocumentStart</span> forMainFrameOnly:<span class="literal">NO</span>];</span><br><span class="line">     </span><br><span class="line">[userContentController addUserScript:script1];</span><br><span class="line">[userContentController addUserScript:script2];</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment">// 2.给发出的request也添加上cookies</span></span><br><span class="line"><span class="built_in">NSMutableURLRequest</span> *request = [[<span class="built_in">NSMutableURLRequest</span> alloc] initWithURL:url cachePolicy:<span class="built_in">NSURLRequestReloadIgnoringLocalCacheData</span> timeoutInterval:<span class="number">20.0</span>f];</span><br><span class="line">[request setValue:<span class="string">@&quot;userId=zhangpeng&quot;</span> forHTTPHeaderField:<span class="string">@&quot;Cookie&quot;</span>];</span><br><span class="line">[_webView loadRequest:request];</span><br></pre></td></tr></table></figure>
+
+<h4 id="2-webview取cookie"><a href="#2-webview取cookie" class="headerlink" title="2. webview取cookie"></a>2. webview取cookie</h4><figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//iOS11之前(好像失效了？？解决无果，换UIWebView了)</span></span><br><span class="line">- (<span class="keyword">void</span>)webView:(<span class="built_in">WKWebView</span> *)webView decidePolicyForNavigationResponse:(<span class="built_in">WKNavigationResponse</span> *)navigationResponse decisionHandler:(<span class="keyword">void</span> (^)(<span class="built_in">WKNavigationResponsePolicy</span>))decisionHandler&#123;</span><br><span class="line">    </span><br><span class="line">    <span class="built_in">NSHTTPURLResponse</span> *response = (<span class="built_in">NSHTTPURLResponse</span> *)navigationResponse.response;</span><br><span class="line">    <span class="built_in">NSArray</span> *cookies =[<span class="built_in">NSHTTPCookie</span> cookiesWithResponseHeaderFields:[response allHeaderFields] forURL:response.URL];</span><br><span class="line">    <span class="comment">//读取wkwebview中的cookie</span></span><br><span class="line">    <span class="keyword">for</span> (<span class="built_in">NSHTTPCookie</span> *cookie <span class="keyword">in</span> cookies) &#123;</span><br><span class="line">        <span class="comment">// 这里就是你需要的cookie</span></span><br><span class="line">        <span class="built_in">NSLog</span>(<span class="string">@&quot;%@----%@----%lu----&quot;</span>,cookie.name,cookie.value,cookie.version);</span><br><span class="line">    &#125;</span><br><span class="line">    decisionHandler(<span class="built_in">WKNavigationResponsePolicyAllow</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">//iOS11之后，存取都发生了变化</span></span><br><span class="line"><span class="comment">//WKHTTPCookieStore的使用 </span></span><br><span class="line"><span class="built_in">WKHTTPCookieStore</span> *cookieStore =<span class="keyword">self</span>.webView.configuration.websiteDataStore.httpCookieStore;</span><br><span class="line"><span class="comment">//get cookies</span></span><br><span class="line">[cookieStore getAllCookies:^(<span class="built_in">NSArray</span>&lt;<span class="built_in">NSHTTPCookie</span> *&gt; * _Nonnull cookies) &#123;</span><br><span class="line">      <span class="built_in">NSLog</span>(<span class="string">@&quot;All cookies %@&quot;</span>,cookies);</span><br><span class="line">&#125;];</span><br><span class="line"></span><br><span class="line"><span class="built_in">WKHTTPCookieStore</span> *cookieStore =<span class="keyword">self</span>.webView.configuration.websiteDataStore.httpCookieStore;</span><br><span class="line">[cookieStore setCookie:cookie completionHandler:<span class="literal">nil</span>];</span><br></pre></td></tr></table></figure>
+
+<h1 id="二、遇到的问题"><a href="#二、遇到的问题" class="headerlink" title="二、遇到的问题"></a>二、遇到的问题</h1><p>在以前，一直以为Hybrid App开发是一种略显简单的事，不会使用太多能发挥移动端原生本身优势的复杂API，后来在新公司的工作(半混合式开发)过程中，发现混合式开发也是很多坑… 或者说WKWebView好多坑…</p>
+<blockquote>
+<p> 以下所说的内容，<a target="_blank" rel="noopener" href="https://mp.weixin.qq.com/s/rhYKLIbXOsUJC_n6dt9UfA">参考链接</a>上基本上都有，本文的叙述方式主要是结合自己的经历(自己踩过的总结总是那么的深刻…[\捂脸])</p>
+<p> 应该在开始混合开发之前就看下这篇文章的，结果真的是等自己踩坑踩了一遍，总结之后，发现这篇文章上都有….[\大哭]</p>
+<p> 参考链接2： <a target="_blank" rel="noopener" href="https://www.jianshu.com/p/86d99192df68">https://www.jianshu.com/p/86d99192df68</a></p>
+</blockquote>
+<h2 id="1-加载URL的-encode问题"><a href="#1-加载URL的-encode问题" class="headerlink" title="1. 加载URL的 encode问题"></a>1. 加载URL的 encode问题</h2><p>在数据网络请求或其他情况下，需要把URL中的一些特殊字符转换成UTF-8编码，比如：中文。解决<strong>无法加载</strong>的问题</p>
+<h3 id="编码"><a href="#编码" class="headerlink" title="编码"></a>编码</h3><figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// iOS 9以前</span></span><br><span class="line">stringByAddingPercentEscapesUsingEncoding: <span class="built_in">NSUTF8StringEncoding</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// ios9后对其方法进行了修改</span></span><br><span class="line">stringByAddingPercentEncodingWithAllowedCharacters: [<span class="built_in">NSCharacterSet</span> URLQueryAllowedCharacterSet]</span><br></pre></td></tr></table></figure>
+
+<h3 id="解码"><a href="#解码" class="headerlink" title="解码"></a>解码</h3><figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// iOS 9以前</span></span><br><span class="line">stringByReplacingPercentEscapesUsingEncoding: <span class="built_in">NSUTF8StringEncoding</span></span><br><span class="line">  </span><br><span class="line"><span class="comment">// iOS 9以后</span></span><br><span class="line">stringByRemovingPercentEncoding</span><br></pre></td></tr></table></figure>
+
+<p>总结：</p>
+<ul>
+<li>混合开发中，最好将所有的URL的编解码问题都<strong>交给前端或者后端来做</strong>，毕竟移动端发版不够灵活。</li>
+<li>API编写时，要<strong>保证iOS与Android两端的处理一致</strong>，否则前端同学做处理就太麻烦了。</li>
+</ul>
+<h2 id="2-NSURLProtocol-造成的body数据丢失"><a href="#2-NSURLProtocol-造成的body数据丢失" class="headerlink" title="2. NSURLProtocol 造成的body数据丢失"></a>2. NSURLProtocol 造成的body数据丢失</h2><p>在 WKWebView 上通过 loadRequest 发起的 post 请求 body 数据会丢失。</p>
+<p>这个其实和WKWebview没有关系，这个是苹果为了提高效率加快流畅度所以在NSURLProtocol拦截之后索性就不复制body体内的东西，因为body的大小没有限制，开发者可能会把很大的数据放进去那就不好办了。</p>
+<figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//同样是由于进程间通信性能问题，HTTPBody字段被丢弃[request setHTTPMethod:@&quot;POST&quot;];</span></span><br><span class="line">[request setHTTPBody:[<span class="string">@&quot;bodyData&quot;</span> dataUsingEncoding:<span class="built_in">NSUTF8StringEncoding</span>]];</span><br><span class="line">[wkwebview loadRequest: request];</span><br></pre></td></tr></table></figure>
+
+<p>目前也已经有成熟的解决方案了，见<a target="_blank" rel="noopener" href="https://github.com/karosLi/KKJSBridge#ajax-hook-%E6%96%B9%E6%A1%88%E5%AF%B9%E6%AF%94">KKJSBridge库</a>。原理上都是hook ajax，不过细节上分两种：</p>
+<p>这里只对比方案间相互比较的优缺点，共同的优点，就不赘述了。如果对私有 API 不敏感的，我是比较推荐使用方案一的。</p>
+<h3 id="方案一：Ajax-Hook-部分-API-NSURLProtocol"><a href="#方案一：Ajax-Hook-部分-API-NSURLProtocol" class="headerlink" title="方案一：Ajax Hook 部分 API + NSURLProtocol"></a>方案一：Ajax Hook 部分 API + NSURLProtocol</h3><p>这个方案对应的是这里的 <code>KKJSBridge/AjaxProtocolHook</code>。</p>
+<h4 id="1-原理介绍"><a href="#1-原理介绍" class="headerlink" title="1. 原理介绍"></a>1. 原理介绍</h4><p>此种方案，是只需要 hook ajax 中的 open/send 方法。</p>
+<ol>
+<li>在 hook 的 send 方法里，先把要发送的 body 通过 JSBridge 发送到 Native 侧去缓存起来。<ul>
+<li>为每一个post请求设置一个id，对应其缓存起来的body数据。</li>
+</ul>
+</li>
+<li>缓存成功后，再去执行真实的 send 方法，NSURLProtocol 此时会拦截到该请求，然后取出之前缓存的 body 数据，重新拼接请求，就可以发送出去了。</li>
+<li>然后通过 NSURLProtocol 把请求结果返回给 WebView 内核。</li>
+</ol>
+<p>优点：</p>
+<ul>
+<li>兼容性会更好，网络请求都是走 webview 原生的方式。</li>
+<li>hook 的逻辑会更少，会更加稳定。</li>
+<li>可以更好的支持 ajax 获取二进制的数据。例如 H5 小游戏场景（白鹭引擎是通过异步获取图片资源）。</li>
+</ul>
+<p>缺点：</p>
+<ul>
+<li>需要使用到私有 API browsingContextController 去注册 http/https。（其实现在大部分的离线包方案也是使用了这个私有 API 了）</li>
+</ul>
+<h4 id="2-网易云的设计实现"><a href="#2-网易云的设计实现" class="headerlink" title="2. 网易云的设计实现"></a>2. 网易云的设计实现</h4><blockquote>
+<p>看第三部分</p>
+</blockquote>
+<h3 id="方案二：Ajax-Hook-全部-API"><a href="#方案二：Ajax-Hook-全部-API" class="headerlink" title="方案二：Ajax Hook 全部 API"></a>方案二：Ajax Hook 全部 API</h3><p>这个方案对应的是这里的 <code>KKJSBridge/AjaxHook</code>。</p>
+<p>原理介绍：此种方案，是使用 hook 的 XMLHttpRequest 对象来代理真实的 XMLHttpRequest 去发送请求，相当于是需要 hook ajax 中的所有方法。</p>
+<ul>
+<li>在 hook 的 open 方法里，调用 JSBridge 让 Native 去创建一个 NSMutableRequest 对象。</li>
+<li>在 hook 的 send 方法里，把要发送的 body 通过 JSBridge 发送到 Native 侧，并把 body 设置给刚才创建的 NSMutableRequest 对象。</li>
+<li>在 Native 侧完成请求后，通过 JS 执行函数，把请求结果通知给 JS 侧，JS 侧找到 hook 的 XMLHttpRequest 对象，最后调用 onreadystatechange 函数，让 H5 知道有请求结果了。</li>
+</ul>
+<p>优点：</p>
+<ul>
+<li>没有使用私有 API。</li>
+</ul>
+<p>缺点：</p>
+<ul>
+<li>需要 hook XMLHttpRequest 的所有方法。</li>
+<li>请求结果是通过 JSBrdige 来进行传输的，性能上肯定没有原生的性能好。</li>
+<li>不能支持 ajax 获取二进制的数据。要想支持的话，还需要额外的序列化工作。</li>
+</ul>
+<h3 id="方案三：body数据转移至header、转GET"><a href="#方案三：body数据转移至header、转GET" class="headerlink" title="方案三：body数据转移至header、转GET"></a>方案三：body数据转移至header、转GET</h3><p>问题：</p>
+<ul>
+<li>Header的大小好像是有限制的，有博主试过2M是没有问题，不过超过10M就直接Request timeout了。</li>
+<li>当Body数据为二进制数据时这招也没辙了，因为Header里都是文本数据</li>
+<li><em>如果不想缓存，那先把post转get、或者body参数存header中，缺点都是body有限制。这种适合参数较少时。注意有个坑就是修改header可能会导致发出options请求。—— 来自群友交流</em></li>
+</ul>
+<h3 id="方案四：HTTPBodyStream-未验证"><a href="#方案四：HTTPBodyStream-未验证" class="headerlink" title="方案四：HTTPBodyStream(未验证)"></a>方案四：HTTPBodyStream(未验证)</h3><p>有博主查了大量的资料发现，既然post请求的httpbody没有苹果复制下来，那我们就不用httpbody，我们再往底层去看就会发现HTTPBodyStream这个东西我们可以通过它来获取请求的body体，具体代吗如下：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">pragma</span> mark 处理POST请求相关POST  用HTTPBodyStream来处理BODY体</span></span><br><span class="line">- (<span class="built_in">NSMutableURLRequest</span> *)handlePostRequestBodyWithRequest:(<span class="built_in">NSMutableURLRequest</span> *)request &#123;</span><br><span class="line">    <span class="built_in">NSMutableURLRequest</span> * req = [request mutableCopy];</span><br><span class="line">    <span class="keyword">if</span> ([request.HTTPMethod isEqualToString:<span class="string">@&quot;POST&quot;</span>]) &#123;</span><br><span class="line">        <span class="keyword">if</span> (!request.HTTPBody) &#123;</span><br><span class="line">            uint8_t d[<span class="number">1024</span>] = &#123;<span class="number">0</span>&#125;;</span><br><span class="line">            <span class="built_in">NSInputStream</span> *stream = request.HTTPBodyStream;</span><br><span class="line">            <span class="built_in">NSMutableData</span> *data = [[<span class="built_in">NSMutableData</span> alloc] init];</span><br><span class="line">            [stream open];</span><br><span class="line">            <span class="keyword">while</span> ([stream hasBytesAvailable]) &#123;</span><br><span class="line">                <span class="built_in">NSInteger</span> len = [stream read:d maxLength:<span class="number">1024</span>];</span><br><span class="line">                <span class="keyword">if</span> (len &gt; <span class="number">0</span> &amp;&amp; stream.streamError == <span class="literal">nil</span>) &#123;</span><br><span class="line">                    [data appendBytes:(<span class="keyword">void</span> *)d length:len];</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">            req.HTTPBody = [data <span class="keyword">copy</span>];</span><br><span class="line">            [stream close];</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> req;  <span class="comment">// 这样之后的req就是携带了body体的request啦</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="3-WKUserContentController造成内存泄漏"><a href="#3-WKUserContentController造成内存泄漏" class="headerlink" title="3. WKUserContentController造成内存泄漏"></a>3. WKUserContentController造成内存泄漏</h2><blockquote>
+<p>self -&gt; webView -&gt; WKWebViewConfiguration -&gt; WKUserContentController -&gt; self (addScriptMessageHandler)</p>
+</blockquote>
+<p>以下的方法，并不能解决问题</p>
+<figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">__<span class="keyword">weak</span> <span class="keyword">typeof</span>(<span class="keyword">self</span>) copy_self = <span class="keyword">self</span>;</span><br><span class="line">addScriptMessageHandler: copy_self</span><br></pre></td></tr></table></figure>
+
+<p>解决方案： 单独创建一个类实现<code>WKScriptMessageHandler</code>协议，然后在该类中再创建一个协议，由self来实现协议。</p>
+<figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">self</span> -&gt; webView -&gt; <span class="built_in">WKWebViewConfiguration</span> -&gt; <span class="built_in">WKUserContentController</span> -&gt; <span class="keyword">weak</span> delegate obj --delegate--&gt; <span class="keyword">self</span></span><br></pre></td></tr></table></figure>
+
+<p>示例代码：</p>
+<figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//1.创建一个新类WeakScriptMessageDelegate</span></span><br><span class="line"><span class="meta">#import <span class="meta-string">&lt;Foundation/Foundation.h&gt;</span></span></span><br><span class="line"><span class="meta">#import <span class="meta-string">&lt;WebKit/WebKit.h&gt;</span></span></span><br><span class="line"><span class="class"><span class="keyword">@interface</span> <span class="title">WeakScriptMessageDelegate</span> : <span class="title">NSObject</span></span></span><br><span class="line"><span class="keyword">@property</span> (<span class="keyword">nonatomic</span>, <span class="keyword">weak</span>) <span class="keyword">id</span>&lt;<span class="built_in">WKScriptMessageHandler</span>&gt; scriptDelegate;</span><br><span class="line">- (<span class="keyword">instancetype</span>)initWithDelegate:(<span class="keyword">id</span>&lt;<span class="built_in">WKScriptMessageHandler</span>&gt;)scriptDelegate;</span><br><span class="line"><span class="keyword">@end</span></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">@implementation</span> <span class="title">WeakScriptMessageDelegate</span></span></span><br><span class="line"></span><br><span class="line">- (<span class="keyword">instancetype</span>)initWithDelegate:(<span class="keyword">id</span>&lt;<span class="built_in">WKScriptMessageHandler</span>&gt;)scriptDelegate &#123;</span><br><span class="line">    <span class="keyword">self</span> = [<span class="keyword">super</span> init];</span><br><span class="line">    <span class="keyword">if</span> (<span class="keyword">self</span>) &#123;</span><br><span class="line">      _scriptDelegate = scriptDelegate;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">self</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">- (<span class="keyword">void</span>)userContentController:(<span class="built_in">WKUserContentController</span> *)userContentController didReceiveScriptMessage:(<span class="built_in">WKScriptMessage</span> *)message &#123;</span><br><span class="line">    [<span class="keyword">self</span>.scriptDelegate userContentController:userContentController didReceiveScriptMessage:message];</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">@end</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// 2.在我们使用WKWebView的控制器中引入我们创建的那个类，将注入js对象的代码改为:</span></span><br><span class="line">[config.userContentController addScriptMessageHandler:[[WeakScriptMessageDelegate alloc] initWithDelegate:<span class="keyword">self</span>] name:scriptMessage];</span><br><span class="line"></span><br><span class="line"><span class="comment">// 3.在delloc方法中通过下面的方式移除注入的js对象</span></span><br><span class="line">[<span class="keyword">self</span>.config.userContentController removeScriptMessageHandlerForName:scriptMessage];</span><br></pre></td></tr></table></figure>
+
+<p>上面三步就可以解决控制器不能被释放的问题了。</p>
+<h2 id="4-WKWebView的白屏问题-拍照引起"><a href="#4-WKWebView的白屏问题-拍照引起" class="headerlink" title="4.  WKWebView的白屏问题(拍照引起)"></a>4.  WKWebView的白屏问题(拍照引起)</h2><h3 id="原理"><a href="#原理" class="headerlink" title="原理"></a>原理</h3><p>WKWebView 自诩拥有更快的加载速度，更低的内存占用，但实际上 WKWebView 是一个多进程组件，Network Loading 以及 UI Rendering 在其它进程中执行。</p>
+<p>换WKWebView加载网页后，App 进程内存消耗反而大幅下降，但是仔细观察会发现，Other Process 的内存占用会增加。<strong>在一些用 webGL 渲染的复杂页面，使用 WKWebView 总体的内存占用（App Process Memory + Other Process Memory）不见得比 UIWebView 少很多。</strong></p>
+<ul>
+<li>在 UIWebView 上当内存占用太大的时候，App Process 会 crash；</li>
+<li>在 WKWebView 上当总体的内存占用比较大的时候，WebContent Process 会 crash，从而出现白屏现象</li>
+</ul>
+<h3 id="解决方案"><a href="#解决方案" class="headerlink" title="解决方案"></a>解决方案</h3><p>总结下来，白屏的现象有几种：</p>
+<ul>
+<li>WKWebView的URL为空，出现白屏，这种现象可以通过loadRequest解决。</li>
+<li>WKWebView的URL不空，出现白屏、部分白屏、白屏部分能点击，这种现象无论是reload还是loadRequest都不能刷出网页。（可以尝试3、4）</li>
+</ul>
+<h4 id="方案1-ContentProcessDidTerminate"><a href="#方案1-ContentProcessDidTerminate" class="headerlink" title="方案1. ContentProcessDidTerminate"></a>方案1. ContentProcessDidTerminate</h4><p>借助 iOS 9以后 <code>WKNavigtionDelegate</code> 新增了一个回调函数：</p>
+<figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">- (<span class="keyword">void</span>)webViewWebContentProcessDidTerminate:(<span class="built_in">WKWebView</span> *)webView API_AVAILABLE(macosx(<span class="number">10.11</span>), ios(<span class="number">9.0</span>));</span><br></pre></td></tr></table></figure>
+
+<p>当 WKWebView 总体内存占用过大，页面即将白屏的时候，系统会调用上面的回调函数，我们在该函数里执行<code>[webView reload]</code>(这个时候 webView.URL 取值尚不为 nil）解决白屏问题。在一些高内存消耗的页面可能会频繁刷新当前页面，H5侧也要做相应的适配操作。</p>
+<h4 id="方案2-检测-webView-title-是否为空"><a href="#方案2-检测-webView-title-是否为空" class="headerlink" title="方案2. 检测 webView.title 是否为空"></a>方案2. 检测 webView.title 是否为空</h4><p>并不是所有H5页面白屏的时候都会调用上面的回调函数，比如，最近遇到在一个高内存消耗的<strong>意见反馈</strong>H5页面上 present 系统相机，拍照完毕后返回原来页面的时候出现白屏现象（拍照过程消耗了大量内存，导致内存紧张，<strong>WebContent Process 被系统挂起</strong>），但上面的回调函数并没有被调用。</p>
+<p>在WKWebView白屏的时候，另一种现象是 webView.titile 会被置空， 因此，可以在 viewWillAppear 的时候检测 <code>webView.title</code> 是否为空来 reload 页面。</p>
+<p>注意：可能<strong>有的前端页面确实没写title标签</strong>，在前端移动端开发中是可能会有这种场景的，会造成页面反复刷新</p>
+<p>综合以上两种方法可以解决绝大多数的白屏问题。</p>
+<h4 id="方案3-检索WKCompositingView控件"><a href="#方案3-检索WKCompositingView控件" class="headerlink" title="方案3. 检索WKCompositingView控件"></a>方案3. 检索WKCompositingView控件</h4><blockquote>
+<p>（<em>未验证，有人说不好使</em>）</p>
+</blockquote>
+<p>WKWebView的URL不空，出现白屏不能点击、白屏部分能点击、部分白屏能点击等，这种现象无论是reload、loadRequest、清缓存、setNeedsLayout都不能刷出网页，只能回收旧webview（webview = nil 后记得清除代理，移除监听，要不然会crash）创建新的 webview， 然后重新request。</p>
+<figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 判断是否白屏</span></span><br><span class="line">- (<span class="built_in">BOOL</span>)isBlankView:(<span class="built_in">UIView</span> *)view &#123; <span class="comment">// YES：blank</span></span><br><span class="line">    Class wkCompositingView = <span class="built_in">NSClassFromString</span>(<span class="string">@&quot;WKCompositingView&quot;</span>);</span><br><span class="line">    <span class="keyword">if</span> ([view isKindOfClass:[wkCompositingView <span class="keyword">class</span>]]) &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">NO</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">for</span>(<span class="built_in">UIView</span> * subView <span class="keyword">in</span> view.subviews) &#123;</span><br><span class="line">        <span class="keyword">if</span> (![<span class="keyword">self</span> isBlankView:subView]) &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="literal">NO</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">	<span class="keyword">return</span> <span class="literal">YES</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="方案4-html中加入资源加载的监听"><a href="#方案4-html中加入资源加载的监听" class="headerlink" title="方案4. html中加入资源加载的监听"></a>方案4. html中加入资源加载的监听</h4><p>在本地html中加入资源加载的监听，只要发生错误，就调用location.reload();重载当前文档。</p>
+<figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//监控资源加载错误(img,script,css,以及jsonp)</span></span><br><span class="line">window.addEventListener(<span class="string">&#x27;error&#x27;</span>, function (e) &#123;</span><br><span class="line">    console.log(<span class="string">&quot;===&quot;</span> + e.message + <span class="string">&quot;===&quot;</span>);</span><br><span class="line">    location.reload();</span><br><span class="line">&#125;, <span class="literal">true</span>);</span><br><span class="line"></span><br><span class="line">window.onerror = function (errorMessage, scriptURI, lineNumber, columnNumber, errorObj) &#123;</span><br><span class="line">    console.log(<span class="string">&quot;错误信息：&quot;</span>, errorMessage);</span><br><span class="line">    console.log(<span class="string">&quot;出错文件：&quot;</span>, scriptURI);</span><br><span class="line">    console.log(<span class="string">&quot;出错行号：&quot;</span>, lineNumber);</span><br><span class="line">    console.log(<span class="string">&quot;出错列号：&quot;</span>, columnNumber);</span><br><span class="line">    console.log(<span class="string">&quot;错误详情：&quot;</span>, errorObj);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>注：这段代码要放在head内，并且css不能内联。</p>
+<h2 id="6-WKWebView的截屏问题-做意见反馈"><a href="#6-WKWebView的截屏问题-做意见反馈" class="headerlink" title="6.  WKWebView的截屏问题(做意见反馈)"></a>6.  WKWebView的截屏问题(做意见反馈)</h2><p>WKWebView 下通过 <code>-[CALayer renderInContext:]</code>实现截屏的方式失效，需要通过以下方式实现截屏功能：</p>
+<figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">@implementation</span> <span class="title">UIView</span> (<span class="title">ImageSnapshot</span>) </span></span><br><span class="line">- (<span class="built_in">UIImage</span>*)imageSnapshot &#123; </span><br><span class="line">    <span class="built_in">UIGraphicsBeginImageContextWithOptions</span>(<span class="keyword">self</span>.bounds.size,<span class="literal">YES</span>,<span class="keyword">self</span>.contentScaleFactor); </span><br><span class="line">    [<span class="keyword">self</span> drawViewHierarchyInRect:<span class="keyword">self</span>.bounds afterScreenUpdates:<span class="literal">YES</span>]; </span><br><span class="line">    <span class="built_in">UIImage</span>* newImage = <span class="built_in">UIGraphicsGetImageFromCurrentImageContext</span>(); </span><br><span class="line">    <span class="built_in">UIGraphicsEndImageContext</span>(); </span><br><span class="line">    <span class="keyword">return</span> newImage; </span><br><span class="line">&#125; </span><br><span class="line"><span class="keyword">@end</span></span><br></pre></td></tr></table></figure>
+<p>然而这种方式依然解决不了 webGL 页面的截屏问题，Safari 以及 Chrome 这两个全量切换到 WKWebView 的浏览器也存在同样的问题：<strong>对webGL 页面的截屏结果不是空白就是纯黑图片</strong>。</p>
+<h2 id="7-window-alert-引起的crash问题-暂时没遇到"><a href="#7-window-alert-引起的crash问题-暂时没遇到" class="headerlink" title="7. window.alert()引起的crash问题(暂时没遇到)"></a>7. window.alert()引起的crash问题(暂时没遇到)</h2><h2 id="8-WKWebView拦截协议"><a href="#8-WKWebView拦截协议" class="headerlink" title="8. WKWebView拦截协议"></a>8. WKWebView拦截协议</h2><p>WKWebView内默认不允许iTunes、weixin等协议跳转。</p>
+<p>UIWebView打开ituns.apple.com、跳转到appStore、拨打电话、唤起邮箱等一系列操作，UIWebView自己处理不了会自动交给UIApplication 来处理。</p>
+<p>WKWebView上述事件WKWebView 不会自动交给UIApplication 来处理，除此之外，js端通过window.open() 打开新的网页的动作也被禁掉了。</p>
+<h2 id="9-User-Agent修改"><a href="#9-User-Agent修改" class="headerlink" title="9. User-Agent修改"></a>9. User-Agent修改</h2><ul>
+<li>在UIWebView初始化之前，全局设置User-Agent才会生效</li>
+<li>在shouldStartLoadWithRequest可以给某个request设置UA，但是需要重新[webView loadUrl]，注意判断条件，不要死循环</li>
+<li><strong>不要擅自修改webView的User-Agent，务必要跟前端反复确认，是否有用UA来做一些设备区分，进而做一些系统、机型适配问题。</strong></li>
+</ul>
+<h2 id="10-didFinish不调用"><a href="#10-didFinish不调用" class="headerlink" title="10. didFinish不调用"></a>10. didFinish不调用</h2><p>WKWebView didFinishNavigation明明看起来页面加载完全，却不调用(<strong>一般只发生在第一次进入该页面</strong>)。经过自定义NSURLProtocol，拦截所有的H5加载资源，并在didCompleteWithError中打印资源的加载情况，发现有图片资源，域名有问题。</p>
+<figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Error Domain=<span class="built_in">NSURLErrorDomain</span> Code=<span class="number">-1003</span> <span class="string">&quot;未能找到使用指定主机名的服务器。 </span></span><br></pre></td></tr></table></figure>
+
+<p>原因：DNS解析失败导致系统认定H5一直没加载完成！第二次再进入，系统缓存了DNS解析的映射记录，所以很快就认定资源错误，调用了didFinish方法。</p>
+<h2 id="11-UI细节问题"><a href="#11-UI细节问题" class="headerlink" title="11. UI细节问题"></a>11. UI细节问题</h2><h3 id="11-1-WKWebView中-h5绝对布局不生效"><a href="#11-1-WKWebView中-h5绝对布局不生效" class="headerlink" title="11.1 WKWebView中 h5绝对布局不生效"></a>11.1 WKWebView中 h5绝对布局不生效</h3><figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// ios 11之后</span></span><br><span class="line">_baseWebView.scrollView.contentInsetAdjustmentBehavior = <span class="built_in">UIScrollViewContentInsetAdjustmentNever</span>;</span><br></pre></td></tr></table></figure>
+<p>然后：前端需要在meta标签中增加 <strong>iPhoneX</strong>的适配—适配方案<strong>viewport-fit: cover</strong></p>
+<h3 id="11-2-iOS-12中WKWebView中表单-键盘"><a href="#11-2-iOS-12中WKWebView中表单-键盘" class="headerlink" title="11.2. iOS 12中WKWebView中表单 键盘"></a>11.2. iOS 12中WKWebView中表单 键盘</h3><p>iOS 12中WKWebView中表单键盘弹起自动上移，导致的兼容问题。</p>
+<p>WKWebView会自动监听键盘弹出，并做上下移动处理(效果如同IQKeyboardManage这些库)，但是在iOS12中会有一些问题，键盘收起后，控件不恢复原状，或者部分控件消失等不兼容问题</p>
+<p>解决方案：</p>
+<figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span>(kSystemVersion &lt; <span class="number">12.0</span>) &#123;</span><br><span class="line">    <span class="keyword">if</span> (@available(iOS <span class="number">11.0</span>, *)) &#123;</span><br><span class="line">        _webview.scrollView.contentInsetAdjustmentBehavior = <span class="built_in">UIScrollViewContentInsetAdjustmentNever</span>;</span><br><span class="line">    &#125; </span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">if</span> (@available(iOS <span class="number">12.0</span>, *)) &#123;</span><br><span class="line">     _webview.scrollView.contentInsetAdjustmentBehavior = <span class="built_in">UIScrollViewContentInsetAdjustmentAutomatic</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="11-3-WKWebview会下移20"><a href="#11-3-WKWebview会下移20" class="headerlink" title="11.3 WKWebview会下移20"></a>11.3 WKWebview会下移20</h3><p>解决方案：</p>
+<figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//iOS11前</span></span><br><span class="line">VC.automaticallyAdjustsScrollViewInsets = <span class="literal">NO</span>;  </span><br><span class="line"><span class="comment">//iOS11及以后</span></span><br><span class="line">_webview.scrollView.contentInsetAdjustmentBehavior;</span><br></pre></td></tr></table></figure>
+
+<h2 id="12-H5标签不可点击，Native不受影响"><a href="#12-H5标签不可点击，Native不受影响" class="headerlink" title="12. H5标签不可点击，Native不受影响"></a>12. H5标签不可点击，Native不受影响</h2><p><em>iOS 11系统上，WKWebView内H5标签不可点击，Native不受影响。</em></p>
+<p>在频繁的切换页面、刷新WKWebView的情况下，会出现WKWebView卡死，所有的H5标签不可点击，Native的UI不受影响，TabBarVC的几个子控制器最为严重，有时候切换、刷新四五次左右，就会出现这种情况。</p>
+<p><strong>更新：结论：在viewWillAppear方法中调用了<code>evaluateJavaScript: completionHandler:</code>方法，将该方法的调用移到viewDidAppear方法中即可。</strong></p>
+<p>下面是探索的一些步骤，也走了一些弯路，可绕过：</p>
+<blockquote>
+<p>分别从内存、视图、网络请求几个方面入手，按照以下步骤定位问题：</p>
+<ol>
+<li><p>对APP进行内存泄漏检测，优化了几处代码。毫无用处</p>
+</li>
+<li><p>WKWebView单独进程内存问题？因为有一些二级页面按照问题出现流程复现了N多次，都没有出现，所以暂时先排除</p>
+</li>
+<li><p>网速问题。发现网速差时，确实很容易复现，网速好的时候，试了好几次没复现！做了一些网络优化，比如及时cancel掉一些不需要的请求，没有效果。</p>
+</li>
+<li><p>视图加载、更新问题。猜测依据：一级页面更容易复现，且比二级页面多了一个Tabbar的视图。</p>
+</li>
+<li><p>结论：结合第3、4，猜测是网络过慢时，tabbar出现、隐藏，及WKWebView刷新、加载、渲染HTML，几种情况结合导致的WKWebView布局混乱。</p>
+</li>
+</ol>
+<p>最后解决方法：包含WKWebView的一级页面，<code>viewDidAppear</code>时重新设置了一下WKWebView的约束。(设置UIScrollViewContentInsetAdjustmentAutomatic = YES，没有效果)</p>
+<p>效果：大大改善了，但却没有根治问题。加了个保底方案，下拉刷新时，销毁旧WKWebView，创建新的，并loadRequest。(因为这些情况下iOS 11上出现的，且没有更低版本的测试机复现，所以暂时把修改限制在了iOS 11及以下的系统)</p>
+</blockquote>
+<p><strong>最后</strong>：有个最省事的方案，针对这些页面，<strong>将WKWebView替换成UIWebView</strong>。 可行，但逃避问题，不太可取，而且UIWebView、WKWebView各有一些特性，另一个不支持，比如WKWebView支持html，滚动时实时回调，而UIWebView只支持滚动停止时回调。且苹果已经不太支持UIWebView。还是早点拥抱WKWebView吧。</p>
+<h1 id="三、-转-网易云WKURLSchemeHandler拦截请求"><a href="#三、-转-网易云WKURLSchemeHandler拦截请求" class="headerlink" title="三、[转]网易云WKURLSchemeHandler拦截请求"></a>三、[转]网易云WKURLSchemeHandler拦截请求</h1><blockquote>
+<p>原文链接：<a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/347592487">WKWebView 请求拦截探索与实践 — 网易云</a></p>
+</blockquote>
+<p>WebView 在移动端的应用场景随处可见，在云音乐里也作为许多核心业务的入口。为了满足云音乐日益复杂的业务场景，我们一直在持续不断的优化 WebView 的性能。其中可以短时间内提升 WebView 加载速度的技术之一就是离线包技术。该技术能够节省网络加载耗时，对于体积较大的网页提升效果尤为明显。离线包技术中最关键的环节就是拦截 WebView 发出的请求将资源映射到本地离线包，而对于 <code>WKWebView</code> 的请求拦截 iOS 系统原生并没有提供直接的能力，因此本文将围绕 <code>WKWebView</code> 请求拦截进行探讨。</p>
+<h2 id="3-1-两种方案及WKURLSchemeHandler选定"><a href="#3-1-两种方案及WKURLSchemeHandler选定" class="headerlink" title="3.1 两种方案及WKURLSchemeHandler选定"></a>3.1 两种方案及WKURLSchemeHandler选定</h2><p>我们研究了业内已有的 <code>WKWebView</code> 请求拦截方案，主要分为如下两种:</p>
+<p><strong>NSURLProtocol</strong></p>
+<p><code>NSURLProtocol</code> 默认会拦截所有经过 URL Loading System 的请求，因此只要 <code>WKWebView</code> 发出的请求经过 URL Loading System 就可以被拦截。经过我们的尝试，发现 <code>WKWebView</code> 独立于应用进程运行，发出去的请求默认是不会经过 URL Loading System，需要我们额外进行 hook 才能支持，具体的方式可以参考 <a href="https://link.zhihu.com/?target=https://www.jianshu.com/p/8f5e1082f5e0">NSURLProtocol对WKWebView的处理</a>。</p>
+<blockquote>
+<p>URL Loading System （URL加载系统）使用 https 等标准协议或创建的自定义协议提供对 URL 标识的资源的访问。是个<a target="_blank" rel="noopener" href="https://developer.apple.com/documentation/foundation/url_loading_system">API集合 — developer.apple</a></p>
+</blockquote>
+<p><strong>WKURLSchemeHandler</strong></p>
+<p><code>WKURLSchemeHandler</code> 是 iOS 11 引入的新特性，负责自定义请求的数据管理，如果需要支持 scheme 为 http 或 https请求的数据管理则需要 hook <code>WKWebView</code> 的 <code>handlesURLScheme</code>: 方法，然后返回NO即可。</p>
+<p>经过一番尝试和分析，我们从以下几个方面将两种方案进行对比:</p>
+<ul>
+<li>隔离性：<code>NSURLProtocol</code> 一经注册就是全局开启。一般来讲我们只会拦截自己的业务页面，但使用了 <code>NSURLProtocol</code> 的方式后会导致应用内合作的三方页面也会被拦截从而被污染。<code>WKURLSchemeHandler</code> 则可以以页面为维度进行隔离，因为是跟随着 <code>WKWebViewConfiguration</code> 进行配置。</li>
+<li>稳定性：<code>NSURLProtocol</code> 拦截过程中会丢失 Body，<code>WKURLSchemeHandler</code> 在 iOS 11.3 之前 (不包含) 也会丢失 Body，在 iOS 11.3 以后 WebKit 做了优化只会丢失 Blob 类型数据。</li>
+<li>一致性：<code>WKWebView</code> 发出的请求被 <code>NSURLProtocol</code> 拦截后行为可能发生改变，比如想取消 video 标签的视频加载一般都是将资源地址 (src) 设置为空，但此时 <code>stopLoading</code> 方法却不会调用，相比而言 <code>WKURLSchemeHandler</code> 表现正常。</li>
+</ul>
+<p><strong>调研的结论是：<code>WKURLSchemeHandler</code></strong> <strong>在隔离性、稳定性、一致性上表现优于</strong> <strong><code>NSURLProtocol</code>，但是想在生产环境投入使用必须要解决 Body 丢失的问题。</strong></p>
+<h2 id="3-2-问题1：解决-Body-丢失"><a href="#3-2-问题1：解决-Body-丢失" class="headerlink" title="3.2 问题1：解决 Body 丢失"></a>3.2 问题1：解决 Body 丢失</h2><h3 id="方案设计"><a href="#方案设计" class="headerlink" title="方案设计"></a>方案设计</h3><p>通过上文可以得知只通过 <code>WKURLSchemeHandler</code> 进行请求拦截是无法覆盖所有的请求场景，因为存在 Body 丢失的情况。所以我们的研究重点就是确保如何不让 Body 数据丢失或者提前拿到 Body 数据然后再将其组装成一个完整的请求发出，很显然前者需要对 WebKit 源码进行改动，成本过高，因此我们选择了后者。通过修改 JavaScript 原生的 <a href="https://link.zhihu.com/?target=https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API">Fetch</a> / <a href="https://link.zhihu.com/?target=https://developer.mozilla.org/en-US/docs/Web/API/XMLHttpRequest">XMLHttpRequest</a> 等接口实现来提前拿到 Body 数据，方案设计如下图所示：  —   <a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/347592487">WKWebView 请求拦截探索与实践 — 网易云</a></p>
+<img src="/images/webkit/webview-body-lost.png" alt="webview-body-lost" style="zoom:100%;" />
+
+<p>具体流程主要为以下几点：</p>
+<ul>
+<li>加载 HTML 文档的时候注入自定义的 <code>Fetch</code> / <code>XMLHttpRequest</code> 对象脚本</li>
+<li>发送请求之前收集 Body 等参数通过 <code>WKScriptMessageHandler</code> 传递给原生应用进行存储</li>
+<li>原生应用存储完成之后调用约定好的 JavaScript 函数通知 <code>WKWebView</code> 保存完成</li>
+<li>调用原生 <code>Fetch</code> / <code>XMLHttpRequest</code> 等接口来发送请求</li>
+<li>请求被 <code>WKURLSchemeHandler</code> 管理，取出对应的 Body 等参数进行组装然后发出</li>
+</ul>
+<h3 id="前端侧：脚本注入"><a href="#前端侧：脚本注入" class="headerlink" title="前端侧：脚本注入"></a>前端侧：<strong>脚本注入</strong></h3><h4 id="1-替换-Fetch-实现"><a href="#1-替换-Fetch-实现" class="headerlink" title="1. 替换 Fetch 实现"></a>1. 替换 Fetch 实现</h4><p>脚本注入需要修改 <code>Fetch</code> 接口的处理逻辑，在请求发出去之前能将 Body 等参数收集起来传递给原生应用，主要解决的问题为以下两点：</p>
+<ul>
+<li>iOS 11.3 之前 Body 丢失问题</li>
+<li>iOS 11.3 之后 Body 中 <code>Blob</code> 类型数据丢失问题</li>
+</ul>
+<ol>
+<li><p>针对第一点需要判断在 iOS 11.3 之前的设备发出的请求是否包含请求体，如果满足则在调用原生 <code>Fetch</code> 接口之前需要将请求体数据收集起来传递给原生应用。</p>
+</li>
+<li><p>针对第二点同样需要判断在 iOS 11.3 之后的设备发出的请求是否包含请求体且请求体中是否带有 <code>Blob</code> 类型数据，如果满足则同上处理。</p>
+</li>
+</ol>
+<p>其余情况只需直接调用原生 <code>Fetch</code> 接口即可，保持原生逻辑。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> nativeFetch = <span class="built_in">window</span>.fetch</span><br><span class="line"><span class="keyword">var</span> interceptMethodList = [<span class="string">&#x27;POST&#x27;</span>, <span class="string">&#x27;PUT&#x27;</span>, <span class="string">&#x27;PATCH&#x27;</span>, <span class="string">&#x27;DELETE&#x27;</span>];</span><br><span class="line"><span class="built_in">window</span>.fetch = <span class="function"><span class="keyword">function</span>(<span class="params">url, opts</span>) </span>&#123;</span><br><span class="line">  <span class="comment">// 判断是否包含请求体</span></span><br><span class="line">  <span class="keyword">var</span> hasBodyMethod = opts != <span class="literal">null</span> &amp;&amp; opts.method != <span class="literal">null</span> &amp;&amp; (interceptMethodList.indexOf(opts.method.toUpperCase()) !== -<span class="number">1</span>);</span><br><span class="line">  <span class="keyword">if</span> (hasBodyMethod) &#123;</span><br><span class="line">    <span class="comment">// 判断是否为iOS 11.3之前(可通过navigate.userAgent判断)</span></span><br><span class="line">    <span class="keyword">var</span> shouldSaveParamsToNative = isLessThan11_3;</span><br><span class="line">    <span class="keyword">if</span> (!shouldSaveParamsToNative) &#123;</span><br><span class="line">      <span class="comment">// 如果为iOS 11.3之后请求体是否带有Blob类型数据</span></span><br><span class="line">      shouldSaveParamsToNative = opts != <span class="literal">null</span> ? isBlobBody(opts) : <span class="literal">false</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (shouldSaveParamsToNative) &#123;</span><br><span class="line">      <span class="comment">// 此时需要收集请求体数据保存到原生应用</span></span><br><span class="line">      <span class="keyword">return</span> saveParamsToNative(url, opts).then(<span class="function"><span class="keyword">function</span> (<span class="params">newUrl</span>) </span>&#123;</span><br><span class="line">        <span class="comment">// 应用保存完成后调用原生fetch接口</span></span><br><span class="line">        <span class="keyword">return</span> nativeFetch(newUrl, opts)</span><br><span class="line">      &#125;);</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="comment">// 调用原生fetch接口</span></span><br><span class="line">  <span class="keyword">return</span> nativeFetch(url, opts);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="2-保存请求体数据到原生应用"><a href="#2-保存请求体数据到原生应用" class="headerlink" title="2. 保存请求体数据到原生应用"></a>2. 保存请求体数据到原生应用</h4><p>通过 <code>WKScriptMessageHandler</code> 接口就能将请求体数据保存到原生应用，并且<strong>需要生成一个唯一标识符对应到具体的请求体数据以便后续取出</strong>。我们的思路是生成标准的 UUID 作为标识符然后随着请求体数据一起传递给原生应用进行保存，然后再将 UUID 标识符拼接到请求链接后，请求被 <code>WKURLSchemeHandler</code> 管理后会通过该标识符去获取具体的请求体数据然后组装成请求发出。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">saveParamsToNative</span>(<span class="params">url, opts</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">return</span> <span class="keyword">new</span> <span class="built_in">Promise</span>(<span class="function"><span class="keyword">function</span> (<span class="params">resolve, reject</span>) </span>&#123;</span><br><span class="line">    <span class="comment">// 构造标识符</span></span><br><span class="line">    <span class="keyword">var</span> identifier = generateUUID();</span><br><span class="line">    <span class="keyword">var</span> appendIdentifyUrl = urlByAppendIdentifier(url, <span class="string">&quot;identifier&quot;</span>, identifier)</span><br><span class="line">    <span class="comment">// 解析body数据并保存到原生应用</span></span><br><span class="line">    <span class="keyword">if</span> (opts &amp;&amp; opts.body) &#123;</span><br><span class="line">      getBodyString(opts.body, <span class="function"><span class="keyword">function</span>(<span class="params">body</span>) </span>&#123;</span><br><span class="line">        <span class="comment">// 设置保存完成回调，原生应用保存完成后调用此js函数后将请求发出</span></span><br><span class="line">        finishSaveCallbacks[identifier] = <span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">          resolve(appendIdentifyUrl)</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment">// 通知原生应用保存请求体数据</span></span><br><span class="line">        <span class="built_in">window</span>.webkit.messageHandlers.saveBodyMessageHandler.postMessage(&#123;<span class="string">&#x27;body&#x27;</span>: body, <span class="string">&#x27;identifier&#x27;</span>: identifier&#125;&#125;)</span><br><span class="line">      &#125;);</span><br><span class="line">    &#125;<span class="keyword">else</span> &#123;</span><br><span class="line">      resolve(url);</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="3-请求体解析"><a href="#3-请求体解析" class="headerlink" title="3. 请求体解析"></a>3. 请求体解析</h4><p>在 <code>Fetch</code> 接口中可以通过第二个 opts 参数拿到请求体参数即 opts.body，参考 <a href="https://link.zhihu.com/?target=https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API/Using_Fetch%23body">MDN Fetch Body</a> 可得知请求体的类型有七种。经过分析，可以将这七种数据类型分为三类进行解析编码处理，将 <code>ArrayBuffer</code>、<code>ArrayBufferView</code>、<code>Blob</code>、<code>File</code> 归类为二进制类型，<code>string</code>、<code>URLSearchParams</code> 归类为字符串类型，<code>FormData</code> 归类为复合类型，最后统一转换成字符串类型返回给原生应用。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">getBodyString</span>(<span class="params">body, callback</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">if</span> (<span class="keyword">typeof</span> body == <span class="string">&#x27;string&#x27;</span>) &#123;</span><br><span class="line">    callback(body)</span><br><span class="line">  &#125;<span class="keyword">else</span> <span class="keyword">if</span>(<span class="keyword">typeof</span> body == <span class="string">&#x27;object&#x27;</span>) &#123;</span><br><span class="line">    <span class="keyword">if</span> (body <span class="keyword">instanceof</span> <span class="built_in">ArrayBuffer</span>) body = <span class="keyword">new</span> Blob([body])</span><br><span class="line">    <span class="keyword">if</span> (body <span class="keyword">instanceof</span> Blob) &#123;</span><br><span class="line">      <span class="comment">// 将Blob类型转换为base64</span></span><br><span class="line">      <span class="keyword">var</span> reader = <span class="keyword">new</span> FileReader()</span><br><span class="line">      reader.addEventListener(<span class="string">&quot;loadend&quot;</span>, <span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">        callback(reader.result.split(<span class="string">&quot;,&quot;</span>)[<span class="number">1</span>])</span><br><span class="line">      &#125;)</span><br><span class="line">      reader.readAsDataURL(body)</span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span>(body <span class="keyword">instanceof</span> FormData) &#123;</span><br><span class="line">      generateMultipartFormData(body)</span><br><span class="line">      .then(<span class="function"><span class="keyword">function</span>(<span class="params">result</span>) </span>&#123;</span><br><span class="line">        callback(result)</span><br><span class="line">      &#125;);</span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span>(body <span class="keyword">instanceof</span> URLSearchParams) &#123;</span><br><span class="line">      <span class="comment">// 遍历URLSearchParams进行键值对拼接</span></span><br><span class="line">      <span class="keyword">var</span> resultArr = []</span><br><span class="line">      <span class="keyword">for</span> (pair <span class="keyword">of</span> body.entries()) &#123;</span><br><span class="line">        resultArr.push(pair[<span class="number">0</span>] + <span class="string">&#x27;=&#x27;</span> + pair[<span class="number">1</span>])</span><br><span class="line">      &#125;</span><br><span class="line">      callback(resultArr.join(<span class="string">&#x27;&amp;&#x27;</span>))</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">      callback(body);</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;<span class="keyword">else</span> &#123;</span><br><span class="line">    callback(body);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>二进制类型为了方便传输统一转换成 Base64 编码。字符串类型中 <code>URLSearchParams</code> 遍历之后可得到键值对。复合类型存储结构类似为字典，值可能为 <code>string</code> 或者 <code>Blob</code> 类型，所以需要遍历然后按照 Multipart/form-data 格式进行拼接。</p>
+<h4 id="4-其它"><a href="#4-其它" class="headerlink" title="4. 其它"></a>4. 其它</h4><p>注入的脚本主要内容如上述所示，示例中只是替换了 <code>Fetch</code> 的实现，<code>XMLHttpRequest</code> 也是按照同样的思路进行替换即可。云音乐由于最低版本支持到 iOS 11.0，而 <code>FormData.prototype.entries</code> 是在 iOS 11.2 以后的版本才支持，对于之前的版本可以修改 <code>FormData.prototype.set</code> 方法的实现来保存键值对，这里不多加赘述。除此之外，请求可能是由内嵌的 <code>iframe</code> 发出，此时直接调用 <code>finishSaveCallbacks[identifier]()</code> 是无效的，因为 finishSaveCallbacks 是挂载在 Main Window 上的，可以考虑使用 <code>window.postMessage</code> 方法来跟子 Window 进行通信。</p>
+<h3 id="APP侧：WKURLSchemeHandler-拦截请求"><a href="#APP侧：WKURLSchemeHandler-拦截请求" class="headerlink" title="APP侧：WKURLSchemeHandler 拦截请求"></a>APP侧：WKURLSchemeHandler 拦截请求</h3><p><code>WKURLSchemeHandler</code> 的注册和使用这里不再多加叙述，具体的可以参考上文中的调研部分以及苹果文档，这里我们主要聊一聊拦截过程中要注意的点</p>
+<h2 id="3-3-问题2：解决HTML重定向"><a href="#3-3-问题2：解决HTML重定向" class="headerlink" title="3.3 问题2：解决HTML重定向"></a>3.3 问题2：解决HTML重定向</h2><p>一些读者可能会注意到上文调研部分我们在介绍 <code>WKURLSchemeHandler</code> 时把它的作用定义为<strong>自定义请求的数据管理</strong>。那么为什么不是<strong>自定义请求的数据拦截</strong>呢？理论上：</p>
+<ul>
+<li>拦截为开发者提供了完整的重定向、鉴权、过程中数据的返回等逻辑处理、回调接口，开发者可以选择不关心请求逻辑，只用处理好过程中的数据即可。</li>
+<li>数据管理则只会提供数据相关的接口，请求中涉及的其他逻辑它不会进行处理、回调，需要开发者自行处理，以保证能将最终的数据正确返回。</li>
+</ul>
+<p>带着这两个定义，我们再一起对比下 <code>WKURLSchemeTask</code> 和 <code>NSURLProtocol</code> 协议，可见后者比前者多了重定向、鉴权等相关请求处理逻辑。</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">API_AVAILABLE(macos(<span class="number">10.13</span>), ios(<span class="number">11.0</span>))</span><br><span class="line"><span class="class"><span class="keyword">@protocol</span> <span class="title">WKURLSchemeTask</span> &lt;<span class="title">NSObject</span>&gt;</span></span><br><span class="line"><span class="keyword">@property</span> (<span class="keyword">nonatomic</span>, <span class="keyword">readonly</span>, <span class="keyword">copy</span>) <span class="built_in">NSURLRequest</span> *request;</span><br><span class="line">- (<span class="keyword">void</span>)didReceiveResponse:(<span class="built_in">NSURLResponse</span> *)response;</span><br><span class="line">- (<span class="keyword">void</span>)didReceiveData:(<span class="built_in">NSData</span> *)data;</span><br><span class="line">- (<span class="keyword">void</span>)didFinish;</span><br><span class="line">- (<span class="keyword">void</span>)didFailWithError:(<span class="built_in">NSError</span> *)error;</span><br><span class="line"><span class="keyword">@end</span></span><br><span class="line"></span><br><span class="line">API_AVAILABLE(macos(<span class="number">10.2</span>), ios(<span class="number">2.0</span>), watchos(<span class="number">2.0</span>), tvos(<span class="number">9.0</span>))</span><br><span class="line"><span class="comment">/*</span></span><br><span class="line"><span class="comment">NSURLProtocolClient描述了一个协议实现可以用来hook URL loading system(URL加载系统)的集成点。</span></span><br><span class="line"><span class="comment">NSURLProtocolClient描述了从NSURLProtocol子类驱动URL loading system所需的协议实现方法。</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="class"><span class="keyword">@protocol</span> <span class="title">NSURLProtocolClient</span> &lt;<span class="title">NSObject</span>&gt;</span></span><br><span class="line">- (<span class="keyword">void</span>)URLProtocol:(<span class="built_in">NSURLProtocol</span> *)protocol didReceiveResponse:(<span class="built_in">NSURLResponse</span> *)response cacheStoragePolicy:(<span class="built_in">NSURLCacheStoragePolicy</span>)policy;</span><br><span class="line">- (<span class="keyword">void</span>)URLProtocol:(<span class="built_in">NSURLProtocol</span> *)protocol didLoadData:(<span class="built_in">NSData</span> *)data;</span><br><span class="line">- (<span class="keyword">void</span>)URLProtocolDidFinishLoading:(<span class="built_in">NSURLProtocol</span> *)protocol;</span><br><span class="line">- (<span class="keyword">void</span>)URLProtocol:(<span class="built_in">NSURLProtocol</span> *)protocol didFailWithError:(<span class="built_in">NSError</span> *)error;</span><br><span class="line">- (<span class="keyword">void</span>)URLProtocol:(<span class="built_in">NSURLProtocol</span> *)protocol didReceiveAuthenticationChallenge:(<span class="built_in">NSURLAuthenticationChallenge</span> *)challenge;</span><br><span class="line">- (<span class="keyword">void</span>)URLProtocol:(<span class="built_in">NSURLProtocol</span> *)protocol didCancelAuthenticationChallenge:(<span class="built_in">NSURLAuthenticationChallenge</span> *)challenge;</span><br><span class="line"><span class="keyword">@end</span></span><br></pre></td></tr></table></figure>
+
+<p>那么该如何在拦截过程中处理重定向响应？我们尝试着每次收到响应时都调用 <code>didReceiveResponse:</code> 方法，发现中间的重定向响应都会被最后接收到的响应覆盖掉，这样则会导致 <code>WKWebView</code> 无法感知到重定向，从而不会改变地址等相关信息，对于一些有判断路由的页面可能会带来一些意想不到的影响。 </p>
+<p>此时我们再次陷入困境，可以看出 <code>WKURLSchemeHandler</code> 在获取数据时并不支持重定向，因为苹果当初设计的时候只是把它作为单纯的数据管理。</p>
+<p>其实每次响应我们都能拿到，只不过不能完整的传递给 <code>WKWebView</code> 而已。经过一番衡量，我们基于以下三点原因最终选择了<strong>重新加载的方式来解决 HTML 文档请求重定向</strong>的问题。</p>
+<ul>
+<li>目前能修改的只有 <code>Fetch</code> 和 <code>XMLHttpRequest</code> 接口的实现，对于文档请求和 HTML 标签发起请求都是浏览器内部行为，修改源码成本太大。</li>
+<li><code>Fetch</code> 和 <code>XMLHttpRequest</code> 默认只会返回最终的响应，所以在服务端接口层面保证最终数据正确，丢失重定向响应影响不大。</li>
+<li>图片 / 视频 / 表单 / 样式表 / 脚本等资源同理也一般只需关心最终的数据正确即可。</li>
+</ul>
+<p>接收到 HTML 文档的重定向响应则直接返回给 <code>WKWebView</code> 并取消后续加载。而对于其它资源的重定向，则选择丢弃。</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">- (<span class="keyword">void</span>)URLSession:(<span class="built_in">NSURLSession</span> *)session </span><br><span class="line">              task:(<span class="built_in">NSURLSessionTask</span> *)task </span><br><span class="line">    willPerformHTTPRedirection:(<span class="built_in">NSHTTPURLResponse</span> *)response </span><br><span class="line">                    newRequest:(<span class="built_in">NSURLRequest</span> *)request </span><br><span class="line">             completionHandler:(<span class="keyword">void</span> (^)(<span class="built_in">NSURLRequest</span> * _Nullable))completionHandler &#123;</span><br><span class="line">  <span class="built_in">NSString</span> *originUrl = task.originalRequest.URL.absoluteString;</span><br><span class="line">  <span class="keyword">if</span> ([originUrl isEqualToString:currentWebViewUrl]) &#123;</span><br><span class="line">    [urlSchemeTask didReceiveResponse:response];</span><br><span class="line">    [urlSchemeTask didFinish];</span><br><span class="line">    completionHandler(<span class="literal">nil</span>);</span><br><span class="line">  &#125;<span class="keyword">else</span> &#123;</span><br><span class="line">    completionHandler(request);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><code>WKWebView</code> 收到响应数据后会调用 <code>webView:decidePolicyForNavigationResponse:decisionHandler</code> 方法来决定最后的跳转，在该方法中可以拿到重定向的目标地址 Location 进行重新加载。</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">- (<span class="keyword">void</span>)webView:(<span class="built_in">WKWebView</span> *)webView decidePolicyForNavigationResponse:(<span class="built_in">WKNavigationResponse</span> *)navigationResponse decisionHandler:(<span class="keyword">void</span> (^)(<span class="built_in">WKNavigationResponsePolicy</span>))decisionHandler</span><br><span class="line">&#123;</span><br><span class="line">  <span class="comment">// 开启了拦截</span></span><br><span class="line">  <span class="keyword">if</span> (enableNetworkIntercept) &#123;</span><br><span class="line">    <span class="keyword">if</span> ([navigationResponse.response isKindOfClass:[<span class="built_in">NSHTTPURLResponse</span> <span class="keyword">class</span>]]) &#123;</span><br><span class="line">        <span class="built_in">NSHTTPURLResponse</span> *httpResp = (<span class="built_in">NSHTTPURLResponse</span> *)navigationResponse.response;</span><br><span class="line">        <span class="built_in">NSInteger</span> statusCode = httpResp.statusCode;</span><br><span class="line">        <span class="built_in">NSString</span> *redirectUrl = [httpResp.allHeaderFields stringForKey:<span class="string">@&quot;Location&quot;</span>];</span><br><span class="line">        <span class="keyword">if</span> (statusCode &gt;= <span class="number">300</span> &amp;&amp; statusCode &lt; <span class="number">400</span> &amp;&amp; redirectUrl) &#123;</span><br><span class="line">            decisionHandler(<span class="built_in">WKNavigationActionPolicyCancel</span>);</span><br><span class="line">            <span class="comment">// 不支持307、308post跳转情景</span></span><br><span class="line">            [webView loadHTMLWithUrl:redirectUrl]; </span><br><span class="line">            <span class="keyword">return</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  decisionHandler(<span class="built_in">WKNavigationResponsePolicyAllow</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>至此 HTML 文档重定向问题基本上暂告一段落，到本文发布之前我们还未发现一些边界问题，当然如果大家还有其它好的想法也欢迎随时讨论。</p>
+<h2 id="3-4-Cookie-同步"><a href="#3-4-Cookie-同步" class="headerlink" title="3.4 Cookie 同步"></a>3.4 Cookie 同步</h2><p>由于 <code>WKWebView</code> 与我们的应用不是同一个进程所以 <code>WKWebView</code> 和 <code>NSHTTPCookieStorage</code> 并不同步。这里不展开讲 WKWebView Cookie 同步的整个过程，只重点讨论下拦截过程中的 Cookie 同步。</p>
+<p>由于请求最终是由原生应用发出的，所以 Cookie 读取和存储都是走 <code>NSHTTPCookieStorage</code>。</p>
+<p>值得注意的是，<code>WKURLSchemeHandler</code> 返回给 <code>WKWebView</code> 的响应中包含 <code>Set-Cookie</code> 信息，但是 WKWebView 并未设置到 <code>document.cookie</code> 上。在这里也可以佐证上文所述： <code>WKURLSchemeHandler</code> 只是负责数据管理，请求中涉及的逻辑需要开发者自行处理。</p>
+<p><code>WKWebView</code> 的 Cookie 同步可以通过 <code>WKHTTPCookieStore</code> 对象来实现</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">- (<span class="keyword">void</span>)URLSession:(<span class="built_in">NSURLSession</span> *)session </span><br><span class="line">              dataTask:(<span class="built_in">NSURLSessionDataTask</span> *)dataTask </span><br><span class="line">    didReceiveResponse:(<span class="built_in">NSURLResponse</span> *)response </span><br><span class="line">     completionHandler:(<span class="keyword">void</span> (^)(<span class="built_in">NSURLSessionResponseDisposition</span>))completionHandler</span><br><span class="line">&#123;</span><br><span class="line">  <span class="keyword">if</span> ([response isKindOfClass:[<span class="built_in">NSHTTPURLResponse</span> <span class="keyword">class</span>]]) &#123;</span><br><span class="line">    <span class="built_in">NSHTTPURLResponse</span> *httpResp = (<span class="built_in">NSHTTPURLResponse</span> *)response;</span><br><span class="line">    <span class="built_in">NSArray</span> &lt;<span class="built_in">NSHTTPCookie</span> *&gt;*responseCookies = [<span class="built_in">NSHTTPCookie</span> cookiesWithResponseHeaderFields:[httpResp allHeaderFields] forURL:response.URL];</span><br><span class="line">    <span class="keyword">if</span> ([responseCookies isKindOfClass:[<span class="built_in">NSArray</span> <span class="keyword">class</span>]] &amp;&amp; responseCookies.count &gt; <span class="number">0</span>) &#123;</span><br><span class="line">        <span class="built_in">dispatch_async</span>(dispatch_get_main_queue(), ^&#123;</span><br><span class="line">            [responseCookies enumerateObjectsUsingBlock:^(<span class="built_in">NSHTTPCookie</span> * _Nonnull cookie, <span class="built_in">NSUInteger</span> idx, <span class="built_in">BOOL</span> * _Nonnull stop) &#123;</span><br><span class="line">                <span class="comment">// 同步到WKWebView</span></span><br><span class="line">                [[<span class="built_in">WKWebsiteDataStore</span> defaultDataStore].httpCookieStore setCookie:cookie completionHandler:<span class="literal">nil</span>];</span><br><span class="line">            &#125;];</span><br><span class="line">        &#125;);</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  completionHandler(<span class="built_in">NSURLSessionResponseAllow</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>拦截过程中除了把原生应用的 Cookie 同步到 <code>WKWebView</code>, 在修改 <code>document.cookie</code> 时也要同步到原生应用。经过尝试发现真机设备上 <code>document.cookie</code> 在修改后会主动延迟同步到 <code>NSHTTPCookieStorage</code> 中，但是模拟器并未做任何同步。对于一些修改完 <code>document.cookie</code> 就立刻发出去的请求可能不会立即带上改动的 Cookie 信息，因为拦截之后 <code>Cookie</code> 是走 <code>NSHTTPCookieStorage</code> 的。</p>
+<p>我们的方案是修改 <code>document.cookie</code> setter 方法实现，在 Cookie 设置完成之前先同步到原生应用。注意原生应用此时需要做好跨域校验，防止恶意页面对 Cookie 进行任意修改。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">(<span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">  <span class="keyword">var</span> cookieDescriptor = </span><br><span class="line">            <span class="built_in">Object</span>.getOwnPropertyDescriptor(Document.prototype, <span class="string">&#x27;cookie&#x27;</span>) || </span><br><span class="line">            <span class="built_in">Object</span>.getOwnPropertyDescriptor(HTMLDocument.prototype, <span class="string">&#x27;cookie&#x27;</span>);</span><br><span class="line">  <span class="keyword">if</span> (cookieDescriptor &amp;&amp; cookieDescriptor.configurable) &#123;</span><br><span class="line">    <span class="built_in">Object</span>.defineProperty(<span class="built_in">document</span>, <span class="string">&#x27;cookie&#x27;</span>, &#123;</span><br><span class="line">      configurable: <span class="literal">true</span>,</span><br><span class="line">      enumerable: <span class="literal">true</span>,</span><br><span class="line">      set: <span class="function"><span class="keyword">function</span> (<span class="params">val</span>) </span>&#123;</span><br><span class="line">        <span class="comment">// 设置时先传递给原生应用才生效</span></span><br><span class="line">        <span class="built_in">window</span>.webkit.messageHandlers.save.postMessage(val);</span><br><span class="line">        cookieDescriptor.set.call(<span class="built_in">document</span>, val);</span><br><span class="line">      &#125;,</span><br><span class="line">      get: <span class="function"><span class="keyword">function</span> (<span class="params"></span>) </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> cookieDescriptor.get.call(<span class="built_in">document</span>);</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;)()</span><br></pre></td></tr></table></figure>
+
+<h2 id="3-5-NSURLSession-导致的内存泄露"><a href="#3-5-NSURLSession-导致的内存泄露" class="headerlink" title="3.5 NSURLSession 导致的内存泄露"></a>3.5 NSURLSession 导致的内存泄露</h2><p>通过 <code>NSURLSession</code> 的 <code>sessionWithConfiguration:delegate:delegateQueue</code> 构造方法来创建对象时 delegate 是被 <code>NSURLSession</code> 强引用的，这一点大家比较容易忽视。</p>
+<p>我们会为每一个 <code>WKURLSchemeHandler</code> 对象创建一个 <code>NSURLSession</code> 对象然后将前者设置为后者的 delegate，这样就导致循环引用的产生。</p>
+<p>建议在 <code>WKWebView</code> 销毁时调用 <code>NSURLSession</code> 的 <code>invalidateAndCancel</code> 方法来解除对 <code>WKURLSchemeHandler</code> 对象的强引用。</p>
+<h2 id="3-6-稳定性措施"><a href="#3-6-稳定性措施" class="headerlink" title="3.6 稳定性措施"></a>3.6 稳定性措施</h2><p>经过上文可以看出如果跟系统 “对着干”（<code>WKWebView</code> 本身就不支持 http/https 请求拦截），会有很多意想不到的事情发生，也可能有很多的边界地方需要覆盖，所以我们必须得有一套完善的措施来提升拦截过程中的稳定性。</p>
+<h3 id="3-6-1-动态配置拦截开闭"><a href="#3-6-1-动态配置拦截开闭" class="headerlink" title="3.6.1 动态配置拦截开闭"></a>3.6.1 <strong>动态配置拦截开闭</strong></h3><p>我们可以通过动态下发黑名单的方式来关掉一些页面的拦截。云音乐默认会预加载两个空 <code>WKWebView</code>，一个是注册了 <code>WKURLSchemeHandler</code> 的 <code>WKWebView</code> 来加载主站页面，并且支持黑名单关闭，另外一个则是普通的 <code>WKWebView</code> 来加载一些三方页面（因为三方页面的逻辑比较多样和复杂，而且我们也没有必要去拦截三方页面的请求）。除此之外对于一些刚开始尝试通过脚本注入来解决请求体丢失的团队，可能覆盖不了所有的场景，可以尝试动态下发的方式更新脚本，同样要对脚本内容做好签名防止别人恶意篡改。</p>
+<h3 id="3-6-2-监控"><a href="#3-6-2-监控" class="headerlink" title="3.6.2 监控"></a>3.6.2 <strong>监控</strong></h3><p>日志收集能帮助我们更好的去发现潜在的问题。拦截过程中所有的请求逻辑都统一收拢在 <code>WKURLSchemeHandler</code> 中，我们可以在一些关键链路上进行日志收集。比如可以收集注入的脚本是否执行异常、接收到 Body 是否丢失、返回的响应状态码是否正常等等。</p>
+<h3 id="3-6-3-完全代理前端请求"><a href="#3-6-3-完全代理前端请求" class="headerlink" title="3.6.3 完全代理前端请求"></a>3.6.3 完全代理前端请求</h3><p>除上述措施外我们还可以将网络请求比如服务端 API 接口完全代理给客户端。前端只用将相应的参数通过 JSBridge 方式传递给原生应用然后通过原生应用的网络请求通道来获取数据。</p>
+<p>该方式除了能减少拦截过程中潜在问题的发生，还能复用原生应用的一些网络相关的能力比如 HTTP DNS、反作弊等。</p>
+<p>而且值得注意的是 iOS 14 苹果在 <code>WKWebView</code> 默认开启了 ITP (Intelligent Tracking Prevention) 智能防跟踪功能，受影响的地方主要是跨域 Cookie 和 Storage 等的使用。比如我们应用里有一些三方页面需要通过一个 <code>iframe</code> 内嵌我们的页面来达到授权能力，此时由于跨域默认是获取不到我们主站域名下的 Cookie， 如果走原生应用的代理请求就能解决类似的问题。</p>
+<p>最后再次提醒大家如果使用这种方式记得做好鉴权校验，防止一些恶意页面调用该能力，毕竟原生应用的请求是没有跨域限制的。</p>
+<h2 id="小结"><a href="#小结" class="headerlink" title="小结"></a><strong>小结</strong></h2><p>本文将 iOS 原生 <code>WKURLSchemeHandler</code> 与 <code>JavaScript</code> 脚本注入结合在一起，实现了 <code>WKWebView</code> 在离线包加载、免流等业务中需要的请求拦截能力，解决了拦截过程中可能存在的重定向、请求体丢失、Cookie 不同步等问题并能以页面为维度进行拦截隔离。</p>
+<p>在探索过程中我们愈发的感受到技术是没有边界的，有时候可能由于平台的一些限制，单靠一方是无法实现一套完整的能力。只有将相关平台的技术能力结合在一起，才能制定出一套合理的技术方案。</p>
+
+    </article>
+    <!-- license  -->
+    
+        <div class="license-wrapper">
+            <p>Author：<a href="https://tenloy.github.io">Tenloy</a>
+            <p>原文链接：<a href="https://tenloy.github.io/2022/01/18/wkwebview-buges.html">https://tenloy.github.io/2022/01/18/wkwebview-buges.html</a>
+            <p>发表日期：2022.01.18 , 5:39 PM</p>
+            <p>更新日期：2024.04.07 , 7:53 PM</p>
+            <p>版权声明：本文采用<a rel="license noopener" target="_blank" href="http://creativecommons.org/licenses/by-nc/4.0/">Crative Commons 4.0 许可协议</a>进行许可</p>
+        </div>
+    
+    <!-- paginator  -->
+    <ul class="post-paginator">
+        <li class="next">
+            
+                <div class="nextSlogan">Next Post</div>
+                <a href= "/2022/02/09/OAuth.html" title= "[转] OAuth 2.0简述">
+                    <div class="nextTitle">[转] OAuth 2.0简述</div>
+                </a>
+            
+        </li>
+        <li class="previous">
+            
+                <div class="prevSlogan">Previous Post</div>
+                <a href= "/2021/11/22/bit-calculation.html" title= "[转] 位运算实现加、减、乘、除运算">
+                    <div class="prevTitle">[转] 位运算实现加、减、乘、除运算</div>
+                </a>
+            
+        </li>
+    </ul>
+    <!-- 评论插件 -->
+    <!-- 来必力City版安装代码 -->
+
+<!-- City版安装代码已完成 -->
+    
+    
+    <!-- gitalk评论 -->
+
+    <!-- utteranc评论 -->
+
+    <!-- partial('_partial/comment/changyan') -->
+    <!--PC版-->
+
+
+    
+    
+
+    <!-- 评论 -->
+</main>
+            <!-- profile -->
+            
+        </div>
+        <footer class="footer footer-unloaded">
+    <!-- social  -->
+    
+    <div class="social">
+        
+    
+        
+            
+                <a href="mailto:luotengoto@163.com" class="iconfont-archer email" title=email ></a>
+            
+        
+    
+        
+            
+                <a href="//github.com/Tenloy" class="iconfont-archer github" target="_blank" title=github></a>
+            
+        
+    
+        
+            
+                <a href="https://www.jianshu.com/u/8db1bc12db9f" class="iconfont-jian jianshu" target="_blank" title=jianshu></a>
+            
+        
+    
+        
+            
+                <a href="/atom.xml" class="iconfont-archer rss" target="_blank" title=rss></a>
+            
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+
+    </div>
+    
+    <!-- powered by Hexo  -->
+    <div class="copyright">
+        <span id="hexo-power">Powered by <a href="https://hexo.io/" target="_blank">Hexo</a></span><span class="iconfont-archer power">&#xe635;</span><span id="theme-info">theme <a href="https://github.com/fi3ework/hexo-theme-archer" target="_blank">Archer</a></span>
+    </div>
+    <!-- 不蒜子  -->
+    
+    <div class="busuanzi-container">
+    
+     
+    <span id="busuanzi_container_site_pv">PV: <span id="busuanzi_value_site_pv"></span> :)</span>
+    
+    </div>
+    
+</footer>
+    </div>
+    <!-- toc -->
+    
+    <div class="toc-wrapper" style=
+    
+
+
+
+
+
+
+
+top:40vh;
+
+    >
+        <div class="toc-catalog">
+            <span class="iconfont-archer catalog-icon">&#xe613;</span><span>CATALOG</span>
+        </div>
+        <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%B8%80%E3%80%81WKWebView%E7%9A%84%E4%BD%BF%E7%94%A8"><span class="toc-text">一、WKWebView的使用</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-1-%E5%B1%9E%E6%80%A7"><span class="toc-text">1.1 属性</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#1-2-%E8%B0%83%E6%95%B4%E6%BB%9A%E5%8A%A8%E9%80%9F%E7%8E%87"><span class="toc-text">1.2 调整滚动速率</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#1-3-%E8%A7%86%E9%A2%91%E8%87%AA%E5%8A%A8%E6%92%AD%E6%94%BE"><span class="toc-text">1.3 视频自动播放</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#1-4-goBack-API%E9%97%AE%E9%A2%98"><span class="toc-text">1.4 goBack API问题</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#1-5-WKWebview-NSURLProtocol%E5%AE%9E%E7%8E%B0%E7%BD%91%E9%A1%B5%E7%BC%93%E5%AD%98"><span class="toc-text">1.5 WKWebview+NSURLProtocol实现网页缓存</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-5-1-%E5%89%8D%E8%A8%80"><span class="toc-text">1.5.1 前言</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-5-2-%E8%AE%A9WKWebView%E6%94%AF%E6%8C%81NSURLProtocol"><span class="toc-text">1.5.2 让WKWebView支持NSURLProtocol</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#1-registerSchemeForCustomProtocol"><span class="toc-text">1. registerSchemeForCustomProtocol</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2-%E4%BC%98%E5%8C%96-%E7%A7%81%E6%9C%89API%E6%A3%80%E6%B5%8B"><span class="toc-text">2. 优化 - 私有API检测</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#%E5%85%B3%E4%BA%8E%E7%A7%81%E6%9C%89-API"><span class="toc-text">关于私有 API</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#%E4%BD%BF%E7%94%A8%E7%A7%81%E6%9C%89-API-%E7%9A%84%E5%8F%A6%E4%B8%80%E9%A3%8E%E9%99%A9%E6%98%AF%E5%85%BC%E5%AE%B9%E6%80%A7%E9%97%AE%E9%A2%98"><span class="toc-text">使用私有 API 的另一风险是兼容性问题</span></a></li></ol></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-5-3-%E5%AF%B9%E8%B5%84%E6%BA%90%E5%81%9A%E7%BC%93%E5%AD%98%E6%8E%AA%E6%96%BD"><span class="toc-text">1.5.3 对资源做缓存措施</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#1-%E5%9B%BE%E7%89%87%E8%B5%84%E6%BA%90"><span class="toc-text">1. 图片资源</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2-%E6%96%87%E4%BB%B6"><span class="toc-text">2. 文件</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-5-4-%E9%97%AE%E9%A2%98%E5%8F%8A%E5%A4%84%E7%90%86"><span class="toc-text">1.5.4 问题及处理</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#1-6-WKURLSchemeHandler%E7%9A%84%E4%BD%BF%E7%94%A8"><span class="toc-text">1.6 WKURLSchemeHandler的使用</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#1-7-Cookie%E7%9A%84%E4%BC%A0%E9%80%92"><span class="toc-text">1.7 Cookie的传递</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-7-1-UIWebview-%E7%9B%B8%E5%85%B3API"><span class="toc-text">1.7.1 UIWebview 相关API</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-7-2-WKWebView%E7%9B%B8%E5%85%B3API"><span class="toc-text">1.7.2 WKWebView相关API</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#1-webView%E8%AE%BE%E7%BD%AEcookie"><span class="toc-text">1. webView设置cookie</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2-webview%E5%8F%96cookie"><span class="toc-text">2. webview取cookie</span></a></li></ol></li></ol></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%BA%8C%E3%80%81%E9%81%87%E5%88%B0%E7%9A%84%E9%97%AE%E9%A2%98"><span class="toc-text">二、遇到的问题</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-%E5%8A%A0%E8%BD%BDURL%E7%9A%84-encode%E9%97%AE%E9%A2%98"><span class="toc-text">1. 加载URL的 encode问题</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%BC%96%E7%A0%81"><span class="toc-text">编码</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%A7%A3%E7%A0%81"><span class="toc-text">解码</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-NSURLProtocol-%E9%80%A0%E6%88%90%E7%9A%84body%E6%95%B0%E6%8D%AE%E4%B8%A2%E5%A4%B1"><span class="toc-text">2. NSURLProtocol 造成的body数据丢失</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%96%B9%E6%A1%88%E4%B8%80%EF%BC%9AAjax-Hook-%E9%83%A8%E5%88%86-API-NSURLProtocol"><span class="toc-text">方案一：Ajax Hook 部分 API + NSURLProtocol</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#1-%E5%8E%9F%E7%90%86%E4%BB%8B%E7%BB%8D"><span class="toc-text">1. 原理介绍</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2-%E7%BD%91%E6%98%93%E4%BA%91%E7%9A%84%E8%AE%BE%E8%AE%A1%E5%AE%9E%E7%8E%B0"><span class="toc-text">2. 网易云的设计实现</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%96%B9%E6%A1%88%E4%BA%8C%EF%BC%9AAjax-Hook-%E5%85%A8%E9%83%A8-API"><span class="toc-text">方案二：Ajax Hook 全部 API</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%96%B9%E6%A1%88%E4%B8%89%EF%BC%9Abody%E6%95%B0%E6%8D%AE%E8%BD%AC%E7%A7%BB%E8%87%B3header%E3%80%81%E8%BD%ACGET"><span class="toc-text">方案三：body数据转移至header、转GET</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%96%B9%E6%A1%88%E5%9B%9B%EF%BC%9AHTTPBodyStream-%E6%9C%AA%E9%AA%8C%E8%AF%81"><span class="toc-text">方案四：HTTPBodyStream(未验证)</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-WKUserContentController%E9%80%A0%E6%88%90%E5%86%85%E5%AD%98%E6%B3%84%E6%BC%8F"><span class="toc-text">3. WKUserContentController造成内存泄漏</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-WKWebView%E7%9A%84%E7%99%BD%E5%B1%8F%E9%97%AE%E9%A2%98-%E6%8B%8D%E7%85%A7%E5%BC%95%E8%B5%B7"><span class="toc-text">4.  WKWebView的白屏问题(拍照引起)</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%8E%9F%E7%90%86"><span class="toc-text">原理</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88"><span class="toc-text">解决方案</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%96%B9%E6%A1%881-ContentProcessDidTerminate"><span class="toc-text">方案1. ContentProcessDidTerminate</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%96%B9%E6%A1%882-%E6%A3%80%E6%B5%8B-webView-title-%E6%98%AF%E5%90%A6%E4%B8%BA%E7%A9%BA"><span class="toc-text">方案2. 检测 webView.title 是否为空</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%96%B9%E6%A1%883-%E6%A3%80%E7%B4%A2WKCompositingView%E6%8E%A7%E4%BB%B6"><span class="toc-text">方案3. 检索WKCompositingView控件</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%96%B9%E6%A1%884-html%E4%B8%AD%E5%8A%A0%E5%85%A5%E8%B5%84%E6%BA%90%E5%8A%A0%E8%BD%BD%E7%9A%84%E7%9B%91%E5%90%AC"><span class="toc-text">方案4. html中加入资源加载的监听</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#6-WKWebView%E7%9A%84%E6%88%AA%E5%B1%8F%E9%97%AE%E9%A2%98-%E5%81%9A%E6%84%8F%E8%A7%81%E5%8F%8D%E9%A6%88"><span class="toc-text">6.  WKWebView的截屏问题(做意见反馈)</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#7-window-alert-%E5%BC%95%E8%B5%B7%E7%9A%84crash%E9%97%AE%E9%A2%98-%E6%9A%82%E6%97%B6%E6%B2%A1%E9%81%87%E5%88%B0"><span class="toc-text">7. window.alert()引起的crash问题(暂时没遇到)</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#8-WKWebView%E6%8B%A6%E6%88%AA%E5%8D%8F%E8%AE%AE"><span class="toc-text">8. WKWebView拦截协议</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#9-User-Agent%E4%BF%AE%E6%94%B9"><span class="toc-text">9. User-Agent修改</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#10-didFinish%E4%B8%8D%E8%B0%83%E7%94%A8"><span class="toc-text">10. didFinish不调用</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#11-UI%E7%BB%86%E8%8A%82%E9%97%AE%E9%A2%98"><span class="toc-text">11. UI细节问题</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#11-1-WKWebView%E4%B8%AD-h5%E7%BB%9D%E5%AF%B9%E5%B8%83%E5%B1%80%E4%B8%8D%E7%94%9F%E6%95%88"><span class="toc-text">11.1 WKWebView中 h5绝对布局不生效</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#11-2-iOS-12%E4%B8%ADWKWebView%E4%B8%AD%E8%A1%A8%E5%8D%95-%E9%94%AE%E7%9B%98"><span class="toc-text">11.2. iOS 12中WKWebView中表单 键盘</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#11-3-WKWebview%E4%BC%9A%E4%B8%8B%E7%A7%BB20"><span class="toc-text">11.3 WKWebview会下移20</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#12-H5%E6%A0%87%E7%AD%BE%E4%B8%8D%E5%8F%AF%E7%82%B9%E5%87%BB%EF%BC%8CNative%E4%B8%8D%E5%8F%97%E5%BD%B1%E5%93%8D"><span class="toc-text">12. H5标签不可点击，Native不受影响</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%B8%89%E3%80%81-%E8%BD%AC-%E7%BD%91%E6%98%93%E4%BA%91WKURLSchemeHandler%E6%8B%A6%E6%88%AA%E8%AF%B7%E6%B1%82"><span class="toc-text">三、[转]网易云WKURLSchemeHandler拦截请求</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#3-1-%E4%B8%A4%E7%A7%8D%E6%96%B9%E6%A1%88%E5%8F%8AWKURLSchemeHandler%E9%80%89%E5%AE%9A"><span class="toc-text">3.1 两种方案及WKURLSchemeHandler选定</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-2-%E9%97%AE%E9%A2%981%EF%BC%9A%E8%A7%A3%E5%86%B3-Body-%E4%B8%A2%E5%A4%B1"><span class="toc-text">3.2 问题1：解决 Body 丢失</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%96%B9%E6%A1%88%E8%AE%BE%E8%AE%A1"><span class="toc-text">方案设计</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%89%8D%E7%AB%AF%E4%BE%A7%EF%BC%9A%E8%84%9A%E6%9C%AC%E6%B3%A8%E5%85%A5"><span class="toc-text">前端侧：脚本注入</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#1-%E6%9B%BF%E6%8D%A2-Fetch-%E5%AE%9E%E7%8E%B0"><span class="toc-text">1. 替换 Fetch 实现</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2-%E4%BF%9D%E5%AD%98%E8%AF%B7%E6%B1%82%E4%BD%93%E6%95%B0%E6%8D%AE%E5%88%B0%E5%8E%9F%E7%94%9F%E5%BA%94%E7%94%A8"><span class="toc-text">2. 保存请求体数据到原生应用</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3-%E8%AF%B7%E6%B1%82%E4%BD%93%E8%A7%A3%E6%9E%90"><span class="toc-text">3. 请求体解析</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#4-%E5%85%B6%E5%AE%83"><span class="toc-text">4. 其它</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#APP%E4%BE%A7%EF%BC%9AWKURLSchemeHandler-%E6%8B%A6%E6%88%AA%E8%AF%B7%E6%B1%82"><span class="toc-text">APP侧：WKURLSchemeHandler 拦截请求</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-3-%E9%97%AE%E9%A2%982%EF%BC%9A%E8%A7%A3%E5%86%B3HTML%E9%87%8D%E5%AE%9A%E5%90%91"><span class="toc-text">3.3 问题2：解决HTML重定向</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-4-Cookie-%E5%90%8C%E6%AD%A5"><span class="toc-text">3.4 Cookie 同步</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-5-NSURLSession-%E5%AF%BC%E8%87%B4%E7%9A%84%E5%86%85%E5%AD%98%E6%B3%84%E9%9C%B2"><span class="toc-text">3.5 NSURLSession 导致的内存泄露</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-6-%E7%A8%B3%E5%AE%9A%E6%80%A7%E6%8E%AA%E6%96%BD"><span class="toc-text">3.6 稳定性措施</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#3-6-1-%E5%8A%A8%E6%80%81%E9%85%8D%E7%BD%AE%E6%8B%A6%E6%88%AA%E5%BC%80%E9%97%AD"><span class="toc-text">3.6.1 动态配置拦截开闭</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-6-2-%E7%9B%91%E6%8E%A7"><span class="toc-text">3.6.2 监控</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-6-3-%E5%AE%8C%E5%85%A8%E4%BB%A3%E7%90%86%E5%89%8D%E7%AB%AF%E8%AF%B7%E6%B1%82"><span class="toc-text">3.6.3 完全代理前端请求</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%B0%8F%E7%BB%93"><span class="toc-text">小结</span></a></li></ol></li></ol>
+    </div>
+    
+    <div class="back-top iconfont-archer">&#xe639;</div>
+    <div class="sidebar sidebar-hide">
+    <ul class="sidebar-tabs sidebar-tabs-active-0">
+        <li class="sidebar-tab-categories"><span class="iconfont-archer">&#xe666;</span><span class="tab-name">Cate</span></li>
+        <li class="sidebar-tab-archives"><span class="iconfont-archer">&#xe67d;</span><span class="tab-name">Archive</span></li>
+        <li class="sidebar-tab-tags"><span class="iconfont-archer">&#xe61b;</span><span class="tab-name">Tag</span></li>
+    </ul>
+    <div class="sidebar-content sidebar-content-show-archive">
+        <div class="sidebar-panel-categories">
+    <div class="sidebar-categories-name">
+    
+    
+    
+    
+    
+        <span class="sidebar-category-name" data-categories="数据结构与算法"><span class="iconfont-archer">&#xe60a;</span>数据结构与算法</span>
+    
+        <span class="sidebar-category-name" data-categories="计算机组成原理"><span class="iconfont-archer">&#xe60a;</span>计算机组成原理</span>
+    
+        <span class="sidebar-category-name" data-categories="计算机网络"><span class="iconfont-archer">&#xe60a;</span>计算机网络</span>
+    
+        <span class="sidebar-category-name" data-categories="汇编语言"><span class="iconfont-archer">&#xe60a;</span>汇编语言</span>
+    
+        <span class="sidebar-category-name" data-categories="数据的存储与传输"><span class="iconfont-archer">&#xe60a;</span>数据的存储与传输</span>
+    
+        <span class="sidebar-category-name" data-categories="操作系统"><span class="iconfont-archer">&#xe60a;</span>操作系统</span>
+    
+        <span class="sidebar-category-name" data-categories="互联网标准RFC"><span class="iconfont-archer">&#xe60a;</span>互联网标准RFC</span>
+    
+        <span class="sidebar-category-name" data-categories="编译链接与装载"><span class="iconfont-archer">&#xe60a;</span>编译链接与装载</span>
+    
+        <span class="sidebar-category-name" data-categories="iOS"><span class="iconfont-archer">&#xe60a;</span>iOS</span>
+    
+        <span class="sidebar-category-name" data-categories="架构与设计模式"><span class="iconfont-archer">&#xe60a;</span>架构与设计模式</span>
+    
+        <span class="sidebar-category-name" data-categories="图形处理与渲染"><span class="iconfont-archer">&#xe60a;</span>图形处理与渲染</span>
+    
+        <span class="sidebar-category-name" data-categories="软件工程"><span class="iconfont-archer">&#xe60a;</span>软件工程</span>
+    
+        <span class="sidebar-category-name" data-categories="音视频处理"><span class="iconfont-archer">&#xe60a;</span>音视频处理</span>
+    
+        <span class="sidebar-category-name" data-categories="DSL"><span class="iconfont-archer">&#xe60a;</span>DSL</span>
+    
+        <span class="sidebar-category-name" data-categories="Swift"><span class="iconfont-archer">&#xe60a;</span>Swift</span>
+    
+        <span class="sidebar-category-name" data-categories="Git"><span class="iconfont-archer">&#xe60a;</span>Git</span>
+    
+        <span class="sidebar-category-name" data-categories="Web"><span class="iconfont-archer">&#xe60a;</span>Web</span>
+    
+    </div>
+    <div class="iconfont-archer sidebar-categories-empty">&#xe678;</div>
+    <div class="sidebar-categories-list"></div>
+</div>
+          <div class="sidebar-panel-archives">
+    <!-- 在ejs中将archive按照时间排序 -->
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    <div class="total-and-search">
+        <div class="total-archive">
+        Total : 76
+        </div>
+        <!-- search  -->
+        
+            <div class="site-search popup-trigger tl-side-search"> 
+                <span class="iconfont-jian search-icon">&#xe7fc;搜索</span>
+            </div>
+        
+    </div>
+    
+    <div class="post-archive">
+    
+    
+    
+    
+    <div class="archive-year"> 2022 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/05</span><a class="archive-post-title" href= "/2022/05/05/sqlite.html" >iOS SQLite的使用与优化</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/28</span><a class="archive-post-title" href= "/2022/04/28/mmap.html" >内存映射mmap函数的原理与应用</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/18</span><a class="archive-post-title" href= "/2022/03/18/avfoundation.html" >AVFoundation Programming Guide(译)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/17</span><a class="archive-post-title" href= "/2022/03/17/avframework.html" >iOS音视频库概述</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/09</span><a class="archive-post-title" href= "/2022/02/09/OAuth.html" >[转] OAuth 2.0简述</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/18</span><a class="archive-post-title" href= "/2022/01/18/wkwebview-buges.html" >WKWebView使用过程中遇到的坑</a>
+        </li>
+    
+    
+    
+    
+    
+        </ul>
+    
+    <div class="archive-year"> 2021 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/22</span><a class="archive-post-title" href= "/2021/11/22/bit-calculation.html" >[转] 位运算实现加、减、乘、除运算</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/10</span><a class="archive-post-title" href= "/2021/11/10/git-use.html" >Git的使用总结</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/21</span><a class="archive-post-title" href= "/2021/10/21/dyld-objc.html" >(七) dyld与Objc—_objc_init、map_images、load_images</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/18</span><a class="archive-post-title" href= "/2021/10/18/compile-dynamic-link.html" >(六) Mach-O 文件的动态链接、库、Dyld(含dlopen)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/14</span><a class="archive-post-title" href= "/2021/10/14/compile-vm-asrl.html" >(五) Mach-O 文件之进程(虚拟)地址空间、ASLR</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/10</span><a class="archive-post-title" href= "/2021/10/10/compile-load.html" >(四) Mach-O 文件的装载</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/08</span><a class="archive-post-title" href= "/2021/10/08/compile-static-link.html" >(三) Mach-O 文件的静态链接</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/06</span><a class="archive-post-title" href= "/2021/10/06/compile-macho.html" >(二) Mach-O 文件结构</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/05</span><a class="archive-post-title" href= "/2021/10/05/compile-clang-llvm.html" >(一) Clang/LLVM 介绍、OC 程序的编译过程</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/02</span><a class="archive-post-title" href= "/2021/10/02/makefile.html" >[转] Make 命令的使用与NodeJS案例</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/28</span><a class="archive-post-title" href= "/2021/09/28/architectural-pattern.html" >常见架构模式: MVC、MVP、MVVM、VIPER</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/25</span><a class="archive-post-title" href= "/2021/09/25/design-pattern.html" >常见的设计模式</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/20</span><a class="archive-post-title" href= "/2021/09/20/program-thought.html" >常见的编程范式</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/15</span><a class="archive-post-title" href= "/2021/09/15/graphics-processing-case.html" >图形处理(三) - 图形处理实践案例</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/15</span><a class="archive-post-title" href= "/2021/09/15/graphics-processing.html" >图形处理(二) - 图形与视频处理相关的框架</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/13</span><a class="archive-post-title" href= "/2021/09/13/image-encode-decode.html" >图形处理(一) - 图片的加载与编解码</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/12</span><a class="archive-post-title" href= "/2021/09/12/iOS-Render.html" >[转] iOS离屏渲染原理及优化</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/11</span><a class="archive-post-title" href= "/2021/09/11/core-animation03.html" >Core-Animation(三) - 渲染流程探究及性能分析</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/09</span><a class="archive-post-title" href= "/2021/09/09/core-animation02.html" >Core Animation(二) - 隐式动画、CATransaction与CAAction</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/07</span><a class="archive-post-title" href= "/2021/09/07/core-animation01.html" >Core Animation(一) - UIView与CALayer、布局与绘制</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/05</span><a class="archive-post-title" href= "/2021/09/05/AFN-Analyse.html" >[转] AFN框架实现解析</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/04</span><a class="archive-post-title" href= "/2021/09/04/nrl-session.html" >NSURLSession概述</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/02</span><a class="archive-post-title" href= "/2021/09/02/Log.html" >移动端日志库设计</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/01</span><a class="archive-post-title" href= "/2021/08/01/Crash-Monitor.html" >iOS崩溃监控与分析</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/30</span><a class="archive-post-title" href= "/2021/07/30/Lag-Monitor.html" >iOS卡顿监控</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/29</span><a class="archive-post-title" href= "/2021/07/29/SwiftUI.html" >SwiftUI</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/29</span><a class="archive-post-title" href= "/2021/07/29/Swift-Version-History.html" >Swift版本更新API介绍</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/26</span><a class="archive-post-title" href= "/2021/07/26/RunLoop-Reposted-From-ibireme.html" >[转] 深入理解RunLoop—ibireme</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/25</span><a class="archive-post-title" href= "/2021/07/25/Protocol-Buffer.html" >Protocol Buffer的基本介绍</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/24</span><a class="archive-post-title" href= "/2021/07/24/base64.html" >Base64编码及iOS中的Base64</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/23</span><a class="archive-post-title" href= "/2021/07/23/chinese-encode.html" >[转] 彻底弄懂常见的7种中文字符编码</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/10</span><a class="archive-post-title" href= "/2021/07/10/p-npc-np.html" >P问题、NP问题、NPC、NP-Hard、P=NP?</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/30</span><a class="archive-post-title" href= "/2021/06/30/probability.html" >(六) 概率算法</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/28</span><a class="archive-post-title" href= "/2021/06/28/branch-bound.html" >(五) 分支限界算法</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/26</span><a class="archive-post-title" href= "/2021/06/26/back-track.html" >(四) 回溯法(试探算法)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/24</span><a class="archive-post-title" href= "/2021/06/24/greed.html" >(三) 贪心算法</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/22</span><a class="archive-post-title" href= "/2021/06/22/dynamic-programming.html" >(二) 动态规划算法</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/20</span><a class="archive-post-title" href= "/2021/06/20/divide-and-conquer.html" >(一) 分治算法及减治、变治算法</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/18</span><a class="archive-post-title" href= "/2021/06/18/several-programming.html" >穷举、递推、迭代(辗转法)、递归算法</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/15</span><a class="archive-post-title" href= "/2021/06/15/datastruction-overview.html" >数据结构与算法概述</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/06</span><a class="archive-post-title" href= "/2021/06/06/Web-Module.html" >前端各种模块化方案总结</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/27</span><a class="archive-post-title" href= "/2021/05/27/Fiber.html" >[转] 最通俗的 React Fiber(时间分片)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/27</span><a class="archive-post-title" href= "/2021/05/27/Coroutine.html" >[转] 什么是协程</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/19</span><a class="archive-post-title" href= "/2021/05/19/DSL.html" >[转] 谈谈DSL以及DSL的应用（以CocoaPods 为例）</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/03</span><a class="archive-post-title" href= "/2021/05/03/iOS-private-pod.html" >私有Pod库部署</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/29</span><a class="archive-post-title" href= "/2021/04/29/iOS-ComRouter.html" >[转] iOS的组件化方案</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/27</span><a class="archive-post-title" href= "/2021/04/27/iOS-CI.html" >iOS的持续集成</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/26</span><a class="archive-post-title" href= "/2021/04/26/Containers.html" >常见的容器概念：Linux容器、Docker容器、服务器容器</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/24</span><a class="archive-post-title" href= "/2021/04/24/Dock-Reprinted-from-RuanYIFeng.html" >[转] Docker入门教程</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/20</span><a class="archive-post-title" href= "/2021/04/20/Sync-Async.html" >同步和异步解读及编程中的使用场景</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/17</span><a class="archive-post-title" href= "/2021/04/17/Arm64-Handbook.html" >ARM64指令简易手册</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/16</span><a class="archive-post-title" href= "/2021/04/16/Arm64-Introduce.html" >iOS需要了解的ARM64汇编</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/13</span><a class="archive-post-title" href= "/2021/04/13/Command-Line.html" >CLI Shell、Terminal、脚本(语言)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/10</span><a class="archive-post-title" href= "/2021/04/10/Ins-SysCall-Kernel-Shell.html" >指令、系统调用、库、Shell、APP的层次关系</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/08</span><a class="archive-post-title" href= "/2021/04/08/ISA-Microarch-Soc.html" >指令集、微架构、手机芯片(Soc)及ARM的介绍</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/02</span><a class="archive-post-title" href= "/2021/04/02/Engineering.html" >工程化、动态化、容器化、组件化</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/01</span><a class="archive-post-title" href= "/2021/04/01/GithubPages-Hexo.html" >使用Hexo+Github Pages搭建个人博客</a>
+        </li>
+    
+    
+    
+    
+    
+        </ul>
+    
+    <div class="archive-year"> 2020 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/22</span><a class="archive-post-title" href= "/2020/12/22/aes.html" >数据加密 — 对称加密(以AES为例)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/21</span><a class="archive-post-title" href= "/2020/12/21/aes-standard.html" >[转] AES标准及Rijndael算法解析</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/20</span><a class="archive-post-title" href= "/2020/12/20/asymmetric.html" >数据加密 — 非对称加密(加签/加密，以RSA为例)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/09</span><a class="archive-post-title" href= "/2020/12/09/pki.html" >常见的PKI标准(X.509、PKCS)及证书相关介绍</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/28</span><a class="archive-post-title" href= "/2020/10/28/runtime-data-structure.html" >Objc Runtime总结</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/11</span><a class="archive-post-title" href= "/2020/09/11/GCD.html" >Objective-C — 深入浅出GCD常用API</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/06</span><a class="archive-post-title" href= "/2020/09/06/oc-block.html" >Objective-C — Block</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/26</span><a class="archive-post-title" href= "/2020/08/26/AutoreleasePool.html" >AutoreleasePool</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/24</span><a class="archive-post-title" href= "/2020/08/24/oc-memory-manage.html" >Objective-C — 内存管理</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/01</span><a class="archive-post-title" href= "/2020/08/01/ui-navigation-bar.html" >[转] 导航栏的架构介绍及使用</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/15</span><a class="archive-post-title" href= "/2020/07/15/symbol-decl.html" >变量声明、函数声明的作用</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/01</span><a class="archive-post-title" href= "/2020/07/01/ios-apns.html" >iOS APNS接收逻辑梳理</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/13</span><a class="archive-post-title" href= "/2020/06/13/ios-vest.html" >iOS制作马甲总结</a>
+        </li>
+    
+    </div>
+  </div>
+        <div class="sidebar-panel-tags">
+    <div class="sidebar-tags-name">
+    
+        <span class="sidebar-tag-name" data-tags="AutoreleasePool"><span class="iconfont-archer">&#xe606;</span>AutoreleasePool</span>
+    
+        <span class="sidebar-tag-name" data-tags="GCD"><span class="iconfont-archer">&#xe606;</span>GCD</span>
+    
+        <span class="sidebar-tag-name" data-tags="hexo"><span class="iconfont-archer">&#xe606;</span>hexo</span>
+    
+        <span class="sidebar-tag-name" data-tags="ISA"><span class="iconfont-archer">&#xe606;</span>ISA</span>
+    
+        <span class="sidebar-tag-name" data-tags="Microarch"><span class="iconfont-archer">&#xe606;</span>Microarch</span>
+    
+        <span class="sidebar-tag-name" data-tags="Soc"><span class="iconfont-archer">&#xe606;</span>Soc</span>
+    
+        <span class="sidebar-tag-name" data-tags="ARM64"><span class="iconfont-archer">&#xe606;</span>ARM64</span>
+    
+        <span class="sidebar-tag-name" data-tags="CLI"><span class="iconfont-archer">&#xe606;</span>CLI</span>
+    
+        <span class="sidebar-tag-name" data-tags="Shell"><span class="iconfont-archer">&#xe606;</span>Shell</span>
+    
+        <span class="sidebar-tag-name" data-tags="多线程"><span class="iconfont-archer">&#xe606;</span>多线程</span>
+    
+        <span class="sidebar-tag-name" data-tags="Docker"><span class="iconfont-archer">&#xe606;</span>Docker</span>
+    
+        <span class="sidebar-tag-name" data-tags="DSL"><span class="iconfont-archer">&#xe606;</span>DSL</span>
+    
+        <span class="sidebar-tag-name" data-tags="协程"><span class="iconfont-archer">&#xe606;</span>协程</span>
+    
+        <span class="sidebar-tag-name" data-tags="Fiber"><span class="iconfont-archer">&#xe606;</span>Fiber</span>
+    
+        <span class="sidebar-tag-name" data-tags="dp"><span class="iconfont-archer">&#xe606;</span>dp</span>
+    
+        <span class="sidebar-tag-name" data-tags="SwiftUI"><span class="iconfont-archer">&#xe606;</span>SwiftUI</span>
+    
+        <span class="sidebar-tag-name" data-tags="RunLoop"><span class="iconfont-archer">&#xe606;</span>RunLoop</span>
+    
+        <span class="sidebar-tag-name" data-tags="Swift-Syntax"><span class="iconfont-archer">&#xe606;</span>Swift-Syntax</span>
+    
+        <span class="sidebar-tag-name" data-tags="LagMonitor"><span class="iconfont-archer">&#xe606;</span>LagMonitor</span>
+    
+        <span class="sidebar-tag-name" data-tags="Log"><span class="iconfont-archer">&#xe606;</span>Log</span>
+    
+        <span class="sidebar-tag-name" data-tags="CrashMonitor"><span class="iconfont-archer">&#xe606;</span>CrashMonitor</span>
+    
+        <span class="sidebar-tag-name" data-tags="AFN"><span class="iconfont-archer">&#xe606;</span>AFN</span>
+    
+    </div>
+    <div class="iconfont-archer sidebar-tags-empty">&#xe678;</div>
+    <div class="tag-load-fail" style="display: none; color: #ccc; font-size: 0.6rem;">
+    缺失模块。<br/>
+    1、请确保node版本大于6.2<br/>
+    2、在博客根目录（注意不是archer根目录）执行以下命令：<br/>
+    <span style="color: #f75357; font-size: 1rem; line-height: 2rem;">npm i hexo-generator-json-content --save</span><br/>
+    3、在根目录_config.yml里添加配置：
+    <pre style="color: #787878; font-size: 0.6rem;">
+jsonContent:
+  meta: false
+  pages: false
+  posts:
+    title: true
+    date: true
+    path: true
+    text: false
+    raw: false
+    content: false
+    slug: false
+    updated: false
+    comments: false
+    link: false
+    permalink: false
+    excerpt: false
+    categories: true
+    tags: true</pre>
+    </div> 
+    <div class="sidebar-tags-list"></div>
+</div>
+    </div>
+</div> 
+    <script>
+    var siteMeta = {
+        root: "/",
+        author: "Tenloy"
+    }
+</script>
+    <!-- CDN failover -->
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js"></script>
+    <script type="text/javascript">
+        if (typeof window.$ === 'undefined')
+        {
+            console.warn('jquery load from jsdelivr failed, will load local script')
+            document.write('<script src="/lib/jquery.min.js">\x3C/script>')
+        }
+    </script>
+    <script src="/scripts/main.js"></script>
+    <!-- algolia -->
+    
+        <div class="site-search">
+  <div class="algolia-popup popup">
+    <div class="algolia-search">
+      <div class="algolia-search-input-icon">
+        <i class="fa fa-search"></i>
+      </div>
+      <div class="algolia-search-input" id="algolia-search-input"></div>
+    </div>
+
+    <div class="algolia-results">
+      <div id="algolia-stats"></div>
+      <div id="algolia-hits"></div>
+      <div id="algolia-pagination" class="algolia-pagination"></div>
+    </div>
+
+    <span class="popup-btn-close">
+      <i class="iconfont-archer">&#xe609;</i>
+    </span>
+  </div>
+</div>
+        <script src="https://cdn.jsdelivr.net/npm/instantsearch.js@2.8.0/dist/instantsearch.min.js" defer></script>
+        <script src="/scripts/search.js" defer></script>
+    
+    <!-- busuanzi  -->
+    
+    <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    
+    <!-- CNZZ  -->
+    
+    </div>
+    <!-- async load share.js -->
+    
+        <script src="/scripts/share.js" async></script>    
+     
+    </body>
+</html>
+
+

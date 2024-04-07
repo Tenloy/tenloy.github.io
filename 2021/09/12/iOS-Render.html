@@ -1,0 +1,2497 @@
+<!DOCTYPE html>
+<html lang="en">
+    <!-- title -->
+
+
+
+
+<!-- keywords -->
+
+
+
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" >
+    <meta name="author" content="Tenloy">
+    <meta name="renderer" content="webkit">
+    <meta name="copyright" content="Tenloy">
+    
+    <meta name="keywords" content="Tenloy,iOS,Swift">
+    
+    <meta name="description" content="学习 生活 记录 回忆">
+    <meta name="description" content="原文链接：关于iOS离屏渲染的深入研究、iOS圆角的离屏渲染  作为一个客户端工程师，把控渲染性能是最关键、最独到的技术要点之一，如果仅仅了解表面知识，到了实际应用时往往会失之毫厘谬以千里，无法得到预期的效果。 一、先来了解iOS的渲染流程 如果对下图没有疑问，可以直接向下阅读。反之，可以先阅读上篇文章 渲染流程探究及性能分析    二、GPU的两种渲染方式OpenGL中，GPU屏幕渲染有以下两">
+<meta property="og:type" content="article">
+<meta property="og:title" content="[转] iOS离屏渲染原理及优化">
+<meta property="og:url" content="https://tenloy.github.io/2021/09/12/iOS-Render.html">
+<meta property="og:site_name" content="Tenloy&#39;s Blog">
+<meta property="og:description" content="原文链接：关于iOS离屏渲染的深入研究、iOS圆角的离屏渲染  作为一个客户端工程师，把控渲染性能是最关键、最独到的技术要点之一，如果仅仅了解表面知识，到了实际应用时往往会失之毫厘谬以千里，无法得到预期的效果。 一、先来了解iOS的渲染流程 如果对下图没有疑问，可以直接向下阅读。反之，可以先阅读上篇文章 渲染流程探究及性能分析    二、GPU的两种渲染方式OpenGL中，GPU屏幕渲染有以下两">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://tenloy.github.io/images/iosrender/15.png">
+<meta property="og:image" content="https://tenloy.github.io/images/iosrender/03.png">
+<meta property="og:image" content="https://tenloy.github.io/images/iosrender/04.png">
+<meta property="og:image" content="https://tenloy.github.io/images/iosrender/05.png">
+<meta property="og:image" content="https://tenloy.github.io/images/iosrender/06.png">
+<meta property="og:image" content="https://tenloy.github.io/images/iosrender/12.jpg">
+<meta property="og:image" content="https://tenloy.github.io/images/iosrender/07.jpg">
+<meta property="og:image" content="https://tenloy.github.io/images/iosrender/08.jpg">
+<meta property="og:image" content="https://tenloy.github.io/images/iosrender/09.jpg">
+<meta property="og:image" content="https://tenloy.github.io/images/iosrender/10.jpg">
+<meta property="og:image" content="https://tenloy.github.io/images/iosrender/11.jpg">
+<meta property="og:image" content="https://tenloy.github.io/images/iosrender/13.jpg">
+<meta property="og:image" content="https://tenloy.github.io/images/iosrender/14.jpg">
+<meta property="article:published_time" content="2021-09-12T12:24:55.000Z">
+<meta property="article:modified_time" content="2024-04-07T11:53:34.923Z">
+<meta property="article:author" content="Tenloy">
+<meta property="article:tag" content="Tenloy, iOS, Tenloy Blog, 博客，Swift, 编译, 计算机">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://tenloy.github.io/images/iosrender/15.png">
+    <meta http-equiv="Cache-control" content="no-cache">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"/>
+    
+    <title>[转] iOS离屏渲染原理及优化 · Tenloy&#39;s Blog</title>
+    <style type="text/css">
+    @font-face {
+        font-family: 'Oswald-Regular';
+        src: url("/font/Oswald-Regular.ttf");
+    }
+
+    body {
+        margin: 0;
+    }
+
+    header,
+    footer,
+    .back-top,
+    .sidebar,
+    .container,
+    .site-intro-meta,
+    .toc-wrapper {
+        display: none;
+    }
+
+    .site-intro {
+        position: relative;
+        z-index: 3;
+        width: 100%;
+        /* height: 50vh; */
+        overflow: hidden;
+    }
+
+    .site-intro-placeholder {
+        position: absolute;
+        z-index: -2;
+        top: 0;
+        left: 0;
+        width: calc(100% + 300px);
+        height: 100%;
+        background: repeating-linear-gradient(-45deg, #444 0, #444 80px, #333 80px, #333 160px);
+        background-position: center center;
+        transform: translate3d(-226px, 0, 0);
+        animation: gradient-move 2.5s ease-out 0s infinite;
+    }
+
+    @keyframes gradient-move {
+        0% {
+            transform: translate3d(-226px, 0, 0);
+        }
+        100% {
+            transform: translate3d(0, 0, 0);
+        }
+    }
+
+</style>
+
+    <link rel="preload" href= "/css/style.css?v=20180824" as="style" onload="this.onload=null;this.rel='stylesheet'" />
+    <link rel="stylesheet" href= "/css/mobile.css?v=20180824" media="(max-width: 980px)">
+    
+    <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.2.5/jquery.fancybox.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'" />
+    
+    <!-- /*! loadCSS. [c]2017 Filament Group, Inc. MIT License */
+/* This file is meant as a standalone workflow for
+- testing support for link[rel=preload]
+- enabling async CSS loading in browsers that do not support rel=preload
+- applying rel preload css once loaded, whether supported or not.
+*/ -->
+<script>
+(function( w ){
+	"use strict";
+	// rel=preload support test
+	if( !w.loadCSS ){
+		w.loadCSS = function(){};
+	}
+	// define on the loadCSS obj
+	var rp = loadCSS.relpreload = {};
+	// rel=preload feature support test
+	// runs once and returns a function for compat purposes
+	rp.support = (function(){
+		var ret;
+		try {
+			ret = w.document.createElement( "link" ).relList.supports( "preload" );
+		} catch (e) {
+			ret = false;
+		}
+		return function(){
+			return ret;
+		};
+	})();
+
+	// if preload isn't supported, get an asynchronous load by using a non-matching media attribute
+	// then change that media back to its intended value on load
+	rp.bindMediaToggle = function( link ){
+		// remember existing media attr for ultimate state, or default to 'all'
+		var finalMedia = link.media || "all";
+
+		function enableStylesheet(){
+			link.media = finalMedia;
+		}
+
+		// bind load handlers to enable media
+		if( link.addEventListener ){
+			link.addEventListener( "load", enableStylesheet );
+		} else if( link.attachEvent ){
+			link.attachEvent( "onload", enableStylesheet );
+		}
+
+		// Set rel and non-applicable media type to start an async request
+		// note: timeout allows this to happen async to let rendering continue in IE
+		setTimeout(function(){
+			link.rel = "stylesheet";
+			link.media = "only x";
+		});
+		// also enable media after 3 seconds,
+		// which will catch very old browsers (android 2.x, old firefox) that don't support onload on link
+		setTimeout( enableStylesheet, 3000 );
+	};
+
+	// loop through link elements in DOM
+	rp.poly = function(){
+		// double check this to prevent external calls from running
+		if( rp.support() ){
+			return;
+		}
+		var links = w.document.getElementsByTagName( "link" );
+		for( var i = 0; i < links.length; i++ ){
+			var link = links[ i ];
+			// qualify links to those with rel=preload and as=style attrs
+			if( link.rel === "preload" && link.getAttribute( "as" ) === "style" && !link.getAttribute( "data-loadcss" ) ){
+				// prevent rerunning on link
+				link.setAttribute( "data-loadcss", true );
+				// bind listeners to toggle media back
+				rp.bindMediaToggle( link );
+			}
+		}
+	};
+
+	// if unsupported, run the polyfill
+	if( !rp.support() ){
+		// run once at least
+		rp.poly();
+
+		// rerun poly on an interval until onload
+		var run = w.setInterval( rp.poly, 500 );
+		if( w.addEventListener ){
+			w.addEventListener( "load", function(){
+				rp.poly();
+				w.clearInterval( run );
+			} );
+		} else if( w.attachEvent ){
+			w.attachEvent( "onload", function(){
+				rp.poly();
+				w.clearInterval( run );
+			} );
+		}
+	}
+
+
+	// commonjs
+	if( typeof exports !== "undefined" ){
+		exports.loadCSS = loadCSS;
+	}
+	else {
+		w.loadCSS = loadCSS;
+	}
+}( typeof global !== "undefined" ? global : this ) );
+</script>
+
+    <link rel="icon" href= "/assets/favicon.ico" />
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.min.js" as="script" />
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js" as="script" />
+    <link rel="preload" href="/scripts/main.js" as="script" />
+    <link rel="preload" as="font" href="/font/Oswald-Regular.ttf" crossorigin>
+    <link rel="preload" as="font" href="https://at.alicdn.com/t/font_327081_1dta1rlogw17zaor.woff" crossorigin>
+    
+        <!-- algolia -->
+        <script>
+            
+            var hits = JSON.parse('{"per_page":10}')
+            var labels = JSON.parse('{"input_placeholder":"Search for Posts","hits_empty":"没有找到任何搜索结果: ${query}","hits_stats":"找到约${hits}条结果（用时${time}ms）"}')
+
+            var algolia = {
+                applicationID: 'V0HYXBS9FB',
+                apiKey: '6550d5de786935564142097c3e78c380',
+                indexName: 'law_blog_index',
+                hits: hits,
+                labels: labels
+            }
+        </script>
+    
+    <!-- fancybox -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.2.5/jquery.fancybox.min.js" defer></script>
+    <!-- 百度统计  -->
+    
+    <!-- 谷歌统计  -->
+    
+<meta name="generator" content="Hexo 5.4.0"><link rel="alternate" href="/atom.xml" title="Tenloy's Blog" type="application/atom+xml">
+</head>
+
+    
+        <body class="post-body">
+    
+    
+<header class="header">
+
+    <div class="read-progress"></div>
+    <div class="header-sidebar-menu">&#xe775;</div>
+    <!-- post页的toggle banner  -->
+    
+    <div class="banner">
+            <div class="blog-title">
+                <a href="/" >Tenloy&#39;s Blog</a>
+            </div>
+            <div class="post-title">
+                <a href="#" class="post-name">[转] iOS离屏渲染原理及优化</a>
+            </div>
+    </div>
+    
+    <!-- 将home-link的操作改为应用到header-top-right上 -->
+    <div class="header-top-right">
+        <!-- search  -->
+        
+            <div class="site-search popup-trigger tl-search">
+                <span class="iconfont-jian tl-search-icon">&#xe7fc;搜索</span>
+            </div>
+            
+        <a class="home-link" href=/>Tenloy's Blog</a>
+    </div>
+</header>
+    <div class="wrapper">
+        <div class="site-intro" style="
+
+
+
+
+
+
+
+height:40vh;
+">
+    
+    <!-- 主页  -->
+    
+    
+    <!-- 404页  -->
+            
+    <div class="site-intro-placeholder"></div>
+    <div class="site-intro-img" style="background-image: url(/intro/post-bg.jpg)"></div>
+    <div class="site-intro-meta">
+        <!-- 标题  -->
+        <h1 class="intro-title">
+            <!-- 主页  -->
+            
+            [转] iOS离屏渲染原理及优化
+            <!-- 404 -->
+            
+        </h1>
+        <!-- 副标题 -->
+        <p class="intro-subtitle">
+            <!-- 主页副标题  -->
+            
+            
+            <!-- 404 -->
+            
+        </p>
+        <!-- 文章页meta -->
+        
+            <div class="post-intros">
+                <!-- 文章页标签  -->
+                
+                
+                    <div class="post-intro-read">
+                        <span>Word count: <span class="post-count word-count">6.9k</span>Reading time: <span class="post-count reading-time">26 min</span></span>
+                    </div>
+                
+                <div class="post-intro-meta">
+                    <span class="post-intro-calander iconfont-archer">&#xe676;</span>
+                    <span class="post-intro-time">2021/09/12</span>
+                    
+                    <span id="busuanzi_container_page_pv" class="busuanzi-pv">
+                        <span class="iconfont-archer">&#xe602;</span>
+                        <span id="busuanzi_value_page_pv"></span>
+                    </span>
+                    
+                    <span class="shareWrapper">
+                        <span class="iconfont-archer shareIcon">&#xe71d;</span>
+                        <span class="shareText">Share</span>
+                        <ul class="shareList">
+                            <li class="iconfont-archer share-qr" data-type="qr">&#xe75b;
+                                <div class="share-qrcode"></div>
+                            </li>
+                            <li class="iconfont-archer" data-type="weibo">&#xe619;</li>
+                            <li class="iconfont-archer" data-type="qzone">&#xe62e;</li>
+                            <li class="iconfont-archer" data-type="twitter">&#xe634;</li>
+                            <li class="iconfont-archer" data-type="facebook">&#xe67a;</li>
+                        </ul>
+                    </span>
+                </div>
+            </div>
+        
+    </div>
+</div>
+        <script>
+ 
+  // get user agent
+  var browser = {
+    versions: function () {
+      var u = window.navigator.userAgent;
+      return {
+        userAgent: u,
+        trident: u.indexOf('Trident') > -1, //IE内核
+        presto: u.indexOf('Presto') > -1, //opera内核
+        webKit: u.indexOf('AppleWebKit') > -1, //苹果、谷歌内核
+        gecko: u.indexOf('Gecko') > -1 && u.indexOf('KHTML') == -1, //火狐内核
+        mobile: !!u.match(/AppleWebKit.*Mobile.*/), //是否为移动终端
+        ios: !!u.match(/\(i[^;]+;( U;)? CPU.+Mac OS X/), //ios终端
+        android: u.indexOf('Android') > -1 || u.indexOf('Linux') > -1, //android终端或者uc浏览器
+        iPhone: u.indexOf('iPhone') > -1 || u.indexOf('Mac') > -1, //是否为iPhone或者安卓QQ浏览器
+        iPad: u.indexOf('iPad') > -1, //是否为iPad
+        webApp: u.indexOf('Safari') == -1, //是否为web应用程序，没有头部与底部
+        weixin: u.indexOf('MicroMessenger') == -1, //是否为微信浏览器
+        uc: u.indexOf('UCBrowser') > -1 //是否为android下的UC浏览器
+      };
+    }()
+  }
+  console.log("userAgent:" + browser.versions.userAgent);
+
+  // callback
+  function fontLoaded() {
+    console.log('font loaded');
+    if (document.getElementsByClassName('site-intro-meta')) {
+      document.getElementsByClassName('intro-title')[0].classList.add('intro-fade-in');
+      document.getElementsByClassName('intro-subtitle')[0].classList.add('intro-fade-in');
+      var postIntros = document.getElementsByClassName('post-intros')[0]
+      if (postIntros) {
+        postIntros.classList.add('post-fade-in');
+      }
+    }
+  }
+
+  // UC不支持跨域，所以直接显示
+  function asyncCb(){
+    if (browser.versions.uc) {
+      console.log("UCBrowser");
+      fontLoaded();
+    } else {
+      WebFont.load({
+        custom: {
+          families: ['Oswald-Regular']
+        },
+        loading: function () {  //所有字体开始加载
+          // console.log('loading');
+        },
+        active: function () {  //所有字体已渲染
+          fontLoaded();
+        },
+        inactive: function () { //字体预加载失败，无效字体或浏览器不支持加载
+          console.log('inactive: timeout');
+          fontLoaded();
+        },
+        timeout: 5000 // Set the timeout to two seconds
+      });
+    }
+  }
+
+  function asyncErr(){
+    console.warn('script load from CDN failed, will load local script')
+  }
+
+  // load webfont-loader async, and add callback function
+  function async(u, cb, err) {
+    var d = document, t = 'script',
+      o = d.createElement(t),
+      s = d.getElementsByTagName(t)[0];
+    o.src = u;
+    if (cb) { o.addEventListener('load', function (e) { cb(null, e); }, false); }
+    if (err) { o.addEventListener('error', function (e) { err(null, e); }, false); }
+    s.parentNode.insertBefore(o, s);
+  }
+
+  var asyncLoadWithFallBack = function(arr, success, reject) {
+      var currReject = function(){
+        reject()
+        arr.shift()
+        if(arr.length)
+          async(arr[0], success, currReject)
+        }
+
+      async(arr[0], success, currReject)
+  }
+
+  asyncLoadWithFallBack([
+    "https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.min.js", 
+    "https://cdn.bootcss.com/webfont/1.6.28/webfontloader.js",
+    "/lib/webfontloader.min.js"
+  ], asyncCb, asyncErr)
+</script>        
+        <img class="loading" src="/assets/loading.svg" style="display: block; margin: 6rem auto 0 auto; width: 6rem; height: 6rem;" />
+        <div class="container container-unloaded">
+            <main class="main post-page">
+    <article class="article-entry">
+        <blockquote>
+<p>原文链接：<a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/72653360">关于iOS离屏渲染的深入研究</a>、<a target="_blank" rel="noopener" href="https://juejin.cn/post/6846687603316490254">iOS圆角的离屏渲染</a></p>
+</blockquote>
+<p>作为一个客户端工程师，把控渲染性能是最关键、最独到的技术要点之一，如果仅仅了解表面知识，到了实际应用时往往会失之毫厘谬以千里，无法得到预期的效果。</p>
+<h2 id="一、先来了解iOS的渲染流程"><a href="#一、先来了解iOS的渲染流程" class="headerlink" title="一、先来了解iOS的渲染流程"></a>一、先来了解iOS的渲染流程</h2><blockquote>
+<p>如果对下图没有疑问，可以直接向下阅读。反之，可以先阅读上篇文章 <a href="https://tenloy.github.io/2021/09/11/core-animation03.html">渲染流程探究及性能分析</a></p>
+</blockquote>
+<img src="/images/iosrender/15.png" alt="01" style="zoom:55%;" />
+
+<h2 id="二、GPU的两种渲染方式"><a href="#二、GPU的两种渲染方式" class="headerlink" title="二、GPU的两种渲染方式"></a>二、GPU的两种渲染方式</h2><p>OpenGL中，GPU屏幕渲染有以下两种方式：</p>
+<h3 id="2-1-On-Screen-Rendering"><a href="#2-1-On-Screen-Rendering" class="headerlink" title="2.1 On-Screen Rendering"></a>2.1 On-Screen Rendering</h3><blockquote>
+<p>On-Screen Rendering意为当前屏幕渲染，指的是GPU的渲染操作是在当前用于显示的屏幕缓冲区中进行。</p>
+</blockquote>
+<p>正常情况下，如果要在显示屏上显示内容，我们至少需要一块与屏幕像素数据量一样大的帧缓冲区(frame buffer)，作为像素数据存储区域，而这也是GPU存储渲染结果的地方。流程如图：</p>
+<img src="/images/iosrender/03.png" alt="01" style="zoom:90%;" />
+
+<h3 id="2-2-Off-Screen-Rendering"><a href="#2-2-Off-Screen-Rendering" class="headerlink" title="2.2 Off-Screen Rendering"></a>2.2 Off-Screen Rendering</h3><blockquote>
+<p>Off-Screen Rendering意为离屏渲染，指的是GPU在当前屏幕缓冲区以外新开辟一个（离屏）缓冲区进行渲染操作。</p>
+</blockquote>
+<p>如果有时因为一些限制，无法把渲染结果直接写入frame buffer，而是先暂存在另外的内存区域，之后再写入frame buffer，那么这个过程被称之为离屏渲染。流程如图：</p>
+<img src="/images/iosrender/04.png" alt="01" style="zoom:90%;" />
+
+<h2 id="三、GPU离屏渲染"><a href="#三、GPU离屏渲染" class="headerlink" title="三、GPU离屏渲染"></a>三、GPU离屏渲染</h2><h3 id="3-1-为什么及何时需要离屏渲染"><a href="#3-1-为什么及何时需要离屏渲染" class="headerlink" title="3.1 为什么及何时需要离屏渲染"></a>3.1 为什么及何时需要离屏渲染</h3><p>在上面的渲染流水线示意图中我们可以看到，主要的渲染操作都是由CoreAnimation的Render Server模块，通过调用显卡驱动所提供的OpenGL/Metal接口来执行的。通常对于每一层layer，Render Server会遵循“<a href="https://link.zhihu.com/?target=https://en.wikipedia.org/wiki/Painter%27s_algorithm">画家算法</a>”，按次序输出到frame buffer，后一层覆盖前一层，就能得到最终的显示结果（值得一提的是，与一般桌面架构不同，在iOS中，设备主存和GPU的显存<a href="https://link.zhihu.com/?target=https://apple.stackexchange.com/questions/54977/how-much-gpu-memory-do-iphones-and-ipads-have">共享物理内存</a>，这样可以省去一些数据传输开销）。</p>
+<p>画家算法通过按深度对图像中的物体进行排序，并按从（距离观察者）最远到最近的顺序，依次将每一层绘制输出到画布，来创建图像。</p>
+<img src="/images/iosrender/05.png" alt="01" style="zoom:90%;" />
+
+<p>然而有些场景并没有那么简单。作为“画家”的GPU虽然可以一层一层往画布上进行输出，但是无法在某一层渲染完成之后，再回过头来擦除/改变其中的某个部分——因为在这一层之前的若干层layer像素数据，已经在渲染中被永久覆盖了。这就意味着，<strong>对于每一层layer，要么能找到一种通过单次遍历就能完成渲染的算法，要么就不得不另开一块内存，借助这个临时中转区域来完成一些更复杂的、多次的修改/剪裁操作</strong>。</p>
+<p>以绘制一个带有圆角并剪切圆角以外内容的容器，会触发离屏渲染为例。我的猜想是（如果读者中有图形学专家希望能指正）：</p>
+<ul>
+<li>将一个layer的内容裁剪成圆角，可能不存在一次遍历就能完成的方法</li>
+<li>容器的子layer因为父容器有圆角，那么也会需要被裁剪，而这时它们还在渲染队列中排队，尚未被组合到一块画布上，自然也无法统一裁剪</li>
+</ul>
+<p>此时我们就不得不开辟一块独立于frame buffer的空白内存，先把容器以及其所有子layer依次画好，然后把四个角“剪”成圆形，再把结果画到frame buffer中。这就是GPU的离屏渲染。</p>
+<p>个人总结：什么场景下需要离屏渲染</p>
+<img src="/images/iosrender/06.png" alt="01" style="zoom:90%;" />
+
+<ul>
+<li>当一个属性的设置需要对一个以上的图层修改时。<ul>
+<li>如设置<code>cornerRadius</code>以及<code>masksToBounds</code>进行圆角+裁剪时，<code>masksToBounds</code>裁剪属性会应用到所有的图层上。如果此时View、layer中不止一个图层，那就会触发离屏渲染了。</li>
+<li>如设置<code> group opacity</code></li>
+</ul>
+</li>
+<li>当一个图层，按照画家算法本应该先绘制，但由于依赖后续图层的数据，只能延后绘制时<ul>
+<li>阴影默认是作用在其中”非透明区域“的，而且需要显示在所有layer内容的下方，因此根据画家算法必须被渲染在先。但矛盾在于<strong>此时阴影的本体（layer和其子layer）都还没有被组合到一起，怎么可能在第一步就画出只有完成最后一步之后才能知道的形状呢？</strong> 即阴影需要全部内容绘制完成，再根据外轮廓进行绘制。这就导致了，阴影这一层要一直占据一块内存区域，这就导致了离屏渲染。</li>
+</ul>
+</li>
+</ul>
+<h3 id="3-2-GPU离屏渲染的性能影响"><a href="#3-2-GPU离屏渲染的性能影响" class="headerlink" title="3.2 GPU离屏渲染的性能影响"></a>3.2 GPU离屏渲染的性能影响</h3><p>离屏渲染增大了系统的负担，会形象App性能。主要表现在以下几个方面：</p>
+<ul>
+<li>离屏渲染需要额外的存储空间，渲染空间大小的上限是2.5倍的屏幕像素大小，超过无法使用离屏渲染。</li>
+<li>容易掉帧：一旦因为离屏渲染导致最终存入帧缓存区的时候，已经超过了16.67ms，则会出现掉帧的情况，造成卡顿。</li>
+</ul>
+<p>GPU的操作是高度流水线化的。本来所有计算工作都在有条不紊地正在向frame buffer输出，此时突然收到指令，需要输出到另一块内存，那么流水线中正在进行的一切都不得不被丢弃，切换到只能服务于我们当前的“切圆角”操作。等到完成以后再次清空，再回到向frame buffer输出的正常流程。</p>
+<p>在tableView或者collectionView中，滚动的每一帧变化都会触发每个cell的重新绘制，因此一旦存在离屏渲染，上面提到的<strong>上下文切换</strong>就会每秒发生60次，并且很可能每一帧有几十张的图片要求这么做，对于GPU的性能冲击可想而知（GPU非常擅长大规模并行计算，但是我想频繁的上下文切换显然不在其设计考量之中）</p>
+<p>每16ms就需要根据当前滚动位置渲染整个tableView，是个不小的性能挑战：</p>
+<img src="/images/iosrender/12.jpg" alt="01" style="zoom:90%;" />
+
+<h3 id="3-3-善用离屏渲染-shouldRasterize"><a href="#3-3-善用离屏渲染-shouldRasterize" class="headerlink" title="3.3 善用离屏渲染 shouldRasterize"></a>3.3 善用离屏渲染 shouldRasterize</h3><p>尽管离屏渲染开销很大，但是当我们无法避免它的时候，可以想办法把性能影响降到最低。优化思路也很简单：既然已经花了不少精力把图片裁出了圆角，如果我能把结果缓存下来，那么下一帧渲染就可以复用这个成果，不需要再重新画一遍了。</p>
+<p>CALayer为这个方案提供了对应的解法：shouldRasterize。一旦被设置为true，Render Server就会强制把layer的渲染结果（包括其子layer，以及圆角、阴影、group opacity等等）保存在一块内存中，这样一来在下一帧仍然可以被复用，而不会再次触发离屏渲染。有几个需要注意的点：</p>
+<ul>
+<li>首先，layer不复用，没必要打开shouldRasterize。</li>
+<li>shouldRasterize的主旨在于<strong>降低性能损失，但总是至少会触发一次离屏渲染</strong>。如果你的layer本来并不复杂，也没有圆角阴影等等，打开这个开关反而会增加一次不必要的离屏渲染</li>
+<li>离屏渲染缓存有空间上限，最多不超过屏幕总像素的2.5倍大小</li>
+<li>一旦缓存超过100ms没有被使用，会自动被丢弃</li>
+<li>layer的内容（包括子layer）必须是静态的，因为一旦发生变化（如resize，动画），之前辛苦处理得到的缓存就失效了。如果这件事频繁发生，我们就又回到了“每一帧都需要离屏渲染”的情景，而这正是开发者需要极力避免的。针对这种情况，Xcode提供了“Color Hits Green and Misses Red”的选项，帮助我们查看缓存的使用是否符合预期</li>
+<li>其实除了解决多次离屏渲染的开销，shouldRasterize在另一个场景中也可以使用：如果layer的子结构非常复杂，渲染一次所需时间较长，同样可以打开这个开关，把layer绘制到一块缓存，然后在接下来复用这个结果，这样就不需要每次都重新绘制整个layer树了</li>
+</ul>
+<h2 id="四、GPU离屏渲染常见场景分析及优化"><a href="#四、GPU离屏渲染常见场景分析及优化" class="headerlink" title="四、GPU离屏渲染常见场景分析及优化"></a>四、GPU离屏渲染常见场景分析及优化</h2><h3 id="4-1-关于cornerRadius"><a href="#4-1-关于cornerRadius" class="headerlink" title="4.1 关于cornerRadius"></a>4.1 关于cornerRadius</h3><p>我们经常看到，圆角会触发离屏渲染。但其实这个说法是<strong>不准确的</strong>，因为圆角触发离屏渲染也是<strong>有条件</strong>的。</p>
+<h4 id="4-1-1-cornerRadius的官方释义"><a href="#4-1-1-cornerRadius的官方释义" class="headerlink" title="4.1.1 cornerRadius的官方释义"></a>4.1.1 cornerRadius的官方释义</h4><p>我们先来看看苹果官方文档对于<code>cornerRadius</code>的描述：</p>
+<blockquote>
+<p>Setting the radius to a value greater than <code>0.0</code> causes the layer to begin drawing rounded corners on its background. By default, the corner radius does not apply to the image in the layer’s <code>contents</code> property; it applies only to the background color and border of the layer. However, setting the <code>masksToBounds</code> property to <code>true</code> causes the content to be clipped to the rounded corners.</p>
+</blockquote>
+<p>设置<code>cornerRadius</code>大于0时，只会为layer的<code>backgroundColor</code>和<code>border</code>设置圆角。</p>
+<p>只有同时设置了<code>layer.masksToBounds</code>为<code>true</code>（对应UIView的<code>clipsToBounds</code>属性）时，才会同时对layer的<code>contents</code>设置圆角。</p>
+<ul>
+<li>clipsToBounds：是类View的属性，如果设置为yes，则不显示超出父View的部分</li>
+<li>masksToBounds：是类CALayer的属性，如果设置为yes，则不显示超出父View layer的部分</li>
+</ul>
+<p>如果这时，你认为<code>layer.masksToBounds</code>或者<code>clipsToBounds</code>设置为<code>true</code>就会触发离屏渲染，这是不完全正确的。</p>
+<h4 id="4-1-2-测试用例及现象-何时触发离屏渲染"><a href="#4-1-2-测试用例及现象-何时触发离屏渲染" class="headerlink" title="4.1.2 测试用例及现象(何时触发离屏渲染)"></a>4.1.2 测试用例及现象(何时触发离屏渲染)</h4><blockquote>
+<p>测试环境：Xcode 11.5  、iPhone 11 Pro Simulator  、iOS 13.5</p>
+<p>测试手段：模拟器Simulator — Debug — Color Off-screen Rendered</p>
+</blockquote>
+<p>测试用例及结论：</p>
+<figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">UIView</span> *view1 = [[<span class="built_in">UIView</span> alloc] initWithFrame:<span class="built_in">CGRectMake</span>(<span class="number">0</span>, <span class="number">0</span>, <span class="number">200.0</span>, <span class="number">200.0</span>)];</span><br><span class="line"></span><br><span class="line"><span class="comment">// 1. 不设置layer.masksToBounds或者clipsToBounds，其默认值为NO  ———— 不会触发离屏渲染</span></span><br><span class="line">view1.backgroundColor = <span class="built_in">UIColor</span>.redColor;</span><br><span class="line">view1.layer.borderWidth = <span class="number">2.0</span>;</span><br><span class="line">view1.layer.borderColor = <span class="built_in">UIColor</span>.blackColor.CGColor;</span><br><span class="line">view1.layer.cornerRadius = <span class="number">100.0</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 2. 设置layer.masksToBounds或者clipsToBounds为YES  ———— 同样的没有触发离屏渲染</span></span><br><span class="line">view1.clipsToBounds = <span class="literal">YES</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 3. 设置layer.masksToBounds或者clipsToBounds为YES，同时设置图片 ———— 触发离屏渲染</span></span><br><span class="line">view1.layer.contents = (__bridge <span class="keyword">id</span>)[<span class="built_in">UIImage</span> imageNamed:<span class="string">@&quot;pkq&quot;</span>].CGImage;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 4. 除了如3设置图片。设置layer.masksToBounds或者clipsToBounds为YES，为视图添加一个有颜色、内容或边框等有图像信息（有图像信息还包括在视图或者layer的draw方法中进行绘制等）的子视图也会触发离屏渲染。  ————  触发离屏渲染</span></span><br><span class="line"><span class="built_in">UIView</span> *view2 = [[<span class="built_in">UIView</span> alloc] initWithFrame:<span class="built_in">CGRectMake</span>(<span class="number">0</span>, <span class="number">0</span>, <span class="number">100.0</span>, <span class="number">100.0</span>)];</span><br><span class="line"><span class="comment">// 下面3个任何一个属性</span></span><br><span class="line"><span class="comment">// 设置背景色</span></span><br><span class="line">view2.backgroundColor = <span class="built_in">UIColor</span>.blueColor;</span><br><span class="line"><span class="comment">// 设置内容</span></span><br><span class="line">view2.layer.contents = (__bridge <span class="keyword">id</span>)([<span class="built_in">UIImage</span> imageNamed:<span class="string">@&quot;pkq&quot;</span>].CGImage);</span><br><span class="line"><span class="comment">// 设置边框</span></span><br><span class="line">view2.layer.borderWidth = <span class="number">2.0</span>; </span><br><span class="line">view2.layer.borderColor = <span class="built_in">UIColor</span>.blackColor.CGColor;</span><br><span class="line">[view1 addSubview:view2];</span><br></pre></td></tr></table></figure>
+
+<h4 id="4-1-3-圆角触发离屏渲染的原因"><a href="#4-1-3-圆角触发离屏渲染的原因" class="headerlink" title="4.1.3 圆角触发离屏渲染的原因"></a>4.1.3 圆角触发离屏渲染的原因</h4><p>当我们设置了<code>cornerRadius</code>以及<code>masksToBounds</code>进行圆角+裁剪时，<code>masksToBounds</code>裁剪属性会应用到所有的图层上。</p>
+<p>本来我们从后往前绘制，绘制完一个图层就可以丢弃了。但现在需要依次在 <strong>Offscreen Buffer</strong>中保存，等待圆角+裁剪处理，即引发了 <strong>离屏渲染</strong> 。</p>
+<ul>
+<li><p>背景色、边框、背景色+边框，再加上圆角+裁剪，根据文档说明，因为 <strong>contents = nil</strong> 没有需要裁剪处理的内容，所以<code>masksToBounds</code>设置为<code>YES</code>或者<code>NO</code>都没有影响。</p>
+</li>
+<li><p>一旦我们 <strong>为contents设置了内容</strong> ，无论是图片、绘制内容、有图像信息的子视图等，再加上圆角+裁剪，就会触发离屏渲染。</p>
+<blockquote>
+<p>不一定是直接为contents赋值！</p>
+</blockquote>
+</li>
+</ul>
+<p>原因就如同上面提到的，不得已只能另开一块内存来操作。而如果只是设置cornerRadius（如不需要剪切内容，只需要一个带圆角的边框），或者只是需要裁掉矩形区域以外的内容（虽然也是剪切，但是稍微想一下就可以发现，对于纯矩形而言，实现这个算法似乎并不需要另开内存），并不会触发离屏渲染。</p>
+<h4 id="4-1-4-iOS9及以后的优化"><a href="#4-1-4-iOS9及以后的优化" class="headerlink" title="4.1.4 iOS9及以后的优化"></a>4.1.4 iOS9及以后的优化</h4><p>关于圆角，iOS 9及之后的系统版本，苹果进行了一些优化。</p>
+<ul>
+<li><p><code>layer.contents</code>/<code>imageView.image</code></p>
+<ul>
+<li>我们只设置<code>contents</code>或者<code>UIImageView</code>的<code>image</code>，并加上圆角+裁剪，是不会产生离屏渲染的。但如果加上了背景色、边框或其他有图像内容的图层，还是会产生离屏渲染。<figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">UIView</span> *view1 = [[<span class="built_in">UIView</span> alloc] initWithFrame:<span class="built_in">CGRectMake</span>(<span class="number">0</span>, <span class="number">0</span>, <span class="number">200.0</span>, <span class="number">200.0</span>)];</span><br><span class="line"><span class="comment">//设置图片</span></span><br><span class="line">view1.layer.contents = (__bridge <span class="keyword">id</span>)[<span class="built_in">UIImage</span> imageNamed:<span class="string">@&quot;qiyu&quot;</span>].CGImage;</span><br><span class="line"><span class="comment">// 设置圆角</span></span><br><span class="line">view1.layer.cornerRadius = <span class="number">100.0</span>;</span><br><span class="line"><span class="comment">// 设置裁剪</span></span><br><span class="line">view1.clipsToBounds = <span class="literal">YES</span>;</span><br></pre></td></tr></table></figure></li>
+<li>其实这也是可以理解的，因为只有 <strong>单层</strong> 内容需要添加圆角和裁切，所以可以不需要用到离屏渲染技术。</li>
+<li>但如果加上了背景色、边框或其他有图像内容的图层，就会产生为 <strong>多层</strong> 添加圆角和裁切，所以还是会触发离屏渲染(如2中的第3个例子)。</li>
+</ul>
+</li>
+<li><p>UIButton：使用类似于<code>UIButton</code>的视图的时候需要注意：为<code>UIButton</code>设置一个图片，其实会添加一个<code>UIImageView</code>。</p>
+<ul>
+<li><p>为设置了图片的<code>UIButton</code>添加圆角和裁剪，则会触发离屏渲染。</p>
+<figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 设置圆角</span></span><br><span class="line">button.layer.cornerRadius = <span class="number">100.0</span>;</span><br><span class="line"><span class="comment">// 设置裁剪</span></span><br><span class="line">button.clipsToBounds = <span class="literal">YES</span>;</span><br></pre></td></tr></table></figure></li>
+<li><p>为设置了背景色的<code>UIButton</code>添加圆角和裁剪，不会触发离屏渲染。</p>
+</li>
+<li><p>如果改为<code>UIButton</code>中的<code>UIImageView</code>添加圆角和裁剪，则 <strong>不会触发离屏渲染</strong>。</p>
+<figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 设置圆角</span></span><br><span class="line">button.imageView.layer.cornerRadius = <span class="number">100.0</span>;</span><br><span class="line"><span class="comment">// 设置裁剪</span></span><br><span class="line">button.imageView.clipsToBounds = <span class="literal">YES</span>;</span><br></pre></td></tr></table></figure></li>
+</ul>
+</li>
+</ul>
+<h4 id="4-1-5-实现圆角造成的离屏渲染优化"><a href="#4-1-5-实现圆角造成的离屏渲染优化" class="headerlink" title="4.1.5 实现圆角造成的离屏渲染优化"></a>4.1.5 实现圆角造成的离屏渲染优化</h4><p>方案一：使用切图</p>
+<ul>
+<li><p>方法1：要展示的图片，设计切成圆角状</p>
+</li>
+<li><p>方法2：在要添加圆角的视图上再叠加一个中间透明、对圆角部分遮挡的视图。图层混合的透明度处理方式与mask正好相反。此方法虽然是最优解，没有离屏渲染，没有额外的CPU计算，但是应用范围有限。</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//混合图层</span></span><br><span class="line"><span class="built_in">UIView</span> *parent = [view superview];</span><br><span class="line"><span class="built_in">UIImageView</span> *cover = [[<span class="built_in">UIImageView</span> alloc] initWithFrame:<span class="built_in">CGRectMake</span>(<span class="number">0</span>, <span class="number">0</span>, imgSize.width, imgSize.height)];</span><br><span class="line">cover.image = [<span class="built_in">UIImage</span> imageNamed:<span class="string">@&quot;cover&quot;</span>];</span><br><span class="line">[parent addSubview:cover];</span><br><span class="line">cover.center = view.center;</span><br></pre></td></tr></table></figure></li>
+</ul>
+<p>方案二：Core Graphics + UIBezierPath 贝塞尔曲线绘制圆角</p>
+<figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">- (<span class="built_in">UIImage</span> *)imageWithCornerRadius:(<span class="built_in">CGFloat</span>)radius ofSize:(<span class="built_in">CGSize</span>)size&#123;</span><br><span class="line">    <span class="comment">/* 当前UIImage的可见绘制区域 */</span></span><br><span class="line">    <span class="built_in">CGRect</span> rect = (<span class="built_in">CGRect</span>)&#123;<span class="number">0.</span>f,<span class="number">0.</span>f,size&#125;;</span><br><span class="line">    <span class="comment">/* 创建基于位图的上下文 */</span></span><br><span class="line">    <span class="built_in">UIGraphicsBeginImageContextWithOptions</span>(size, <span class="literal">NO</span>, <span class="built_in">UIScreen</span>.mainScreen.scale);</span><br><span class="line">    <span class="comment">/* 在当前位图上下文添加圆角绘制路径 */</span></span><br><span class="line">    <span class="built_in">CGContextAddPath</span>(<span class="built_in">UIGraphicsGetCurrentContext</span>(), [<span class="built_in">UIBezierPath</span> bezierPathWithRoundedRect:rect cornerRadius:radius].CGPath);</span><br><span class="line">    <span class="comment">/* 当前绘制路径和原绘制路径相交得到最终裁剪绘制路径 */</span></span><br><span class="line">    <span class="built_in">CGContextClip</span>(<span class="built_in">UIGraphicsGetCurrentContext</span>());</span><br><span class="line">    <span class="comment">/* 绘制 */</span></span><br><span class="line">    [<span class="keyword">self</span> drawInRect:rect];</span><br><span class="line">    <span class="comment">/* 取得裁剪后的image */</span></span><br><span class="line">    <span class="built_in">UIImage</span> *image = <span class="built_in">UIGraphicsGetImageFromCurrentImageContext</span>();</span><br><span class="line">    <span class="comment">/* 关闭当前位图上下文 */</span></span><br><span class="line">    <span class="built_in">UIGraphicsEndImageContext</span>();</span><br><span class="line">    <span class="keyword">return</span> image;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>方案三：CAShapeLayer + UIBezierPath 绘制圆角来实现UITableViewCell圆角并绘制边框颜色（这种方式比直接设置圆角方式好，但也会触发离屏渲染）,代码如下：</p>
+<figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">- (<span class="keyword">void</span>)tableView:(<span class="built_in">UITableView</span> *)tableView willDisplayCell:(<span class="built_in">UITableViewCell</span> *)cell forRowAtIndexPath:(<span class="built_in">NSIndexPath</span> *)indexPath&#123;</span><br><span class="line"></span><br><span class="line">    <span class="built_in">CAShapeLayer</span> *maskLayer = [<span class="built_in">CAShapeLayer</span> layer];</span><br><span class="line">    maskLayer.frame = <span class="built_in">CGRectMake</span>(<span class="number">0</span>, <span class="number">0</span>, cell.width, cell.height);</span><br><span class="line"></span><br><span class="line">    <span class="built_in">CAShapeLayer</span> *borderLayer = [<span class="built_in">CAShapeLayer</span> layer];</span><br><span class="line">    borderLayer.frame = <span class="built_in">CGRectMake</span>(<span class="number">0</span>, <span class="number">0</span>, cell.width, cell.height);</span><br><span class="line">    borderLayer.lineWidth = <span class="number">1.</span>f;</span><br><span class="line">    borderLayer.strokeColor = COLOR_LINE.CGColor;</span><br><span class="line">    borderLayer.fillColor = [<span class="built_in">UIColor</span> clearColor].CGColor;</span><br><span class="line"></span><br><span class="line">    <span class="built_in">UIBezierPath</span> *bezierPath = [<span class="built_in">UIBezierPath</span> bezierPathWithRoundedRect:<span class="built_in">CGRectMake</span>(<span class="number">0</span>, <span class="number">0</span>, cell.width, cell.height) cornerRadius:kRadiusCard];</span><br><span class="line">    maskLayer.path = bezierPath.CGPath;</span><br><span class="line">    borderLayer.path = bezierPath.CGPath;</span><br><span class="line"></span><br><span class="line">    [cell.contentView.layer insertSublayer:borderLayer atIndex:<span class="number">0</span>];</span><br><span class="line">    [cell.layer setMask:maskLayer];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>关于方案三的解释：</p>
+<ul>
+<li>CAShapeLayer继承于CALayer，因而可以使用CALayer的所有属性值；</li>
+<li>CAShapeLayer需要和贝塞尔曲线配合使用才能够实现效果；</li>
+<li>CAShapeLayer(属于CoreAnimation)与贝塞尔曲线配合使用可以实现不在view的drawRect（继承于CoreGraphics走的是CPU,消耗的性能较大）方法中画出想要的图形；</li>
+<li>CAShapeLayer动画渲染是驱动GPU，而view的drawRect方法使用CPU渲染，相比其效率更高，消耗内存更少。</li>
+</ul>
+<p>总的来说使用CAShapeLayer的内存消耗少，渲染速度快。</p>
+</blockquote>
+<p>关于剪切圆角的性能优化，根据场景不同有几个方案可供选择，非常推荐阅读<a href="https://link.zhihu.com/?target=https://texturegroup.org/docs/corner-rounding.html">AsyncDisplayKit中的一篇文档</a>。</p>
+<p>ASDK中对于如何选择圆角渲染策略的流程图，非常实用：</p>
+<img src="/images/iosrender/07.jpg" alt="01" style="zoom:80%;" />
+
+<p>YYKit是开发中经常用的三方库，YYImage对图片圆角的处理方法是值得推荐的，附上实现源码：</p>
+<figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br></pre></td><td class="code"><pre><span class="line">- (<span class="built_in">UIImage</span> *)imageByRoundCornerRadius:(<span class="built_in">CGFloat</span>)radius</span><br><span class="line">                              corners:(<span class="built_in">UIRectCorner</span>)corners</span><br><span class="line">                          borderWidth:(<span class="built_in">CGFloat</span>)borderWidth</span><br><span class="line">                          borderColor:(<span class="built_in">UIColor</span> *)borderColor</span><br><span class="line">                       borderLineJoin:(<span class="built_in">CGLineJoin</span>)borderLineJoin &#123;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">if</span> (corners != <span class="built_in">UIRectCornerAllCorners</span>) &#123;</span><br><span class="line">        <span class="built_in">UIRectCorner</span> tmp = <span class="number">0</span>;</span><br><span class="line">        <span class="keyword">if</span> (corners &amp; <span class="built_in">UIRectCornerTopLeft</span>) tmp |= <span class="built_in">UIRectCornerBottomLeft</span>;</span><br><span class="line">        <span class="keyword">if</span> (corners &amp; <span class="built_in">UIRectCornerTopRight</span>) tmp |= <span class="built_in">UIRectCornerBottomRight</span>;</span><br><span class="line">        <span class="keyword">if</span> (corners &amp; <span class="built_in">UIRectCornerBottomLeft</span>) tmp |= <span class="built_in">UIRectCornerTopLeft</span>;</span><br><span class="line">        <span class="keyword">if</span> (corners &amp; <span class="built_in">UIRectCornerBottomRight</span>) tmp |= <span class="built_in">UIRectCornerTopRight</span>;</span><br><span class="line">        corners = tmp;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="built_in">UIGraphicsBeginImageContextWithOptions</span>(<span class="keyword">self</span>.size, <span class="literal">NO</span>, <span class="keyword">self</span>.scale);</span><br><span class="line">    <span class="built_in">CGContextRef</span> context = <span class="built_in">UIGraphicsGetCurrentContext</span>();</span><br><span class="line">    <span class="built_in">CGRect</span> rect = <span class="built_in">CGRectMake</span>(<span class="number">0</span>, <span class="number">0</span>, <span class="keyword">self</span>.size.width, <span class="keyword">self</span>.size.height);</span><br><span class="line">    <span class="built_in">CGContextScaleCTM</span>(context, <span class="number">1</span>, <span class="number">-1</span>);</span><br><span class="line">    <span class="built_in">CGContextTranslateCTM</span>(context, <span class="number">0</span>, -rect.size.height);</span><br><span class="line">    </span><br><span class="line">    <span class="built_in">CGFloat</span> minSize = MIN(<span class="keyword">self</span>.size.width, <span class="keyword">self</span>.size.height);</span><br><span class="line">    <span class="keyword">if</span> (borderWidth &lt; minSize / <span class="number">2</span>) &#123;</span><br><span class="line">        <span class="built_in">UIBezierPath</span> *path = [<span class="built_in">UIBezierPath</span> bezierPathWithRoundedRect:<span class="built_in">CGRectInset</span>(rect, borderWidth, borderWidth) byRoundingCorners:corners cornerRadii:<span class="built_in">CGSizeMake</span>(radius, borderWidth)];</span><br><span class="line">        [path closePath];</span><br><span class="line">        </span><br><span class="line">        <span class="built_in">CGContextSaveGState</span>(context);</span><br><span class="line">        [path addClip];</span><br><span class="line">        <span class="built_in">CGContextDrawImage</span>(context, rect, <span class="keyword">self</span>.CGImage);</span><br><span class="line">        <span class="built_in">CGContextRestoreGState</span>(context);</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">if</span> (borderColor &amp;&amp; borderWidth &lt; minSize / <span class="number">2</span> &amp;&amp; borderWidth &gt; <span class="number">0</span>) &#123;</span><br><span class="line">        <span class="built_in">CGFloat</span> strokeInset = (floor(borderWidth * <span class="keyword">self</span>.scale) + <span class="number">0.5</span>) / <span class="keyword">self</span>.scale;</span><br><span class="line">        <span class="built_in">CGRect</span> strokeRect = <span class="built_in">CGRectInset</span>(rect, strokeInset, strokeInset);</span><br><span class="line">        <span class="built_in">CGFloat</span> strokeRadius = radius &gt; <span class="keyword">self</span>.scale / <span class="number">2</span> ? radius - <span class="keyword">self</span>.scale / <span class="number">2</span> : <span class="number">0</span>;</span><br><span class="line">        <span class="built_in">UIBezierPath</span> *path = [<span class="built_in">UIBezierPath</span> bezierPathWithRoundedRect:strokeRect byRoundingCorners:corners cornerRadii:<span class="built_in">CGSizeMake</span>(strokeRadius, borderWidth)];</span><br><span class="line">        [path closePath];</span><br><span class="line">        </span><br><span class="line">        path.lineWidth = borderWidth;</span><br><span class="line">        path.lineJoinStyle = borderLineJoin;</span><br><span class="line">        [borderColor setStroke];</span><br><span class="line">        [path stroke];</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="built_in">UIImage</span> *image = <span class="built_in">UIGraphicsGetImageFromCurrentImageContext</span>();</span><br><span class="line">    <span class="built_in">UIGraphicsEndImageContext</span>();</span><br><span class="line">    <span class="keyword">return</span> image;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="4-2-shadow"><a href="#4-2-shadow" class="headerlink" title="4.2 shadow"></a>4.2 shadow</h3><p>一般情况下是用以下代码，但是不要用</p>
+<figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">CALayer</span> *imageViewLayer = cell.imageView.layer;</span><br><span class="line">imageViewLayer.shadowColor = [<span class="built_in">UIColor</span> blackColor].CGColor;</span><br><span class="line">imageViewLayer.shadowOpacity = <span class="number">1.0</span>;</span><br><span class="line">imageViewLayer.shadowRadius = <span class="number">2.0</span>;</span><br><span class="line">imageViewLayer.shadowOffset = <span class="built_in">CGSizeMake</span>(<span class="number">1.0</span>, <span class="number">1.0</span>);</span><br></pre></td></tr></table></figure>
+
+<p>请用更高效的</p>
+<figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">imageViewLayer.shadowPath = <span class="built_in">CGPathCreateWithRect</span>(imageRect, <span class="literal">NULL</span>);</span><br></pre></td></tr></table></figure>
+
+<p>其原因在于，虽然layer本身是一块矩形区域，但是阴影默认是作用在其中”非透明区域“的，而且需要显示在所有layer内容的下方，因此根据画家算法必须被渲染在先。</p>
+<p>Core Animation 必须要知道阴影的形状和位置。但矛盾在于<strong>时阴影的本体（layer和其子layer）都还没有被组合到一起，怎么可能在第一步就画出只有完成最后一步之后才能知道的形状呢</strong>？这样一来又只能另外申请一块内存，把本体内容都先画好，再查看其 alpha channel 来找出阴影的位置，渲染阴影到frame buffer，最后把内容画上去（实际情况有些复杂）。</p>
+<p>不过如果我们能够预先告诉CoreAnimation（通过shadowPath属性）阴影的几何形状，那么阴影当然可以先被独立渲染出来，不需要依赖layer本体，也就不再需要离屏渲染了。</p>
+<p>阴影会作用在所有子layer所组成的形状上，那就只能等全部子layer画完才能得到：</p>
+<img src="/images/iosrender/08.jpg" alt="01" style="zoom:70%;" />
+
+<h3 id="4-3-group-opacity"><a href="#4-3-group-opacity" class="headerlink" title="4.3 group opacity"></a>4.3 group opacity</h3><p>设置了组透明度为 YES，并且透明度不为 1 的layer (layer.allowsGroupOpacity/ layer.opacity)。</p>
+<p>其实从名字就可以猜到，alpha并不是分别应用在每一层之上，而是只有到整个layer树画完之后，再统一加上alpha，最后和底下其他layer的像素进行组合。显然也无法通过一次遍历就得到最终结果。将一对蓝色和红色layer叠在一起，然后在父layer上设置opacity=0.5，并复制一份在旁边作对比。左边关闭group opacity，右边保持默认（从iOS7开始，如果没有显式指定，group opacity会默认打开），然后打开offscreen rendering的调试，我们会发现右边的那一组确实是离屏渲染了。</p>
+<p>同样的两个view，右边打开group opacity（默认行为）的被标记为Offscreen rendering：</p>
+<img src="/images/iosrender/09.jpg" alt="01" style="zoom:60%;" />
+
+<h3 id="4-4-mask"><a href="#4-4-mask" class="headerlink" title="4.4 mask"></a>4.4 mask</h3><p>我们知道mask是应用在layer和其所有子layer的组合之上的，而且可能带有透明度，那么其实和group opacity的原理类似，不得不在离屏渲染中完成。</p>
+<p>WWDC中苹果的解释，mask需要遍历至少三次：</p>
+<img src="/images/iosrender/10.jpg" alt="01" style="zoom:95%;" />
+
+<h3 id="4-5-UIBlurEffect"><a href="#4-5-UIBlurEffect" class="headerlink" title="4.5 UIBlurEffect"></a>4.5 UIBlurEffect</h3><p>同样无法通过一次遍历完成，其原理在WWDC中提到：</p>
+<img src="/images/iosrender/11.jpg" alt="01" style="zoom:90%;" />
+
+<h3 id="4-6-shouldRasterize"><a href="#4-6-shouldRasterize" class="headerlink" title="4.6 shouldRasterize"></a>4.6 shouldRasterize</h3><p>shouldRasterize的主旨在于<strong>降低性能损失，但总是至少会触发一次离屏渲染</strong>。</p>
+<p>shouldRasterize光栅化开启后，会将layer作为位图保存到OffscreenBuffer中。下次直接与其他内容进行混合。这样下次需要再次渲染的时候，就可以直接拿来使用了。</p>
+<h3 id="4-7-其他"><a href="#4-7-其他" class="headerlink" title="4.7 其他"></a>4.7 其他</h3><p>其他还有一些，类似绘制了文字的 layer (UILabel, CATextLayer, Core Text 等)、allowsEdgeAntialiasing等等也可能会触发离屏渲染，原理也都是类似：如果你无法仅仅使用frame buffer来画出最终结果，那就只能另开一块内存空间来储存中间结果。这些原理并不神秘。</p>
+<h2 id="五、CPU”离屏渲染“？"><a href="#五、CPU”离屏渲染“？" class="headerlink" title="五、CPU”离屏渲染“？"></a>五、CPU”离屏渲染“？</h2><h3 id="5-1-CPU渲染"><a href="#5-1-CPU渲染" class="headerlink" title="5.1 CPU渲染"></a>5.1 CPU渲染</h3><p>特殊的离屏渲染：</p>
+<p>如果将不在GPU的当前屏幕缓冲区中进行的渲染都称为离屏渲染，那么是不是还有另一种特殊的“离屏渲染”方式： CPU渲染？</p>
+<p>大家知道，如果我们在UIView中重写了drawRect方法，并且使用任何Core Graphics的技术进行了绘制操作，就涉及到了CPU渲染。整个渲染过程由CPU在App内 同步地完成，渲染得到的bitmap最后再交由GPU用于显示。（就算函数体内部实际没有代码，系统也会为这个view申请一块内存区域，等待CoreGraphics可能的绘画操作）。</p>
+<blockquote>
+<p>备注：CoreGraphic通常是线程安全的，所以可以进行异步绘制，显示的时候再放回主线程</p>
+</blockquote>
+<p>对于类似上面这种“新开一块CGContext来画图“的操作，有很多文章和视频也称之为“离屏渲染”（因为像素数据是暂时存入了CGContext，而不是直接到了frame buffer）。进一步来说，其实所有CPU进行的光栅化操作（如文字渲染、图片解码），都无法直接绘制到由GPU掌管的frame buffer，只能暂时先放在另一块内存之中，说起来都属于“离屏渲染”。</p>
+<p>自然我们会认为，因为CPU不擅长做这件事，所以我们需要尽量避免它，就误以为这就是需要避免离屏渲染的原因。但是<a href="https://link.zhihu.com/?target=https://lobste.rs/s/ckm4uw/performance_minded_take_on_ios_design%23c_itdkfh">根据苹果工程师的说法</a>，CPU渲染并非真正意义上的离屏渲染。另一个证据是，如果你的view实现了drawRect，此时打开Xcode调试的“Color offscreen rendered yellow”开关，你会发现这片区域不会被标记为黄色，说明Xcode并不认为这属于离屏渲染。</p>
+<p>其实通过CPU渲染就是俗称的“软件渲染”，而<strong>真正的离屏渲染发生在GPU</strong>。</p>
+<h3 id="5-2-什么时候需要CPU渲染"><a href="#5-2-什么时候需要CPU渲染" class="headerlink" title="5.2 什么时候需要CPU渲染"></a>5.2 什么时候需要CPU渲染</h3><p>渲染性能的调优，其实始终是在做一件事：<strong>平衡CPU和GPU的负载，让他们尽量做各自最擅长的工作</strong>。</p>
+<p>平衡CPU和GPU的负载：</p>
+<img src="/images/iosrender/13.jpg" alt="01" style="zoom:80%;" />
+
+<p>绝大多数情况下，得益于GPU针对图形处理的优化，我们都会倾向于让GPU来完成渲染任务，而给CPU留出足够时间处理各种各样复杂的App逻辑。为此Core Animation做了大量的工作，尽量把渲染工作转换成适合GPU处理的形式（也就是所谓的硬件加速，如layer composition，设置backgroundColor等等）。</p>
+<p>但是对于一些情况，如文字（CoreText使用CoreGraphics渲染）和图片（ImageIO）渲染，由于GPU并不擅长做这些工作，不得不先由CPU来处理好以后，再把结果作为texture传给GPU。除此以外，有时候也会遇到GPU实在忙不过来的情况，而CPU相对空闲（GPU瓶颈），这时可以让CPU分担一部分工作，提高整体效率。</p>
+<p>来自WWDC18 session 221，可以看到Core Text基于Core Graphics：</p>
+<img src="/images/iosrender/14.jpg" alt="01" style="zoom:80%;" />
+
+<p>一个典型的例子是，我们经常会使用CoreGraphics给图片加上圆角（将图片中圆角以外的部分渲染成透明）。整个过程全部是由CPU完成的。这样一来既然我们已经得到了想要的效果，就不需要再另外给图片容器设置cornerRadius。另一个好处是，我们可以灵活地控制裁剪和缓存的时机，巧妙避开CPU和GPU最繁忙的时段，达到平滑性能波动的目的。</p>
+<p>这里有几个需要注意的点：</p>
+<ul>
+<li>渲染不是CPU的强项，调用CoreGraphics会消耗其相当一部分计算时间，并且我们也不愿意因此阻塞用户操作，因此一般来说CPU渲染都在后台线程完成（这也是AsyncDisplayKit的主要思想），然后再回到主线程上，把渲染结果传回CoreAnimation。这样一来，多线程间数据同步会增加一定的复杂度</li>
+<li>同样因为CPU渲染速度不够快，因此只适合渲染静态的元素，如文字、图片（想象一下没有硬件加速的视频解码，性能惨不忍睹）</li>
+<li>作为渲染结果的bitmap数据量较大（形式上一般为解码后的UIImage），消耗内存较多，所以应该在使用完及时释放，并在需要的时候重新生成，否则很容易导致OOM</li>
+<li>如果你选择使用CPU来做渲染，那么就没有理由再触发GPU的离屏渲染了，否则会同时存在两块内容相同的内存，而且CPU和GPU都会比较辛苦</li>
+<li>一定要使用Instruments的不同工具来测试性能，而不是仅凭猜测来做决定</li>
+</ul>
+<h2 id="六、优化实践"><a href="#六、优化实践" class="headerlink" title="六、优化实践"></a>六、优化实践</h2><p>由于在iOS10之后，系统的设计风格慢慢从扁平化转变成圆角卡片，很多APP的设计风格也随之发生变化，加入了大量圆角与阴影效果，如果在处理上稍有不慎，就很容易触发离屏渲染。为此我们采取了以下一些措施：</p>
+<ul>
+<li>大量应用AsyncDisplayKit(Texture)作为主要渲染框架，对于文字和图片的异步渲染操作交由框架来处理。关于这方面可以看<a href="https://link.zhihu.com/?target=https://medium.com/jike-engineering/asyncdisplaykit%E4%BB%8B%E7%BB%8D-%E4%B8%80-6b871d29e005">之前的一些介绍</a></li>
+<li>对于图片的圆角，统一采用“precomposite”的策略，也就是不经由容器来做剪切，而是预先使用CoreGraphics为图片裁剪圆角</li>
+<li>对于视频的圆角，由于实时剪切非常消耗性能，我们会创建四个白色弧形的layer盖住四个角，从视觉上制造圆角的效果</li>
+<li>对于view的圆形边框，如果没有backgroundColor，可以放心使用cornerRadius来做</li>
+<li>对于所有的阴影，使用shadowPath来规避离屏渲染</li>
+<li>对于特殊形状的view，使用layer mask并打开shouldRasterize来对渲染结果进行缓存</li>
+<li>对于模糊效果，不采用系统提供的UIVisualEffect，而是另外实现模糊效果（CIGaussianBlur），并手动管理渲染结果</li>
+</ul>
+<h2 id="七、总结与资料推荐"><a href="#七、总结与资料推荐" class="headerlink" title="七、总结与资料推荐"></a>七、总结与资料推荐</h2><p>离屏渲染牵涉了很多Core Animation、GPU和图形学等等方面的知识，在实践中也非常考验一个工程师排查问题的基本功、经验和判断能力——如果在不恰当的时候打开了shouldRasterize，只会弄巧成拙。</p>
+<p>从一个更广阔的视角看，离屏渲染也仅仅是渲染性能优化中的一部分，而能否保证UI性能过关，将会直接影响到用户日常的操作体验。渲染技术作为客户端工程师的关键技术能力之一，值得持续研究。</p>
+<p>推荐资料：</p>
+<ul>
+<li><a href="https://link.zhihu.com/?target=https://lobste.rs/s/ckm4uw/performance_minded_take_on_ios_design%23c_itdkfh">Andy Matuschak关于离屏渲染的解释</a></li>
+<li><a href="https://link.zhihu.com/?target=https://www.objc.io/issues/3-views/moving-pixels-onto-the-screen">Objc.io: Moving Pixels onto the Screen</a></li>
+<li><a href="https://link.zhihu.com/?target=https://github.com/seedante/iOS-Note/wiki/Mastering-Offscreen-Render">Mastering Offscreen Render</a></li>
+<li>WWDC 2011 421 Core Animation Essentials</li>
+<li>WWDC 2011 121 Understanding UIKit Rendering</li>
+<li>WWDC 2014 419 Advanced Graphics and Animations for iOS Apps</li>
+<li>WWDC 2010 135 Advanced Performance Optimization on iPhone OS Part 1</li>
+<li><a href="https://link.zhihu.com/?target=https://www.amazon.com/iOS-Core-Animation-Advanced-Techniques-ebook/dp/B00EHJCORC">《Core Animation: Advanced Techniques》</a></li>
+</ul>
+
+    </article>
+    <!-- license  -->
+    
+        <div class="license-wrapper">
+            <p>Author：<a href="https://tenloy.github.io">Tenloy</a>
+            <p>原文链接：<a href="https://tenloy.github.io/2021/09/12/iOS-Render.html">https://tenloy.github.io/2021/09/12/iOS-Render.html</a>
+            <p>发表日期：2021.09.12 , 8:24 PM</p>
+            <p>更新日期：2024.04.07 , 7:53 PM</p>
+            <p>版权声明：本文采用<a rel="license noopener" target="_blank" href="http://creativecommons.org/licenses/by-nc/4.0/">Crative Commons 4.0 许可协议</a>进行许可</p>
+        </div>
+    
+    <!-- paginator  -->
+    <ul class="post-paginator">
+        <li class="next">
+            
+                <div class="nextSlogan">Next Post</div>
+                <a href= "/2021/09/13/image-encode-decode.html" title= "图形处理(一) - 图片的加载与编解码">
+                    <div class="nextTitle">图形处理(一) - 图片的加载与编解码</div>
+                </a>
+            
+        </li>
+        <li class="previous">
+            
+                <div class="prevSlogan">Previous Post</div>
+                <a href= "/2021/09/11/core-animation03.html" title= "Core-Animation(三) - 渲染流程探究及性能分析">
+                    <div class="prevTitle">Core-Animation(三) - 渲染流程探究及性能分析</div>
+                </a>
+            
+        </li>
+    </ul>
+    <!-- 评论插件 -->
+    <!-- 来必力City版安装代码 -->
+
+<!-- City版安装代码已完成 -->
+    
+    
+    <!-- gitalk评论 -->
+
+    <!-- utteranc评论 -->
+
+    <!-- partial('_partial/comment/changyan') -->
+    <!--PC版-->
+
+
+    
+    
+
+    <!-- 评论 -->
+</main>
+            <!-- profile -->
+            
+        </div>
+        <footer class="footer footer-unloaded">
+    <!-- social  -->
+    
+    <div class="social">
+        
+    
+        
+            
+                <a href="mailto:luotengoto@163.com" class="iconfont-archer email" title=email ></a>
+            
+        
+    
+        
+            
+                <a href="//github.com/Tenloy" class="iconfont-archer github" target="_blank" title=github></a>
+            
+        
+    
+        
+            
+                <a href="https://www.jianshu.com/u/8db1bc12db9f" class="iconfont-jian jianshu" target="_blank" title=jianshu></a>
+            
+        
+    
+        
+            
+                <a href="/atom.xml" class="iconfont-archer rss" target="_blank" title=rss></a>
+            
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+
+    </div>
+    
+    <!-- powered by Hexo  -->
+    <div class="copyright">
+        <span id="hexo-power">Powered by <a href="https://hexo.io/" target="_blank">Hexo</a></span><span class="iconfont-archer power">&#xe635;</span><span id="theme-info">theme <a href="https://github.com/fi3ework/hexo-theme-archer" target="_blank">Archer</a></span>
+    </div>
+    <!-- 不蒜子  -->
+    
+    <div class="busuanzi-container">
+    
+     
+    <span id="busuanzi_container_site_pv">PV: <span id="busuanzi_value_site_pv"></span> :)</span>
+    
+    </div>
+    
+</footer>
+    </div>
+    <!-- toc -->
+    
+    <div class="toc-wrapper" style=
+    
+
+
+
+
+
+
+
+top:40vh;
+
+    >
+        <div class="toc-catalog">
+            <span class="iconfont-archer catalog-icon">&#xe613;</span><span>CATALOG</span>
+        </div>
+        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E3%80%81%E5%85%88%E6%9D%A5%E4%BA%86%E8%A7%A3iOS%E7%9A%84%E6%B8%B2%E6%9F%93%E6%B5%81%E7%A8%8B"><span class="toc-text">一、先来了解iOS的渲染流程</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8C%E3%80%81GPU%E7%9A%84%E4%B8%A4%E7%A7%8D%E6%B8%B2%E6%9F%93%E6%96%B9%E5%BC%8F"><span class="toc-text">二、GPU的两种渲染方式</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#2-1-On-Screen-Rendering"><span class="toc-text">2.1 On-Screen Rendering</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-2-Off-Screen-Rendering"><span class="toc-text">2.2 Off-Screen Rendering</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%89%E3%80%81GPU%E7%A6%BB%E5%B1%8F%E6%B8%B2%E6%9F%93"><span class="toc-text">三、GPU离屏渲染</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#3-1-%E4%B8%BA%E4%BB%80%E4%B9%88%E5%8F%8A%E4%BD%95%E6%97%B6%E9%9C%80%E8%A6%81%E7%A6%BB%E5%B1%8F%E6%B8%B2%E6%9F%93"><span class="toc-text">3.1 为什么及何时需要离屏渲染</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-2-GPU%E7%A6%BB%E5%B1%8F%E6%B8%B2%E6%9F%93%E7%9A%84%E6%80%A7%E8%83%BD%E5%BD%B1%E5%93%8D"><span class="toc-text">3.2 GPU离屏渲染的性能影响</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-3-%E5%96%84%E7%94%A8%E7%A6%BB%E5%B1%8F%E6%B8%B2%E6%9F%93-shouldRasterize"><span class="toc-text">3.3 善用离屏渲染 shouldRasterize</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9B%9B%E3%80%81GPU%E7%A6%BB%E5%B1%8F%E6%B8%B2%E6%9F%93%E5%B8%B8%E8%A7%81%E5%9C%BA%E6%99%AF%E5%88%86%E6%9E%90%E5%8F%8A%E4%BC%98%E5%8C%96"><span class="toc-text">四、GPU离屏渲染常见场景分析及优化</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#4-1-%E5%85%B3%E4%BA%8EcornerRadius"><span class="toc-text">4.1 关于cornerRadius</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#4-1-1-cornerRadius%E7%9A%84%E5%AE%98%E6%96%B9%E9%87%8A%E4%B9%89"><span class="toc-text">4.1.1 cornerRadius的官方释义</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#4-1-2-%E6%B5%8B%E8%AF%95%E7%94%A8%E4%BE%8B%E5%8F%8A%E7%8E%B0%E8%B1%A1-%E4%BD%95%E6%97%B6%E8%A7%A6%E5%8F%91%E7%A6%BB%E5%B1%8F%E6%B8%B2%E6%9F%93"><span class="toc-text">4.1.2 测试用例及现象(何时触发离屏渲染)</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#4-1-3-%E5%9C%86%E8%A7%92%E8%A7%A6%E5%8F%91%E7%A6%BB%E5%B1%8F%E6%B8%B2%E6%9F%93%E7%9A%84%E5%8E%9F%E5%9B%A0"><span class="toc-text">4.1.3 圆角触发离屏渲染的原因</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#4-1-4-iOS9%E5%8F%8A%E4%BB%A5%E5%90%8E%E7%9A%84%E4%BC%98%E5%8C%96"><span class="toc-text">4.1.4 iOS9及以后的优化</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#4-1-5-%E5%AE%9E%E7%8E%B0%E5%9C%86%E8%A7%92%E9%80%A0%E6%88%90%E7%9A%84%E7%A6%BB%E5%B1%8F%E6%B8%B2%E6%9F%93%E4%BC%98%E5%8C%96"><span class="toc-text">4.1.5 实现圆角造成的离屏渲染优化</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-2-shadow"><span class="toc-text">4.2 shadow</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-3-group-opacity"><span class="toc-text">4.3 group opacity</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-4-mask"><span class="toc-text">4.4 mask</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-5-UIBlurEffect"><span class="toc-text">4.5 UIBlurEffect</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-6-shouldRasterize"><span class="toc-text">4.6 shouldRasterize</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-7-%E5%85%B6%E4%BB%96"><span class="toc-text">4.7 其他</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%94%E3%80%81CPU%E2%80%9D%E7%A6%BB%E5%B1%8F%E6%B8%B2%E6%9F%93%E2%80%9C%EF%BC%9F"><span class="toc-text">五、CPU”离屏渲染“？</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#5-1-CPU%E6%B8%B2%E6%9F%93"><span class="toc-text">5.1 CPU渲染</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-2-%E4%BB%80%E4%B9%88%E6%97%B6%E5%80%99%E9%9C%80%E8%A6%81CPU%E6%B8%B2%E6%9F%93"><span class="toc-text">5.2 什么时候需要CPU渲染</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%AD%E3%80%81%E4%BC%98%E5%8C%96%E5%AE%9E%E8%B7%B5"><span class="toc-text">六、优化实践</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%83%E3%80%81%E6%80%BB%E7%BB%93%E4%B8%8E%E8%B5%84%E6%96%99%E6%8E%A8%E8%8D%90"><span class="toc-text">七、总结与资料推荐</span></a></li></ol>
+    </div>
+    
+    <div class="back-top iconfont-archer">&#xe639;</div>
+    <div class="sidebar sidebar-hide">
+    <ul class="sidebar-tabs sidebar-tabs-active-0">
+        <li class="sidebar-tab-categories"><span class="iconfont-archer">&#xe666;</span><span class="tab-name">Cate</span></li>
+        <li class="sidebar-tab-archives"><span class="iconfont-archer">&#xe67d;</span><span class="tab-name">Archive</span></li>
+        <li class="sidebar-tab-tags"><span class="iconfont-archer">&#xe61b;</span><span class="tab-name">Tag</span></li>
+    </ul>
+    <div class="sidebar-content sidebar-content-show-archive">
+        <div class="sidebar-panel-categories">
+    <div class="sidebar-categories-name">
+    
+    
+    
+    
+    
+        <span class="sidebar-category-name" data-categories="数据结构与算法"><span class="iconfont-archer">&#xe60a;</span>数据结构与算法</span>
+    
+        <span class="sidebar-category-name" data-categories="计算机组成原理"><span class="iconfont-archer">&#xe60a;</span>计算机组成原理</span>
+    
+        <span class="sidebar-category-name" data-categories="计算机网络"><span class="iconfont-archer">&#xe60a;</span>计算机网络</span>
+    
+        <span class="sidebar-category-name" data-categories="汇编语言"><span class="iconfont-archer">&#xe60a;</span>汇编语言</span>
+    
+        <span class="sidebar-category-name" data-categories="数据的存储与传输"><span class="iconfont-archer">&#xe60a;</span>数据的存储与传输</span>
+    
+        <span class="sidebar-category-name" data-categories="操作系统"><span class="iconfont-archer">&#xe60a;</span>操作系统</span>
+    
+        <span class="sidebar-category-name" data-categories="互联网标准RFC"><span class="iconfont-archer">&#xe60a;</span>互联网标准RFC</span>
+    
+        <span class="sidebar-category-name" data-categories="编译链接与装载"><span class="iconfont-archer">&#xe60a;</span>编译链接与装载</span>
+    
+        <span class="sidebar-category-name" data-categories="iOS"><span class="iconfont-archer">&#xe60a;</span>iOS</span>
+    
+        <span class="sidebar-category-name" data-categories="架构与设计模式"><span class="iconfont-archer">&#xe60a;</span>架构与设计模式</span>
+    
+        <span class="sidebar-category-name" data-categories="图形处理与渲染"><span class="iconfont-archer">&#xe60a;</span>图形处理与渲染</span>
+    
+        <span class="sidebar-category-name" data-categories="软件工程"><span class="iconfont-archer">&#xe60a;</span>软件工程</span>
+    
+        <span class="sidebar-category-name" data-categories="音视频处理"><span class="iconfont-archer">&#xe60a;</span>音视频处理</span>
+    
+        <span class="sidebar-category-name" data-categories="DSL"><span class="iconfont-archer">&#xe60a;</span>DSL</span>
+    
+        <span class="sidebar-category-name" data-categories="Swift"><span class="iconfont-archer">&#xe60a;</span>Swift</span>
+    
+        <span class="sidebar-category-name" data-categories="Git"><span class="iconfont-archer">&#xe60a;</span>Git</span>
+    
+        <span class="sidebar-category-name" data-categories="Web"><span class="iconfont-archer">&#xe60a;</span>Web</span>
+    
+    </div>
+    <div class="iconfont-archer sidebar-categories-empty">&#xe678;</div>
+    <div class="sidebar-categories-list"></div>
+</div>
+          <div class="sidebar-panel-archives">
+    <!-- 在ejs中将archive按照时间排序 -->
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    <div class="total-and-search">
+        <div class="total-archive">
+        Total : 76
+        </div>
+        <!-- search  -->
+        
+            <div class="site-search popup-trigger tl-side-search"> 
+                <span class="iconfont-jian search-icon">&#xe7fc;搜索</span>
+            </div>
+        
+    </div>
+    
+    <div class="post-archive">
+    
+    
+    
+    
+    <div class="archive-year"> 2022 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/05</span><a class="archive-post-title" href= "/2022/05/05/sqlite.html" >iOS SQLite的使用与优化</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/28</span><a class="archive-post-title" href= "/2022/04/28/mmap.html" >内存映射mmap函数的原理与应用</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/18</span><a class="archive-post-title" href= "/2022/03/18/avfoundation.html" >AVFoundation Programming Guide(译)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/17</span><a class="archive-post-title" href= "/2022/03/17/avframework.html" >iOS音视频库概述</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/09</span><a class="archive-post-title" href= "/2022/02/09/OAuth.html" >[转] OAuth 2.0简述</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/18</span><a class="archive-post-title" href= "/2022/01/18/wkwebview-buges.html" >WKWebView使用过程中遇到的坑</a>
+        </li>
+    
+    
+    
+    
+    
+        </ul>
+    
+    <div class="archive-year"> 2021 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/22</span><a class="archive-post-title" href= "/2021/11/22/bit-calculation.html" >[转] 位运算实现加、减、乘、除运算</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/10</span><a class="archive-post-title" href= "/2021/11/10/git-use.html" >Git的使用总结</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/21</span><a class="archive-post-title" href= "/2021/10/21/dyld-objc.html" >(七) dyld与Objc—_objc_init、map_images、load_images</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/18</span><a class="archive-post-title" href= "/2021/10/18/compile-dynamic-link.html" >(六) Mach-O 文件的动态链接、库、Dyld(含dlopen)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/14</span><a class="archive-post-title" href= "/2021/10/14/compile-vm-asrl.html" >(五) Mach-O 文件之进程(虚拟)地址空间、ASLR</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/10</span><a class="archive-post-title" href= "/2021/10/10/compile-load.html" >(四) Mach-O 文件的装载</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/08</span><a class="archive-post-title" href= "/2021/10/08/compile-static-link.html" >(三) Mach-O 文件的静态链接</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/06</span><a class="archive-post-title" href= "/2021/10/06/compile-macho.html" >(二) Mach-O 文件结构</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/05</span><a class="archive-post-title" href= "/2021/10/05/compile-clang-llvm.html" >(一) Clang/LLVM 介绍、OC 程序的编译过程</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/02</span><a class="archive-post-title" href= "/2021/10/02/makefile.html" >[转] Make 命令的使用与NodeJS案例</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/28</span><a class="archive-post-title" href= "/2021/09/28/architectural-pattern.html" >常见架构模式: MVC、MVP、MVVM、VIPER</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/25</span><a class="archive-post-title" href= "/2021/09/25/design-pattern.html" >常见的设计模式</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/20</span><a class="archive-post-title" href= "/2021/09/20/program-thought.html" >常见的编程范式</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/15</span><a class="archive-post-title" href= "/2021/09/15/graphics-processing-case.html" >图形处理(三) - 图形处理实践案例</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/15</span><a class="archive-post-title" href= "/2021/09/15/graphics-processing.html" >图形处理(二) - 图形与视频处理相关的框架</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/13</span><a class="archive-post-title" href= "/2021/09/13/image-encode-decode.html" >图形处理(一) - 图片的加载与编解码</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/12</span><a class="archive-post-title" href= "/2021/09/12/iOS-Render.html" >[转] iOS离屏渲染原理及优化</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/11</span><a class="archive-post-title" href= "/2021/09/11/core-animation03.html" >Core-Animation(三) - 渲染流程探究及性能分析</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/09</span><a class="archive-post-title" href= "/2021/09/09/core-animation02.html" >Core Animation(二) - 隐式动画、CATransaction与CAAction</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/07</span><a class="archive-post-title" href= "/2021/09/07/core-animation01.html" >Core Animation(一) - UIView与CALayer、布局与绘制</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/05</span><a class="archive-post-title" href= "/2021/09/05/AFN-Analyse.html" >[转] AFN框架实现解析</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/04</span><a class="archive-post-title" href= "/2021/09/04/nrl-session.html" >NSURLSession概述</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/02</span><a class="archive-post-title" href= "/2021/09/02/Log.html" >移动端日志库设计</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/01</span><a class="archive-post-title" href= "/2021/08/01/Crash-Monitor.html" >iOS崩溃监控与分析</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/30</span><a class="archive-post-title" href= "/2021/07/30/Lag-Monitor.html" >iOS卡顿监控</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/29</span><a class="archive-post-title" href= "/2021/07/29/SwiftUI.html" >SwiftUI</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/29</span><a class="archive-post-title" href= "/2021/07/29/Swift-Version-History.html" >Swift版本更新API介绍</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/26</span><a class="archive-post-title" href= "/2021/07/26/RunLoop-Reposted-From-ibireme.html" >[转] 深入理解RunLoop—ibireme</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/25</span><a class="archive-post-title" href= "/2021/07/25/Protocol-Buffer.html" >Protocol Buffer的基本介绍</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/24</span><a class="archive-post-title" href= "/2021/07/24/base64.html" >Base64编码及iOS中的Base64</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/23</span><a class="archive-post-title" href= "/2021/07/23/chinese-encode.html" >[转] 彻底弄懂常见的7种中文字符编码</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/10</span><a class="archive-post-title" href= "/2021/07/10/p-npc-np.html" >P问题、NP问题、NPC、NP-Hard、P=NP?</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/30</span><a class="archive-post-title" href= "/2021/06/30/probability.html" >(六) 概率算法</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/28</span><a class="archive-post-title" href= "/2021/06/28/branch-bound.html" >(五) 分支限界算法</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/26</span><a class="archive-post-title" href= "/2021/06/26/back-track.html" >(四) 回溯法(试探算法)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/24</span><a class="archive-post-title" href= "/2021/06/24/greed.html" >(三) 贪心算法</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/22</span><a class="archive-post-title" href= "/2021/06/22/dynamic-programming.html" >(二) 动态规划算法</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/20</span><a class="archive-post-title" href= "/2021/06/20/divide-and-conquer.html" >(一) 分治算法及减治、变治算法</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/18</span><a class="archive-post-title" href= "/2021/06/18/several-programming.html" >穷举、递推、迭代(辗转法)、递归算法</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/15</span><a class="archive-post-title" href= "/2021/06/15/datastruction-overview.html" >数据结构与算法概述</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/06</span><a class="archive-post-title" href= "/2021/06/06/Web-Module.html" >前端各种模块化方案总结</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/27</span><a class="archive-post-title" href= "/2021/05/27/Fiber.html" >[转] 最通俗的 React Fiber(时间分片)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/27</span><a class="archive-post-title" href= "/2021/05/27/Coroutine.html" >[转] 什么是协程</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/19</span><a class="archive-post-title" href= "/2021/05/19/DSL.html" >[转] 谈谈DSL以及DSL的应用（以CocoaPods 为例）</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/03</span><a class="archive-post-title" href= "/2021/05/03/iOS-private-pod.html" >私有Pod库部署</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/29</span><a class="archive-post-title" href= "/2021/04/29/iOS-ComRouter.html" >[转] iOS的组件化方案</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/27</span><a class="archive-post-title" href= "/2021/04/27/iOS-CI.html" >iOS的持续集成</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/26</span><a class="archive-post-title" href= "/2021/04/26/Containers.html" >常见的容器概念：Linux容器、Docker容器、服务器容器</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/24</span><a class="archive-post-title" href= "/2021/04/24/Dock-Reprinted-from-RuanYIFeng.html" >[转] Docker入门教程</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/20</span><a class="archive-post-title" href= "/2021/04/20/Sync-Async.html" >同步和异步解读及编程中的使用场景</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/17</span><a class="archive-post-title" href= "/2021/04/17/Arm64-Handbook.html" >ARM64指令简易手册</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/16</span><a class="archive-post-title" href= "/2021/04/16/Arm64-Introduce.html" >iOS需要了解的ARM64汇编</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/13</span><a class="archive-post-title" href= "/2021/04/13/Command-Line.html" >CLI Shell、Terminal、脚本(语言)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/10</span><a class="archive-post-title" href= "/2021/04/10/Ins-SysCall-Kernel-Shell.html" >指令、系统调用、库、Shell、APP的层次关系</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/08</span><a class="archive-post-title" href= "/2021/04/08/ISA-Microarch-Soc.html" >指令集、微架构、手机芯片(Soc)及ARM的介绍</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/02</span><a class="archive-post-title" href= "/2021/04/02/Engineering.html" >工程化、动态化、容器化、组件化</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/01</span><a class="archive-post-title" href= "/2021/04/01/GithubPages-Hexo.html" >使用Hexo+Github Pages搭建个人博客</a>
+        </li>
+    
+    
+    
+    
+    
+        </ul>
+    
+    <div class="archive-year"> 2020 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/22</span><a class="archive-post-title" href= "/2020/12/22/aes.html" >数据加密 — 对称加密(以AES为例)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/21</span><a class="archive-post-title" href= "/2020/12/21/aes-standard.html" >[转] AES标准及Rijndael算法解析</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/20</span><a class="archive-post-title" href= "/2020/12/20/asymmetric.html" >数据加密 — 非对称加密(加签/加密，以RSA为例)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/09</span><a class="archive-post-title" href= "/2020/12/09/pki.html" >常见的PKI标准(X.509、PKCS)及证书相关介绍</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/28</span><a class="archive-post-title" href= "/2020/10/28/runtime-data-structure.html" >Objc Runtime总结</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/11</span><a class="archive-post-title" href= "/2020/09/11/GCD.html" >Objective-C — 深入浅出GCD常用API</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/06</span><a class="archive-post-title" href= "/2020/09/06/oc-block.html" >Objective-C — Block</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/26</span><a class="archive-post-title" href= "/2020/08/26/AutoreleasePool.html" >AutoreleasePool</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/24</span><a class="archive-post-title" href= "/2020/08/24/oc-memory-manage.html" >Objective-C — 内存管理</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/01</span><a class="archive-post-title" href= "/2020/08/01/ui-navigation-bar.html" >[转] 导航栏的架构介绍及使用</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/15</span><a class="archive-post-title" href= "/2020/07/15/symbol-decl.html" >变量声明、函数声明的作用</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/01</span><a class="archive-post-title" href= "/2020/07/01/ios-apns.html" >iOS APNS接收逻辑梳理</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/13</span><a class="archive-post-title" href= "/2020/06/13/ios-vest.html" >iOS制作马甲总结</a>
+        </li>
+    
+    </div>
+  </div>
+        <div class="sidebar-panel-tags">
+    <div class="sidebar-tags-name">
+    
+        <span class="sidebar-tag-name" data-tags="AutoreleasePool"><span class="iconfont-archer">&#xe606;</span>AutoreleasePool</span>
+    
+        <span class="sidebar-tag-name" data-tags="GCD"><span class="iconfont-archer">&#xe606;</span>GCD</span>
+    
+        <span class="sidebar-tag-name" data-tags="hexo"><span class="iconfont-archer">&#xe606;</span>hexo</span>
+    
+        <span class="sidebar-tag-name" data-tags="ISA"><span class="iconfont-archer">&#xe606;</span>ISA</span>
+    
+        <span class="sidebar-tag-name" data-tags="Microarch"><span class="iconfont-archer">&#xe606;</span>Microarch</span>
+    
+        <span class="sidebar-tag-name" data-tags="Soc"><span class="iconfont-archer">&#xe606;</span>Soc</span>
+    
+        <span class="sidebar-tag-name" data-tags="ARM64"><span class="iconfont-archer">&#xe606;</span>ARM64</span>
+    
+        <span class="sidebar-tag-name" data-tags="CLI"><span class="iconfont-archer">&#xe606;</span>CLI</span>
+    
+        <span class="sidebar-tag-name" data-tags="Shell"><span class="iconfont-archer">&#xe606;</span>Shell</span>
+    
+        <span class="sidebar-tag-name" data-tags="多线程"><span class="iconfont-archer">&#xe606;</span>多线程</span>
+    
+        <span class="sidebar-tag-name" data-tags="Docker"><span class="iconfont-archer">&#xe606;</span>Docker</span>
+    
+        <span class="sidebar-tag-name" data-tags="DSL"><span class="iconfont-archer">&#xe606;</span>DSL</span>
+    
+        <span class="sidebar-tag-name" data-tags="协程"><span class="iconfont-archer">&#xe606;</span>协程</span>
+    
+        <span class="sidebar-tag-name" data-tags="Fiber"><span class="iconfont-archer">&#xe606;</span>Fiber</span>
+    
+        <span class="sidebar-tag-name" data-tags="dp"><span class="iconfont-archer">&#xe606;</span>dp</span>
+    
+        <span class="sidebar-tag-name" data-tags="SwiftUI"><span class="iconfont-archer">&#xe606;</span>SwiftUI</span>
+    
+        <span class="sidebar-tag-name" data-tags="RunLoop"><span class="iconfont-archer">&#xe606;</span>RunLoop</span>
+    
+        <span class="sidebar-tag-name" data-tags="Swift-Syntax"><span class="iconfont-archer">&#xe606;</span>Swift-Syntax</span>
+    
+        <span class="sidebar-tag-name" data-tags="LagMonitor"><span class="iconfont-archer">&#xe606;</span>LagMonitor</span>
+    
+        <span class="sidebar-tag-name" data-tags="Log"><span class="iconfont-archer">&#xe606;</span>Log</span>
+    
+        <span class="sidebar-tag-name" data-tags="CrashMonitor"><span class="iconfont-archer">&#xe606;</span>CrashMonitor</span>
+    
+        <span class="sidebar-tag-name" data-tags="AFN"><span class="iconfont-archer">&#xe606;</span>AFN</span>
+    
+    </div>
+    <div class="iconfont-archer sidebar-tags-empty">&#xe678;</div>
+    <div class="tag-load-fail" style="display: none; color: #ccc; font-size: 0.6rem;">
+    缺失模块。<br/>
+    1、请确保node版本大于6.2<br/>
+    2、在博客根目录（注意不是archer根目录）执行以下命令：<br/>
+    <span style="color: #f75357; font-size: 1rem; line-height: 2rem;">npm i hexo-generator-json-content --save</span><br/>
+    3、在根目录_config.yml里添加配置：
+    <pre style="color: #787878; font-size: 0.6rem;">
+jsonContent:
+  meta: false
+  pages: false
+  posts:
+    title: true
+    date: true
+    path: true
+    text: false
+    raw: false
+    content: false
+    slug: false
+    updated: false
+    comments: false
+    link: false
+    permalink: false
+    excerpt: false
+    categories: true
+    tags: true</pre>
+    </div> 
+    <div class="sidebar-tags-list"></div>
+</div>
+    </div>
+</div> 
+    <script>
+    var siteMeta = {
+        root: "/",
+        author: "Tenloy"
+    }
+</script>
+    <!-- CDN failover -->
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js"></script>
+    <script type="text/javascript">
+        if (typeof window.$ === 'undefined')
+        {
+            console.warn('jquery load from jsdelivr failed, will load local script')
+            document.write('<script src="/lib/jquery.min.js">\x3C/script>')
+        }
+    </script>
+    <script src="/scripts/main.js"></script>
+    <!-- algolia -->
+    
+        <div class="site-search">
+  <div class="algolia-popup popup">
+    <div class="algolia-search">
+      <div class="algolia-search-input-icon">
+        <i class="fa fa-search"></i>
+      </div>
+      <div class="algolia-search-input" id="algolia-search-input"></div>
+    </div>
+
+    <div class="algolia-results">
+      <div id="algolia-stats"></div>
+      <div id="algolia-hits"></div>
+      <div id="algolia-pagination" class="algolia-pagination"></div>
+    </div>
+
+    <span class="popup-btn-close">
+      <i class="iconfont-archer">&#xe609;</i>
+    </span>
+  </div>
+</div>
+        <script src="https://cdn.jsdelivr.net/npm/instantsearch.js@2.8.0/dist/instantsearch.min.js" defer></script>
+        <script src="/scripts/search.js" defer></script>
+    
+    <!-- busuanzi  -->
+    
+    <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    
+    <!-- CNZZ  -->
+    
+    </div>
+    <!-- async load share.js -->
+    
+        <script src="/scripts/share.js" async></script>    
+     
+    </body>
+</html>
+
+

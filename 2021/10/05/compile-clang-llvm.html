@@ -1,0 +1,2554 @@
+<!DOCTYPE html>
+<html lang="en">
+    <!-- title -->
+
+
+
+
+<!-- keywords -->
+
+
+
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" >
+    <meta name="author" content="Tenloy">
+    <meta name="renderer" content="webkit">
+    <meta name="copyright" content="Tenloy">
+    
+    <meta name="keywords" content="Tenloy,iOS,Swift">
+    
+    <meta name="description" content="学习 生活 记录 回忆">
+    <meta name="description" content="一、编译、链接工具 — Clang&#x2F;LLVM 官网定义：  The LLVM Project is a collection of modular and reusable compiler and toolchain technologies(LLVM项目是一系列分模块、可重用的编译工具链). Despite its name, LLVM has little to do with tradit">
+<meta property="og:type" content="article">
+<meta property="og:title" content="(一) Clang&#x2F;LLVM 介绍、OC 程序的编译过程">
+<meta property="og:url" content="https://tenloy.github.io/2021/10/05/compile-clang-llvm.html">
+<meta property="og:site_name" content="Tenloy&#39;s Blog">
+<meta property="og:description" content="一、编译、链接工具 — Clang&#x2F;LLVM 官网定义：  The LLVM Project is a collection of modular and reusable compiler and toolchain technologies(LLVM项目是一系列分模块、可重用的编译工具链). Despite its name, LLVM has little to do with tradit">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://tenloy.github.io/images/compilelink/01.png">
+<meta property="og:image" content="https://tenloy.github.io/images/compilelink/04.png">
+<meta property="og:image" content="https://tenloy.github.io/images/compilelink/05.png">
+<meta property="og:image" content="https://tenloy.github.io/images/compilelink/02.png">
+<meta property="og:image" content="https://tenloy.github.io/images/compilelink/03.png">
+<meta property="og:image" content="https://tenloy.github.io/images/compilelink/06.png">
+<meta property="og:image" content="https://tenloy.github.io/images/compilelink/07.png">
+<meta property="og:image" content="https://tenloy.github.io/images/compilelink/08.png">
+<meta property="og:image" content="https://tenloy.github.io/images/compilelink/09.png">
+<meta property="og:image" content="https://tenloy.github.io/images/compilelink/10.png">
+<meta property="og:image" content="https://tenloy.github.io/images/compilelink/11.png">
+<meta property="article:published_time" content="2021-10-04T20:25:45.000Z">
+<meta property="article:modified_time" content="2024-04-07T11:53:34.925Z">
+<meta property="article:author" content="Tenloy">
+<meta property="article:tag" content="Tenloy, iOS, Tenloy Blog, 博客，Swift, 编译, 计算机">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://tenloy.github.io/images/compilelink/01.png">
+    <meta http-equiv="Cache-control" content="no-cache">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"/>
+    
+    <title>(一) Clang/LLVM 介绍、OC 程序的编译过程 · Tenloy&#39;s Blog</title>
+    <style type="text/css">
+    @font-face {
+        font-family: 'Oswald-Regular';
+        src: url("/font/Oswald-Regular.ttf");
+    }
+
+    body {
+        margin: 0;
+    }
+
+    header,
+    footer,
+    .back-top,
+    .sidebar,
+    .container,
+    .site-intro-meta,
+    .toc-wrapper {
+        display: none;
+    }
+
+    .site-intro {
+        position: relative;
+        z-index: 3;
+        width: 100%;
+        /* height: 50vh; */
+        overflow: hidden;
+    }
+
+    .site-intro-placeholder {
+        position: absolute;
+        z-index: -2;
+        top: 0;
+        left: 0;
+        width: calc(100% + 300px);
+        height: 100%;
+        background: repeating-linear-gradient(-45deg, #444 0, #444 80px, #333 80px, #333 160px);
+        background-position: center center;
+        transform: translate3d(-226px, 0, 0);
+        animation: gradient-move 2.5s ease-out 0s infinite;
+    }
+
+    @keyframes gradient-move {
+        0% {
+            transform: translate3d(-226px, 0, 0);
+        }
+        100% {
+            transform: translate3d(0, 0, 0);
+        }
+    }
+
+</style>
+
+    <link rel="preload" href= "/css/style.css?v=20180824" as="style" onload="this.onload=null;this.rel='stylesheet'" />
+    <link rel="stylesheet" href= "/css/mobile.css?v=20180824" media="(max-width: 980px)">
+    
+    <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.2.5/jquery.fancybox.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'" />
+    
+    <!-- /*! loadCSS. [c]2017 Filament Group, Inc. MIT License */
+/* This file is meant as a standalone workflow for
+- testing support for link[rel=preload]
+- enabling async CSS loading in browsers that do not support rel=preload
+- applying rel preload css once loaded, whether supported or not.
+*/ -->
+<script>
+(function( w ){
+	"use strict";
+	// rel=preload support test
+	if( !w.loadCSS ){
+		w.loadCSS = function(){};
+	}
+	// define on the loadCSS obj
+	var rp = loadCSS.relpreload = {};
+	// rel=preload feature support test
+	// runs once and returns a function for compat purposes
+	rp.support = (function(){
+		var ret;
+		try {
+			ret = w.document.createElement( "link" ).relList.supports( "preload" );
+		} catch (e) {
+			ret = false;
+		}
+		return function(){
+			return ret;
+		};
+	})();
+
+	// if preload isn't supported, get an asynchronous load by using a non-matching media attribute
+	// then change that media back to its intended value on load
+	rp.bindMediaToggle = function( link ){
+		// remember existing media attr for ultimate state, or default to 'all'
+		var finalMedia = link.media || "all";
+
+		function enableStylesheet(){
+			link.media = finalMedia;
+		}
+
+		// bind load handlers to enable media
+		if( link.addEventListener ){
+			link.addEventListener( "load", enableStylesheet );
+		} else if( link.attachEvent ){
+			link.attachEvent( "onload", enableStylesheet );
+		}
+
+		// Set rel and non-applicable media type to start an async request
+		// note: timeout allows this to happen async to let rendering continue in IE
+		setTimeout(function(){
+			link.rel = "stylesheet";
+			link.media = "only x";
+		});
+		// also enable media after 3 seconds,
+		// which will catch very old browsers (android 2.x, old firefox) that don't support onload on link
+		setTimeout( enableStylesheet, 3000 );
+	};
+
+	// loop through link elements in DOM
+	rp.poly = function(){
+		// double check this to prevent external calls from running
+		if( rp.support() ){
+			return;
+		}
+		var links = w.document.getElementsByTagName( "link" );
+		for( var i = 0; i < links.length; i++ ){
+			var link = links[ i ];
+			// qualify links to those with rel=preload and as=style attrs
+			if( link.rel === "preload" && link.getAttribute( "as" ) === "style" && !link.getAttribute( "data-loadcss" ) ){
+				// prevent rerunning on link
+				link.setAttribute( "data-loadcss", true );
+				// bind listeners to toggle media back
+				rp.bindMediaToggle( link );
+			}
+		}
+	};
+
+	// if unsupported, run the polyfill
+	if( !rp.support() ){
+		// run once at least
+		rp.poly();
+
+		// rerun poly on an interval until onload
+		var run = w.setInterval( rp.poly, 500 );
+		if( w.addEventListener ){
+			w.addEventListener( "load", function(){
+				rp.poly();
+				w.clearInterval( run );
+			} );
+		} else if( w.attachEvent ){
+			w.attachEvent( "onload", function(){
+				rp.poly();
+				w.clearInterval( run );
+			} );
+		}
+	}
+
+
+	// commonjs
+	if( typeof exports !== "undefined" ){
+		exports.loadCSS = loadCSS;
+	}
+	else {
+		w.loadCSS = loadCSS;
+	}
+}( typeof global !== "undefined" ? global : this ) );
+</script>
+
+    <link rel="icon" href= "/assets/favicon.ico" />
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.min.js" as="script" />
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js" as="script" />
+    <link rel="preload" href="/scripts/main.js" as="script" />
+    <link rel="preload" as="font" href="/font/Oswald-Regular.ttf" crossorigin>
+    <link rel="preload" as="font" href="https://at.alicdn.com/t/font_327081_1dta1rlogw17zaor.woff" crossorigin>
+    
+        <!-- algolia -->
+        <script>
+            
+            var hits = JSON.parse('{"per_page":10}')
+            var labels = JSON.parse('{"input_placeholder":"Search for Posts","hits_empty":"没有找到任何搜索结果: ${query}","hits_stats":"找到约${hits}条结果（用时${time}ms）"}')
+
+            var algolia = {
+                applicationID: 'V0HYXBS9FB',
+                apiKey: '6550d5de786935564142097c3e78c380',
+                indexName: 'law_blog_index',
+                hits: hits,
+                labels: labels
+            }
+        </script>
+    
+    <!-- fancybox -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.2.5/jquery.fancybox.min.js" defer></script>
+    <!-- 百度统计  -->
+    
+    <!-- 谷歌统计  -->
+    
+<meta name="generator" content="Hexo 5.4.0"><link rel="alternate" href="/atom.xml" title="Tenloy's Blog" type="application/atom+xml">
+</head>
+
+    
+        <body class="post-body">
+    
+    
+<header class="header">
+
+    <div class="read-progress"></div>
+    <div class="header-sidebar-menu">&#xe775;</div>
+    <!-- post页的toggle banner  -->
+    
+    <div class="banner">
+            <div class="blog-title">
+                <a href="/" >Tenloy&#39;s Blog</a>
+            </div>
+            <div class="post-title">
+                <a href="#" class="post-name">(一) Clang/LLVM 介绍、OC 程序的编译过程</a>
+            </div>
+    </div>
+    
+    <!-- 将home-link的操作改为应用到header-top-right上 -->
+    <div class="header-top-right">
+        <!-- search  -->
+        
+            <div class="site-search popup-trigger tl-search">
+                <span class="iconfont-jian tl-search-icon">&#xe7fc;搜索</span>
+            </div>
+            
+        <a class="home-link" href=/>Tenloy's Blog</a>
+    </div>
+</header>
+    <div class="wrapper">
+        <div class="site-intro" style="
+
+
+
+
+
+
+
+height:40vh;
+">
+    
+    <!-- 主页  -->
+    
+    
+    <!-- 404页  -->
+            
+    <div class="site-intro-placeholder"></div>
+    <div class="site-intro-img" style="background-image: url(/intro/post-bg.jpg)"></div>
+    <div class="site-intro-meta">
+        <!-- 标题  -->
+        <h1 class="intro-title">
+            <!-- 主页  -->
+            
+            (一) Clang/LLVM 介绍、OC 程序的编译过程
+            <!-- 404 -->
+            
+        </h1>
+        <!-- 副标题 -->
+        <p class="intro-subtitle">
+            <!-- 主页副标题  -->
+            
+            
+            <!-- 404 -->
+            
+        </p>
+        <!-- 文章页meta -->
+        
+            <div class="post-intros">
+                <!-- 文章页标签  -->
+                
+                
+                    <div class="post-intro-read">
+                        <span>Word count: <span class="post-count word-count">9k</span>Reading time: <span class="post-count reading-time">38 min</span></span>
+                    </div>
+                
+                <div class="post-intro-meta">
+                    <span class="post-intro-calander iconfont-archer">&#xe676;</span>
+                    <span class="post-intro-time">2021/10/05</span>
+                    
+                    <span id="busuanzi_container_page_pv" class="busuanzi-pv">
+                        <span class="iconfont-archer">&#xe602;</span>
+                        <span id="busuanzi_value_page_pv"></span>
+                    </span>
+                    
+                    <span class="shareWrapper">
+                        <span class="iconfont-archer shareIcon">&#xe71d;</span>
+                        <span class="shareText">Share</span>
+                        <ul class="shareList">
+                            <li class="iconfont-archer share-qr" data-type="qr">&#xe75b;
+                                <div class="share-qrcode"></div>
+                            </li>
+                            <li class="iconfont-archer" data-type="weibo">&#xe619;</li>
+                            <li class="iconfont-archer" data-type="qzone">&#xe62e;</li>
+                            <li class="iconfont-archer" data-type="twitter">&#xe634;</li>
+                            <li class="iconfont-archer" data-type="facebook">&#xe67a;</li>
+                        </ul>
+                    </span>
+                </div>
+            </div>
+        
+    </div>
+</div>
+        <script>
+ 
+  // get user agent
+  var browser = {
+    versions: function () {
+      var u = window.navigator.userAgent;
+      return {
+        userAgent: u,
+        trident: u.indexOf('Trident') > -1, //IE内核
+        presto: u.indexOf('Presto') > -1, //opera内核
+        webKit: u.indexOf('AppleWebKit') > -1, //苹果、谷歌内核
+        gecko: u.indexOf('Gecko') > -1 && u.indexOf('KHTML') == -1, //火狐内核
+        mobile: !!u.match(/AppleWebKit.*Mobile.*/), //是否为移动终端
+        ios: !!u.match(/\(i[^;]+;( U;)? CPU.+Mac OS X/), //ios终端
+        android: u.indexOf('Android') > -1 || u.indexOf('Linux') > -1, //android终端或者uc浏览器
+        iPhone: u.indexOf('iPhone') > -1 || u.indexOf('Mac') > -1, //是否为iPhone或者安卓QQ浏览器
+        iPad: u.indexOf('iPad') > -1, //是否为iPad
+        webApp: u.indexOf('Safari') == -1, //是否为web应用程序，没有头部与底部
+        weixin: u.indexOf('MicroMessenger') == -1, //是否为微信浏览器
+        uc: u.indexOf('UCBrowser') > -1 //是否为android下的UC浏览器
+      };
+    }()
+  }
+  console.log("userAgent:" + browser.versions.userAgent);
+
+  // callback
+  function fontLoaded() {
+    console.log('font loaded');
+    if (document.getElementsByClassName('site-intro-meta')) {
+      document.getElementsByClassName('intro-title')[0].classList.add('intro-fade-in');
+      document.getElementsByClassName('intro-subtitle')[0].classList.add('intro-fade-in');
+      var postIntros = document.getElementsByClassName('post-intros')[0]
+      if (postIntros) {
+        postIntros.classList.add('post-fade-in');
+      }
+    }
+  }
+
+  // UC不支持跨域，所以直接显示
+  function asyncCb(){
+    if (browser.versions.uc) {
+      console.log("UCBrowser");
+      fontLoaded();
+    } else {
+      WebFont.load({
+        custom: {
+          families: ['Oswald-Regular']
+        },
+        loading: function () {  //所有字体开始加载
+          // console.log('loading');
+        },
+        active: function () {  //所有字体已渲染
+          fontLoaded();
+        },
+        inactive: function () { //字体预加载失败，无效字体或浏览器不支持加载
+          console.log('inactive: timeout');
+          fontLoaded();
+        },
+        timeout: 5000 // Set the timeout to two seconds
+      });
+    }
+  }
+
+  function asyncErr(){
+    console.warn('script load from CDN failed, will load local script')
+  }
+
+  // load webfont-loader async, and add callback function
+  function async(u, cb, err) {
+    var d = document, t = 'script',
+      o = d.createElement(t),
+      s = d.getElementsByTagName(t)[0];
+    o.src = u;
+    if (cb) { o.addEventListener('load', function (e) { cb(null, e); }, false); }
+    if (err) { o.addEventListener('error', function (e) { err(null, e); }, false); }
+    s.parentNode.insertBefore(o, s);
+  }
+
+  var asyncLoadWithFallBack = function(arr, success, reject) {
+      var currReject = function(){
+        reject()
+        arr.shift()
+        if(arr.length)
+          async(arr[0], success, currReject)
+        }
+
+      async(arr[0], success, currReject)
+  }
+
+  asyncLoadWithFallBack([
+    "https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.min.js", 
+    "https://cdn.bootcss.com/webfont/1.6.28/webfontloader.js",
+    "/lib/webfontloader.min.js"
+  ], asyncCb, asyncErr)
+</script>        
+        <img class="loading" src="/assets/loading.svg" style="display: block; margin: 6rem auto 0 auto; width: 6rem; height: 6rem;" />
+        <div class="container container-unloaded">
+            <main class="main post-page">
+    <article class="article-entry">
+        <h2 id="一、编译、链接工具-—-Clang-LLVM"><a href="#一、编译、链接工具-—-Clang-LLVM" class="headerlink" title="一、编译、链接工具 — Clang/LLVM"></a>一、编译、链接工具 — Clang/LLVM</h2><blockquote>
+<p><a target="_blank" rel="noopener" href="https://llvm.org/">官网定义：</a></p>
+<ul>
+<li>The LLVM Project is a collection of modular and reusable compiler and toolchain technologies(LLVM项目是一系列分模块、可重用的编译<strong>工具链</strong>). Despite its name, LLVM has little to do with traditional virtual machines. The name “LLVM” itself is not an acronym; it is the full name of the project.</li>
+<li>Clang is an “LLVM native” C/C++/Objective-C compiler. </li>
+</ul>
+</blockquote>
+<h3 id="1-1-LLVM是什么"><a href="#1-1-LLVM是什么" class="headerlink" title="1.1 LLVM是什么"></a>1.1 LLVM是什么</h3><h4 id="1-1-1-诞生"><a href="#1-1-1-诞生" class="headerlink" title="1.1.1 诞生"></a>1.1.1 诞生</h4><p>2000年，伊利诺伊大学厄巴纳－香槟分校（University of Illinois at Urbana-Champaign 简称UIUC）这所享有世界声望的一流公立研究型大学的克里斯·拉特纳(Chris Lattner，twitter为 <a target="_blank" rel="noopener" href="https://twitter.com/clattner_llvm">clattner_llvm</a>） 开发了一个叫作 Low Level Virtual Machine 的编译器开发工具套件，后来涉及范围越来越大，可以用于常规编译器，JIT编译器，汇编器，调试器，静态分析工具等一系列跟编程语言相关的工作，于是就把简称 LLVM 这个简称作为了正式的名字。</p>
+<p>2005年，由于GCC 对于 Objective-C 的支持比较差，效率和性能都没有办法达到苹果公司的要求，而且它还难以推动 GCC 团队。于是，苹果公司决定自己来掌握编译相关的工具链，于是将Chris Lattner招入麾下，发起了 Clang 软件项目。</p>
+<ul>
+<li>Clang 作为 LLVM 编译器工具集的前端（front-end），目的是输出代码对应的抽象语法树（Abstract Syntax Tree, AST），并将代码编译成LLVM Bitcode。接着在后端（back-end）使用LLVM编译成平台相关的机器语言。Clang支持C、C++、Objective C。</li>
+<li>测试证明Clang编译Objective-C代码时速度为GCC的3倍，还能针对用户发生的编译错误准确地给出建议。</li>
+<li>此后，苹果使用的 GCC 全面替换成了 LLVM。</li>
+</ul>
+<p>2010年，Chris Lattner开始主导开发 Swift 语言。这也使得 Swift 这门集各种高级语言特性的语言，能够在非常高的起点上，出现在开发者面前。</p>
+<p>2012年，LLVM 获得美国计算机学会 ACM 的软件系统大奖，和 UNIX，WWW，TCP/IP，Tex，JAVA 等齐名。</p>
+<h4 id="1-1-2-概述"><a href="#1-1-2-概述" class="headerlink" title="1.1.2 概述"></a>1.1.2 概述</h4><p>llvm有广义和狭义两种定义：</p>
+<ul>
+<li>在广义中，llvm特指一整个编译器框架，<strong>是一个模块化和可重用的编译器和工具链技术的集合</strong>，由前端、优化器、后端组成，clang只是用于c/c++的一种前端，llvm针对不同的语言可以设计不同的前端，同样的针对不同的平台架构（amd，arm，misp），也会有不同后端设计</li>
+<li>在狭义中 ，特指llvm后端，指优化器（pass）对IR进行一系列优化直到目标代码生成的过程</li>
+</ul>
+<p>llvm特点：</p>
+<ul>
+<li>模块化</li>
+<li>统一的中间代码IR，而前端、后端可以不一样。而GCC的前端、后端耦合在了一起，所以支持一门新语言或者新的平台，非常困难。</li>
+<li>功能强大的Pass系统，根据依赖性自动对Pass（包括分析、转换和代码生成Pass）进行排序，管道化以提高效率。</li>
+</ul>
+<h4 id="1-1-3-LLVM的子项目"><a href="#1-1-3-LLVM的子项目" class="headerlink" title="1.1.3 LLVM的子项目"></a>1.1.3 LLVM的子项目</h4><p>简单罗列LLVM几个主要的子项目，详见<a target="_blank" rel="noopener" href="https://llvm.org/">官网</a>：</p>
+<ul>
+<li>LLVM Core libraries：LLVM核心库提供了一个独立于源和目标架构的现代<a target="_blank" rel="noopener" href="https://llvm.org/docs/Passes.html">优化器optimizer</a>，以及对许多流行cpu(以及一些不太常见的cpu)的<a target="_blank" rel="noopener" href="https://llvm.org/docs/CodeGenerator.html">代码生成(code generation)</a>支持。这些库是围绕一种被称为LLVM中间表示(“LLVM IR”)的良好指定的代码表示构建的。</li>
+<li><strong>Clang</strong>：一个 C/C++/Objective-C 编译器，提供高效快速的编译效率，比 GCC 快3倍，其中的 clang static analyzer 主要是进行语法分析，语义分析和生成中间代码，当然这个过程会对代码进行检查，出错的和需要警告的会标注出来。(见下文详述)</li>
+<li>lld： 是LLVM开发一个内置的，平台独立的链接器，去除对所有第三方链接器的依赖。在2017年5月，lld已经支持ELF、PE/COFF、和Mach-O。在lld支持不完全的情况下，用户可以使用其他项目，如 GNU ld 链接器。 <ul>
+<li>lld支持链接时优化。当LLVM链接时优化被启用时，LLVM可以输出bitcode而不是本机代码，而本机代码生成由链接器优化处理。</li>
+</ul>
+</li>
+<li>LLDB：基于 LLVM 和 Clang提供的库构建的一个优秀的本地调试器，使用了 Clang ASTs、表达式解析器、LLVM JIT、LLVM 反汇编器等。</li>
+</ul>
+<h3 id="1-2-Clang"><a href="#1-2-Clang" class="headerlink" title="1.2 Clang"></a>1.2 Clang</h3><p>从<a target="_blank" rel="noopener" href="http://llvm.org/svn/llvm-project/cfe/trunk/lib/">Clang的源码</a>目录中可以大致看出Clang提供的功能：</p>
+<img src="/images/compilelink/01.png" alt="01" style="zoom:80%;" />
+
+<h4 id="1-2-1-Clang提供了哪些功能？"><a href="#1-2-1-Clang提供了哪些功能？" class="headerlink" title="1.2.1 Clang提供了哪些功能？"></a>1.2.1 Clang提供了哪些功能？</h4><p>Clang 为一些需要分析代码语法、语义信息的工具提供了基础设施。分别是：</p>
+<ul>
+<li><strong>LibClang</strong>。LibClang提供了一个稳定的高级 C 接口，Xcode 使用的就是 LibClang。LibClang 可以访问 Clang 的上层高级抽象的能力，比如获取所有 Token、遍历语法树、代码补全等。由于 API 很稳定，Clang 版本更新对其 影响不大。但是，LibClang 并不能完全访问到 Clang AST 信息。</li>
+<li><strong>Clang Plugins</strong>。可以在 AST 上做些操作，这些操作能够集成到编译中，成为编译的一部分。插件是在运 行时由编译器加载的动态库，方便集成到构建系统中。<br>使用 Clang Plugins 一般都是希望能够完全控制 Clang AST，同时能够集成在编译流程中，可以影响编译的过程，进行中断或者提示。<br>应用：实现命名规范、代码规范等一些扩展功能</li>
+<li><strong>LibTooling</strong>。是一个 C++ 接口，所写的工具不依赖于构建系统，可以作为一个命令单独使用。与 Clang Plugins 相比，LibTooling 无法影响编译过程；与 LibClang 相比，LibTooling 的接口没有那么稳定。<br>应用：做代码转换，比如把 OC 转 JavaScript 或 Swift；代码检查。</li>
+</ul>
+<h4 id="1-2-2-Clang的优点"><a href="#1-2-2-Clang的优点" class="headerlink" title="1.2.2 Clang的优点"></a>1.2.2 Clang的优点</h4><p>Clang 是 C、C++、Objective-C 的编译前端，而 Swift 有自己的编译前端 （也就是 Swift 前端多出的 SIL optimizer）。Clang 有哪些优势？</p>
+<ul>
+<li>对于使用者来说，Clang 编译的速度非常快，对内存的使用率非常低，并且兼容 GCC。</li>
+<li>对于代码诊断来说， Clang 也非常强大，Xcode 也是用的 Clang。使用 Clang 编译前端，可以精确地显示出问题所在的行和具体位置，并且可以确切地说明出现这个问题的原因，并指出错误的类型是什么，使得我们可以快速掌握问题的细节。这样的话，我们不用看源码，仅通过 Clang 突出标注的问题范围也能够了解到问题的情况。</li>
+<li>Clang 对 typedef 的保留和展开也处理得非常好。typedef 可以缩写很长的类型，保留 typedef 对于粗粒度诊断分析很有帮助。但有时候，我们还需要了解细节，对 typedef 进行展开即可。</li>
+<li>Fix-it 提示也是 Clang 提供的一种快捷修复源码问题的方式。在宏的处理上，很多宏都是深度嵌套的， Clang 会自动打印实例化信息和嵌套范围信息来帮助你进行宏的诊断和分析。</li>
+<li>Clang 的架构是模块化的。除了代码静态分析外，利用其输出的接口还可以开发用于代码转义、代码生成、代码重构的工具，方便与 IDE 进行集成。</li>
+</ul>
+<p>Clang 是基于 C++ 开发的，如果你想要了解 Clang 的话，需要有一定的 C++ 基础。但是，Clang 源码本身质量非常高，有很多值得学习的地方，比如说目录清晰、功能解耦做得很好、分类清晰方便组合和复用、代码风格统一而且规范、注释量大便于阅读等。</p>
+<h3 id="1-3-LLVM架构-三段式"><a href="#1-3-LLVM架构-三段式" class="headerlink" title="1.3 LLVM架构(三段式)"></a>1.3 LLVM架构(三段式)</h3><p>传统的编译器的架构如下:</p>
+<img src="/images/compilelink/04.png" alt="01" style="zoom:100%;" />
+
+<p>LLVM不同的就是对于不同的语言它都提供了同一种中间表示。LLVM的架构如下，</p>
+<img src="/images/compilelink/05.png" alt="01" style="zoom:75%;" />
+
+<p>当编译器需要支持多种源代码和目标架构时，基于LLVM的架构，设计一门新的语言只需要去实现一个新的前端就行了，支持新的后端架构也只需要实现一个新的后端，其它部分完成可以复用，不用重新设计。在基于LLVM进行代码混淆时，只需要关注中间层代码(IR)表示。</p>
+<h3 id="1-4-Clang-LLVM架构"><a href="#1-4-Clang-LLVM架构" class="headerlink" title="1.4 Clang-LLVM架构"></a>1.4 Clang-LLVM架构</h3><p>Clang-LLVM架构，即用Clang作为前端的LLVM(编译工具集)。</p>
+<p>Clang-LLVM下，一个源文件的编译过程：</p>
+<img src="/images/compilelink/02.png" alt="01" style="zoom:65%;" />
+
+<p>iOS 开发完整的编译流程图：</p>
+<img src="/images/compilelink/03.png" alt="01" style="zoom:80%;" />
+
+<p>LLVM架构的主要组成部分：</p>
+<ul>
+<li><strong>前端</strong>：前端用来获取源代码然后将它转变为某种中间表示，我们可以选择不同的编译器来作为LLVM的前端，如gcc，clang(Clang-LLVM)。<a target="_blank" rel="noopener" href="https://llvm.org/docs/LangRef.html">LLVM IR</a>支持三种表达形式：<ul>
+<li>内存中的格式(in-memory compiler IR) （当IR载入到内存中，又是另一种格式）</li>
+<li>磁盘上的二进制格式(on-disk bitcode，<code>.bc</code>后缀)</li>
+<li>便于阅读的文本格式，类似于汇编语言(<code>.ll</code>后缀，其有自己的语法)</li>
+</ul>
+</li>
+<li><strong>优化</strong>(Optimizations)：被实现为遍历程序的某些部分以收集信息或转换程序的passes。<a target="_blank" rel="noopener" href="https://llvm.org/docs/Passes.html">文档链接</a><ul>
+<li>pass(v.通过/传递/变化 n.<strong>通道</strong>/<strong>流程</strong>/<strong>阶段</strong>) ：pass就是“遍历一遍IR，同时可以对它做一些操作”的意思。是 LLVM 优化(optimize)工作的一个节点，一个节点做些事，一起加起来就构成了 LLVM 完整的优化和转化。</li>
+<li>文档中将LLVM提供的passe分为三类。<ul>
+<li>分析(analysis) passes：计算出一些信息，可以用于调试、程序可视化，也可以被其他passes使用。</li>
+<li>转换(transform) passes：可以使用 analysis passes，也可使其无效。这类passes都会以某种方式改变程序。</li>
+<li>实用(utility) passes：提供了一些实用性的功能，但不适合分类。例如，将函数提取到bitcode或将模块写入bitcode的passes既不是analysis也不是transform。</li>
+</ul>
+</li>
+<li>一般情况下，Pass可以用来优化代码，这部分通常是我们关注的部分。我们可以自己编写Pass，做一些代码混淆优化等操作。</li>
+</ul>
+</li>
+<li><strong>后端</strong>：后端用来生成实际的机器码。至3.4版本的LLVM已经支持多种后端指令集，比如主流的x86、x86-64、z/Architecture、ARM和PowerPC等。</li>
+</ul>
+<blockquote>
+<p>个人理解：LLVM IR表示形式的区别（注意：本质是等价的，就好比水可以有气体、液体、固体3种形态）</p>
+<ul>
+<li><code>.bc</code>字节码文件在编写形式上很类似机器码，区别在于它的操作码opcode是中间代码的一种形式，而不是最终真正在运行在的操作系统架构上的机器语言中的那一套opcode。</li>
+<li><code>.ll</code> 文件在编写形式上很类似汇编语言，是为了可记忆、便于编程，定制的一套代码格式。</li>
+</ul>
+<p>字节码（Byte-code）是一种包含执行程序，由一序列 op 代码/数据对组成的二进制文件，是一种中间码。它比机器码更抽象，需要直译器转译后才能成为机器码的中间代码。</p>
+<p>字节码被这样叫是因为通常每个 opcode 是一字节长，但是指令码的长度是变化的。每个指令有从 0 到 255（或十六进制的： 00 到FF)的一字节操作码，被参数例如寄存器或内存地址跟随。</p>
+<p>Java字节码（Java bytecode）是Java虚拟机执行的一种指令格式。大多数操作码都是一个字节长，并不是所有可能的256个操作码都被使用；其中有51个操作码被保留做将来使用。比如0x00、0xFE、0xCA、0xFF被指定保留，其中0xCA作为一个Java调试器的中断指令而从未被语言使用。</p>
+<p>Java字节码文件的后缀是<code>.class</code>。</p>
+</blockquote>
+<h3 id="1-5-应用"><a href="#1-5-应用" class="headerlink" title="1.5 应用"></a>1.5 应用</h3><ul>
+<li>iOS 开发中 Objective-C 是 Clang / LLVM 来编译的。</li>
+<li>swift 是 Swift / LLVM，其中 Swift 前端会多出 SIL optimizer，它会把 .swift 生成的中间代码 .sil 属于 High-Level IR， 因为 swift 在编译时就完成了方法绑定直接通过地址调用属于强类型语言，方法调用不再是像OC那样的消息发送，这样编译就可以获得更多的信息用在后面的后端优化上。</li>
+<li>Gallium3D 中使用 LLVM 进行 JIT 优化</li>
+<li>Xorg 中的 pixman 也有考虑使用 LLVM 优化执行速度</li>
+<li>LLVM-Lua 用LLVM 来编译 lua 代码</li>
+<li>gpuocelot 使用 LLVM 可以让 CUDA 程序无需重新编译就能够在多种 CPU 机器上跑。</li>
+</ul>
+<p>下面，通过具体的代码、命令，来看一下iOS中源代码详细的编译、链接过程</p>
+<h2 id="二、编译、静态链接过程"><a href="#二、编译、静态链接过程" class="headerlink" title="二、编译、静态链接过程"></a>二、编译、静态链接过程</h2><blockquote>
+<p>从源码到可执行文件 — iOS应用编译、静态链接过程</p>
+</blockquote>
+<p>我们在开发的时候的时候，如果想要生成一个可执行文件或应用，我们点击run就完事了，那么在点击run之后编译器背后又做了哪些事情呢？</p>
+<p>我们先来一个例子：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> DEFINEEight 8</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span>&#123;</span><br><span class="line">    <span class="keyword">int</span> eight = DEFINEEight;</span><br><span class="line">    <span class="keyword">int</span> six = <span class="number">6</span>;</span><br><span class="line">    <span class="keyword">int</span> rank = eight + six;</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">&quot;%d\n&quot;</span>,rank);</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>上面这个文件，我们可以通过命令行直接编译，然后链接：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">xcrun -sdk iphoneos clang -arch armv7 -F Foundation -fobjc-arc -c main.m -o main.o</span><br><span class="line">xcrun -sdk iphoneos clang main.o -arch armv7 -fobjc-arc -framework Foundation -o main</span><br></pre></td></tr></table></figure>
+
+<p>然后将该可执行文件copy到手机目录 /usr/bin 下面：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">xx-iPhone:/usr/bin root<span class="comment"># ./main</span></span><br><span class="line">14</span><br></pre></td></tr></table></figure>
+
+<p>下面深入剖析其中的过程。</p>
+<h3 id="Clang常用命令与参数"><a href="#Clang常用命令与参数" class="headerlink" title="Clang常用命令与参数"></a>Clang常用命令与参数</h3><p><a target="_blank" rel="noopener" href="https://clang.llvm.org/docs/ClangCommandLineReference.html">参考链接</a></p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 查看编译的步骤</span></span><br><span class="line">clang -ccc-print-phases main.m</span><br><span class="line"></span><br><span class="line"><span class="comment">// Rewrite Objective-C source to C++，将OC源代码重写为C++(仅供参考，与真正的运行时代码还是有细微差别的)</span></span><br><span class="line"><span class="comment">// 如果想了解真正的代码，可以使用-emit-llvm参数查看.ll中间代码</span></span><br><span class="line">clang -rewrite-objc main.m</span><br><span class="line"></span><br><span class="line"><span class="comment">// 查看操作内部命令</span></span><br><span class="line">clang -##<span class="meta"># main.m -o main</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// 直接生成可执行文件</span></span><br><span class="line">clang main.m <span class="comment">// 默认生成的文件名为a.out</span></span><br><span class="line">  <span class="comment">/*</span></span><br><span class="line"><span class="comment">    参数：</span></span><br><span class="line"><span class="comment">    -cc1：Clang编译器前端具有几个额外的Clang特定功能，这些功能不通过GCC兼容性驱动程序接口公开。 -cc1参数表示将使用编译器前端，而不是驱动程序。 clang -cc1功能实现了核心编译器功能。</span></span><br><span class="line"><span class="comment">	-E：只进行预编译处理(preprocessor)</span></span><br><span class="line"><span class="comment">	-S：只进行预编译、编译工作</span></span><br><span class="line"><span class="comment">	-c：只进行预处理、编译、汇编工作</span></span><br><span class="line"><span class="comment">	-fmodules：允许modules的语言特性。</span></span><br><span class="line"><span class="comment">		在使用#include、#import时，会看到预处理时已经把宏替换了，并且导入了头文件。但是这样的话会引入很多不会去改变的系统库比如Foundation。</span></span><br><span class="line"><span class="comment">		所以有了pch预处理文件，可以在这里去引入一些通用的头文件。</span></span><br><span class="line"><span class="comment">		后来Xcode新建的项目里面去掉了pch文件，引入了moduels的概念，把一些通用的库打成modules的形式，然后导入。现在Xcode中默认是打开的，即编译源码时会加上-fmodules参数。也是因为modules机制的出现，pch不再默认自动创建。</span></span><br><span class="line"><span class="comment">		使用了该参数，在导入库的地方，只需要 @import Foundation; 就行</span></span><br><span class="line"><span class="comment">		可以看到使用了@import之后，clang -fmodules xx 生成的文件中，不再有上万行的系统库的代码引入，精简了很多。</span></span><br><span class="line"><span class="comment">	-fsyntax-only：防止编译器生成代码,只是语法级别的说明和修改</span></span><br><span class="line"><span class="comment">	-Xclang &lt;arg&gt;：向clang编译器传递参数</span></span><br><span class="line"><span class="comment">	-dump-tokens：运行预处理器,拆分内部代码段为各种token</span></span><br><span class="line"><span class="comment">	-ast-dump：构建抽象语法树AST,然后对其进行拆解和调试</span></span><br><span class="line"><span class="comment">	-fobjc-arc：为OC对象生成retain和release的调用</span></span><br><span class="line"><span class="comment">	-emit-llvm：使用LLVM描述汇编和对象文件</span></span><br><span class="line"><span class="comment">	-o &lt;file&gt;：输出到目标文件</span></span><br><span class="line"><span class="comment">   */</span></span><br></pre></td></tr></table></figure>
+
+<p>查看更多的<code>clang</code>使用方法可以在终端输入<code>clang --hep</code>查看,也可以点击下面的链接:<a target="_blank" rel="noopener" href="https://link.jianshu.com/?t=https://gist.github.com/masuidrive/5231110">https://link.jianshu.com/?t=https://gist.github.com/masuidrive/5231110</a></p>
+<h3 id="2-1-预处理（Preprocess）"><a href="#2-1-预处理（Preprocess）" class="headerlink" title="2.1 预处理（Preprocess）"></a>2.1 预处理（Preprocess）</h3><p>预编译过程主要处理源代码文件中的以”#”开头的预编译指令，<strong>不检查语法错误</strong>。规则如下：</p>
+<ul>
+<li>将所有的 “#define” 删除，并且展开所有的宏定义。 </li>
+<li>处理所有条件预编译指令，比如 “#if”、“#ifdef”、“#elif”、“#else”、“#endif”。</li>
+<li>处理 “#include” 预编译指令，将被包含的文件内容插入到(全部复制到)该预编译指令的位置。注意，这个过程是递归进行的，也就是说被包含的文件可能还包含其他文件。#include 可以导入任何(合法/不合法)文件，都能展开。</li>
+<li>删除所有的注释“//”和“/* */”，会变成空行。 </li>
+<li>保留所有的 #pragma 编译器指令，因为编译器须要使用它们。</li>
+<li>添加行号和文件名标识，比如# 2 “main.m” 2，以便于编译时编译器产生调试用的行号信息及用于编译时产生编译错误或警告时能够显示行号。<br>  格式是“<code># 行号 文件名 标志</code>”，参数解释如下：<ul>
+<li>行号与文件名：表示从它后一行开始的内容来源于哪一个文件的哪一行</li>
+<li>标志：可以是1,2,3,4四个数字，每个数字的含义如下：<br>1：表示新文件的开始<br>2：表示从一个被包含的文件中返回<br>3：表示后面的内容来自系统头文件<br>4：表示后面的内容应当被当做一个隐式的extern ‘C’块</li>
+</ul>
+</li>
+</ul>
+<p>经过预编译后的<code> .i 文件</code>不包含任何宏定义，因为所有的宏已经被展开，并且包含的文件也已经被插入到 .i 文件中。所以当我们无法判断宏定义是否正确或头文件包含是否正确时，可以查看预编译后的文件来确定问题。</p>
+<p>可以通过执行以下命令，<code>-E</code>表示只进行预编译：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">clang -E main.m </span><br><span class="line"><span class="comment"># 或者 </span></span><br><span class="line">clang -E -fmodules main.m <span class="comment"># 此时需要源码中改为@import</span></span><br></pre></td></tr></table></figure>
+
+<p>执行完这个命令之后，我们会发现导入了很多的头文件内容。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">......</span><br><span class="line"># 408 &quot;&#x2F;Applications&#x2F;Xcode.app&#x2F;Contents&#x2F;Developer&#x2F;Platforms&#x2F;MacOSX.platform&#x2F;Developer&#x2F;SDKs&#x2F;MacOSX.sdk&#x2F;usr&#x2F;include&#x2F;stdio.h&quot; 2 3 4</span><br><span class="line"># 2 &quot;main.m&quot; 2</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">int main()&#123;</span><br><span class="line">    int eight &#x3D; 8;</span><br><span class="line">    int six &#x3D; 6;</span><br><span class="line">    int rank &#x3D; eight + six;</span><br><span class="line">    printf(&quot;%d\n&quot;,rank);</span><br><span class="line">    return 0;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>可以看到上面的预处理已经把宏替换了，并且导入了头文件。</p>
+<h3 id="2-2-词法分析-Lexical-Analysis"><a href="#2-2-词法分析-Lexical-Analysis" class="headerlink" title="2.2 词法分析 (Lexical Analysis)"></a>2.2 词法分析 (Lexical Analysis)</h3><p>预处理之后，就是编译。编译过程就是把预处理完的文件进行一系列词法分析、语法分析、语义分析及优化后生产相应的汇编代码文件，这个过程往往是我们所说的整个程序构建的核心部分，也是最复杂的部分之一。</p>
+<p>首先，Clang 会对代码进行词法分析，将代码切分成 Token。你可以在<a target="_blank" rel="noopener" href="https://opensource.apple.com/source/lldb/lldb-69/llvm/tools/clang/include/clang/Basic/TokenKinds.def">这个链接</a>中，看到 Clang 定义的所有 Token 类型。我们可以把这些 Token 类型，分为下面这 4 类。 </p>
+<ul>
+<li>关键字：语法中的关键字，比如 if、else、while、for 等;</li>
+<li>标识符：变量名;</li>
+<li>字面量：值、数字、字符串; </li>
+<li>特殊符号：加减乘除、左右括号等符号。</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">clang -fsyntax-only -Xclang -dump-tokens main.m</span><br></pre></td></tr></table></figure>
+<p>每一个标记都包含了对应的源码内容和其在源码中的位置。注意这里的位置是宏展开之前的位置，这样一来，如果编译过程中遇到什么问题，clang 能够在源码中指出出错的具体位置。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line">int &#39;int&#39;	 [StartOfLine]	Loc&#x3D;&lt;main.m:4:1&gt;</span><br><span class="line">identifier &#39;main&#39;	 [LeadingSpace]	Loc&#x3D;&lt;main.m:4:5&gt;</span><br><span class="line">l_paren &#39;(&#39;		Loc&#x3D;&lt;main.m:4:9&gt;</span><br><span class="line">r_paren &#39;)&#39;		Loc&#x3D;&lt;main.m:4:10&gt;</span><br><span class="line">l_brace &#39;&#123;&#39;		Loc&#x3D;&lt;main.m:4:11&gt;</span><br><span class="line">int &#39;int&#39;	 [StartOfLine] [LeadingSpace]	Loc&#x3D;&lt;main.m:5:5&gt;</span><br><span class="line">identifier &#39;eight&#39;	 [LeadingSpace]	Loc&#x3D;&lt;main.m:5:9&gt;</span><br><span class="line">equal &#39;&#x3D;&#39;	 [LeadingSpace]	Loc&#x3D;&lt;main.m:5:15&gt;</span><br><span class="line">numeric_constant &#39;8&#39;	 [LeadingSpace]	Loc&#x3D;&lt;main.m:5:17 &lt;Spelling&#x3D;main.m:2:21&gt;&gt;</span><br><span class="line">semi &#39;;&#39;		Loc&#x3D;&lt;main.m:5:28&gt;</span><br><span class="line">int &#39;int&#39;	 [StartOfLine] [LeadingSpace]	Loc&#x3D;&lt;main.m:6:5&gt;</span><br><span class="line">identifier &#39;six&#39;	 [LeadingSpace]	Loc&#x3D;&lt;main.m:6:9&gt;</span><br><span class="line">equal &#39;&#x3D;&#39;	 [LeadingSpace]	Loc&#x3D;&lt;main.m:6:13&gt;</span><br><span class="line">numeric_constant &#39;6&#39;	 [LeadingSpace]	Loc&#x3D;&lt;main.m:6:15&gt;</span><br><span class="line">semi &#39;;&#39;		Loc&#x3D;&lt;main.m:6:16&gt;</span><br><span class="line">int &#39;int&#39;	 [StartOfLine] [LeadingSpace]	Loc&#x3D;&lt;main.m:7:5&gt;</span><br><span class="line">identifier &#39;rank&#39;	 [LeadingSpace]	Loc&#x3D;&lt;main.m:7:9&gt;</span><br><span class="line">equal &#39;&#x3D;&#39;	 [LeadingSpace]	Loc&#x3D;&lt;main.m:7:14&gt;</span><br><span class="line">identifier &#39;eight&#39;	 [LeadingSpace]	Loc&#x3D;&lt;main.m:7:16&gt;</span><br><span class="line">plus &#39;+&#39;	 [LeadingSpace]	Loc&#x3D;&lt;main.m:7:22&gt;</span><br><span class="line">identifier &#39;six&#39;	 [LeadingSpace]	Loc&#x3D;&lt;main.m:7:24&gt;</span><br><span class="line">semi &#39;;&#39;		Loc&#x3D;&lt;main.m:7:27&gt;</span><br><span class="line">identifier &#39;printf&#39;	 [StartOfLine] [LeadingSpace]	Loc&#x3D;&lt;main.m:8:5&gt;</span><br><span class="line">l_paren &#39;(&#39;		Loc&#x3D;&lt;main.m:8:11&gt;</span><br><span class="line">string_literal &#39;&quot;%d\n&quot;&#39;		Loc&#x3D;&lt;main.m:8:12&gt;</span><br><span class="line">comma &#39;,&#39;		Loc&#x3D;&lt;main.m:8:18&gt;</span><br><span class="line">identifier &#39;rank&#39;		Loc&#x3D;&lt;main.m:8:19&gt;</span><br><span class="line">r_paren &#39;)&#39;		Loc&#x3D;&lt;main.m:8:23&gt;</span><br><span class="line">semi &#39;;&#39;		Loc&#x3D;&lt;main.m:8:24&gt;</span><br><span class="line">return &#39;return&#39;	 [StartOfLine] [LeadingSpace]	Loc&#x3D;&lt;main.m:9:5&gt;</span><br><span class="line">numeric_constant &#39;0&#39;	 [LeadingSpace]	Loc&#x3D;&lt;main.m:9:12&gt;</span><br><span class="line">semi &#39;;&#39;		Loc&#x3D;&lt;main.m:9:13&gt;</span><br><span class="line">r_brace &#39;&#125;&#39;	 [StartOfLine]	Loc&#x3D;&lt;main.m:10:1&gt;</span><br><span class="line">eof &#39;&#39;		Loc&#x3D;&lt;main.m:10:2&gt;</span><br></pre></td></tr></table></figure>
+
+<h3 id="2-3-语法、语义分析"><a href="#2-3-语法、语义分析" class="headerlink" title="2.3 语法、语义分析"></a>2.3 语法、语义分析</h3><p>这个阶段有两个模块Parser(语法syntax分析器)、Sema(语义分析Semantic)配合完成：</p>
+<ul>
+<li>Parser：遍历每个Token做词句分析，根据当前语言的语法，验证语法是否正确，最后生成一个 节点（Nodes）并记录相关的信息。</li>
+<li>Semantic：在Lex 跟 syntax Analysis之后, 已经确保 词 句已经是正确的形式，semantic 接着做return values, size boundaries, uninitialized variables 等检查，如果发现语义上有错误给出提示；如果没有错误就会将 Token 按照语法组合成语义，生成 Clang 语义节点(Nodes)，然后将这些节点按照层级关系构成抽象语法树(AST)。</li>
+</ul>
+<p>AST可以说是Clang的核心，大部分的优化, 判断都在AST处理（例如寻找Class, 替换代码…等)。此步骤会将 Clang Attr  转换成 AST 上的 AttributeList，能在clang插件上透过 <code>Decl::getAttr&lt;T&gt;</code> 获取</p>
+<blockquote>
+<p>Clang Attributes：是 Clang 提供的一种源码注解，方便开发者向编译器表达某种要求，参与控制如 Static Analyzer、Name Mangling、Code Generation 等过程, 一般以 <code>__attribute__(xxx)</code> 的形式出现在代码中, Ex: <code>NS_CLASS_AVAILABLE_IOS(9_0)</code></p>
+</blockquote>
+<p>结构跟其他Compiler的AST相同。与其他编译器不同的是 Clang的AST是由C++构成类似Class、Variable的层级表示，其他的则是以汇编语言编写。这代表着AST也能有对应的api，这让AST操作, 获取信息都比较容易，甚至还夹带着地址跟代码位置。</p>
+<blockquote>
+<p>AST Context: 存储所有AST相关资讯, 且提供ASTMatcher等遍历方法</p>
+</blockquote>
+<p>在 Clang的定义中，节点主要分成三种，其他的都是这三种的派生。</p>
+<ul>
+<li><strong>Type</strong>：类型。对应 <code>clang::Type</code><ul>
+<li>类型层级中的基类。</li>
+<li>Type具体到某个语言的类型时便可以派生出 PointerType(指针类型)、ObjCObjectType(objc对象类型)、BuiltinType(内置基础数据类型)等。</li>
+</ul>
+</li>
+<li><strong>Decl</strong>：<em>declaration，声明</em>。对应 <code>clang::Decl</code><ul>
+<li>表示一个声明（或定义definition）。比如variable、typedef、function、struct等。</li>
+<li>派生类比如FunctionDecl、ParmVarDecl。</li>
+</ul>
+</li>
+<li><strong>Stmt</strong>：<em>statement，陈述/语句</em>。对应 <code>clang::stmt</code>。<ul>
+<li>派生类比如：<ul>
+<li>CompoundStmt：一组语句，如 { stmt stmt }。</li>
+<li>DeclStmt：用于decl与stmt混合使用的适配器类。</li>
+<li>ValueStmt：可能有value和type的语句。</li>
+<li>ReturnStmt等…</li>
+</ul>
+</li>
+<li><strong>Expr</strong>：<em>expression，表达式</em>。（<code>clang::Expr</code> 继承自上面的 <code>clang::ValueStmt</code>）</li>
+<li><strong>Literal</strong>：<em>字面量</em>，是一个特殊的 Expr。</li>
+</ul>
+</li>
+</ul>
+<p>通过这三种的联结、重复或选择（alternative)就能构成一门编程语言。举个例子，下图的一段代码：详细可以看<a target="_blank" rel="noopener" href="https://www.stephenw.cc/2018/01/08/clang-ast/">了解 Clang AST</a></p>
+<img src="/images/compilelink/06.png" alt="01" style="zoom:70%;" />
+
+<p>从上图中可以看到：</p>
+<ul>
+<li>一个FunctionDecl（函数的实现）由一个 ParmVarDecl联结 CompoundStmt组成。</li>
+<li>函数的 CompoundStmt 由 DeclStmt和 ReturnStmt联结组成。</li>
+<li>还可以发现这段代码的ParmVarDecl由 BuiltinType 和一个标识符字面量联结组成。</li>
+</ul>
+<p>很明显一门编程语言中还有很多其他形态，我们都可以用这种方式描述出来。所以说从抽象的角度看，拥有无限种形态的编程语言便可以用有限的形式来表示。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">clang -fsyntax-only -Xclang -ast-dump main.m</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line">......</span><br><span class="line">&#96;-FunctionDecl 0x7fcbb9947b20 &lt;main.m:4:1, line:10:1&gt; line:4:5 main &#39;int ()&#39;</span><br><span class="line">  &#96;-CompoundStmt 0x7fcbb9947fc8 &lt;col:11, line:10:1&gt;</span><br><span class="line">    |-DeclStmt 0x7fcbb9947c50 &lt;line:5:5, col:28&gt;</span><br><span class="line">    | &#96;-VarDecl 0x7fcbb9947bd0 &lt;col:5, line:2:21&gt; line:5:9 used eight &#39;int&#39; cinit</span><br><span class="line">    |   &#96;-IntegerLiteral 0x7fcbb9947c30 &lt;line:2:21&gt; &#39;int&#39; 8</span><br><span class="line">    |-DeclStmt 0x7fcbb9947d00 &lt;line:6:5, col:16&gt;</span><br><span class="line">    | &#96;-VarDecl 0x7fcbb9947c80 &lt;col:5, col:15&gt; col:9 used six &#39;int&#39; cinit</span><br><span class="line">    |   &#96;-IntegerLiteral 0x7fcbb9947ce0 &lt;col:15&gt; &#39;int&#39; 6</span><br><span class="line">    |-DeclStmt 0x7fcbb9947e20 &lt;line:7:5, col:27&gt;</span><br><span class="line">    | &#96;-VarDecl 0x7fcbb9947d30 &lt;col:5, col:24&gt; col:9 used rank &#39;int&#39; cinit</span><br><span class="line">    |   &#96;-BinaryOperator 0x7fcbb9947e00 &lt;col:16, col:24&gt; &#39;int&#39; &#39;+&#39;</span><br><span class="line">    |     |-ImplicitCastExpr 0x7fcbb9947dd0 &lt;col:16&gt; &#39;int&#39; &lt;LValueToRValue&gt;</span><br><span class="line">    |     | &#96;-DeclRefExpr 0x7fcbb9947d90 &lt;col:16&gt; &#39;int&#39; lvalue Var 0x7fcbb9947bd0 &#39;eight&#39; &#39;int&#39;</span><br><span class="line">    |     &#96;-ImplicitCastExpr 0x7fcbb9947de8 &lt;col:24&gt; &#39;int&#39; &lt;LValueToRValue&gt;</span><br><span class="line">    |       &#96;-DeclRefExpr 0x7fcbb9947db0 &lt;col:24&gt; &#39;int&#39; lvalue Var 0x7fcbb9947c80 &#39;six&#39; &#39;int&#39;</span><br><span class="line">    |-CallExpr 0x7fcbb9947f20 &lt;line:8:5, col:23&gt; &#39;int&#39;</span><br><span class="line">    | |-ImplicitCastExpr 0x7fcbb9947f08 &lt;col:5&gt; &#39;int (*)(const char *, ...)&#39; &lt;FunctionToPointerDecay&gt;</span><br><span class="line">    | | &#96;-DeclRefExpr 0x7fcbb9947e38 &lt;col:5&gt; &#39;int (const char *, ...)&#39; Function 0x7fcbb9932e70 &#39;printf&#39; &#39;int (const char *, ...)&#39;</span><br><span class="line">    | |-ImplicitCastExpr 0x7fcbb9947f68 &lt;col:12&gt; &#39;const char *&#39; &lt;NoOp&gt;</span><br><span class="line">    | | &#96;-ImplicitCastExpr 0x7fcbb9947f50 &lt;col:12&gt; &#39;char *&#39; &lt;ArrayToPointerDecay&gt;</span><br><span class="line">    | |   &#96;-StringLiteral 0x7fcbb9947e98 &lt;col:12&gt; &#39;char [4]&#39; lvalue &quot;%d\n&quot;</span><br><span class="line">    | &#96;-ImplicitCastExpr 0x7fcbb9947f80 &lt;col:19&gt; &#39;int&#39; &lt;LValueToRValue&gt;</span><br><span class="line">    |   &#96;-DeclRefExpr 0x7fcbb9947eb8 &lt;col:19&gt; &#39;int&#39; lvalue Var 0x7fcbb9947d30 &#39;rank&#39; &#39;int&#39;</span><br><span class="line">    &#96;-ReturnStmt 0x7fcbb9947fb8 &lt;line:9:5, col:12&gt;</span><br><span class="line">      &#96;-IntegerLiteral 0x7fcbb9947f98 &lt;col:12&gt; &#39;int&#39; 0</span><br></pre></td></tr></table></figure>
+<p>在抽象语法树中的每个节点都标注了其对应源码中的位置，如果产生了什么问题，clang 可以定位到问题所在处的源码位置。</p>
+<p>语法树直观图:</p>
+<img src="/images/compilelink/07.png" alt="01" style="zoom:90%;" />
+
+<h4 id="2-3-1-静态分析-Static-Analyzer"><a href="#2-3-1-静态分析-Static-Analyzer" class="headerlink" title="2.3.1 静态分析 (Static Analyzer)"></a>2.3.1 静态分析 (Static Analyzer)</h4><p>一旦编译器把源码生成了抽象语法树，编译器可以对这棵树做分析处理，以找出代码中的错误，比如类型检查：即检查程序中是否有类型错误。例如：如果代码中给某个对象发送了一个消息，编译器会检查这个对象是否实现了这个消息（函数、方法）。此外，clang 对整个程序还做了其它更高级的一些分析，以确保程序没有错误。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">OVERVIEW: Clang Static Analyzer Checkers List</span><br><span class="line"></span><br><span class="line">USAGE: -analyzer-checker &lt;CHECKER or PACKAGE,...&gt;</span><br><span class="line"></span><br><span class="line">CHECKERS:</span><br><span class="line">  alpha.clone.CloneChecker        Reports similar pieces of code.</span><br><span class="line">  alpha.core.BoolAssignment       Warn about assigning non-&#123;0,1&#125; values to Boolean variables</span><br><span class="line">  alpha.core.CallAndMessageUnInitRefArg      Check for logical errors for function calls and Objective-C message expressions (e.g., uninitialized arguments, null function pointers, and pointer to undefined variables)</span><br><span class="line">  alpha.core.CastSize             Check when casting a malloc&#39;ed type T, whether the size is a multiple of the size of T</span><br><span class="line">  ...</span><br></pre></td></tr></table></figure>
+<p><a target="_blank" rel="noopener" href="http://clang-analyzer.llvm.org/scan-build.html">scan-build</a> 是用于静态分析代码的工具，它包含在 clang 的源码包中。使用scan-build可以从命令行运行分析器，比如：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">roten@localhost scan-build % .&#x2F;scan-build --use-analyzer&#x3D;xcode xcodebuild -project Demo123.xcodeproj    &#x2F;&#x2F; 需要设置 --use-analyzer指定 clang 的路径</span><br><span class="line"></span><br><span class="line">scan-build: Using &#39;&#x2F;Applications&#x2F;Xcode.app&#x2F;Contents&#x2F;Developer&#x2F;Toolchains&#x2F;XcodeDefault.xctoolchain&#x2F;usr&#x2F;bin&#x2F;clang&#39; for static analysis</span><br><span class="line">Build settings from command line:</span><br><span class="line">    CLANG_ANALYZER_EXEC &#x3D; &#x2F;Applications&#x2F;Xcode.app&#x2F;Contents&#x2F;Developer&#x2F;Toolchains&#x2F;XcodeDefault.xctoolchain&#x2F;usr&#x2F;bin&#x2F;clang</span><br><span class="line">    CLANG_ANALYZER_OTHER_FLAGS &#x3D; </span><br><span class="line">    CLANG_ANALYZER_OUTPUT &#x3D; plist-html</span><br><span class="line">    CLANG_ANALYZER_OUTPUT_DIR &#x3D; &#x2F;var&#x2F;folders&#x2F;1r&#x2F;n7kwlmgn74l3pvvht646f6fm0000gp&#x2F;T&#x2F;scan-build-2020-09-01-140523-22105-1</span><br><span class="line">    RUN_CLANG_STATIC_ANALYZER &#x3D; YES</span><br><span class="line"></span><br><span class="line">note: Using new build system</span><br><span class="line">note: Planning build</span><br><span class="line">note: Constructing build description</span><br><span class="line">Build system information</span><br><span class="line">....</span><br><span class="line"></span><br><span class="line">** BUILD SUCCEEDED **</span><br><span class="line"></span><br><span class="line">scan-build: Removing directory &#39;&#x2F;var&#x2F;folders&#x2F;1r&#x2F;n7kwlmgn74l3pvvht646f6fm0000gp&#x2F;T&#x2F;scan-build-2020-09-01-140523-22105-1&#39; because it contains no reports.</span><br><span class="line">scan-build: No bugs found.</span><br></pre></td></tr></table></figure>
+<p>关于静态分析更多可以查看 ：<a target="_blank" rel="noopener" href="http://clang-analyzer.llvm.org/">Clang 静态分析器</a></p>
+<p>clang 完成代码的标记，解析和分析后，接着就会生成 LLVM 代码。</p>
+<h3 id="2-4-IR代码生成-CodeGen"><a href="#2-4-IR代码生成-CodeGen" class="headerlink" title="2.4 IR代码生成 (CodeGen)"></a>2.4 IR代码生成 (CodeGen)</h3><p>CodeGen负责将语法树从顶至下遍历，翻译成LLVM IR，LLVM IR是Frontend的输出，也是LLVM Backerend的输入，桥接前后端。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">clang -S -fobjc-arc -emit-llvm main.m -o main.ll</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br></pre></td><td class="code"><pre><span class="line">; ModuleID &#x3D; &#39;main.m&#39;</span><br><span class="line">source_filename &#x3D; &quot;main.m&quot;</span><br><span class="line">target datalayout &#x3D; &quot;e-m:o-i64:64-f80:128-n8:16:32:64-S128&quot;</span><br><span class="line">target triple &#x3D; &quot;x86_64-apple-macosx10.15.0&quot;</span><br><span class="line"></span><br><span class="line">@.str &#x3D; private unnamed_addr constant [4 x i8] c&quot;%d\0A\00&quot;, align 1</span><br><span class="line"></span><br><span class="line">; Function Attrs: noinline optnone ssp uwtable</span><br><span class="line">define i32 @main() #0 &#123;</span><br><span class="line">  %1 &#x3D; alloca i32, align 4</span><br><span class="line">  %2 &#x3D; alloca i32, align 4</span><br><span class="line">  %3 &#x3D; alloca i32, align 4</span><br><span class="line">  %4 &#x3D; alloca i32, align 4</span><br><span class="line">  store i32 0, i32* %1, align 4</span><br><span class="line">  store i32 8, i32* %2, align 4</span><br><span class="line">  store i32 6, i32* %3, align 4</span><br><span class="line">  %5 &#x3D; load i32, i32* %2, align 4</span><br><span class="line">  %6 &#x3D; load i32, i32* %3, align 4</span><br><span class="line">  %7 &#x3D; add nsw i32 %5, %6</span><br><span class="line">  store i32 %7, i32* %4, align 4</span><br><span class="line">  %8 &#x3D; load i32, i32* %4, align 4</span><br><span class="line">  %9 &#x3D; call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @.str, i32 0, i32 0), i32 %8)</span><br><span class="line">  ret i32 0</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">declare i32 @printf(i8*, ...) #1</span><br><span class="line"></span><br><span class="line">attributes #0 &#x3D; &#123; noinline optnone ssp uwtable &quot;correctly-rounded-divide-sqrt-fp-math&quot;&#x3D;&quot;false&quot; &quot;darwin-stkchk-strong-link&quot; &quot;disable-tail-calls&quot;&#x3D;&quot;false&quot; &quot;less-precise-fpmad&quot;&#x3D;&quot;false&quot; &quot;min-legal-vector-width&quot;&#x3D;&quot;0&quot; &quot;no-frame-pointer-elim&quot;&#x3D;&quot;true&quot; &quot;no-frame-pointer-elim-non-leaf&quot; &quot;no-infs-fp-math&quot;&#x3D;&quot;false&quot; &quot;no-jump-tables&quot;&#x3D;&quot;false&quot; &quot;no-nans-fp-math&quot;&#x3D;&quot;false&quot; &quot;no-signed-zeros-fp-math&quot;&#x3D;&quot;false&quot; &quot;no-trapping-math&quot;&#x3D;&quot;false&quot; &quot;probe-stack&quot;&#x3D;&quot;___chkstk_darwin&quot; &quot;stack-protector-buffer-size&quot;&#x3D;&quot;8&quot; &quot;target-cpu&quot;&#x3D;&quot;penryn&quot; &quot;target-features&quot;&#x3D;&quot;+cx16,+fxsr,+mmx,+sahf,+sse,+sse2,+sse3,+sse4.1,+ssse3,+x87&quot; &quot;unsafe-fp-math&quot;&#x3D;&quot;false&quot; &quot;use-soft-float&quot;&#x3D;&quot;false&quot; &#125;</span><br><span class="line">attributes #1 &#x3D; &#123; &quot;correctly-rounded-divide-sqrt-fp-math&quot;&#x3D;&quot;false&quot; &quot;darwin-stkchk-strong-link&quot; &quot;disable-tail-calls&quot;&#x3D;&quot;false&quot; &quot;less-precise-fpmad&quot;&#x3D;&quot;false&quot; &quot;no-frame-pointer-elim&quot;&#x3D;&quot;true&quot; &quot;no-frame-pointer-elim-non-leaf&quot; &quot;no-infs-fp-math&quot;&#x3D;&quot;false&quot; &quot;no-nans-fp-math&quot;&#x3D;&quot;false&quot; &quot;no-signed-zeros-fp-math&quot;&#x3D;&quot;false&quot; &quot;no-trapping-math&quot;&#x3D;&quot;false&quot; &quot;probe-stack&quot;&#x3D;&quot;___chkstk_darwin&quot; &quot;stack-protector-buffer-size&quot;&#x3D;&quot;8&quot; &quot;target-cpu&quot;&#x3D;&quot;penryn&quot; &quot;target-features&quot;&#x3D;&quot;+cx16,+fxsr,+mmx,+sahf,+sse,+sse2,+sse3,+sse4.1,+ssse3,+x87&quot; &quot;unsafe-fp-math&quot;&#x3D;&quot;false&quot; &quot;use-soft-float&quot;&#x3D;&quot;false&quot; &#125;</span><br><span class="line"></span><br><span class="line">!llvm.module.flags &#x3D; !&#123;!0, !1, !2, !3, !4, !5, !6, !7&#125;</span><br><span class="line">!llvm.ident &#x3D; !&#123;!8&#125;</span><br><span class="line"></span><br><span class="line">!0 &#x3D; !&#123;i32 2, !&quot;SDK Version&quot;, [2 x i32] [i32 10, i32 15]&#125;</span><br><span class="line">!1 &#x3D; !&#123;i32 1, !&quot;Objective-C Version&quot;, i32 2&#125;</span><br><span class="line">!2 &#x3D; !&#123;i32 1, !&quot;Objective-C Image Info Version&quot;, i32 0&#125;</span><br><span class="line">!3 &#x3D; !&#123;i32 1, !&quot;Objective-C Image Info Section&quot;, !&quot;__DATA,__objc_imageinfo,regular,no_dead_strip&quot;&#125;</span><br><span class="line">!4 &#x3D; !&#123;i32 4, !&quot;Objective-C Garbage Collection&quot;, i32 0&#125;</span><br><span class="line">!5 &#x3D; !&#123;i32 1, !&quot;Objective-C Class Properties&quot;, i32 64&#125;</span><br><span class="line">!6 &#x3D; !&#123;i32 1, !&quot;wchar_size&quot;, i32 4&#125;</span><br><span class="line">!7 &#x3D; !&#123;i32 7, !&quot;PIC Level&quot;, i32 2&#125;</span><br><span class="line">!8 &#x3D; !&#123;!&quot;Apple clang version 11.0.0 (clang-1100.0.33.12)&quot;&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="2-4-1-中间代码优化-Optimize"><a href="#2-4-1-中间代码优化-Optimize" class="headerlink" title="2.4.1 中间代码优化 (Optimize)"></a>2.4.1 中间代码优化 (Optimize)</h4><p>可以在中间代码层次去做一些优化工作，我们在Xcode的编译设置里面也可以设置优化级别<code>-O1</code>,<code>-O3</code>,<code>-Os</code>对应着不同的入参，有比如类似死代码清理，内联化，表达式重组，循环变量移动这样的 Pass。Pass就是LLVM系统转化和优化的工作的一个节点，每个节点做一些工作，这些工作加起来就构成了LLVM整个系统的优化和转化。</p>
+<img src="/images/compilelink/08.png" alt="01" style="zoom:95%;" />
+
+<img src="/images/compilelink/09.png" alt="01" style="zoom:85%;" />
+
+<p>我们还可以去写一些自己的Pass，官方有比较完整的 Pass 教程： <a target="_blank" rel="noopener" href="https://releases.llvm.org/5.0.2/docs/WritingAnLLVMPass.html">Writing an LLVM Pass — LLVM 5 documentation</a>。</p>
+<h3 id="2-5-生成字节码-LLVM-Bitcode"><a href="#2-5-生成字节码-LLVM-Bitcode" class="headerlink" title="2.5 生成字节码 (LLVM Bitcode)"></a>2.5 生成字节码 (LLVM Bitcode)</h3><p>我们在Xcode7中默认生成bitcode就是这种的中间形式存在，开启了bitcode，那么苹果后台拿到的就是这种中间代码，苹果可以对bitcode做一个进一步的优化，如果有新的后端架构，仍然可以用这份bitcode去生成。</p>
+<blockquote>
+<p>Bitcode是编译后的程序的中间表现，包含Bitcode并上传到App Store Connect的Apps会在App Store上编译和链接。包含Bitcode可以在不提交新版本App的情况下，允许Apple在将来的时候再次优化你的App 二进制文件。<br>对于iOS Apps，Enable bitcode 默认为YES，是可选的（可以改为NO）。对于WatchOS和tvOS，bitcode是强制的。如果你的App支持bitcode，App Bundle（项目中所有的target）中的所有的Apps和frameworks都需要包含Bitcode。</p>
+</blockquote>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">clang -emit-llvm -c main.m -o main.bc</span><br></pre></td></tr></table></figure>
+
+<img src="/images/compilelink/10.png" alt="01" style="zoom:90%;" />
+
+<h3 id="2-6-生成相关汇编"><a href="#2-6-生成相关汇编" class="headerlink" title="2.6 生成相关汇编"></a>2.6 生成相关汇编</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">clang -S -fobjc-arc main.m -o main.s</span><br></pre></td></tr></table></figure>
+<figure class="highlight arm"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br></pre></td><td class="code"><pre><span class="line">	<span class="meta">.section</span>	__TEXT,__text,regular,pure_instructions</span><br><span class="line">	.build_version macos, <span class="number">10</span>, <span class="number">15</span>	sdk_version <span class="number">10</span>, <span class="number">15</span></span><br><span class="line">	.globl	_main                   ## -- Begin <span class="meta">function</span> main</span><br><span class="line">	.p2align	<span class="number">4</span>, <span class="number">0x90</span></span><br><span class="line"><span class="symbol">_main:</span>                                  ## <span class="comment">@main</span></span><br><span class="line">	.cfi_startproc</span><br><span class="line"><span class="comment">## %bb.0:</span></span><br><span class="line">	pushq	%rbp</span><br><span class="line">	.cfi_def_cfa_offset <span class="number">16</span></span><br><span class="line">	.cfi_offset %rbp, -<span class="number">16</span></span><br><span class="line">	movq	%rsp, %rbp</span><br><span class="line">	.cfi_def_cfa_register %rbp</span><br><span class="line">	subq	<span class="number">$32</span>, %rsp</span><br><span class="line">	movl	<span class="number">$0</span>, -<span class="number">4</span>(%rbp)</span><br><span class="line">	movl	<span class="number">$8</span>, -<span class="number">8</span>(%rbp)</span><br><span class="line">	movl	<span class="number">$6</span>, -<span class="number">12</span>(%rbp)</span><br><span class="line">	movl	-<span class="number">8</span>(%rbp), %eax</span><br><span class="line">	addl	-<span class="number">12</span>(%rbp), %eax</span><br><span class="line">	movl	%eax, -<span class="number">16</span>(%rbp)</span><br><span class="line">	movl	-<span class="number">16</span>(%rbp), %esi</span><br><span class="line">	leaq	L_.str(%rip), %rdi</span><br><span class="line">	movb	<span class="number">$0</span>, %al</span><br><span class="line">	callq	_printf</span><br><span class="line">	xorl	%esi, %esi</span><br><span class="line">	movl	%eax, -<span class="number">20</span>(%rbp)         ## <span class="number">4</span>-byte Spill</span><br><span class="line">	movl	%esi, %eax</span><br><span class="line">	addq	<span class="number">$32</span>, %rsp</span><br><span class="line">	popq	%rbp</span><br><span class="line">	retq</span><br><span class="line">	.cfi_endproc</span><br><span class="line">                                        <span class="comment">## -- End function</span></span><br><span class="line">	<span class="meta">.section</span>	__TEXT,__cstring,cstring_literals</span><br><span class="line"><span class="symbol">L_.str:</span>                                 ## <span class="comment">@.str</span></span><br><span class="line">	<span class="meta">.asciz</span>	<span class="string">&quot;%d\n&quot;</span></span><br><span class="line"></span><br><span class="line">	<span class="meta">.section</span>	__<span class="meta">DATA</span>,__objc_imageinfo,regular,no_dead_strip</span><br><span class="line"><span class="symbol">L_OBJC_IMAGE_INFO:</span></span><br><span class="line">	<span class="meta">.long</span>	<span class="number">0</span></span><br><span class="line">	<span class="meta">.long</span>	<span class="number">64</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="symbol">.subsections_via_symbols</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="2-7-生成目标文件"><a href="#2-7-生成目标文件" class="headerlink" title="2.7 生成目标文件"></a>2.7 生成目标文件</h3><p>编译阶段完成，接下来就是汇编阶段。汇编器是将汇编代码转变成机器可以执行的指令，每一个汇编语句几乎都对应一条机器指令。所以汇编器的汇编过程相对于编译器来讲比较简单，它没有复杂的语法，也没有语义，也不需要做指令优化，只是根据汇编指令和机器指令的对照表一一翻译就可以了。</p>
+<p>这些文件以 .o 结尾。如果用 Xcode 构建应用程序，可以在工程的 derived data 目录中，Objects-normal 文件夹下找到这些文件。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">clang -fmodules -c main.m -o main.o</span><br></pre></td></tr></table></figure>
+<img src="/images/compilelink/11.png" alt="01" style="zoom:90%;" />
+
+<h3 id="2-8-生成可执行文件"><a href="#2-8-生成可执行文件" class="headerlink" title="2.8 生成可执行文件"></a>2.8 生成可执行文件</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">clang main.o -o main  <span class="comment"># 生成可执行文件</span></span><br><span class="line">./main  <span class="comment"># 执行 可执行文件 代码</span></span><br></pre></td></tr></table></figure>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">打印结果：14</span><br></pre></td></tr></table></figure>
+
+<h3 id="2-9-记录一个Clang命令报错"><a href="#2-9-记录一个Clang命令报错" class="headerlink" title="2.9 记录一个Clang命令报错"></a>2.9 记录一个Clang命令报错</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">&#x2F;usr&#x2F;local&#x2F;include&#x2F;stdint.h:59:11: error: #include nested too deeply  </span><br><span class="line"># include &lt;stdint.h&gt;  </span><br><span class="line">          ^  </span><br><span class="line">&#x2F;usr&#x2F;local&#x2F;include&#x2F;stdint.h:82:11: error: #include nested too deeply</span><br><span class="line"># include &lt;inttypes.h&gt;</span><br><span class="line">          ^</span><br><span class="line">...</span><br></pre></td></tr></table></figure>
+
+<p>解决方案：</p>
+<ol>
+<li><p>可能是xcode-select 没装，于是执行xcode-select –install 进行工具安装。</p>
+</li>
+<li><p>如果问题还在。brew doctor一下就行了</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">mkdir /tmp/includes</span><br><span class="line">brew doctor 2&gt;&amp;1 | grep <span class="string">&quot;/usr/local/include&quot;</span> | awk <span class="string">&#x27;&#123;$1=$1;print&#125;&#x27;</span> | xargs -I _ mv _ /tmp/includes </span><br></pre></td></tr></table></figure>
+
+<p>参考链接：<a target="_blank" rel="noopener" href="https://github.com/SOHU-Co/kafka-node/issues/881">https://github.com/SOHU-Co/kafka-node/issues/881</a></p>
+</li>
+</ol>
+<h2 id="三、小结：iOS从编码到打包"><a href="#三、小结：iOS从编码到打包" class="headerlink" title="三、小结：iOS从编码到打包"></a>三、小结：iOS从编码到打包</h2><ul>
+<li>首先我们编写完成代码之后，会通过LLVM编译器预处理我们的代码，比如将宏放在指定的位置</li>
+<li>预处理结束之后，LLVM会对代码进行词法分析和语法分析，生成AST。AST是抽象语法树，主要用来进行快速遍历，实现静态代码检查的功能。</li>
+<li>AST会生成IR，IR是一种更加接近机器码的语言，通过IR可以生成不同平台的机器码。对于iOS平台，IR生成的可执行文件就是Mach-O.</li>
+<li>然后通过链接器将符号和地址绑定在一起，并且将项目中的多个Mach-O文件(目标文件)合并成一个Mach-O文件(可执行文件)。(<strong>关于Mach-O、链接下一节讲</strong>)</li>
+<li>将可执行文件与资源文件、storyboard、xib等打包，最后通过签名等操作生成.app文件，然后对.app文件进行压缩就生成了我们可以安装的ipa包。</li>
+<li>当然，ipa包的安装途径有两种：<ul>
+<li>通过开发者账号上传到App Store，然后在App Store上下载安装。</li>
+<li>通过PP助手、iFunBox、Xcode等工具来安装</li>
+</ul>
+</li>
+</ul>
+<h2 id="四、参考链接"><a href="#四、参考链接" class="headerlink" title="四、参考链接"></a>四、参考链接</h2><ul>
+<li><a target="_blank" rel="noopener" href="http://blog.alonemonkey.com/2016/12/21/learning-llvm/">关于LLVM，这些东西你必须知道!</a> 本篇文章大部分来自此文章。按照自己的理解记忆方式删减、添加了一些知识。原文中还补充有：<ul>
+<li>Clang的三大基础设施(libclang、LibTooling、ClangPlugin)的应用、代码示例</li>
+<li>动手写Pass的代码示例</li>
+</ul>
+</li>
+<li><a target="_blank" rel="noopener" href="https://xiaozhuanlan.com/topic/4916328705">深入剖析 iOS 编译 Clang / LLVM — 戴铭</a></li>
+<li><a href="">《程序员的自我修养》</a></li>
+<li><a target="_blank" rel="noopener" href="https://juejin.im/post/6844903716709990414#heading-6">(Xcode) 編譯器小白筆記 - LLVM前端Clang</a></li>
+</ul>
+
+    </article>
+    <!-- license  -->
+    
+        <div class="license-wrapper">
+            <p>Author：<a href="https://tenloy.github.io">Tenloy</a>
+            <p>原文链接：<a href="https://tenloy.github.io/2021/10/05/compile-clang-llvm.html">https://tenloy.github.io/2021/10/05/compile-clang-llvm.html</a>
+            <p>发表日期：2021.10.05 , 4:25 AM</p>
+            <p>更新日期：2024.04.07 , 7:53 PM</p>
+            <p>版权声明：本文采用<a rel="license noopener" target="_blank" href="http://creativecommons.org/licenses/by-nc/4.0/">Crative Commons 4.0 许可协议</a>进行许可</p>
+        </div>
+    
+    <!-- paginator  -->
+    <ul class="post-paginator">
+        <li class="next">
+            
+                <div class="nextSlogan">Next Post</div>
+                <a href= "/2021/10/06/compile-macho.html" title= "(二) Mach-O 文件结构">
+                    <div class="nextTitle">(二) Mach-O 文件结构</div>
+                </a>
+            
+        </li>
+        <li class="previous">
+            
+                <div class="prevSlogan">Previous Post</div>
+                <a href= "/2021/10/02/makefile.html" title= "[转] Make 命令的使用与NodeJS案例">
+                    <div class="prevTitle">[转] Make 命令的使用与NodeJS案例</div>
+                </a>
+            
+        </li>
+    </ul>
+    <!-- 评论插件 -->
+    <!-- 来必力City版安装代码 -->
+
+<!-- City版安装代码已完成 -->
+    
+    
+    <!-- gitalk评论 -->
+
+    <!-- utteranc评论 -->
+
+    <!-- partial('_partial/comment/changyan') -->
+    <!--PC版-->
+
+
+    
+    
+
+    <!-- 评论 -->
+</main>
+            <!-- profile -->
+            
+        </div>
+        <footer class="footer footer-unloaded">
+    <!-- social  -->
+    
+    <div class="social">
+        
+    
+        
+            
+                <a href="mailto:luotengoto@163.com" class="iconfont-archer email" title=email ></a>
+            
+        
+    
+        
+            
+                <a href="//github.com/Tenloy" class="iconfont-archer github" target="_blank" title=github></a>
+            
+        
+    
+        
+            
+                <a href="https://www.jianshu.com/u/8db1bc12db9f" class="iconfont-jian jianshu" target="_blank" title=jianshu></a>
+            
+        
+    
+        
+            
+                <a href="/atom.xml" class="iconfont-archer rss" target="_blank" title=rss></a>
+            
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+
+    </div>
+    
+    <!-- powered by Hexo  -->
+    <div class="copyright">
+        <span id="hexo-power">Powered by <a href="https://hexo.io/" target="_blank">Hexo</a></span><span class="iconfont-archer power">&#xe635;</span><span id="theme-info">theme <a href="https://github.com/fi3ework/hexo-theme-archer" target="_blank">Archer</a></span>
+    </div>
+    <!-- 不蒜子  -->
+    
+    <div class="busuanzi-container">
+    
+     
+    <span id="busuanzi_container_site_pv">PV: <span id="busuanzi_value_site_pv"></span> :)</span>
+    
+    </div>
+    
+</footer>
+    </div>
+    <!-- toc -->
+    
+    <div class="toc-wrapper" style=
+    
+
+
+
+
+
+
+
+top:40vh;
+
+    >
+        <div class="toc-catalog">
+            <span class="iconfont-archer catalog-icon">&#xe613;</span><span>CATALOG</span>
+        </div>
+        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E3%80%81%E7%BC%96%E8%AF%91%E3%80%81%E9%93%BE%E6%8E%A5%E5%B7%A5%E5%85%B7-%E2%80%94-Clang-LLVM"><span class="toc-text">一、编译、链接工具 — Clang&#x2F;LLVM</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-1-LLVM%E6%98%AF%E4%BB%80%E4%B9%88"><span class="toc-text">1.1 LLVM是什么</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#1-1-1-%E8%AF%9E%E7%94%9F"><span class="toc-text">1.1.1 诞生</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#1-1-2-%E6%A6%82%E8%BF%B0"><span class="toc-text">1.1.2 概述</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#1-1-3-LLVM%E7%9A%84%E5%AD%90%E9%A1%B9%E7%9B%AE"><span class="toc-text">1.1.3 LLVM的子项目</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-2-Clang"><span class="toc-text">1.2 Clang</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#1-2-1-Clang%E6%8F%90%E4%BE%9B%E4%BA%86%E5%93%AA%E4%BA%9B%E5%8A%9F%E8%83%BD%EF%BC%9F"><span class="toc-text">1.2.1 Clang提供了哪些功能？</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#1-2-2-Clang%E7%9A%84%E4%BC%98%E7%82%B9"><span class="toc-text">1.2.2 Clang的优点</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-3-LLVM%E6%9E%B6%E6%9E%84-%E4%B8%89%E6%AE%B5%E5%BC%8F"><span class="toc-text">1.3 LLVM架构(三段式)</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-4-Clang-LLVM%E6%9E%B6%E6%9E%84"><span class="toc-text">1.4 Clang-LLVM架构</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-5-%E5%BA%94%E7%94%A8"><span class="toc-text">1.5 应用</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8C%E3%80%81%E7%BC%96%E8%AF%91%E3%80%81%E9%9D%99%E6%80%81%E9%93%BE%E6%8E%A5%E8%BF%87%E7%A8%8B"><span class="toc-text">二、编译、静态链接过程</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Clang%E5%B8%B8%E7%94%A8%E5%91%BD%E4%BB%A4%E4%B8%8E%E5%8F%82%E6%95%B0"><span class="toc-text">Clang常用命令与参数</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-1-%E9%A2%84%E5%A4%84%E7%90%86%EF%BC%88Preprocess%EF%BC%89"><span class="toc-text">2.1 预处理（Preprocess）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-2-%E8%AF%8D%E6%B3%95%E5%88%86%E6%9E%90-Lexical-Analysis"><span class="toc-text">2.2 词法分析 (Lexical Analysis)</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-3-%E8%AF%AD%E6%B3%95%E3%80%81%E8%AF%AD%E4%B9%89%E5%88%86%E6%9E%90"><span class="toc-text">2.3 语法、语义分析</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#2-3-1-%E9%9D%99%E6%80%81%E5%88%86%E6%9E%90-Static-Analyzer"><span class="toc-text">2.3.1 静态分析 (Static Analyzer)</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-4-IR%E4%BB%A3%E7%A0%81%E7%94%9F%E6%88%90-CodeGen"><span class="toc-text">2.4 IR代码生成 (CodeGen)</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#2-4-1-%E4%B8%AD%E9%97%B4%E4%BB%A3%E7%A0%81%E4%BC%98%E5%8C%96-Optimize"><span class="toc-text">2.4.1 中间代码优化 (Optimize)</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-5-%E7%94%9F%E6%88%90%E5%AD%97%E8%8A%82%E7%A0%81-LLVM-Bitcode"><span class="toc-text">2.5 生成字节码 (LLVM Bitcode)</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-6-%E7%94%9F%E6%88%90%E7%9B%B8%E5%85%B3%E6%B1%87%E7%BC%96"><span class="toc-text">2.6 生成相关汇编</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-7-%E7%94%9F%E6%88%90%E7%9B%AE%E6%A0%87%E6%96%87%E4%BB%B6"><span class="toc-text">2.7 生成目标文件</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-8-%E7%94%9F%E6%88%90%E5%8F%AF%E6%89%A7%E8%A1%8C%E6%96%87%E4%BB%B6"><span class="toc-text">2.8 生成可执行文件</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-9-%E8%AE%B0%E5%BD%95%E4%B8%80%E4%B8%AAClang%E5%91%BD%E4%BB%A4%E6%8A%A5%E9%94%99"><span class="toc-text">2.9 记录一个Clang命令报错</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%89%E3%80%81%E5%B0%8F%E7%BB%93%EF%BC%9AiOS%E4%BB%8E%E7%BC%96%E7%A0%81%E5%88%B0%E6%89%93%E5%8C%85"><span class="toc-text">三、小结：iOS从编码到打包</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9B%9B%E3%80%81%E5%8F%82%E8%80%83%E9%93%BE%E6%8E%A5"><span class="toc-text">四、参考链接</span></a></li></ol>
+    </div>
+    
+    <div class="back-top iconfont-archer">&#xe639;</div>
+    <div class="sidebar sidebar-hide">
+    <ul class="sidebar-tabs sidebar-tabs-active-0">
+        <li class="sidebar-tab-categories"><span class="iconfont-archer">&#xe666;</span><span class="tab-name">Cate</span></li>
+        <li class="sidebar-tab-archives"><span class="iconfont-archer">&#xe67d;</span><span class="tab-name">Archive</span></li>
+        <li class="sidebar-tab-tags"><span class="iconfont-archer">&#xe61b;</span><span class="tab-name">Tag</span></li>
+    </ul>
+    <div class="sidebar-content sidebar-content-show-archive">
+        <div class="sidebar-panel-categories">
+    <div class="sidebar-categories-name">
+    
+    
+    
+    
+    
+        <span class="sidebar-category-name" data-categories="数据结构与算法"><span class="iconfont-archer">&#xe60a;</span>数据结构与算法</span>
+    
+        <span class="sidebar-category-name" data-categories="计算机组成原理"><span class="iconfont-archer">&#xe60a;</span>计算机组成原理</span>
+    
+        <span class="sidebar-category-name" data-categories="计算机网络"><span class="iconfont-archer">&#xe60a;</span>计算机网络</span>
+    
+        <span class="sidebar-category-name" data-categories="汇编语言"><span class="iconfont-archer">&#xe60a;</span>汇编语言</span>
+    
+        <span class="sidebar-category-name" data-categories="数据的存储与传输"><span class="iconfont-archer">&#xe60a;</span>数据的存储与传输</span>
+    
+        <span class="sidebar-category-name" data-categories="操作系统"><span class="iconfont-archer">&#xe60a;</span>操作系统</span>
+    
+        <span class="sidebar-category-name" data-categories="互联网标准RFC"><span class="iconfont-archer">&#xe60a;</span>互联网标准RFC</span>
+    
+        <span class="sidebar-category-name" data-categories="编译链接与装载"><span class="iconfont-archer">&#xe60a;</span>编译链接与装载</span>
+    
+        <span class="sidebar-category-name" data-categories="iOS"><span class="iconfont-archer">&#xe60a;</span>iOS</span>
+    
+        <span class="sidebar-category-name" data-categories="架构与设计模式"><span class="iconfont-archer">&#xe60a;</span>架构与设计模式</span>
+    
+        <span class="sidebar-category-name" data-categories="图形处理与渲染"><span class="iconfont-archer">&#xe60a;</span>图形处理与渲染</span>
+    
+        <span class="sidebar-category-name" data-categories="软件工程"><span class="iconfont-archer">&#xe60a;</span>软件工程</span>
+    
+        <span class="sidebar-category-name" data-categories="音视频处理"><span class="iconfont-archer">&#xe60a;</span>音视频处理</span>
+    
+        <span class="sidebar-category-name" data-categories="DSL"><span class="iconfont-archer">&#xe60a;</span>DSL</span>
+    
+        <span class="sidebar-category-name" data-categories="Swift"><span class="iconfont-archer">&#xe60a;</span>Swift</span>
+    
+        <span class="sidebar-category-name" data-categories="Git"><span class="iconfont-archer">&#xe60a;</span>Git</span>
+    
+        <span class="sidebar-category-name" data-categories="Web"><span class="iconfont-archer">&#xe60a;</span>Web</span>
+    
+    </div>
+    <div class="iconfont-archer sidebar-categories-empty">&#xe678;</div>
+    <div class="sidebar-categories-list"></div>
+</div>
+          <div class="sidebar-panel-archives">
+    <!-- 在ejs中将archive按照时间排序 -->
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    <div class="total-and-search">
+        <div class="total-archive">
+        Total : 76
+        </div>
+        <!-- search  -->
+        
+            <div class="site-search popup-trigger tl-side-search"> 
+                <span class="iconfont-jian search-icon">&#xe7fc;搜索</span>
+            </div>
+        
+    </div>
+    
+    <div class="post-archive">
+    
+    
+    
+    
+    <div class="archive-year"> 2022 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/05</span><a class="archive-post-title" href= "/2022/05/05/sqlite.html" >iOS SQLite的使用与优化</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/28</span><a class="archive-post-title" href= "/2022/04/28/mmap.html" >内存映射mmap函数的原理与应用</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/18</span><a class="archive-post-title" href= "/2022/03/18/avfoundation.html" >AVFoundation Programming Guide(译)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/17</span><a class="archive-post-title" href= "/2022/03/17/avframework.html" >iOS音视频库概述</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/09</span><a class="archive-post-title" href= "/2022/02/09/OAuth.html" >[转] OAuth 2.0简述</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/18</span><a class="archive-post-title" href= "/2022/01/18/wkwebview-buges.html" >WKWebView使用过程中遇到的坑</a>
+        </li>
+    
+    
+    
+    
+    
+        </ul>
+    
+    <div class="archive-year"> 2021 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/22</span><a class="archive-post-title" href= "/2021/11/22/bit-calculation.html" >[转] 位运算实现加、减、乘、除运算</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/10</span><a class="archive-post-title" href= "/2021/11/10/git-use.html" >Git的使用总结</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/21</span><a class="archive-post-title" href= "/2021/10/21/dyld-objc.html" >(七) dyld与Objc—_objc_init、map_images、load_images</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/18</span><a class="archive-post-title" href= "/2021/10/18/compile-dynamic-link.html" >(六) Mach-O 文件的动态链接、库、Dyld(含dlopen)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/14</span><a class="archive-post-title" href= "/2021/10/14/compile-vm-asrl.html" >(五) Mach-O 文件之进程(虚拟)地址空间、ASLR</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/10</span><a class="archive-post-title" href= "/2021/10/10/compile-load.html" >(四) Mach-O 文件的装载</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/08</span><a class="archive-post-title" href= "/2021/10/08/compile-static-link.html" >(三) Mach-O 文件的静态链接</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/06</span><a class="archive-post-title" href= "/2021/10/06/compile-macho.html" >(二) Mach-O 文件结构</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/05</span><a class="archive-post-title" href= "/2021/10/05/compile-clang-llvm.html" >(一) Clang/LLVM 介绍、OC 程序的编译过程</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/02</span><a class="archive-post-title" href= "/2021/10/02/makefile.html" >[转] Make 命令的使用与NodeJS案例</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/28</span><a class="archive-post-title" href= "/2021/09/28/architectural-pattern.html" >常见架构模式: MVC、MVP、MVVM、VIPER</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/25</span><a class="archive-post-title" href= "/2021/09/25/design-pattern.html" >常见的设计模式</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/20</span><a class="archive-post-title" href= "/2021/09/20/program-thought.html" >常见的编程范式</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/15</span><a class="archive-post-title" href= "/2021/09/15/graphics-processing-case.html" >图形处理(三) - 图形处理实践案例</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/15</span><a class="archive-post-title" href= "/2021/09/15/graphics-processing.html" >图形处理(二) - 图形与视频处理相关的框架</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/13</span><a class="archive-post-title" href= "/2021/09/13/image-encode-decode.html" >图形处理(一) - 图片的加载与编解码</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/12</span><a class="archive-post-title" href= "/2021/09/12/iOS-Render.html" >[转] iOS离屏渲染原理及优化</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/11</span><a class="archive-post-title" href= "/2021/09/11/core-animation03.html" >Core-Animation(三) - 渲染流程探究及性能分析</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/09</span><a class="archive-post-title" href= "/2021/09/09/core-animation02.html" >Core Animation(二) - 隐式动画、CATransaction与CAAction</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/07</span><a class="archive-post-title" href= "/2021/09/07/core-animation01.html" >Core Animation(一) - UIView与CALayer、布局与绘制</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/05</span><a class="archive-post-title" href= "/2021/09/05/AFN-Analyse.html" >[转] AFN框架实现解析</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/04</span><a class="archive-post-title" href= "/2021/09/04/nrl-session.html" >NSURLSession概述</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/02</span><a class="archive-post-title" href= "/2021/09/02/Log.html" >移动端日志库设计</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/01</span><a class="archive-post-title" href= "/2021/08/01/Crash-Monitor.html" >iOS崩溃监控与分析</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/30</span><a class="archive-post-title" href= "/2021/07/30/Lag-Monitor.html" >iOS卡顿监控</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/29</span><a class="archive-post-title" href= "/2021/07/29/SwiftUI.html" >SwiftUI</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/29</span><a class="archive-post-title" href= "/2021/07/29/Swift-Version-History.html" >Swift版本更新API介绍</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/26</span><a class="archive-post-title" href= "/2021/07/26/RunLoop-Reposted-From-ibireme.html" >[转] 深入理解RunLoop—ibireme</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/25</span><a class="archive-post-title" href= "/2021/07/25/Protocol-Buffer.html" >Protocol Buffer的基本介绍</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/24</span><a class="archive-post-title" href= "/2021/07/24/base64.html" >Base64编码及iOS中的Base64</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/23</span><a class="archive-post-title" href= "/2021/07/23/chinese-encode.html" >[转] 彻底弄懂常见的7种中文字符编码</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/10</span><a class="archive-post-title" href= "/2021/07/10/p-npc-np.html" >P问题、NP问题、NPC、NP-Hard、P=NP?</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/30</span><a class="archive-post-title" href= "/2021/06/30/probability.html" >(六) 概率算法</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/28</span><a class="archive-post-title" href= "/2021/06/28/branch-bound.html" >(五) 分支限界算法</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/26</span><a class="archive-post-title" href= "/2021/06/26/back-track.html" >(四) 回溯法(试探算法)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/24</span><a class="archive-post-title" href= "/2021/06/24/greed.html" >(三) 贪心算法</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/22</span><a class="archive-post-title" href= "/2021/06/22/dynamic-programming.html" >(二) 动态规划算法</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/20</span><a class="archive-post-title" href= "/2021/06/20/divide-and-conquer.html" >(一) 分治算法及减治、变治算法</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/18</span><a class="archive-post-title" href= "/2021/06/18/several-programming.html" >穷举、递推、迭代(辗转法)、递归算法</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/15</span><a class="archive-post-title" href= "/2021/06/15/datastruction-overview.html" >数据结构与算法概述</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/06</span><a class="archive-post-title" href= "/2021/06/06/Web-Module.html" >前端各种模块化方案总结</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/27</span><a class="archive-post-title" href= "/2021/05/27/Fiber.html" >[转] 最通俗的 React Fiber(时间分片)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/27</span><a class="archive-post-title" href= "/2021/05/27/Coroutine.html" >[转] 什么是协程</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/19</span><a class="archive-post-title" href= "/2021/05/19/DSL.html" >[转] 谈谈DSL以及DSL的应用（以CocoaPods 为例）</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/03</span><a class="archive-post-title" href= "/2021/05/03/iOS-private-pod.html" >私有Pod库部署</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/29</span><a class="archive-post-title" href= "/2021/04/29/iOS-ComRouter.html" >[转] iOS的组件化方案</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/27</span><a class="archive-post-title" href= "/2021/04/27/iOS-CI.html" >iOS的持续集成</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/26</span><a class="archive-post-title" href= "/2021/04/26/Containers.html" >常见的容器概念：Linux容器、Docker容器、服务器容器</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/24</span><a class="archive-post-title" href= "/2021/04/24/Dock-Reprinted-from-RuanYIFeng.html" >[转] Docker入门教程</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/20</span><a class="archive-post-title" href= "/2021/04/20/Sync-Async.html" >同步和异步解读及编程中的使用场景</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/17</span><a class="archive-post-title" href= "/2021/04/17/Arm64-Handbook.html" >ARM64指令简易手册</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/16</span><a class="archive-post-title" href= "/2021/04/16/Arm64-Introduce.html" >iOS需要了解的ARM64汇编</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/13</span><a class="archive-post-title" href= "/2021/04/13/Command-Line.html" >CLI Shell、Terminal、脚本(语言)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/10</span><a class="archive-post-title" href= "/2021/04/10/Ins-SysCall-Kernel-Shell.html" >指令、系统调用、库、Shell、APP的层次关系</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/08</span><a class="archive-post-title" href= "/2021/04/08/ISA-Microarch-Soc.html" >指令集、微架构、手机芯片(Soc)及ARM的介绍</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/02</span><a class="archive-post-title" href= "/2021/04/02/Engineering.html" >工程化、动态化、容器化、组件化</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/01</span><a class="archive-post-title" href= "/2021/04/01/GithubPages-Hexo.html" >使用Hexo+Github Pages搭建个人博客</a>
+        </li>
+    
+    
+    
+    
+    
+        </ul>
+    
+    <div class="archive-year"> 2020 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/22</span><a class="archive-post-title" href= "/2020/12/22/aes.html" >数据加密 — 对称加密(以AES为例)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/21</span><a class="archive-post-title" href= "/2020/12/21/aes-standard.html" >[转] AES标准及Rijndael算法解析</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/20</span><a class="archive-post-title" href= "/2020/12/20/asymmetric.html" >数据加密 — 非对称加密(加签/加密，以RSA为例)</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/09</span><a class="archive-post-title" href= "/2020/12/09/pki.html" >常见的PKI标准(X.509、PKCS)及证书相关介绍</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/28</span><a class="archive-post-title" href= "/2020/10/28/runtime-data-structure.html" >Objc Runtime总结</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/11</span><a class="archive-post-title" href= "/2020/09/11/GCD.html" >Objective-C — 深入浅出GCD常用API</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/06</span><a class="archive-post-title" href= "/2020/09/06/oc-block.html" >Objective-C — Block</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/26</span><a class="archive-post-title" href= "/2020/08/26/AutoreleasePool.html" >AutoreleasePool</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/24</span><a class="archive-post-title" href= "/2020/08/24/oc-memory-manage.html" >Objective-C — 内存管理</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/01</span><a class="archive-post-title" href= "/2020/08/01/ui-navigation-bar.html" >[转] 导航栏的架构介绍及使用</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/15</span><a class="archive-post-title" href= "/2020/07/15/symbol-decl.html" >变量声明、函数声明的作用</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/01</span><a class="archive-post-title" href= "/2020/07/01/ios-apns.html" >iOS APNS接收逻辑梳理</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/13</span><a class="archive-post-title" href= "/2020/06/13/ios-vest.html" >iOS制作马甲总结</a>
+        </li>
+    
+    </div>
+  </div>
+        <div class="sidebar-panel-tags">
+    <div class="sidebar-tags-name">
+    
+        <span class="sidebar-tag-name" data-tags="AutoreleasePool"><span class="iconfont-archer">&#xe606;</span>AutoreleasePool</span>
+    
+        <span class="sidebar-tag-name" data-tags="GCD"><span class="iconfont-archer">&#xe606;</span>GCD</span>
+    
+        <span class="sidebar-tag-name" data-tags="hexo"><span class="iconfont-archer">&#xe606;</span>hexo</span>
+    
+        <span class="sidebar-tag-name" data-tags="ISA"><span class="iconfont-archer">&#xe606;</span>ISA</span>
+    
+        <span class="sidebar-tag-name" data-tags="Microarch"><span class="iconfont-archer">&#xe606;</span>Microarch</span>
+    
+        <span class="sidebar-tag-name" data-tags="Soc"><span class="iconfont-archer">&#xe606;</span>Soc</span>
+    
+        <span class="sidebar-tag-name" data-tags="ARM64"><span class="iconfont-archer">&#xe606;</span>ARM64</span>
+    
+        <span class="sidebar-tag-name" data-tags="CLI"><span class="iconfont-archer">&#xe606;</span>CLI</span>
+    
+        <span class="sidebar-tag-name" data-tags="Shell"><span class="iconfont-archer">&#xe606;</span>Shell</span>
+    
+        <span class="sidebar-tag-name" data-tags="多线程"><span class="iconfont-archer">&#xe606;</span>多线程</span>
+    
+        <span class="sidebar-tag-name" data-tags="Docker"><span class="iconfont-archer">&#xe606;</span>Docker</span>
+    
+        <span class="sidebar-tag-name" data-tags="DSL"><span class="iconfont-archer">&#xe606;</span>DSL</span>
+    
+        <span class="sidebar-tag-name" data-tags="协程"><span class="iconfont-archer">&#xe606;</span>协程</span>
+    
+        <span class="sidebar-tag-name" data-tags="Fiber"><span class="iconfont-archer">&#xe606;</span>Fiber</span>
+    
+        <span class="sidebar-tag-name" data-tags="dp"><span class="iconfont-archer">&#xe606;</span>dp</span>
+    
+        <span class="sidebar-tag-name" data-tags="SwiftUI"><span class="iconfont-archer">&#xe606;</span>SwiftUI</span>
+    
+        <span class="sidebar-tag-name" data-tags="RunLoop"><span class="iconfont-archer">&#xe606;</span>RunLoop</span>
+    
+        <span class="sidebar-tag-name" data-tags="Swift-Syntax"><span class="iconfont-archer">&#xe606;</span>Swift-Syntax</span>
+    
+        <span class="sidebar-tag-name" data-tags="LagMonitor"><span class="iconfont-archer">&#xe606;</span>LagMonitor</span>
+    
+        <span class="sidebar-tag-name" data-tags="Log"><span class="iconfont-archer">&#xe606;</span>Log</span>
+    
+        <span class="sidebar-tag-name" data-tags="CrashMonitor"><span class="iconfont-archer">&#xe606;</span>CrashMonitor</span>
+    
+        <span class="sidebar-tag-name" data-tags="AFN"><span class="iconfont-archer">&#xe606;</span>AFN</span>
+    
+    </div>
+    <div class="iconfont-archer sidebar-tags-empty">&#xe678;</div>
+    <div class="tag-load-fail" style="display: none; color: #ccc; font-size: 0.6rem;">
+    缺失模块。<br/>
+    1、请确保node版本大于6.2<br/>
+    2、在博客根目录（注意不是archer根目录）执行以下命令：<br/>
+    <span style="color: #f75357; font-size: 1rem; line-height: 2rem;">npm i hexo-generator-json-content --save</span><br/>
+    3、在根目录_config.yml里添加配置：
+    <pre style="color: #787878; font-size: 0.6rem;">
+jsonContent:
+  meta: false
+  pages: false
+  posts:
+    title: true
+    date: true
+    path: true
+    text: false
+    raw: false
+    content: false
+    slug: false
+    updated: false
+    comments: false
+    link: false
+    permalink: false
+    excerpt: false
+    categories: true
+    tags: true</pre>
+    </div> 
+    <div class="sidebar-tags-list"></div>
+</div>
+    </div>
+</div> 
+    <script>
+    var siteMeta = {
+        root: "/",
+        author: "Tenloy"
+    }
+</script>
+    <!-- CDN failover -->
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js"></script>
+    <script type="text/javascript">
+        if (typeof window.$ === 'undefined')
+        {
+            console.warn('jquery load from jsdelivr failed, will load local script')
+            document.write('<script src="/lib/jquery.min.js">\x3C/script>')
+        }
+    </script>
+    <script src="/scripts/main.js"></script>
+    <!-- algolia -->
+    
+        <div class="site-search">
+  <div class="algolia-popup popup">
+    <div class="algolia-search">
+      <div class="algolia-search-input-icon">
+        <i class="fa fa-search"></i>
+      </div>
+      <div class="algolia-search-input" id="algolia-search-input"></div>
+    </div>
+
+    <div class="algolia-results">
+      <div id="algolia-stats"></div>
+      <div id="algolia-hits"></div>
+      <div id="algolia-pagination" class="algolia-pagination"></div>
+    </div>
+
+    <span class="popup-btn-close">
+      <i class="iconfont-archer">&#xe609;</i>
+    </span>
+  </div>
+</div>
+        <script src="https://cdn.jsdelivr.net/npm/instantsearch.js@2.8.0/dist/instantsearch.min.js" defer></script>
+        <script src="/scripts/search.js" defer></script>
+    
+    <!-- busuanzi  -->
+    
+    <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    
+    <!-- CNZZ  -->
+    
+    </div>
+    <!-- async load share.js -->
+    
+        <script src="/scripts/share.js" async></script>    
+     
+    </body>
+</html>
+
+
