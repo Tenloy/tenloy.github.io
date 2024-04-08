@@ -60,7 +60,7 @@ categories:
 
 ## 1.3 上下文切换
 
-> OS X 和 iOS 的核心XNU内核在发生操作系统事件时（如每隔一定时间，唤起系统调用等情况）会切换执行路经。执行中路经的状态，例如CPU的寄存器的信息保存到各自路经专用的内存块中，从切换目标路经专用的内存块中，复原CPU寄存器的信息，继续执行切换路经的CPU命令列，这被称为“上下文切换”
+> OS X 和 iOS 的核心XNU内核在发生操作系统事件时（如每隔一定时间，唤起系统调用等情况）会切换执行路径。执行中路径的状态，例如CPU的寄存器的信息保存到各自路径专用的内存块中，从切换目标路径专用的内存块中，复原CPU寄存器的信息，继续执行切换路径的CPU命令列，这被称为“上下文切换”。
 
 上下文切换是并行（单处理器中进程被交替执行，表现出并发外部特征）的核心关键。
 
@@ -117,18 +117,48 @@ typedef struct dispatch_queue_s *dispatch_queue_t；
 
 `__builtin_expect`是编译器用来优化执行速度的函数，fastpath表示条件更可能成立，slowpath表示条件更不可能成立。我们在阅读源码的时候可以做忽略处理。
 
-## 2.3 TSD
+## 2.3 TSD/TLS
 
-Thread Specific Data(TSD)是指线程私有数据。在多线程中，会用全局变量来实现多个函数间的数据共享，局部变量来实现内部的单独访问。TSD则是能够在同一个线程的不同函数中被访问，在不同线程时，相同的键值获取的数据随线程不同而不同。可以通过pthread的相关api来实现TSD:
+> **如果一个变量需要在线程内部的各个函数调用都能访问、但其它线程不能访问**，这就需要新的机制来实现，我们称之为Static memory local to a thread (线程局部静态变量)，同时也可称之为线程特有数据（TSD: Thread-Specific Data）或者线程本地存储（**TLS: Thread-Local Storage**）。这一类型的数据，在程序中每个线程都会分别维护一份变量的副本(copy)，并且长期存在于该线程中，对此类变量的操作不影响其他线程。
+
+在多线程中，会用全局变量来实现多个函数间的数据共享，局部变量来实现内部的单独访问。
+
+TLS则是能够在同一个线程的不同函数中被访问，在不同线程时，相同的键值获取的数据随线程不同而不同。
+
+Linux下支持两种方式定义和使用TLS变量，具体如下表：
+
+| 定义方式               | 支持层次   | 访问方式                                                     |
+| :--------------------- | :--------- | :----------------------------------------------------------- |
+| __thread关键字         | 语言层面   | 与全局变量完全一样                                           |
+| pthread_key_create函数 | 运行库层面 | pthread_get_specific和pthread_set_specific对线程变量进行映射和读取(通过键值) |
+
+**可以通过pthread的相关api来实现TSD**:
 
 ```c++
 //创建key
 int pthread_key_create(pthread_key_t *, void (* _Nullable)(void *));
-//get方法
-void* _Nullable pthread_getspecific(pthread_key_t);
+//删除key
+int pthread_key_delete(pthread_key_t key);
 //set方法
 int pthread_setspecific(pthread_key_t , const void * _Nullable);
+//get方法
+void* _Nullable pthread_getspecific(pthread_key_t);
 ```
+
+**__thread关键字**
+
+在Linux中还有一种更为高效的线程局部存储方法，就是使用关键字`__thread`来定义变量。
+
+`__thread`是GCC内置的线程局部存储设施（Thread-Local Storage），它的实现非常高效，与pthread_key_t向比较更为快速，其存储性能可以与全局变量相媲美，而且使用方式也更为简单。
+
+创建线程局部变量只需简单的在全局或者静态变量的声明中加入`__thread`说明即可。列如：
+
+```c++
+static __thread char t_buf[32] = {'\0'};
+extern __thread int t_val = 0;
+```
+
+凡是带有__thread的变量，每个线程都拥有该变量的一份拷贝，且互不干扰。线程局部存储中的变量将一直存在，直至线程终止，当线程终止时会自动释放这一存储。
 
 # 三、GCD的常用数据结构
 
@@ -173,8 +203,9 @@ struct dispatch_continuation_s {
 //continuation结构体头部
 #define DISPATCH_CONTINUATION_HEADER(x) \
     _OS_OBJECT_HEADER( \
-    const void *do_vtable, \                            do_ref_cnt, \
-    do_xref_cnt); \                                 //_OS_OBJECT_HEADER定义
+      const void *do_vtable, \                            
+      do_ref_cnt, \
+      do_xref_cnt); \                               //_OS_OBJECT_HEADER定义
     struct dispatch_##x##_s *volatile do_next; \    //下一个任务
     dispatch_function_t dc_func; \                  //执行内容
     void *dc_ctxt; \                                //上下文
@@ -306,7 +337,7 @@ DISPATCH_VTABLE_SUBCLASS_INSTANCE(queue_root, queue,
 - 但是请注意，**提交到不同的、独立队列的block可以相对于彼此同时执行**。
   - 【两个block通过dispatch_async提交到一个并行队列 基本等价于 两个block通过dispatch_sync提交到两个串行队列】（都是两个线程）
   - 1个并行队列 + 多个异步任务(dispatch_async) = 会开启多线程
-  - 多个【1个串行队列+1个同步/异步任务】 = 多线程
+  - 多个【1个串行队列+1个异步任务】 = 多线程
 
 
 ```php
@@ -448,7 +479,7 @@ developer可以不直接操纵线程，而是将所要执行的任务封装成�
 
 GCD是一种轻量的基于block的线程模型，使用GCD一般要注意两点：一是线程的priority，二是对象间的循环引用问题。
 
-NSOperationQueue是对GCD更上一层的封装，它对线程的控制更好一些，但是用起来也麻烦一些。关于这两个孰优熟劣，需要根据具体应用场景进行讨论：[stackoverflow:GCD vs NSopeartionQueue](http://stackoverflow.com/questions/10373331/nsoperation-vs-grand-central-dispatch)。
+NSOperationQueue是对GCD更上一层的封装，它对线程的控制更好一些，但是用起来也麻烦一些。关于这两个孰优熟劣，需要根据具体应用场景进行讨论：[stackoverflow:GCD vs NSopeartionQueue](http://stackoverflow.com/questions/10373331/nsoperation-vs-grand-central-dispatch)（NSopeartionQueue设置最大并发数、设置任务之间的依赖比较方便）。
 
 下面是 objc.io上的一幅图，直观地描述GCD队列和线程的关系：
 
@@ -1353,9 +1384,9 @@ XNU内核持有4种workquene：
 
 ### 4.1.6 总结
 
-dispatch_async将任务添加到队列的链表中并唤醒队列，全局队列唤醒时中会从线程池里取出可用线程，如果没有则会新建线程，然后在线程中执行队列取出的任务;主队列会唤醒主线程的Runloop，然后在Runloop循环中通知GCD执行主队列提交的任务。
+dispatch_async将任务添加到队列的链表中并唤醒队列，全局队列唤醒时中会从线程池里取出可用线程，如果没有则会新建线程，然后在线程中执行队列取出的任务；主队列会唤醒主线程的Runloop，然后在Runloop循环中通知GCD执行主队列提交的任务。
 
-dispatch_sync一般都在当前线程执行,如果是主队列的任务还是会切换到主线程执行。它使用线程信号量来实现串行执行的功能。
+dispatch_sync一般都在当前线程执行，如果是主队列的任务还是会切换到主线程执行。它使用线程信号量来实现串行执行的功能。
 
 ## 4.2 Dispatch Semaphore
 
