@@ -36,7 +36,7 @@
 <meta property="og:image" content="https://tenloy.github.io/images/Engineering/modular_and_component_summary_4.jpg">
 <meta property="og:image" content="https://tenloy.github.io/images/Engineering/mgj-component.jpg">
 <meta property="article:published_time" content="2021-04-02T01:43:56.000Z">
-<meta property="article:modified_time" content="2024-04-07T12:02:59.456Z">
+<meta property="article:modified_time" content="2024-04-19T10:59:31.248Z">
 <meta property="article:author" content="Tenloy">
 <meta property="article:tag" content="Tenloy, iOS, Tenloy Blog, 博客，Swift, 编译, 计算机">
 <meta name="twitter:card" content="summary">
@@ -313,7 +313,7 @@ height:40vh;
                 
                 
                     <div class="post-intro-read">
-                        <span>Word count: <span class="post-count word-count">4.9k</span>Reading time: <span class="post-count reading-time">16 min</span></span>
+                        <span>Word count: <span class="post-count word-count">5.6k</span>Reading time: <span class="post-count reading-time">19 min</span></span>
                     </div>
                 
                 <div class="post-intro-meta">
@@ -563,7 +563,7 @@ height:40vh;
 <li>如WebView容器、Weex容器、RN容器、自定义DSL容器等</li>
 </ul>
 <p><strong>跨平台与动态化是功能实现。容器化是一种软件开发方法，其可以实现，但不仅仅只能实现跨平台与动态化等。</strong></p>
-<h2 id="五、模块化和组件化"><a href="#五、模块化和组件化" class="headerlink" title="五、模块化和组件化"></a>五、模块化和组件化</h2><h3 id="5-1-模块化"><a href="#5-1-模块化" class="headerlink" title="5.1 模块化"></a>5.1 模块化</h3><h4 id="5-1-1-什么是模块"><a href="#5-1-1-什么是模块" class="headerlink" title="5.1.1 什么是模块"></a>5.1.1 什么是模块</h4><blockquote>
+<h2 id="五、模块化和组件化、插件化"><a href="#五、模块化和组件化、插件化" class="headerlink" title="五、模块化和组件化、插件化"></a>五、模块化和组件化、插件化</h2><h3 id="5-1-模块化"><a href="#5-1-模块化" class="headerlink" title="5.1 模块化"></a>5.1 模块化</h3><h4 id="5-1-1-什么是模块"><a href="#5-1-1-什么是模块" class="headerlink" title="5.1.1 什么是模块"></a>5.1.1 什么是模块</h4><blockquote>
 <p>模块化编程是一种软件设计技术，它强调将程序的功能分成独立的、可互换的模块，这样每个模块都包含执行所需功能的一个方面所需的一切。—— <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Modular_programming">Modular programming</a></p>
 </blockquote>
 <p>模块：模块化的目的在于将一个程序按照其功能做拆分，分成相互独立的模块，以便于每个模块只包含与其功能相关的内容，模块之间通过接口调用。</p>
@@ -596,9 +596,24 @@ height:40vh;
 
 <p>大部分时候，拆分模块、组件都是以清晰的流程、逻辑为基础的，就如上图的过程，当流程清晰后，可以拆分复用的组件也就出来了。</p>
 <h3 id="5-3-插件化"><a href="#5-3-插件化" class="headerlink" title="5.3 插件化"></a>5.3 插件化</h3><p>插件：可以理解为是封装了一层对外调用的接口的组件。</p>
-<p>插件的概念比较形象，一般存在一个“插拔”过程，所以要求可插拔的插件有一个相同的接口（这里所说的接口只是概念上的接口，即调用方法及参数等）。而组件是不存在这个相同接口的。</p>
+<p>插件的概念比较形象，<strong>一般存在一个“插拔”过程，所以要求可插拔的插件有一个相同的接口</strong>（这里所说的接口只是概念上的接口，即调用方法及参数等）。而组件是不存在这个相同接口的。</p>
 <p>插件和组件的实质区别就在于：通过统一接口隔绝业务代码对于组件的直接依赖。</p>
-<p>Android中对组件化、插件化有不太一样的定义：</p>
+<p>插件化常见的应用场景：</p>
+<ul>
+<li>Webpack、babel、vite、rollup等脚手架</li>
+<li>vscode、atom、chromium 等项目</li>
+<li>Vue：通常向Vue全局添加一些功能时，会采用插件的模式，它有两种编写方式：<ul>
+<li>对象类型：一个对象，但是必须包含一个 install 的函数，该函数会在安装插件时执行； </li>
+<li>函数类型：一个function，这个函数会在安装插件时自动执行；</li>
+</ul>
+</li>
+<li>Android</li>
+<li>iOS：BeeHive这个路由框架，是不是也相当于把每个组件当做一个插件了，每个组件实现生命周期方法，主项目会在合适的时机，调用各个组件的指定方法。<ul>
+<li>BeeHive会给每个模块提供生命周期事件，用于与BeeHive宿主环境进行必要信息交互，感知模块生命周期的变化。事件分为三种类型：系统事件、通用事件、业务自定义事件。</li>
+</ul>
+</li>
+</ul>
+<p>Android中对组件化、插件化的定义：</p>
 <ul>
 <li>组件化：<ul>
 <li>开发模式下面module本来就是一个独立app，只是发布模式下变成library。</li>
@@ -623,6 +638,24 @@ height:40vh;
 <li>一般来讲，模块的体量会大于组件。不过，大的组件也可以称为模块，小的模块也可以称为组件，所以，在我看来组件和模块的划分并没有那么的泾渭分明。随意两者的粒度的大小改变，两者是可以转换的。</li>
 </ul>
 <p>这三个概念是经常同时出现在一个项目中的，我们往往对复杂大项目进行模块化划分的时候，也会进行组件化，而且插件化的本质是面向接口编程，对于组件化和模块化都是适用的，可实现随意插拔的灵活和高扩展性，属于项目架构的高端设计。</p>
+<p><a target="_blank" rel="noopener" href="https://blog.csdn.net/horkychen/article/details/45083467">组件和模块的区别</a>一文中的说法：</p>
+<p>组件(Component)和模块(Module)又是一对容易混淆的名词，也常常被用来相互替换。两者是否有差异往往取决专业背景、所在领域、以及视角。</p>
+<p>个人总结，从设计上来看，<strong>组件强调复用，模块强调职责(内聚、分离)<strong>，或者说</strong>组件是达到可复用要求的模块</strong>。</p>
+<p><strong>Module</strong>, 中文为模块或模组。它的<strong>核心意义是分离职责</strong>，属于代码级模块化的产出。本身是一组具有一定内聚性代码的组合，职责明确。对外的接口可以是松散的，也可以是集中的。SEI的定义如下：An implementation unit of software that provides a coherent set of responsibilities。它以问题分解的形式，来解决软件设计问题。它更强调一个内聚的概念，形式上可以是Java中的包，也可以是一个源代码目录。</p>
+<p><strong>Component</strong>，中文称为组件，或者构件。使用非常比较广泛，它的<strong>核心意义在于复用</strong>，相对模块，对于依赖性有更高的要求。</p>
+<p>我大概整理了一下，两个定义 (参考<a target="_blank" rel="noopener" href="http://en.wikibooks.org/wiki/Computer_Programming/Component_based_software_development">Component based software programming</a>):</p>
+<ul>
+<li>可以复用的模块，概念上与模块基本等同，只是明显有依赖性的要求。（最早提出时概念）。</li>
+<li>Component-Based Software Development中提倡的组件定义如下(Component Software):<ul>
+<li>除了完成某个特定功能外，还要具备如下条件的代码组合:<ul>
+<li>符合特定的接口要求（交互的要求）。</li>
+<li>具有明确的上下文依赖 （复用的要求）。</li>
+</ul>
+</li>
+<li>它可以独立发布(二进制或源代码的形式)，也可以进行组合。这样软件开发就变成了组件的组装了。</li>
+</ul>
+</li>
+</ul>
 <h3 id="5-5-前端与iOS中的组件化"><a href="#5-5-前端与iOS中的组件化" class="headerlink" title="5.5 前端与iOS中的组件化"></a>5.5 前端与iOS中的组件化</h3><p>在前端、iOS、Android中，都会有组件化的说法(Android先不讨论)。不过与上面的组件概念都稍微有所出入。</p>
 <blockquote>
 <p><em>以复用为基础，定义、实现许多松耦合的独立组件（Component），再将组件组合成为系统</em>。</p>
@@ -673,7 +706,7 @@ height:40vh;
             <p>Author：<a href="https://tenloy.github.io">Tenloy</a>
             <p>原文链接：<a href="https://tenloy.github.io/2021/04/02/Engineering.html">https://tenloy.github.io/2021/04/02/Engineering.html</a>
             <p>发表日期：2021.04.02 , 9:43 AM</p>
-            <p>更新日期：2024.04.07 , 8:02 PM</p>
+            <p>更新日期：2024.04.19 , 6:59 PM</p>
             <p>版权声明：本文采用<a rel="license noopener" target="_blank" href="http://creativecommons.org/licenses/by-nc/4.0/">Crative Commons 4.0 许可协议</a>进行许可</p>
         </div>
     
@@ -815,7 +848,7 @@ top:40vh;
         <div class="toc-catalog">
             <span class="iconfont-archer catalog-icon">&#xe613;</span><span>CATALOG</span>
         </div>
-        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E3%80%81%E5%B7%A5%E7%A8%8B%E5%8C%96"><span class="toc-text">一、工程化</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#2-1-%E5%87%A0%E4%B8%AA%E6%A6%82%E5%BF%B5"><span class="toc-text">2.1 几个概念</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-2-%E5%B7%A5%E7%A8%8B%E5%8C%96"><span class="toc-text">2.2 工程化</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8C%E3%80%81%E8%B7%A8%E5%B9%B3%E5%8F%B0"><span class="toc-text">二、跨平台</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%89%E3%80%81%E5%8A%A8%E6%80%81%E5%8C%96"><span class="toc-text">三、动态化</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#3-1-%E4%BB%80%E4%B9%88%E6%98%AF%E5%8A%A8%E6%80%81%E5%8C%96%EF%BC%9F"><span class="toc-text">3.1 什么是动态化？</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-2-%E7%A7%BB%E5%8A%A8%E7%AB%AF%E5%8A%A8%E6%80%81%E5%8C%96%E6%96%B9%E6%A1%88"><span class="toc-text">3.2 移动端动态化方案</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9B%9B%E3%80%81%E5%AE%B9%E5%99%A8%E5%8C%96"><span class="toc-text">四、容器化</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%94%E3%80%81%E6%A8%A1%E5%9D%97%E5%8C%96%E5%92%8C%E7%BB%84%E4%BB%B6%E5%8C%96"><span class="toc-text">五、模块化和组件化</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#5-1-%E6%A8%A1%E5%9D%97%E5%8C%96"><span class="toc-text">5.1 模块化</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#5-1-1-%E4%BB%80%E4%B9%88%E6%98%AF%E6%A8%A1%E5%9D%97"><span class="toc-text">5.1.1 什么是模块</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#5-1-2-%E6%A8%AA%E5%90%91%E6%8B%86%E5%88%86%E4%B8%9A%E5%8A%A1%E3%80%81%E5%8A%9F%E8%83%BD%E6%A8%A1%E5%9D%97"><span class="toc-text">5.1.2 横向拆分业务、功能模块</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#5-1-3-%E7%BA%B5%E5%90%91%E6%8B%86%E5%88%86%E6%8A%80%E6%9C%AF%E3%80%81%E6%9E%B6%E6%9E%84%E6%A8%A1%E5%9D%97"><span class="toc-text">5.1.3 纵向拆分技术、架构模块</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-2-%E7%BB%84%E4%BB%B6%E5%8C%96"><span class="toc-text">5.2 组件化</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#5-2-1-%E4%BB%80%E4%B9%88%E6%98%AF%E7%BB%84%E4%BB%B6%EF%BC%9F"><span class="toc-text">5.2.1 什么是组件？</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#5-2-2-%E4%BB%8E%E7%95%8C%E9%9D%A2%E5%85%A5%E6%89%8B%EF%BC%8C%E6%8B%86%E5%88%86%E5%8F%AF%E8%A7%86%E5%8C%96%E7%BB%84%E4%BB%B6"><span class="toc-text">5.2.2 从界面入手，拆分可视化组件</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#5-2-3-%E4%BB%8E%E6%95%B0%E6%8D%AE%E5%85%A5%E6%89%8B%EF%BC%8C%E6%8B%86%E5%88%86%E6%95%B0%E6%8D%AE%E5%8A%A0%E5%B7%A5%E7%BB%84%E4%BB%B6"><span class="toc-text">5.2.3 从数据入手，拆分数据加工组件</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-3-%E6%8F%92%E4%BB%B6%E5%8C%96"><span class="toc-text">5.3 插件化</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-4-%E6%80%BB%E7%BB%93-%E5%BC%82%E5%90%8C"><span class="toc-text">5.4 总结(异同)</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#5-4-1-%E4%B8%89%E8%80%85%E5%B0%8F%E7%BB%93"><span class="toc-text">5.4.1 三者小结</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#5-4-2-%E7%BB%84%E4%BB%B6%E5%92%8C%E6%A8%A1%E5%9D%97%E7%9A%84%E5%BC%82%E5%90%8C"><span class="toc-text">5.4.2 组件和模块的异同</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-5-%E5%89%8D%E7%AB%AF%E4%B8%8EiOS%E4%B8%AD%E7%9A%84%E7%BB%84%E4%BB%B6%E5%8C%96"><span class="toc-text">5.5 前端与iOS中的组件化</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%AD%E3%80%81%E5%8F%82%E8%80%83%E9%93%BE%E6%8E%A5"><span class="toc-text">六、参考链接</span></a></li></ol>
+        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E3%80%81%E5%B7%A5%E7%A8%8B%E5%8C%96"><span class="toc-text">一、工程化</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#2-1-%E5%87%A0%E4%B8%AA%E6%A6%82%E5%BF%B5"><span class="toc-text">2.1 几个概念</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-2-%E5%B7%A5%E7%A8%8B%E5%8C%96"><span class="toc-text">2.2 工程化</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8C%E3%80%81%E8%B7%A8%E5%B9%B3%E5%8F%B0"><span class="toc-text">二、跨平台</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%89%E3%80%81%E5%8A%A8%E6%80%81%E5%8C%96"><span class="toc-text">三、动态化</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#3-1-%E4%BB%80%E4%B9%88%E6%98%AF%E5%8A%A8%E6%80%81%E5%8C%96%EF%BC%9F"><span class="toc-text">3.1 什么是动态化？</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-2-%E7%A7%BB%E5%8A%A8%E7%AB%AF%E5%8A%A8%E6%80%81%E5%8C%96%E6%96%B9%E6%A1%88"><span class="toc-text">3.2 移动端动态化方案</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9B%9B%E3%80%81%E5%AE%B9%E5%99%A8%E5%8C%96"><span class="toc-text">四、容器化</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%94%E3%80%81%E6%A8%A1%E5%9D%97%E5%8C%96%E5%92%8C%E7%BB%84%E4%BB%B6%E5%8C%96%E3%80%81%E6%8F%92%E4%BB%B6%E5%8C%96"><span class="toc-text">五、模块化和组件化、插件化</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#5-1-%E6%A8%A1%E5%9D%97%E5%8C%96"><span class="toc-text">5.1 模块化</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#5-1-1-%E4%BB%80%E4%B9%88%E6%98%AF%E6%A8%A1%E5%9D%97"><span class="toc-text">5.1.1 什么是模块</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#5-1-2-%E6%A8%AA%E5%90%91%E6%8B%86%E5%88%86%E4%B8%9A%E5%8A%A1%E3%80%81%E5%8A%9F%E8%83%BD%E6%A8%A1%E5%9D%97"><span class="toc-text">5.1.2 横向拆分业务、功能模块</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#5-1-3-%E7%BA%B5%E5%90%91%E6%8B%86%E5%88%86%E6%8A%80%E6%9C%AF%E3%80%81%E6%9E%B6%E6%9E%84%E6%A8%A1%E5%9D%97"><span class="toc-text">5.1.3 纵向拆分技术、架构模块</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-2-%E7%BB%84%E4%BB%B6%E5%8C%96"><span class="toc-text">5.2 组件化</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#5-2-1-%E4%BB%80%E4%B9%88%E6%98%AF%E7%BB%84%E4%BB%B6%EF%BC%9F"><span class="toc-text">5.2.1 什么是组件？</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#5-2-2-%E4%BB%8E%E7%95%8C%E9%9D%A2%E5%85%A5%E6%89%8B%EF%BC%8C%E6%8B%86%E5%88%86%E5%8F%AF%E8%A7%86%E5%8C%96%E7%BB%84%E4%BB%B6"><span class="toc-text">5.2.2 从界面入手，拆分可视化组件</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#5-2-3-%E4%BB%8E%E6%95%B0%E6%8D%AE%E5%85%A5%E6%89%8B%EF%BC%8C%E6%8B%86%E5%88%86%E6%95%B0%E6%8D%AE%E5%8A%A0%E5%B7%A5%E7%BB%84%E4%BB%B6"><span class="toc-text">5.2.3 从数据入手，拆分数据加工组件</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-3-%E6%8F%92%E4%BB%B6%E5%8C%96"><span class="toc-text">5.3 插件化</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-4-%E6%80%BB%E7%BB%93-%E5%BC%82%E5%90%8C"><span class="toc-text">5.4 总结(异同)</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#5-4-1-%E4%B8%89%E8%80%85%E5%B0%8F%E7%BB%93"><span class="toc-text">5.4.1 三者小结</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#5-4-2-%E7%BB%84%E4%BB%B6%E5%92%8C%E6%A8%A1%E5%9D%97%E7%9A%84%E5%BC%82%E5%90%8C"><span class="toc-text">5.4.2 组件和模块的异同</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-5-%E5%89%8D%E7%AB%AF%E4%B8%8EiOS%E4%B8%AD%E7%9A%84%E7%BB%84%E4%BB%B6%E5%8C%96"><span class="toc-text">5.5 前端与iOS中的组件化</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%AD%E3%80%81%E5%8F%82%E8%80%83%E9%93%BE%E6%8E%A5"><span class="toc-text">六、参考链接</span></a></li></ol>
     </div>
     
     <div class="back-top iconfont-archer">&#xe639;</div>
@@ -873,16 +906,6 @@ top:40vh;
 </div>
           <div class="sidebar-panel-archives">
     <!-- 在ejs中将archive按照时间排序 -->
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
     
     
     
@@ -2364,15 +2387,15 @@ top:40vh;
     
         <span class="sidebar-tag-name" data-tags="Soc"><span class="iconfont-archer">&#xe606;</span>Soc</span>
     
+        <span class="sidebar-tag-name" data-tags="多线程"><span class="iconfont-archer">&#xe606;</span>多线程</span>
+    
         <span class="sidebar-tag-name" data-tags="ARM64"><span class="iconfont-archer">&#xe606;</span>ARM64</span>
+    
+        <span class="sidebar-tag-name" data-tags="Docker"><span class="iconfont-archer">&#xe606;</span>Docker</span>
     
         <span class="sidebar-tag-name" data-tags="CLI"><span class="iconfont-archer">&#xe606;</span>CLI</span>
     
         <span class="sidebar-tag-name" data-tags="Shell"><span class="iconfont-archer">&#xe606;</span>Shell</span>
-    
-        <span class="sidebar-tag-name" data-tags="Docker"><span class="iconfont-archer">&#xe606;</span>Docker</span>
-    
-        <span class="sidebar-tag-name" data-tags="多线程"><span class="iconfont-archer">&#xe606;</span>多线程</span>
     
         <span class="sidebar-tag-name" data-tags="DSL"><span class="iconfont-archer">&#xe606;</span>DSL</span>
     
@@ -2380,17 +2403,17 @@ top:40vh;
     
         <span class="sidebar-tag-name" data-tags="Fiber"><span class="iconfont-archer">&#xe606;</span>Fiber</span>
     
-        <span class="sidebar-tag-name" data-tags="dp"><span class="iconfont-archer">&#xe606;</span>dp</span>
-    
         <span class="sidebar-tag-name" data-tags="SwiftUI"><span class="iconfont-archer">&#xe606;</span>SwiftUI</span>
     
-        <span class="sidebar-tag-name" data-tags="RunLoop"><span class="iconfont-archer">&#xe606;</span>RunLoop</span>
+        <span class="sidebar-tag-name" data-tags="dp"><span class="iconfont-archer">&#xe606;</span>dp</span>
     
         <span class="sidebar-tag-name" data-tags="Swift-Syntax"><span class="iconfont-archer">&#xe606;</span>Swift-Syntax</span>
     
-        <span class="sidebar-tag-name" data-tags="LagMonitor"><span class="iconfont-archer">&#xe606;</span>LagMonitor</span>
+        <span class="sidebar-tag-name" data-tags="RunLoop"><span class="iconfont-archer">&#xe606;</span>RunLoop</span>
     
         <span class="sidebar-tag-name" data-tags="Log"><span class="iconfont-archer">&#xe606;</span>Log</span>
+    
+        <span class="sidebar-tag-name" data-tags="LagMonitor"><span class="iconfont-archer">&#xe606;</span>LagMonitor</span>
     
         <span class="sidebar-tag-name" data-tags="CrashMonitor"><span class="iconfont-archer">&#xe606;</span>CrashMonitor</span>
     
