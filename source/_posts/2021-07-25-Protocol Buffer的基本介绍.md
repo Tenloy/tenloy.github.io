@@ -29,7 +29,7 @@ JSON 和 XML 可能是目前开发者们用来存储和传输数据的标准方�
 - **快速且小巧**：按照 Google 所描述的，protocol buffers 的体积要小**3-10**倍，速度比XML要快**20-100**倍。可以在这篇[文章](https://damienbod.com/2014/01/09/comparing-protobuf-json-bson-xml-with-net-for-file-streams/) ，它的作者是 Damien Bod，文中比较了一些主流文本格式的读写速度。
 - **类型安全**：Protocol buffers 像 Swift 一样是类型安全的，使用 protocol buffers 时 你需要指定每一个属性的类型。
 - **自动反序列化**：你不需要再去编写任何的解析代码，只需要更新 **.proto** 文件就行了。 file and regenerate the data access classes.
-- **分享就是关心**：因为支持多种语言，因此可以在不同的平台中共享数据模型，这意味着跨平台的工作会更轻松。
+- **方便共享**：因为支持多种语言，因此可以在不同的平台中共享数据模型，这意味着跨平台的工作会更轻松。
 
 ### 1.2 局限性
 
@@ -123,7 +123,7 @@ NSLog(@"name:%@ uid:%d email:%@",person2.name,person2.uid,person2.email);
 ### 4.1 编码/序列化
 
 - Protocol Buffer 序列化采用 Varint、Zigzag 方法，压缩 int 型整数和带符号的整数。对浮点型数字不做压缩（这里可以进一步的压缩，Protocol Buffer 还有提升空间）。
-  - Varint是一种使用一个或多个字节序列化整数的方法，会把整数编码为变长字节。对于32位整型数据经过Varint编码后需要1~5个字节，小的数字使用1个byte，大的数字使用5个bytes。64位整型数据编码后占用1~10个字节。在实际场景中小数字的使用率远远多于大数字，因此通过Varint编码对于大部分场景都可以起到很好的压缩效果。
+  - Varint是一种使用一个或多个字节序列化整数的方法，会把整数编码为变长字节。对于32位整型数据经过Varint编码后需要 `1~5` 个字节，小的数字使用1个byte，大的数字使用5个bytes。64位整型数据编码后占用 `1~10` 个字节。在实际场景中小数字的使用率远远多于大数字，因此通过Varint编码对于大部分场景都可以起到很好的压缩效果。
 - 对 `.proto` 文件，会对 option 和 repeated 字段进行检查，若 optional 或 repeated 字段没有被设置字段值，那么该字段在序列化时的数据中是完全不存在的，即不进行序列化（少编码一个字段）。
 - 上面这两点做到了压缩数据，使得序列化工作量减少。
 - Protocol Buffer 是 Tag - Value (TLV)的编码方式的实现
