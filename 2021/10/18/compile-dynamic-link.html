@@ -22,7 +22,7 @@
     <meta name="description" content="学习 生活 记录 回忆">
     <meta name="description" content="一、动态链接动态链接的基本思想是把程序按照模块拆分成各个相对独立部分，在程序运行时才将它们链接在一起形成一个完整的程序，而不是像静态链接一样把所有的程序模块都链接成一个个单独的可执行文件。 动态链接涉及运行时的链接及多个文件的装载，必需要有操作系统的支持，因为动态链接的情况下，进程的虚拟地址空间的分布会比静态链接情况下更为复杂，还有一些存储管理、内存共享、进程线程等机制在动态链接下也会有一些微妙的">
 <meta property="og:type" content="article">
-<meta property="og:title" content="(六) Mach-O 文件的动态链接、库、Dyld(含dlopen)">
+<meta property="og:title" content="(五) Mach-O 文件的动态链接、库、Dyld(含dlopen)">
 <meta property="og:url" content="https://tenloy.github.io/2021/10/18/compile-dynamic-link.html">
 <meta property="og:site_name" content="Tenloy&#39;s Blog">
 <meta property="og:description" content="一、动态链接动态链接的基本思想是把程序按照模块拆分成各个相对独立部分，在程序运行时才将它们链接在一起形成一个完整的程序，而不是像静态链接一样把所有的程序模块都链接成一个个单独的可执行文件。 动态链接涉及运行时的链接及多个文件的装载，必需要有操作系统的支持，因为动态链接的情况下，进程的虚拟地址空间的分布会比静态链接情况下更为复杂，还有一些存储管理、内存共享、进程线程等机制在动态链接下也会有一些微妙的">
@@ -40,7 +40,7 @@
 <meta property="og:image" content="https://tenloy.github.io/images/compilelink/33.png">
 <meta property="og:image" content="https://tenloy.github.io/images/compilelink/34.png">
 <meta property="article:published_time" content="2021-10-17T20:26:09.000Z">
-<meta property="article:modified_time" content="2024-04-07T12:02:59.467Z">
+<meta property="article:modified_time" content="2024-04-24T05:10:02.372Z">
 <meta property="article:author" content="Tenloy">
 <meta property="article:tag" content="Tenloy, iOS, Tenloy Blog, 博客，Swift, 编译, 计算机">
 <meta name="twitter:card" content="summary">
@@ -48,7 +48,7 @@
     <meta http-equiv="Cache-control" content="no-cache">
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"/>
     
-    <title>(六) Mach-O 文件的动态链接、库、Dyld(含dlopen) · Tenloy&#39;s Blog</title>
+    <title>(五) Mach-O 文件的动态链接、库、Dyld(含dlopen) · Tenloy&#39;s Blog</title>
     <style type="text/css">
     @font-face {
         font-family: 'Oswald-Regular';
@@ -259,7 +259,7 @@
                 <a href="/" >Tenloy&#39;s Blog</a>
             </div>
             <div class="post-title">
-                <a href="#" class="post-name">(六) Mach-O 文件的动态链接、库、Dyld(含dlopen)</a>
+                <a href="#" class="post-name">(五) Mach-O 文件的动态链接、库、Dyld(含dlopen)</a>
             </div>
     </div>
     
@@ -298,7 +298,7 @@ height:40vh;
         <h1 class="intro-title">
             <!-- 主页  -->
             
-            (六) Mach-O 文件的动态链接、库、Dyld(含dlopen)
+            (五) Mach-O 文件的动态链接、库、Dyld(含dlopen)
             <!-- 404 -->
             
         </h1>
@@ -738,7 +738,7 @@ height:40vh;
             <p>Author：<a href="https://tenloy.github.io">Tenloy</a>
             <p>原文链接：<a href="https://tenloy.github.io/2021/10/18/compile-dynamic-link.html">https://tenloy.github.io/2021/10/18/compile-dynamic-link.html</a>
             <p>发表日期：2021.10.18 , 4:26 AM</p>
-            <p>更新日期：2024.04.07 , 8:02 PM</p>
+            <p>更新日期：2024.04.24 , 1:10 PM</p>
             <p>版权声明：本文采用<a rel="license noopener" target="_blank" href="http://creativecommons.org/licenses/by-nc/4.0/">Crative Commons 4.0 许可协议</a>进行许可</p>
         </div>
     
@@ -747,8 +747,8 @@ height:40vh;
         <li class="next">
             
                 <div class="nextSlogan">Next Post</div>
-                <a href= "/2021/10/21/dyld-objc.html" title= "(七) dyld与Objc—_objc_init、map_images、load_images">
-                    <div class="nextTitle">(七) dyld与Objc—_objc_init、map_images、load_images</div>
+                <a href= "/2021/10/21/dyld-objc.html" title= "(六) dyld与Objc—_objc_init、map_images、load_images">
+                    <div class="nextTitle">(六) dyld与Objc—_objc_init、map_images、load_images</div>
                 </a>
             
         </li>
@@ -1957,38 +1957,6 @@ top:40vh;
     
     
     
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
     <div class="total-and-search">
         <div class="total-archive">
         Total : 75
@@ -2060,12 +2028,12 @@ top:40vh;
     
     
         <li class="archive-post-item">
-            <span class="archive-post-date">10/21</span><a class="archive-post-title" href= "/2021/10/21/dyld-objc.html" >(七) dyld与Objc—_objc_init、map_images、load_images</a>
+            <span class="archive-post-date">10/21</span><a class="archive-post-title" href= "/2021/10/21/dyld-objc.html" >(六) dyld与Objc—_objc_init、map_images、load_images</a>
         </li>
     
     
         <li class="archive-post-item">
-            <span class="archive-post-date">10/18</span><a class="archive-post-title" href= "/2021/10/18/compile-dynamic-link.html" >(六) Mach-O 文件的动态链接、库、Dyld(含dlopen)</a>
+            <span class="archive-post-date">10/18</span><a class="archive-post-title" href= "/2021/10/18/compile-dynamic-link.html" >(五) Mach-O 文件的动态链接、库、Dyld(含dlopen)</a>
         </li>
     
     
@@ -2419,15 +2387,15 @@ top:40vh;
     
         <span class="sidebar-tag-name" data-tags="Soc"><span class="iconfont-archer">&#xe606;</span>Soc</span>
     
-        <span class="sidebar-tag-name" data-tags="ARM64"><span class="iconfont-archer">&#xe606;</span>ARM64</span>
-    
         <span class="sidebar-tag-name" data-tags="CLI"><span class="iconfont-archer">&#xe606;</span>CLI</span>
     
         <span class="sidebar-tag-name" data-tags="Shell"><span class="iconfont-archer">&#xe606;</span>Shell</span>
     
-        <span class="sidebar-tag-name" data-tags="Docker"><span class="iconfont-archer">&#xe606;</span>Docker</span>
+        <span class="sidebar-tag-name" data-tags="ARM64"><span class="iconfont-archer">&#xe606;</span>ARM64</span>
     
         <span class="sidebar-tag-name" data-tags="多线程"><span class="iconfont-archer">&#xe606;</span>多线程</span>
+    
+        <span class="sidebar-tag-name" data-tags="Docker"><span class="iconfont-archer">&#xe606;</span>Docker</span>
     
         <span class="sidebar-tag-name" data-tags="DSL"><span class="iconfont-archer">&#xe606;</span>DSL</span>
     
@@ -2437,15 +2405,15 @@ top:40vh;
     
         <span class="sidebar-tag-name" data-tags="dp"><span class="iconfont-archer">&#xe606;</span>dp</span>
     
-        <span class="sidebar-tag-name" data-tags="SwiftUI"><span class="iconfont-archer">&#xe606;</span>SwiftUI</span>
-    
         <span class="sidebar-tag-name" data-tags="RunLoop"><span class="iconfont-archer">&#xe606;</span>RunLoop</span>
+    
+        <span class="sidebar-tag-name" data-tags="SwiftUI"><span class="iconfont-archer">&#xe606;</span>SwiftUI</span>
     
         <span class="sidebar-tag-name" data-tags="Swift-Syntax"><span class="iconfont-archer">&#xe606;</span>Swift-Syntax</span>
     
-        <span class="sidebar-tag-name" data-tags="LagMonitor"><span class="iconfont-archer">&#xe606;</span>LagMonitor</span>
-    
         <span class="sidebar-tag-name" data-tags="Log"><span class="iconfont-archer">&#xe606;</span>Log</span>
+    
+        <span class="sidebar-tag-name" data-tags="LagMonitor"><span class="iconfont-archer">&#xe606;</span>LagMonitor</span>
     
         <span class="sidebar-tag-name" data-tags="CrashMonitor"><span class="iconfont-archer">&#xe606;</span>CrashMonitor</span>
     
