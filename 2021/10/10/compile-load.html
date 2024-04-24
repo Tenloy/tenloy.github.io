@@ -22,14 +22,18 @@
     <meta name="description" content="学习 生活 记录 回忆">
     <meta name="description" content="先附上源码地址：结合 XNU 源码(应该不是最新的，且不怎么全，不过用来分析学习也差不多了)，来看加载器的流程，效果更好。重要的两个类：  bsd&#x2F;kern&#x2F;kern_exec.c：进程执行的相关操作：线程创建、数据初始化等。 bsd&#x2F;kern&#x2F;mach_loader.c：Mach-O文件解析加载相关。第二节中提到的Mach-O文件中的内核加载器负责处理的load command 对应的内核中">
 <meta property="og:type" content="article">
-<meta property="og:title" content="(四) Mach-O 文件的装载">
+<meta property="og:title" content="(四) Mach-O 文件的装载、ASLR及符号地址">
 <meta property="og:url" content="https://tenloy.github.io/2021/10/10/compile-load.html">
 <meta property="og:site_name" content="Tenloy&#39;s Blog">
 <meta property="og:description" content="先附上源码地址：结合 XNU 源码(应该不是最新的，且不怎么全，不过用来分析学习也差不多了)，来看加载器的流程，效果更好。重要的两个类：  bsd&#x2F;kern&#x2F;kern_exec.c：进程执行的相关操作：线程创建、数据初始化等。 bsd&#x2F;kern&#x2F;mach_loader.c：Mach-O文件解析加载相关。第二节中提到的Mach-O文件中的内核加载器负责处理的load command 对应的内核中">
 <meta property="og:locale" content="en_US">
 <meta property="og:image" content="https://tenloy.github.io/images/compilelink/25.png">
+<meta property="og:image" content="https://tenloy.github.io/images/compilelink/46.jpg">
+<meta property="og:image" content="https://tenloy.github.io/images/compilelink/26.png">
+<meta property="og:image" content="https://tenloy.github.io/images/compilelink/27.png">
+<meta property="og:image" content="https://tenloy.github.io/images/compilelink/28.png">
 <meta property="article:published_time" content="2021-10-09T20:26:00.000Z">
-<meta property="article:modified_time" content="2024-04-07T12:02:59.467Z">
+<meta property="article:modified_time" content="2024-04-24T05:04:58.886Z">
 <meta property="article:author" content="Tenloy">
 <meta property="article:tag" content="Tenloy, iOS, Tenloy Blog, 博客，Swift, 编译, 计算机">
 <meta name="twitter:card" content="summary">
@@ -37,7 +41,7 @@
     <meta http-equiv="Cache-control" content="no-cache">
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"/>
     
-    <title>(四) Mach-O 文件的装载 · Tenloy&#39;s Blog</title>
+    <title>(四) Mach-O 文件的装载、ASLR及符号地址 · Tenloy&#39;s Blog</title>
     <style type="text/css">
     @font-face {
         font-family: 'Oswald-Regular';
@@ -248,7 +252,7 @@
                 <a href="/" >Tenloy&#39;s Blog</a>
             </div>
             <div class="post-title">
-                <a href="#" class="post-name">(四) Mach-O 文件的装载</a>
+                <a href="#" class="post-name">(四) Mach-O 文件的装载、ASLR及符号地址</a>
             </div>
     </div>
     
@@ -287,7 +291,7 @@ height:40vh;
         <h1 class="intro-title">
             <!-- 主页  -->
             
-            (四) Mach-O 文件的装载
+            (四) Mach-O 文件的装载、ASLR及符号地址
             <!-- 404 -->
             
         </h1>
@@ -306,7 +310,7 @@ height:40vh;
                 
                 
                     <div class="post-intro-read">
-                        <span>Word count: <span class="post-count word-count">3.9k</span>Reading time: <span class="post-count reading-time">13 min</span></span>
+                        <span>Word count: <span class="post-count word-count">6.4k</span>Reading time: <span class="post-count reading-time">23 min</span></span>
                     </div>
                 
                 <div class="post-intro-meta">
@@ -472,12 +476,100 @@ height:40vh;
 <h2 id="三、Mach-O文件的装载"><a href="#三、Mach-O文件的装载" class="headerlink" title="三、Mach-O文件的装载"></a>三、Mach-O文件的装载</h2><p><a target="_blank" rel="noopener" href="https://www.jianshu.com/p/332b183c055a">(二) Mach-O 文件结构</a> 介绍 <code>Mach Heade</code> 中的 <code>Load Command</code> 加载命令，结合其用途，就可以简单看出可执行文件的装载流程：</p>
 <ul>
 <li>首先，是由内核加载器(定义在<code>bsd/kern/mach_loader.c</code>文件中)来处理一些需要由内核加载器直接使用的加载命令。<strong>内核的部分(内核加载器)负责新进程的基本设置——分配虚拟内存，创建主线程，以及处理任何可能的代码签名/加密的工作</strong>。（这也是本篇内容主要讲的）</li>
-<li>接着，对于需要动态链接(使用了动态库)的可执行文件(大部分可执行文件都是动态链接的)来说，<strong>控制权会转交给链接器，链接器进而接着处理文件头中的其他加载命令</strong>。真正的库加载和符号解析的工作都是通过<code>LC_LOAD_DY LINKER</code>命令指定的<strong>动态链接器</strong>在用户态完成的。（下一篇文章再细讲<code>dyld</code>及<strong>动态链接</strong>）</li>
+<li>接着，对于需要动态链接(使用了动态库)的可执行文件(大部分可执行文件都是动态链接的)来说，<strong>控制权会转交给链接器，链接器进而接着处理文件头中的其他加载命令</strong>。真正的库加载和符号解析的工作都是通过<code>LC_LOAD_DYLINKER</code>命令指定的<strong>动态链接器</strong>在用户态完成的。（下一篇文章再细讲<code>dyld</code>及<strong>动态链接</strong>）</li>
 </ul>
 <p>下面通过代码来看一下具体的过程。下面通过一个调用栈图来说明， 这里面每个方法都做了很多事情，这里只注释了到_dyld_start的关键操作，很简略。有兴趣可以详细看源码<code>kern_exec.c</code>、<code>mach_loader.c</code></p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br></pre></td><td class="code"><pre><span class="line">▼ execve       <span class="comment">// 用户点击了app，用户态会发送一个系统调用 execve 到内核</span></span><br><span class="line">  ▼ __mac_execve  <span class="comment">// 主要是为加载镜像进行数据的初始化，以及资源相关的操作，以及创建线程</span></span><br><span class="line">    ▼ exec_activate_image <span class="comment">// 拷贝可执行文件到内存中，并根据不同的可执行文件类型选择不同的加载函数，所有的镜像的加载要么终止在一个错误上，要么最终完成加载镜像。</span></span><br><span class="line">      <span class="comment">// 在 encapsulated_binary 这一步会根据image的类型选择imgact的方法</span></span><br><span class="line">      <span class="comment">/*</span></span><br><span class="line"><span class="comment">       * 该方法为Mach-o Binary对应的执行方法；</span></span><br><span class="line"><span class="comment">       * 如果image类型为Fat Binary，对应方法为exec_fat_imgact；</span></span><br><span class="line"><span class="comment">       * 如果image类型为Interpreter Script，对应方法为exec_shell_imgact</span></span><br><span class="line"><span class="comment">       */</span></span><br><span class="line">      ▼ exec_mach_imgact   </span><br><span class="line">        ▶︎ <span class="comment">// 首先对Mach-O做检测，会检测Mach-O头部，解析其架构、检查imgp等内容，判断魔数、cputype、cpusubtype等信息。如果image无效，会直接触发assert(exec_failure_reason == OS_REASON_NULL); 退出。</span></span><br><span class="line">          <span class="comment">// 拒绝接受Dylib和Bundle这样的文件，这些文件会由dyld负责加载。然后把Mach-O映射到内存中去，调用load_machfile()</span></span><br><span class="line">        ▼ load_machfile</span><br><span class="line">          ▶︎ <span class="comment">// load_machfile会加载Mach-O中的各种load monmand命令。在其内部会禁止数据段执行，防止溢出漏洞攻击，还会设置地址空间布局随机化（ASLR），还有一些映射的调整。</span></span><br><span class="line">            <span class="comment">// 真正负责对加载命令解析的是parse_machfile()</span></span><br><span class="line">          ▼ parse_machfile  <span class="comment">//解析主二进制macho</span></span><br><span class="line">            ▶︎ <span class="comment">/* </span></span><br><span class="line"><span class="comment">               * 首先，对image头中的filetype进行分析，可执行文件MH_EXECUTE不允许被二次加载(depth = 1)；动态链接编辑器MH_DYLINKER必须是被可执行文件加载的(depth = 2)</span></span><br><span class="line"><span class="comment">               * 然后，循环遍历所有的load command，分别调用对应的内核函数进行处理</span></span><br><span class="line"><span class="comment">               *   LC_SEGMET：load_segment函数：对于每一个段，将文件中相应的内容加载到内存中：从偏移量为 fileoff 处加载 filesize 字节到虚拟内存地址 vmaddr 处的 vmsize 字节。每一个段的页面都根据 initprot 进行初始化，initprot 指定了如何通过读/写/执行位初始化页面的保护级别。</span></span><br><span class="line"><span class="comment">               *   LC_UNIXTHREAD：load_unixthread函数，见下文</span></span><br><span class="line"><span class="comment">               *   LC_MAIN：load_main函数</span></span><br><span class="line"><span class="comment">               *   LC_LOAD_DYLINKER：获取动态链接器相关的信息，下面load_dylinker会根据信息，启动动态链接器</span></span><br><span class="line"><span class="comment">               *   LC_CODE_SIGNATURE：load_code_signature函数，进行验证，如果无效会退出。理论部分，回见第二节load_command `LC_CODE_SIGNATURE `部分。</span></span><br><span class="line"><span class="comment">               *   其他的不再多说，有兴趣可以自己看源码</span></span><br><span class="line"><span class="comment">               */</span></span><br><span class="line">            ▼ load_dylinker <span class="comment">// 解析完 macho后，根据macho中的 LC_LOAD_DYLINKER 这个LoadCommand来启动这个二进制的加载器，即 /usr/bin/dyld</span></span><br><span class="line">              ▼ parse_machfile <span class="comment">// 开始解析 dyld 这个mach-o文件</span></span><br><span class="line">                ▼ load_unixthread <span class="comment">// 解析 dyld 的 LC_UNIXTHREAD 命令，这个过程中会解析出entry_point</span></span><br><span class="line">                  ▼ load_threadentry  <span class="comment">// 获取入口地址</span></span><br><span class="line">                    ▶︎ thread_entrypoint  <span class="comment">// 里面只有i386和x86架构的，没有arm的，但是原理是一样的</span></span><br><span class="line">                  ▶︎ <span class="comment">//上一步获取到地址后，会再加上slide，ASLR偏移，到此，就获取到了dyld的入口地址，也就是 _dyld_start 函数的地址</span></span><br><span class="line">        ▼ activate_exec_state</span><br><span class="line">          ▶︎ thread_setentrypoint <span class="comment">// 设置entry_point。直接把entry_point地址写入到用户态的寄存器里面了。</span></span><br><span class="line">          <span class="comment">//这一步开始，_dyld_start就真正开始执行了。</span></span><br><span class="line"></span><br><span class="line">▼ dyld</span><br><span class="line">  ▼ __dyld_start  <span class="comment">// 源码在dyldStartup.s这个文件，用汇编实现</span></span><br><span class="line">    ▼ dyldbootstrap::start() </span><br><span class="line">      ▼ dyld::_main()</span><br><span class="line">        ▼ <span class="comment">//函数的最后，调用 getEntryFromLC_MAIN，从 Load Command 读取LC_MAIN入口，如果没有LC_MAIN入口，就读取LC_UNIXTHREAD，然后跳到主程序的入口处执行</span></span><br><span class="line">        ▼ 这是下篇内容</span><br></pre></td></tr></table></figure>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br></pre></td><td class="code"><pre><span class="line">▼ execve       <span class="comment">// 用户点击了app，用户态会发送一个系统调用 execve 到内核</span></span><br><span class="line">  ▼ __mac_execve  <span class="comment">// 主要是为加载镜像进行数据的初始化，以及资源相关的操作，以及创建线程</span></span><br><span class="line">    ▼ exec_activate_image <span class="comment">// 拷贝可执行文件到内存中，并根据不同的可执行文件类型选择不同的加载函数，所有的镜像的加载要么终止在一个错误上，要么最终完成加载镜像。</span></span><br><span class="line">      <span class="comment">// 在 encapsulated_binary 这一步会根据image的类型选择imgact的方法</span></span><br><span class="line">      <span class="comment">/*</span></span><br><span class="line"><span class="comment">       * 该方法为Mach-o Binary对应的执行方法；</span></span><br><span class="line"><span class="comment">       * 如果image类型为Fat Binary，对应方法为exec_fat_imgact；</span></span><br><span class="line"><span class="comment">       * 如果image类型为Interpreter Script，对应方法为exec_shell_imgact</span></span><br><span class="line"><span class="comment">       */</span></span><br><span class="line">      ▼ exec_mach_imgact   </span><br><span class="line">        ▶︎ <span class="comment">// 首先对Mach-O做检测，会检测Mach-O头部，解析其架构、检查imgp等内容，判断魔数、cputype、cpusubtype等信息。如果image无效，会直接触发assert(exec_failure_reason == OS_REASON_NULL); 退出。</span></span><br><span class="line">          <span class="comment">// 拒绝接受Dylib和Bundle这样的文件，这些文件会由dyld负责加载。然后把Mach-O映射到内存中去，调用load_machfile()</span></span><br><span class="line">        ▼ load_machfile</span><br><span class="line">          ▶︎ <span class="comment">// load_machfile会加载Mach-O中的各种load command命令。在其内部会禁止数据段执行，防止溢出漏洞攻击，还会设置地址空间布局随机化（ASLR），还有一些映射的调整。</span></span><br><span class="line">            <span class="comment">// 真正负责对加载命令解析的是parse_machfile()</span></span><br><span class="line">          ▼ parse_machfile  <span class="comment">//解析主二进制macho</span></span><br><span class="line">            ▶︎ <span class="comment">/* </span></span><br><span class="line"><span class="comment">               * 首先，对image头中的filetype进行分析，可执行文件MH_EXECUTE不允许被二次加载(depth = 1)；动态链接编辑器MH_DYLINKER必须是被可执行文件加载的(depth = 2)</span></span><br><span class="line"><span class="comment">               * 然后，循环遍历所有的load command，分别调用对应的内核函数进行处理</span></span><br><span class="line"><span class="comment">               *   LC_SEGMET：load_segment函数：对于每一个段，将文件中相应的内容加载到内存中：从偏移量为 fileoff 处加载 filesize 字节到虚拟内存地址 vmaddr 处的 vmsize 字节。每一个段的页面都根据 initprot 进行初始化，initprot 指定了如何通过读/写/执行位初始化页面的保护级别。</span></span><br><span class="line"><span class="comment">               *   LC_UNIXTHREAD：load_unixthread函数，见下文</span></span><br><span class="line"><span class="comment">               *   LC_MAIN：load_main函数</span></span><br><span class="line"><span class="comment">               *   LC_LOAD_DYLINKER：获取动态链接器相关的信息，下面load_dylinker会根据信息，启动动态链接器</span></span><br><span class="line"><span class="comment">               *   LC_CODE_SIGNATURE：load_code_signature函数，进行验证，如果无效会退出。理论部分，回见第二节load_command `LC_CODE_SIGNATURE `部分。</span></span><br><span class="line"><span class="comment">               *   其他的不再多说，有兴趣可以自己看源码</span></span><br><span class="line"><span class="comment">               */</span></span><br><span class="line">            ▼ load_dylinker <span class="comment">// 解析完 macho后，根据macho中的 LC_LOAD_DYLINKER 这个LoadCommand来启动这个二进制的加载器，即 /usr/bin/dyld</span></span><br><span class="line">              ▼ parse_machfile <span class="comment">// 开始解析 dyld 这个mach-o文件</span></span><br><span class="line">                ▼ load_unixthread <span class="comment">// 解析 dyld 的 LC_UNIXTHREAD 命令，这个过程中会解析出entry_point</span></span><br><span class="line">                  ▼ load_threadentry  <span class="comment">// 获取入口地址</span></span><br><span class="line">                    ▶︎ thread_entrypoint  <span class="comment">// 里面只有i386和x86架构的，没有arm的，但是原理是一样的</span></span><br><span class="line">                  ▶︎ <span class="comment">//上一步获取到地址后，会再加上slide，ASLR偏移，到此，就获取到了dyld的入口地址，也就是 _dyld_start 函数的地址</span></span><br><span class="line">        ▼ activate_exec_state</span><br><span class="line">          ▶︎ thread_setentrypoint <span class="comment">// 设置entry_point。直接把entry_point地址写入到用户态的寄存器里面了。</span></span><br><span class="line">          <span class="comment">//这一步开始，_dyld_start就真正开始执行了。</span></span><br><span class="line"></span><br><span class="line">▼ dyld</span><br><span class="line">  ▼ __dyld_start  <span class="comment">// 源码在dyldStartup.s这个文件，用汇编实现</span></span><br><span class="line">    ▼ dyldbootstrap::start() </span><br><span class="line">      ▼ dyld::_main()</span><br><span class="line">        ▼ <span class="comment">//函数的最后，调用 getEntryFromLC_MAIN，从 Load Command 读取LC_MAIN入口，如果没有LC_MAIN入口，就读取LC_UNIXTHREAD，然后跳到主程序的入口处执行</span></span><br><span class="line">        ▼ 这是下篇内容</span><br></pre></td></tr></table></figure>
 
-<h2 id="四、Linux-ELF文件的装载（了解）"><a href="#四、Linux-ELF文件的装载（了解）" class="headerlink" title="四、Linux ELF文件的装载（了解）"></a>四、Linux ELF文件的装载（了解）</h2><p>首先在用户层面，bash进程会调用fork()系统调用创建一个新的进程，然后新的进程调用 <code>execve()</code>系统调用执行指定的ELF文件，原先的bash进程继续返回等待刚才启动的新进程结束，然后继续等待用户输入命令。 execve() 系统调用被定义在unistd.h，它的原型如下：</p>
+<h2 id="四、ASLR"><a href="#四、ASLR" class="headerlink" title="四、ASLR"></a>四、ASLR</h2><h3 id="4-1-引入背景"><a href="#4-1-引入背景" class="headerlink" title="4.1 引入背景"></a>4.1 引入背景</h3><p>进程在自己私有的虚拟地址空间中启动。按照传统方式，进程每一次启动时采用的都是固定的可预见的方式。然而，这意味着某个给定程序在某个给定架构上的进程初始虚拟内存镜像都是基本一致的。而且更严重的问题在于，即使是在进程正常运行的生命周期中，大部分内存分配的操作都是按照同样的方式进行的，因此使得内存中的地址分布具有非常强的可预测性。</p>
+<p>尽管这有助于调试，但是也给黑客提供了更大的施展空间。黑客主要采用的方法是代码注入：通过重写内存中的函数指针，黑客就可以将程序的执行路径转到自己的代码，将程序的输入转变为自己的输入。重写内存最常用的方法是采用缓冲区溢出(即利用未经保护的内存复制操作越过上数组的边界)，可参考<a target="_blank" rel="noopener" href="https://www.jianshu.com/p/4703ad3efbb9">缓冲区溢出攻击</a>，将函数的返回地址重写为自己的指针。不仅如此，黑客还有更具创意的技术，例如破坏printf()格式化字符串以及基于堆的缓冲区溢出。此外，任何用户指针甚至结构化的异常处理程序都可以导致代码注入。这里的关键问题在于判断重写哪些指针，也就是说，可靠地判断注入的代码应该在内存中的什么位置。</p>
+<p>不论被破解程序的薄弱环节在哪里：缓冲区溢出、格式化字符串攻击或其他方式，黑客都可以花大力气破解一个不安全的程序，找到这个程序的地址空间布局，然后精心设计一种方法，这种方法可以可靠地重现程序中的薄弱环节，并且可以在类似的系统上暴露出一样的薄弱环节。</p>
+<p>现在大部分操作系统中都采用了一种称为地址空间布局随机化(ASLR) 的技术，这是一种避免攻击的有效保护。进程每一次启动时，地址空间都会被简单地随机化：<strong>只是偏移，而不是搅乱</strong>。基本的布局(程序文本、数据和库)仍然是一样的。然而，这些部分具体的地址都不同了——区别足够大，可以阻挡黑客对地址的猜测。<strong>实现方法是通过内核将Mach-O的段“平移”某个随机系数</strong>。</p>
+<h3 id="4-2-概述"><a href="#4-2-概述" class="headerlink" title="4.2 概述"></a>4.2 概述</h3><p>地址空间布局随机化(Address Space Layout Randomization，ASLR)是一种针对缓冲区溢出的安全保护技术，通过对堆、栈、共享库映射等线性区布局的随机化，通过增加攻击者预测目的地址的难度，防止攻击者直接定位攻击代码位置，达到阻止溢出攻击的目的的一种技术。iOS4.3开始引入了ASLR技术。</p>
+<p>下面分别来看一下，未使用ASLR、使用了ASLR下，进程虚拟地址空间内的分布。（如果对<code>__TEXT</code>、<code>__DATA</code>等Segment概念不清楚的地方，可以看一些第二篇关于Mach-O文件结构的介绍）</p>
+<img src="/images/compilelink/46.jpg" alt="26" style="zoom:55%;" />
+
+<h3 id="4-3-未使用ASLR的虚拟地址空间"><a href="#4-3-未使用ASLR的虚拟地址空间" class="headerlink" title="4.3 未使用ASLR的虚拟地址空间"></a>4.3 未使用ASLR的虚拟地址空间</h3><p>下图中左侧是mach-O可执行文件，右侧是链接之后的虚拟地址空间。</p>
+<ul>
+<li>函数代码存放在__TEXT段中</li>
+<li>全局变量存放在__DATA段中</li>
+<li>可执行文件的内存地址是0x0</li>
+<li>代码段（__TEXT）的内存地址就是LC_SEGMENT(__TEXT)中的VM Address：arm64设备下，为<code>0x100000000</code>；非arm64下为<code>0x4000</code></li>
+<li>可以使用<code>size -l -m -x</code>来查看Mach-O的内存分布</li>
+</ul>
+<img src="/images/compilelink/26.png" alt="26" style="zoom:55%;" />
+
+<h3 id="4-4-使用了ASLR的虚拟地址空间"><a href="#4-4-使用了ASLR的虚拟地址空间" class="headerlink" title="4.4 使用了ASLR的虚拟地址空间"></a>4.4 使用了ASLR的虚拟地址空间</h3><ul>
+<li>LC_SEGMENT(__TEXT)的VM Address为<code>0x100000000</code></li>
+<li>ASLR随机产生的Offset（偏移）为<code>0x5000</code></li>
+<li>再次强调：由于ASLR的作用，进程的地址空间变得流动性非常大。但是尽管具体的地址会随机“滑动”某个小的偏移量，但整体布局保持不变。</li>
+</ul>
+<img src="/images/compilelink/27.png" alt="26" style="zoom:55%;" />
+
+<h3 id="4-5-符号地址计算"><a href="#4-5-符号地址计算" class="headerlink" title="4.5 符号地址计算"></a>4.5 符号地址计算</h3><blockquote>
+<p>函数(变量)符号的内存地址、可执行文件地址计算</p>
+</blockquote>
+<h4 id="4-5-1-函数内存地址计算"><a href="#4-5-1-函数内存地址计算" class="headerlink" title="4.5.1 函数内存地址计算"></a>4.5.1 函数内存地址计算</h4><ul>
+<li><strong>File Offset</strong>：在当前架构(MachO)文件中的偏移量。</li>
+<li><strong>VM Address【未偏移/ASLR偏移前】</strong> ：<ul>
+<li>编译链接后，映射到虚拟地址中的内存起始地址。 </li>
+<li><code>VM Address = File Offset + __PAGEZERO Size</code>(__PAGEZERO段在MachO文件中没有实际大小，在VM中展开)</li>
+</ul>
+</li>
+<li><strong>Load Address【ASLR偏移后的VM Address】</strong>：<ul>
+<li>在运行时加载到虚拟内存的起始位置。（真正的运行时地址，也是虚拟地址空间中的地址）。</li>
+<li>Slide是加载到内存的偏移，这个偏移值是一个随机值，每次运行都不相同。<code>Load Address = VM Address + Slide(ASLR Offset)</code></li>
+<li>当未开启ASLR时，Load Address(运行时VM Address) ＝ 上面的静态VM Address</li>
+</ul>
+</li>
+</ul>
+<p>注意：</p>
+<ul>
+<li>MachO文件一生成，代码段、数据段在MachO文件中的位置(File Offset)、在运行内存(虚拟内存)中的地址值(vm address)就已经确定了。</li>
+<li>运行时，真正的运行内存地址，还得加上ASLR偏移量。</li>
+<li>开发者面向的地址，都是虚拟内存中的地址（虚拟地址），而不是真实的硬件设备上的地址（物理地址）。</li>
+</ul>
+<p>由于dsym符号表是编译时生成的地址，crash堆栈的地址是运行时地址，这个时候需要经过转换才能正确的符号化。crash日志里的符号地址被称为Stack Address，而编译后的符号地址被称为Symbol Address，他们之间的关系如下：<code>Stack Address = Symbol Address + Slide</code>。</p>
+<p>符号化就是通过Stack Address到dsym文件中寻找对应符号信息的过程。</p>
+<p><strong>Hopper、IDA图形化工具中的地址都是未使用ASLR前的VM Address</strong>。</p>
+<h4 id="4-5-2-ASLR-Offset的获取"><a href="#4-5-2-ASLR-Offset的获取" class="headerlink" title="4.5.2 ASLR Offset的获取"></a>4.5.2 ASLR Offset的获取</h4><p>ASLR Offset有的地方也叫做<code>slide</code>，获取方法：</p>
+<ul>
+<li>在运行时由API <code>dyld_get_image_vmaddr_slide()</code>，来获取image虚拟地址的偏移量。</li>
+</ul>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//函数原型如下：</span></span><br><span class="line"><span class="keyword">extern</span> <span class="keyword">intptr_t</span>   _dyld_get_image_vmaddr_slide(<span class="keyword">uint32_t</span> image_index);</span><br><span class="line"></span><br><span class="line"><span class="comment">//一般使用方法如下：</span></span><br><span class="line"><span class="keyword">uint32_t</span> c = _dyld_image_count();</span><br><span class="line"><span class="keyword">for</span> (<span class="keyword">uint32_t</span> i = <span class="number">0</span>; i &lt; c; i++) &#123;</span><br><span class="line">  <span class="keyword">intptr_t</span> index  = _dyld_get_image_vmaddr_slide(i);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><p>通过<code>lldb</code>命令<code>image list -o -f</code> 进行获取（本地、远程<code>debugserver</code>调试都可以），如下图：</p>
+<img src="/images/compilelink/28.png" alt="26" style="zoom:80%;" /></li>
+<li><p>根据运行时crash中的 <code>binary image</code>信息 和 ELF 文件的 <code>load command</code> 计算的到。比如下例：</p>
+</li>
+</ul>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//下面是crash信息，其中包括了抛出异常的线程的函数调用栈信息，日志下方有binary image信息，都只摘取了部分：</span></span><br><span class="line"><span class="comment">/*</span></span><br><span class="line"><span class="comment"> 第一列，调用顺序</span></span><br><span class="line"><span class="comment"> 第二列，对应函数所属的 binary image</span></span><br><span class="line"><span class="comment"> 第三列，stack address</span></span><br><span class="line"><span class="comment"> 第四列，地址的符号＋偏移的表示法，运算结果等于第三列</span></span><br><span class="line"><span class="comment">*/</span></span><br><span class="line">Last Exception Backtrace:  </span><br><span class="line"><span class="number">0</span>   CoreFoundation                <span class="number">0x189127100</span> __exceptionPreprocess + <span class="number">132</span>  </span><br><span class="line"><span class="number">1</span>   libobjc.A.dylib               <span class="number">0x1959e01fc</span> objc_exception_throw + <span class="number">60</span>  </span><br><span class="line"><span class="number">2</span>   CoreFoundation                <span class="number">0x189127040</span> +[NSException raise:format:] + <span class="number">128</span>  </span><br><span class="line"><span class="number">3</span>   CrashDemo                     <span class="number">0x100a8666c</span> <span class="number">0x10003c000</span> + <span class="number">10790508</span>  </span><br><span class="line"><span class="number">4</span>   libsystem_platform.dylib      <span class="number">0x19614bb0c</span> _sigtramp + <span class="number">56</span>  </span><br><span class="line"><span class="number">5</span>   CrashDemo                     <span class="number">0x1006ef164</span> <span class="number">0x10003c000</span> + <span class="number">7024996</span>  </span><br><span class="line"><span class="number">6</span>   CrashDemo                     <span class="number">0x1006e8580</span> <span class="number">0x10003c000</span> + <span class="number">6997376</span>  </span><br><span class="line"><span class="number">7</span>   CrashDemo                     <span class="number">0x1006e8014</span> <span class="number">0x10003c000</span> + <span class="number">6995988</span>  </span><br><span class="line"><span class="number">8</span>   CrashDemo                     <span class="number">0x1006e7c94</span> <span class="number">0x10003c000</span> + <span class="number">6995092</span>  </span><br><span class="line"><span class="number">9</span>   CrashDemo                     <span class="number">0x1006f2460</span> <span class="number">0x10003c000</span> + <span class="number">7038048</span>  </span><br><span class="line"></span><br><span class="line"><span class="comment">/* </span></span><br><span class="line"><span class="comment"> 第一列，虚拟地址空间区块；</span></span><br><span class="line"><span class="comment"> 第二列，映射文件名；</span></span><br><span class="line"><span class="comment"> 第三列：加载的image的UUID；</span></span><br><span class="line"><span class="comment"> 第四列，映射文件路径 </span></span><br><span class="line"><span class="comment">*/</span></span><br><span class="line">Binary Images:  </span><br><span class="line"><span class="number">0x10003c000</span> - <span class="number">0x100f7bfff</span> CrashDemo arm64  &lt;b5ae3570a013386688c7007ee2e73978&gt; /var/mobile/Applications/<span class="number">05</span>C398CE<span class="number">-21E9</span><span class="number">-43</span>C2<span class="number">-967F</span><span class="number">-26</span>DD0A327932/CrashDemo.app/CrashDemo  </span><br><span class="line"><span class="number">0x12007c000</span> - <span class="number">0x1200a3fff</span> dyld arm64  &lt;<span class="number">628</span>da833271c3f9bb8d44c34060f55e0&gt; /usr/lib/dyld</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment">//下面是使用 otool 工具查看到的 MedicalRecordsFolder（我的程序）的 加载命令 。</span></span><br><span class="line">$otool -l CrashDemo.app/CrashDemo   </span><br><span class="line">CrashDemo.app/CrashDemo:  </span><br><span class="line">Load command <span class="number">0</span>  </span><br><span class="line">      cmd LC_SEGMENT_64  </span><br><span class="line">  cmdsize <span class="number">72</span>  </span><br><span class="line">  segname __PAGEZERO  </span><br><span class="line">   vmaddr <span class="number">0x0000000000000000</span>  </span><br><span class="line">   vmsize <span class="number">0x0000000100000000</span>  </span><br><span class="line">  fileoff <span class="number">0</span>  </span><br><span class="line"> filesize <span class="number">0</span>  </span><br><span class="line">  maxprot <span class="number">0x00000000</span>  </span><br><span class="line"> initprot <span class="number">0x00000000</span>  </span><br><span class="line">   nsects <span class="number">0</span>  </span><br><span class="line">    flags <span class="number">0x0</span>  </span><br><span class="line">Load command <span class="number">1</span>  </span><br><span class="line">      cmd LC_SEGMENT_64  </span><br><span class="line">  cmdsize <span class="number">792</span>  </span><br><span class="line">  segname __TEXT  </span><br><span class="line">   vmaddr <span class="number">0x0000000100000000</span>  </span><br><span class="line">   vmsize <span class="number">0x000000000000c000</span>  </span><br><span class="line">  fileoff <span class="number">0</span>  </span><br><span class="line"> filesize <span class="number">49152</span>  </span><br><span class="line">  maxprot <span class="number">0x00000005</span>  </span><br><span class="line"> initprot <span class="number">0x00000005</span>  </span><br><span class="line">   nsects <span class="number">9</span>  </span><br><span class="line">    flags <span class="number">0x0</span>  </span><br><span class="line">……  </span><br><span class="line">Load command <span class="number">2</span> </span><br><span class="line">……  </span><br></pre></td></tr></table></figure>
+
+<p>在 binary image 第一行可以看出进程空间的 0x10003c000 - 0x100f7bfff 这个区域在运行时被映射为 CrashDemo 内的内容，也就是我们的 ELF 文件(区域起始地址为0x10003c000)。<br>而在 Load Command 中看到的<code>__TEXT</code>的段起始地址却是 0x0000000100000000。<br>显而易见：slide = 0x10003c000(Load Address) - 0x100000000(VM Address) = 0x3c000；之后，就可以通过公式<code>symbol address = stack address - slide;</code> 来计算stack address 在crash log 中已经找到了。</p>
+<h4 id="4-5-3-Symbol-Address符号化"><a href="#4-5-3-Symbol-Address符号化" class="headerlink" title="4.5.3 Symbol Address符号化"></a>4.5.3 Symbol Address符号化</h4><ul>
+<li><p>利用<code>dwarfdump</code>可以从dsym文件中得到symbol Address对应的内容：</p>
+<ul>
+<li>拿到crash日志后，我们要先确定dsym文件是否匹配。可以使用下面命令查看dsym文件所有架构的UUID：<code>dwarfdump --uuid CrashDemo.app.dSYM </code>，然后跟crash日志中Binary Images中的UUID相比对。</li>
+<li>用得到的Symbol Address去 dsym 文件中查询，命令如下：<code>dwarfdump --arch arm64 --lookup [Symbol Address] CrashDemo.app.dSYM</code>，就可以定位下来具体的代码、函数名、所处的文件、行等信息了</li>
+</ul>
+</li>
+<li><p>如果只是简单的获取符号名，可以用<code>atos</code>来符号化：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">atos -o [dsym file path] -l [模块的Load Address] -arch [arch <span class="built_in">type</span>] [Stack Address]</span><br><span class="line"><span class="comment"># 比如：5   CrashDemo              0x1006ef164       0x10003c000 + 7024996</span></span><br><span class="line"><span class="comment">#                               【stack address】  【模块的加载地址】</span></span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>不需要指定Symbol Address，只需要模块的Load Address、Stack Address即可。</li>
+</ul>
+</li>
+</ul>
+<h3 id="4-6-小结"><a href="#4-6-小结" class="headerlink" title="4.6 小结"></a>4.6 小结</h3><p>应该注意的是，尽管ASLR是很显著的改进，但也不是万能药。黑客仍然能找到聪明的方法破解程序。事实上，目前臭名昭著的“Star 3.0”漏洞就攻破了ASLR，这个漏洞越狱了 iPad 2 上的iOS 4.3。这种破解使用了Retum-Oriented Programming(ROP)攻击技术，通过缓冲区溢出破坏栈，以设置完整的栈帧， 模拟对libSystem的调用。同样的技术也用在iOS 5.0.1的“corona”漏洞中，这个漏洞成功地攻入了所有的苹果设备，包括当时最新的iPhone 4S。</p>
+<p>预防攻击的唯一之道就是编写更加安全的代码，并且采用严格的代码审查，既要包含自动的技术，也要有人工的介入。</p>
+<h3 id="4-7-参考链接"><a href="#4-7-参考链接" class="headerlink" title="4.7 参考链接"></a>4.7 参考链接</h3><ul>
+<li>《深入解析Mac OS X &amp; iOS 操作系统》</li>
+<li><a target="_blank" rel="noopener" href="https://blog.csdn.net/zhongad007/article/details/90022617">动态调试之ASLR</a></li>
+<li><a target="_blank" rel="noopener" href="https://blog.csdn.net/xiaofei125145/article/details/50456614">iOS crash log 解析</a></li>
+</ul>
+<h2 id="五、Linux-ELF文件的装载（了解）"><a href="#五、Linux-ELF文件的装载（了解）" class="headerlink" title="五、Linux ELF文件的装载（了解）"></a>五、Linux ELF文件的装载（了解）</h2><p>首先在用户层面，bash进程会调用fork()系统调用创建一个新的进程，然后新的进程调用 <code>execve()</code>系统调用执行指定的ELF文件，原先的bash进程继续返回等待刚才启动的新进程结束，然后继续等待用户输入命令。 execve() 系统调用被定义在unistd.h，它的原型如下：</p>
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/*</span></span><br><span class="line"><span class="comment"> * 三个参数分别是被执行的程序文件名、执行参数和环境变量。</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">execve</span><span class="params">(<span class="keyword">const</span> <span class="keyword">char</span> *filename, <span class="keyword">char</span> *<span class="keyword">const</span> argv[], <span class="keyword">char</span> *<span class="keyword">const</span> envp[])</span></span>; </span><br></pre></td></tr></table></figure>
 
 <p>Glibc对该系统调用进行了包装，提供了 execl()、execlp()、execle()、execv()、execvp()等5个不同形式的exec系列API，它们只是在调用的参数形式上有所区别，但最终都会调用到 execve() 这个系统中。</p>
@@ -520,7 +612,7 @@ height:40vh;
             <p>Author：<a href="https://tenloy.github.io">Tenloy</a>
             <p>原文链接：<a href="https://tenloy.github.io/2021/10/10/compile-load.html">https://tenloy.github.io/2021/10/10/compile-load.html</a>
             <p>发表日期：2021.10.10 , 4:26 AM</p>
-            <p>更新日期：2024.04.07 , 8:02 PM</p>
+            <p>更新日期：2024.04.24 , 1:04 PM</p>
             <p>版权声明：本文采用<a rel="license noopener" target="_blank" href="http://creativecommons.org/licenses/by-nc/4.0/">Crative Commons 4.0 许可协议</a>进行许可</p>
         </div>
     
@@ -529,8 +621,8 @@ height:40vh;
         <li class="next">
             
                 <div class="nextSlogan">Next Post</div>
-                <a href= "/2021/10/14/compile-vm-asrl.html" title= "(五) Mach-O 文件之进程(虚拟)地址空间、ASLR">
-                    <div class="nextTitle">(五) Mach-O 文件之进程(虚拟)地址空间、ASLR</div>
+                <a href= "/2021/10/18/compile-dynamic-link.html" title= "(六) Mach-O 文件的动态链接、库、Dyld(含dlopen)">
+                    <div class="nextTitle">(六) Mach-O 文件的动态链接、库、Dyld(含dlopen)</div>
                 </a>
             
         </li>
@@ -662,7 +754,7 @@ top:40vh;
         <div class="toc-catalog">
             <span class="iconfont-archer catalog-icon">&#xe613;</span><span>CATALOG</span>
         </div>
-        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E3%80%81%E8%A3%85%E8%BD%BD%E6%A6%82%E8%BF%B0"><span class="toc-text">一、装载概述</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8C%E3%80%81%E8%A3%85%E8%BD%BD%E7%90%86%E8%AE%BA%E7%AF%87"><span class="toc-text">二、装载理论篇</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%89%E3%80%81Mach-O%E6%96%87%E4%BB%B6%E7%9A%84%E8%A3%85%E8%BD%BD"><span class="toc-text">三、Mach-O文件的装载</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9B%9B%E3%80%81Linux-ELF%E6%96%87%E4%BB%B6%E7%9A%84%E8%A3%85%E8%BD%BD%EF%BC%88%E4%BA%86%E8%A7%A3%EF%BC%89"><span class="toc-text">四、Linux ELF文件的装载（了解）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%94%E3%80%81%E5%8F%82%E8%80%83%E9%93%BE%E6%8E%A5"><span class="toc-text">五、参考链接</span></a></li></ol>
+        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E3%80%81%E8%A3%85%E8%BD%BD%E6%A6%82%E8%BF%B0"><span class="toc-text">一、装载概述</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8C%E3%80%81%E8%A3%85%E8%BD%BD%E7%90%86%E8%AE%BA%E7%AF%87"><span class="toc-text">二、装载理论篇</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%89%E3%80%81Mach-O%E6%96%87%E4%BB%B6%E7%9A%84%E8%A3%85%E8%BD%BD"><span class="toc-text">三、Mach-O文件的装载</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9B%9B%E3%80%81ASLR"><span class="toc-text">四、ASLR</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#4-1-%E5%BC%95%E5%85%A5%E8%83%8C%E6%99%AF"><span class="toc-text">4.1 引入背景</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-2-%E6%A6%82%E8%BF%B0"><span class="toc-text">4.2 概述</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-3-%E6%9C%AA%E4%BD%BF%E7%94%A8ASLR%E7%9A%84%E8%99%9A%E6%8B%9F%E5%9C%B0%E5%9D%80%E7%A9%BA%E9%97%B4"><span class="toc-text">4.3 未使用ASLR的虚拟地址空间</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-4-%E4%BD%BF%E7%94%A8%E4%BA%86ASLR%E7%9A%84%E8%99%9A%E6%8B%9F%E5%9C%B0%E5%9D%80%E7%A9%BA%E9%97%B4"><span class="toc-text">4.4 使用了ASLR的虚拟地址空间</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-5-%E7%AC%A6%E5%8F%B7%E5%9C%B0%E5%9D%80%E8%AE%A1%E7%AE%97"><span class="toc-text">4.5 符号地址计算</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#4-5-1-%E5%87%BD%E6%95%B0%E5%86%85%E5%AD%98%E5%9C%B0%E5%9D%80%E8%AE%A1%E7%AE%97"><span class="toc-text">4.5.1 函数内存地址计算</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#4-5-2-ASLR-Offset%E7%9A%84%E8%8E%B7%E5%8F%96"><span class="toc-text">4.5.2 ASLR Offset的获取</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#4-5-3-Symbol-Address%E7%AC%A6%E5%8F%B7%E5%8C%96"><span class="toc-text">4.5.3 Symbol Address符号化</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-6-%E5%B0%8F%E7%BB%93"><span class="toc-text">4.6 小结</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-7-%E5%8F%82%E8%80%83%E9%93%BE%E6%8E%A5"><span class="toc-text">4.7 参考链接</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%94%E3%80%81Linux-ELF%E6%96%87%E4%BB%B6%E7%9A%84%E8%A3%85%E8%BD%BD%EF%BC%88%E4%BA%86%E8%A7%A3%EF%BC%89"><span class="toc-text">五、Linux ELF文件的装载（了解）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%94%E3%80%81%E5%8F%82%E8%80%83%E9%93%BE%E6%8E%A5"><span class="toc-text">五、参考链接</span></a></li></ol>
     </div>
     
     <div class="back-top iconfont-archer">&#xe639;</div>
@@ -1766,9 +1858,14 @@ top:40vh;
     
     
     
+    
+    
+    
+    
+    
     <div class="total-and-search">
         <div class="total-archive">
-        Total : 76
+        Total : 75
         </div>
         <!-- search  -->
         
@@ -1847,12 +1944,7 @@ top:40vh;
     
     
         <li class="archive-post-item">
-            <span class="archive-post-date">10/14</span><a class="archive-post-title" href= "/2021/10/14/compile-vm-asrl.html" >(五) Mach-O 文件之进程(虚拟)地址空间、ASLR</a>
-        </li>
-    
-    
-        <li class="archive-post-item">
-            <span class="archive-post-date">10/10</span><a class="archive-post-title" href= "/2021/10/10/compile-load.html" >(四) Mach-O 文件的装载</a>
+            <span class="archive-post-date">10/10</span><a class="archive-post-title" href= "/2021/10/10/compile-load.html" >(四) Mach-O 文件的装载、ASLR及符号地址</a>
         </li>
     
     
@@ -1947,7 +2039,7 @@ top:40vh;
     
     
         <li class="archive-post-item">
-            <span class="archive-post-date">07/30</span><a class="archive-post-title" href= "/2021/07/30/Lag-Monitor.html" >iOS卡顿监控</a>
+            <span class="archive-post-date">07/30</span><a class="archive-post-title" href= "/2021/07/30/Lag-Monitor.html" >iOS卡顿监控与堆栈获取</a>
         </li>
     
     
@@ -2201,15 +2293,15 @@ top:40vh;
     
         <span class="sidebar-tag-name" data-tags="Soc"><span class="iconfont-archer">&#xe606;</span>Soc</span>
     
-        <span class="sidebar-tag-name" data-tags="多线程"><span class="iconfont-archer">&#xe606;</span>多线程</span>
-    
         <span class="sidebar-tag-name" data-tags="ARM64"><span class="iconfont-archer">&#xe606;</span>ARM64</span>
-    
-        <span class="sidebar-tag-name" data-tags="Docker"><span class="iconfont-archer">&#xe606;</span>Docker</span>
     
         <span class="sidebar-tag-name" data-tags="CLI"><span class="iconfont-archer">&#xe606;</span>CLI</span>
     
         <span class="sidebar-tag-name" data-tags="Shell"><span class="iconfont-archer">&#xe606;</span>Shell</span>
+    
+        <span class="sidebar-tag-name" data-tags="Docker"><span class="iconfont-archer">&#xe606;</span>Docker</span>
+    
+        <span class="sidebar-tag-name" data-tags="多线程"><span class="iconfont-archer">&#xe606;</span>多线程</span>
     
         <span class="sidebar-tag-name" data-tags="DSL"><span class="iconfont-archer">&#xe606;</span>DSL</span>
     
@@ -2217,17 +2309,17 @@ top:40vh;
     
         <span class="sidebar-tag-name" data-tags="Fiber"><span class="iconfont-archer">&#xe606;</span>Fiber</span>
     
-        <span class="sidebar-tag-name" data-tags="SwiftUI"><span class="iconfont-archer">&#xe606;</span>SwiftUI</span>
-    
         <span class="sidebar-tag-name" data-tags="dp"><span class="iconfont-archer">&#xe606;</span>dp</span>
     
-        <span class="sidebar-tag-name" data-tags="Swift-Syntax"><span class="iconfont-archer">&#xe606;</span>Swift-Syntax</span>
+        <span class="sidebar-tag-name" data-tags="SwiftUI"><span class="iconfont-archer">&#xe606;</span>SwiftUI</span>
     
         <span class="sidebar-tag-name" data-tags="RunLoop"><span class="iconfont-archer">&#xe606;</span>RunLoop</span>
     
-        <span class="sidebar-tag-name" data-tags="Log"><span class="iconfont-archer">&#xe606;</span>Log</span>
+        <span class="sidebar-tag-name" data-tags="Swift-Syntax"><span class="iconfont-archer">&#xe606;</span>Swift-Syntax</span>
     
         <span class="sidebar-tag-name" data-tags="LagMonitor"><span class="iconfont-archer">&#xe606;</span>LagMonitor</span>
+    
+        <span class="sidebar-tag-name" data-tags="Log"><span class="iconfont-archer">&#xe606;</span>Log</span>
     
         <span class="sidebar-tag-name" data-tags="CrashMonitor"><span class="iconfont-archer">&#xe606;</span>CrashMonitor</span>
     

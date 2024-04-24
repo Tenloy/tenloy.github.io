@@ -22,7 +22,7 @@
     <meta name="description" content="学习 生活 记录 回忆">
     <meta name="description" content="一、卡顿的难点时不时会收到这样的卡顿反馈：“用户A 刚才碰到从后台切换前台卡了一下，最近偶尔会遇到几次”、“用户B 反馈点对话框卡了五六秒”、“现网有用户反馈切换 tab 很卡”。 这些反馈有几个特点，导致跟进困难：  不易重现。可能是特定用户的手机上才有问题，由于种种原因这个手机不能拿来调试；也有可能是特定的时机才会出问题，过后就不能重现了（例如线程抢锁）。 操作路径长，日志无法准确打点  对于">
 <meta property="og:type" content="article">
-<meta property="og:title" content="iOS卡顿监控">
+<meta property="og:title" content="iOS卡顿监控与堆栈获取">
 <meta property="og:url" content="https://tenloy.github.io/2021/07/30/Lag-Monitor.html">
 <meta property="og:site_name" content="Tenloy&#39;s Blog">
 <meta property="og:description" content="一、卡顿的难点时不时会收到这样的卡顿反馈：“用户A 刚才碰到从后台切换前台卡了一下，最近偶尔会遇到几次”、“用户B 反馈点对话框卡了五六秒”、“现网有用户反馈切换 tab 很卡”。 这些反馈有几个特点，导致跟进困难：  不易重现。可能是特定用户的手机上才有问题，由于种种原因这个手机不能拿来调试；也有可能是特定的时机才会出问题，过后就不能重现了（例如线程抢锁）。 操作路径长，日志无法准确打点  对于">
@@ -37,7 +37,7 @@
 <meta property="og:image" content="https://tenloy.github.io/images/OS/arm64/method-call-stack.png">
 <meta property="og:image" content="https://tenloy.github.io/images/crash/os-structure2.png">
 <meta property="article:published_time" content="2021-07-30T11:28:45.000Z">
-<meta property="article:modified_time" content="2024-04-17T10:01:26.867Z">
+<meta property="article:modified_time" content="2024-04-23T07:48:39.737Z">
 <meta property="article:author" content="Tenloy">
 <meta property="article:tag" content="LagMonitor">
 <meta name="twitter:card" content="summary">
@@ -45,7 +45,7 @@
     <meta http-equiv="Cache-control" content="no-cache">
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"/>
     
-    <title>iOS卡顿监控 · Tenloy&#39;s Blog</title>
+    <title>iOS卡顿监控与堆栈获取 · Tenloy&#39;s Blog</title>
     <style type="text/css">
     @font-face {
         font-family: 'Oswald-Regular';
@@ -256,7 +256,7 @@
                 <a href="/" >Tenloy&#39;s Blog</a>
             </div>
             <div class="post-title">
-                <a href="#" class="post-name">iOS卡顿监控</a>
+                <a href="#" class="post-name">iOS卡顿监控与堆栈获取</a>
             </div>
     </div>
     
@@ -295,7 +295,7 @@ height:40vh;
         <h1 class="intro-title">
             <!-- 主页  -->
             
-            iOS卡顿监控
+            iOS卡顿监控与堆栈获取
             <!-- 404 -->
             
         </h1>
@@ -320,7 +320,7 @@ height:40vh;
                 
                 
                     <div class="post-intro-read">
-                        <span>Word count: <span class="post-count word-count">8k</span>Reading time: <span class="post-count reading-time">30 min</span></span>
+                        <span>Word count: <span class="post-count word-count">8.6k</span>Reading time: <span class="post-count reading-time">33 min</span></span>
                     </div>
                 
                 <div class="post-intro-meta">
@@ -527,13 +527,16 @@ height:40vh;
 </li>
 </ul>
 <p>这样，可以避免同一个卡顿写入多个文件的情况；避免检测线程遇到主线程卡死的情况下，不断写线程快照文件。</p>
-<h3 id="3-4-卡顿时堆栈获取"><a href="#3-4-卡顿时堆栈获取" class="headerlink" title="3.4 卡顿时堆栈获取"></a>3.4 卡顿时堆栈获取</h3><h4 id="3-4-1-直接调用系统函数"><a href="#3-4-1-直接调用系统函数" class="headerlink" title="3.4.1 直接调用系统函数"></a>3.4.1 直接调用系统函数</h4><p>获取堆栈信息的一种方法是直接调用系统函数。这种方法的优点在于，性能消耗小。但是，它只能够获取简单的信息，也没有办法配合 dSYM 来获取具体是哪行代码出了问题，而且能够获取的信息类型也有限。这种方法，因为性能比较好，所以适用于观察大盘统计卡顿情况，而不是想要找到卡顿原因的场景。</p>
+<h3 id="3-4-卡顿时堆栈获取"><a href="#3-4-卡顿时堆栈获取" class="headerlink" title="3.4 卡顿时堆栈获取"></a>3.4 卡顿时堆栈获取</h3><h4 id="3-4-1-直接调用系统函数"><a href="#3-4-1-直接调用系统函数" class="headerlink" title="3.4.1 直接调用系统函数"></a>3.4.1 直接调用系统函数</h4><p>获取堆栈信息的一种方法是直接调用系统函数。这种方法的优点在于，性能消耗小。但是，它只能够获取简单的信息，也没有办法配合 dSYM 来获取具体是哪行代码出了问题，而且能够获取的信息类型也有限，且<strong>只能获取当前线程的调用栈</strong>。这种方法，因为性能比较好，所以适用于观察大盘统计卡顿情况，而不是想要找到卡顿原因的场景。</p>
 <p>直接调用系统函数方法的主要思路是：用 signal 进行错误信息的获取。具体代码如下</p>
 <figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">static</span> <span class="keyword">int</span> s_fatal_signals[] = &#123;</span><br><span class="line">    SIGABRT,</span><br><span class="line">    SIGBUS,</span><br><span class="line">    SIGFPE,</span><br><span class="line">    SIGILL,</span><br><span class="line">    SIGSEGV,</span><br><span class="line">    SIGTRAP,</span><br><span class="line">    SIGTERM,</span><br><span class="line">    SIGKILL,</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="keyword">static</span> <span class="keyword">int</span> s_fatal_signal_num = <span class="keyword">sizeof</span>(s_fatal_signals) / <span class="keyword">sizeof</span>(s_fatal_signals[<span class="number">0</span>]);</span><br><span class="line"></span><br><span class="line"><span class="keyword">void</span> UncaughtExceptionHandler(<span class="built_in">NSException</span> *exception) &#123;</span><br><span class="line">    <span class="built_in">NSArray</span> *exceptionArray = [exception callStackSymbols]; <span class="comment">//得到当前调用栈信息</span></span><br><span class="line">    <span class="built_in">NSString</span> *exceptionReason = [exception reason];       <span class="comment">//非常重要，就是崩溃的原因</span></span><br><span class="line">    <span class="built_in">NSString</span> *exceptionName = [exception name];           <span class="comment">//异常类型</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">void</span> SignalHandler(<span class="keyword">int</span> code)&#123;</span><br><span class="line">    <span class="built_in">NSLog</span>(<span class="string">@&quot;signal handler = %d&quot;</span>,code);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">void</span> InitCrashReport()&#123;</span><br><span class="line">    <span class="comment">//系统错误信号捕获</span></span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; s_fatal_signal_num; ++i) &#123;</span><br><span class="line">        signal(s_fatal_signals[i], SignalHandler);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">//oc未捕获异常的捕获</span></span><br><span class="line">    <span class="built_in">NSSetUncaughtExceptionHandler</span>(&amp;UncaughtExceptionHandler);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">int</span> main(<span class="keyword">int</span> argc, <span class="keyword">char</span> * argv[]) &#123;</span><br><span class="line">    <span class="keyword">@autoreleasepool</span> &#123;</span><br><span class="line">        InitCrashReport();</span><br><span class="line">        <span class="keyword">return</span> <span class="built_in">UIApplicationMain</span>(argc, argv, <span class="literal">nil</span>, <span class="built_in">NSStringFromClass</span>([AppDelegate <span class="keyword">class</span>]));</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
 <h4 id="3-4-2-PLCrashReporter三方库"><a href="#3-4-2-PLCrashReporter三方库" class="headerlink" title="3.4.2 PLCrashReporter三方库"></a>3.4.2 PLCrashReporter三方库</h4><p><a target="_blank" rel="noopener" href="https://github.com/microsoft/plcrashreporter">PLCrashReporter</a> 是微软开源的第三方框架，用来做 crash 收集，可以直接用 PLCrashReporter 来获取堆栈信息。这种方法的特点是，能够定位到问题代码的具体位置，而且性能消耗也不大。所以，也是我推荐的获取堆栈信息的方法。</p>
 <p>具体如何使用 PLCrashReporter 来获取堆栈信息，代码如下所示：</p>
-<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 获取数据</span></span><br><span class="line"><span class="built_in">NSData</span> *lagData = [</span><br><span class="line">  								 [[PLCrashReporter alloc] initWithConfiguration:</span><br><span class="line">                     [[PLCrashReporterConfig alloc]</span><br><span class="line">                      initWithSignalHandlerType:PLCrashReporterSignalHandlerTypeBSD symbolicationStrategy:PLCrashReporterSymbolicationStrategyAll]]</span><br><span class="line">                   generateLiveReport];</span><br><span class="line"><span class="comment">// 转换成 PLCrashReport 对象</span></span><br><span class="line">PLCrashReport *lagReport = [[PLCrashReport alloc] initWithData:lagData error:<span class="literal">NULL</span>];</span><br><span class="line"><span class="comment">// 进行字符串格式化处理</span></span><br><span class="line"><span class="built_in">NSString</span> *lagReportString = [PLCrashReportTextFormatter stringValueForCrashReport:lagReport withTextFormat:PLCrashReportTextFormatiOS];</span><br><span class="line"><span class="comment">//将字符串上传服务器</span></span><br><span class="line"><span class="built_in">NSLog</span>(<span class="string">@&quot;lag happen, detail below: \n %@&quot;</span>,lagReportString);</span><br></pre></td></tr></table></figure>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 获取数据</span></span><br><span class="line"><span class="built_in">NSData</span> *lagData = [[[PLCrashReporter alloc] initWithConfiguration:</span><br><span class="line">                     [[PLCrashReporterConfig alloc]</span><br><span class="line">                      initWithSignalHandlerType:PLCrashReporterSignalHandlerTypeBSD symbolicationStrategy:PLCrashReporterSymbolicationStrategyAll]]</span><br><span class="line">                   generateLiveReport];</span><br><span class="line"><span class="comment">// 转换成 PLCrashReport 对象</span></span><br><span class="line">PLCrashReport *lagReport = [[PLCrashReport alloc] initWithData:lagData error:<span class="literal">NULL</span>];</span><br><span class="line"><span class="comment">// 进行字符串格式化处理</span></span><br><span class="line"><span class="built_in">NSString</span> *lagReportString = [PLCrashReportTextFormatter stringValueForCrashReport:lagReport withTextFormat:PLCrashReportTextFormatiOS];</span><br><span class="line"><span class="comment">//将字符串上传服务器</span></span><br><span class="line"><span class="built_in">NSLog</span>(<span class="string">@&quot;lag happen, detail below: \n %@&quot;</span>,lagReportString);</span><br></pre></td></tr></table></figure>
+
+<p>堆栈采集相关源码：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// ▼ plcrash_write_report是核心，暂停线程，抓线程堆栈信息，写文件和恢复线程都在这个函数里。</span></span><br><span class="line"><span class="comment">//   ▶ plcrash_log_writer_write: 具体抓线程信息和写文件的关键实现在plcrash_log_writer_write这个函数里，</span></span><br><span class="line"><span class="comment">//                               这个函数内部会去读image_list，获取所有线程，暂停除了当前线程之外的所有线程，</span></span><br><span class="line"><span class="function"><span class="keyword">plcrash_error_t</span> <span class="title">plcrash_log_writer_write</span> <span class="params">(...)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">thread_act_array_t</span> threads;</span><br><span class="line">    <span class="keyword">mach_msg_type_number_t</span> thread_count;</span><br><span class="line">    <span class="comment">/* Get a list of all threads */</span></span><br><span class="line">    <span class="keyword">if</span> (<span class="built_in">task_threads</span>(<span class="built_in">mach_task_self</span>(), &amp;threads, &amp;thread_count) != KERN_SUCCESS) &#123;</span><br><span class="line">        <span class="built_in">PLCF_DEBUG</span>(<span class="string">&quot;Fetching thread list failed&quot;</span>);</span><br><span class="line">        thread_count = <span class="number">0</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">/* Suspend all but the current thread. */</span></span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">mach_msg_type_number_t</span> i = <span class="number">0</span>; i &lt; thread_count; i++) &#123;</span><br><span class="line">        <span class="keyword">if</span> (threads[i] != <span class="built_in">pl_mach_thread_self</span>())</span><br><span class="line">            <span class="built_in">thread_suspend</span>(threads[i]);</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">/* Threads */</span></span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">mach_msg_type_number_t</span> i = <span class="number">0</span>; i &lt; thread_count; i++) &#123;</span><br><span class="line">        <span class="keyword">thread_t</span> thread = threads[i];</span><br><span class="line">        ...</span><br><span class="line">        <span class="comment">// 上报线程堆栈信息</span></span><br><span class="line">        <span class="built_in">plcrash_writer_write_thread</span>(file, writer, <span class="built_in">mach_task_self</span>(), thread, </span><br><span class="line">                                    thread_number, thr_ctx, image_list, &amp;findContext, crashed);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">size_t</span> <span class="title">plcrash_writer_write_thread</span> <span class="params">(...)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">  <span class="comment">//...</span></span><br><span class="line">    <span class="comment">/* Walk the stack, limiting the total number of frames that are output. */</span></span><br><span class="line">    <span class="keyword">uint32_t</span> frame_count = <span class="number">0</span>;</span><br><span class="line">    <span class="comment">// plframe_cursor_next: Fetch the next frame 获取下一帧。内部与BSBacktraceLogger原理类似，也是通过LR寄存器，一层层向上找。</span></span><br><span class="line">    <span class="keyword">while</span> ((ferr = <span class="built_in">plframe_cursor_next</span>(&amp;cursor)) == PLFRAME_ESUCCESS &amp;&amp; frame_count &lt; MAX_THREAD_FRAMES) &#123;</span><br><span class="line">        <span class="keyword">uint32_t</span> frame_size;</span><br><span class="line"></span><br><span class="line">        <span class="comment">/* On the first frame, dump registers for the crashed thread */</span></span><br><span class="line">        <span class="keyword">if</span> (frame_count == <span class="number">0</span> &amp;&amp; crashed) &#123;</span><br><span class="line">            rv += <span class="built_in">plcrash_writer_write_thread_registers</span>(file, task, &amp;cursor);</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="comment">/* Fetch the PC value */</span></span><br><span class="line">        <span class="keyword">plcrash_greg_t</span> pc = <span class="number">0</span>;</span><br><span class="line">        <span class="keyword">if</span> ((ferr = <span class="built_in">plframe_cursor_get_reg</span>(&amp;cursor, PLCRASH_REG_IP, &amp;pc)) != PLFRAME_ESUCCESS) &#123;</span><br><span class="line">            <span class="built_in">PLCF_DEBUG</span>(<span class="string">&quot;Could not retrieve frame PC register: %s&quot;</span>, <span class="built_in">plframe_strerror</span>(ferr));</span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="comment">/* Determine the size */</span></span><br><span class="line">        frame_size = (<span class="keyword">uint32_t</span>) <span class="built_in">plcrash_writer_write_thread_frame</span>(<span class="literal">NULL</span>, writer, pc, image_list, findContext);</span><br><span class="line"></span><br><span class="line">        rv += <span class="built_in">plcrash_writer_pack</span>(file, PLCRASH_PROTO_THREAD_FRAMES_ID, PLPROTOBUF_C_TYPE_MESSAGE, &amp;frame_size);</span><br><span class="line">        rv += <span class="built_in">plcrash_writer_write_thread_frame</span>(file, writer, pc, image_list, findContext);</span><br><span class="line">        frame_count++;</span><br><span class="line">    &#125;</span><br><span class="line">  <span class="comment">//...</span></span><br><span class="line">    <span class="keyword">return</span> rv;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
 <h4 id="3-4-3-KSCrash"><a href="#3-4-3-KSCrash" class="headerlink" title="3.4.3 KSCrash"></a>3.4.3 KSCrash</h4><p><a target="_blank" rel="noopener" href="https://github.com/kstenerud/KSCrash">KSCrash</a> 是 iOS 上一个知名的 crash 收集框架。包括腾讯开源的 APM 框架 Matrix，其中 crash 收集部分也是直接使用的 KSCrash。</p>
 <p>KSCrash 可以处理以下类型的崩溃：</p>
@@ -543,15 +546,19 @@ height:40vh;
 <li>C++ exceptions</li>
 <li>Objective-C exceptions</li>
 <li>Main thread deadlock (experimental)  主线程死锁</li>
-<li>Custom crashes (e.g. from scripting languages) 自定义崩溃</li>
+<li>Custom crashes (e.g. from scripting languages) 自定义崩溃。</li>
 </ul>
+<p>堆栈采集源码：（<em>看<a target="_blank" rel="noopener" href="https://juejin.cn/post/6844903442754830343">获取任意线程调用栈的那些事 _bestswifter</a> BSBackTracelogger的参考资料中有KSCrash，貌似对KSCrash有参考，源码思路上有些相似</em>）</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">bool</span> <span class="title">advanceCursor</span><span class="params">(KSStackCursor *cursor)</span> </span>&#123;</span><br><span class="line">    MachineContextCursor* context = (MachineContextCursor*)cursor-&gt;context;</span><br><span class="line">    <span class="keyword">uintptr_t</span> nextAddress = <span class="number">0</span>;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">if</span>(cursor-&gt;state.currentDepth &gt;= context-&gt;maxStackDepth) &#123;</span><br><span class="line">        cursor-&gt;state.hasGivenUp = <span class="literal">true</span>;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">if</span>(context-&gt;instructionAddress == <span class="number">0</span> &amp;&amp; cursor-&gt;state.currentDepth == <span class="number">0</span>) &#123;</span><br><span class="line">        context-&gt;instructionAddress = <span class="built_in">kscpu_instructionAddress</span>(context-&gt;machineContext);</span><br><span class="line">        nextAddress = context-&gt;instructionAddress;</span><br><span class="line">        <span class="keyword">goto</span> successfulExit;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">if</span>(context-&gt;linkRegister == <span class="number">0</span> &amp;&amp; !context-&gt;isPastFramePointer) &#123;</span><br><span class="line">        <span class="comment">// Link register, if available, is the second address in the trace.</span></span><br><span class="line">        <span class="comment">/*</span></span><br><span class="line"><span class="comment">          uintptr_t kscpu_linkRegister(const KSMachineContext* const context) &#123;</span></span><br><span class="line"><span class="comment">              return context-&gt;machineContext.__ss.__lr;</span></span><br><span class="line"><span class="comment">          &#125;</span></span><br><span class="line"><span class="comment">         */</span></span><br><span class="line">        context-&gt;linkRegister = <span class="built_in">kscpu_linkRegister</span>(context-&gt;machineContext);</span><br><span class="line">        <span class="keyword">if</span>(context-&gt;linkRegister != <span class="number">0</span>) &#123;</span><br><span class="line">            nextAddress = context-&gt;linkRegister;</span><br><span class="line">            <span class="keyword">goto</span> successfulExit;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span>(context-&gt;currentFrame.previous == <span class="literal">NULL</span>) &#123;</span><br><span class="line">        <span class="keyword">if</span>(context-&gt;isPastFramePointer)</span><br><span class="line">        &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        context-&gt;currentFrame.previous = (struct FrameEntry*)<span class="built_in">kscpu_framePointer</span>(context-&gt;machineContext);</span><br><span class="line">        context-&gt;isPastFramePointer = <span class="literal">true</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span>(!<span class="built_in">ksmem_copySafely</span>(context-&gt;currentFrame.previous, &amp;context-&gt;currentFrame, <span class="built_in"><span class="keyword">sizeof</span></span>(context-&gt;currentFrame))) &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span>(context-&gt;currentFrame.previous == <span class="number">0</span> || context-&gt;currentFrame.return_address == <span class="number">0</span>) &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    nextAddress = context-&gt;currentFrame.return_address;</span><br><span class="line">    </span><br><span class="line">successfulExit:</span><br><span class="line">    cursor-&gt;stackEntry.address = <span class="built_in">kscpu_normaliseInstructionPointer</span>(nextAddress);</span><br><span class="line">    cursor-&gt;state.currentDepth++;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
 <h4 id="3-4-4-WCCrashBlockMonitorPlugin"><a href="#3-4-4-WCCrashBlockMonitorPlugin" class="headerlink" title="3.4.4 WCCrashBlockMonitorPlugin"></a>3.4.4 WCCrashBlockMonitorPlugin</h4><p>Matrix for iOS/macOS 是微信开源的一个工具，可以使用在 iOS、macOS 平台上。在日常开发中，微信iOS团队通过卡顿监控上报的堆栈，找到微信的代码不合理之处或者是一些性能瓶颈；通过卡顿监控的辅助，尽可能地提升微信的流畅性，给用户带来更加极致美好的体验。</p>
 <p>工具监控范围包括：崩溃、卡顿和爆内存，包含以下两款插件：</p>
 <ul>
 <li>WCCrashBlockMonitorPlugin：基于 <a target="_blank" rel="noopener" href="https://github.com/kstenerud/KSCrash">KSCrash</a> 框架开发，具有业界领先的卡顿堆栈捕获能力，同时兼备崩溃捕获能力。</li>
 <li>WCMemoryStatPlugin：一款性能优化到极致的爆内存监控工具，能够全面捕获应用爆内存时的内存分配以及调用堆栈情况。</li>
 </ul>
-<h4 id="3-4-5-BSBackTracelogger"><a href="#3-4-5-BSBackTracelogger" class="headerlink" title="3.4.5 BSBackTracelogger"></a>3.4.5 BSBackTracelogger</h4><h3 id="3-5-耗时堆栈提取"><a href="#3-5-耗时堆栈提取" class="headerlink" title="3.5 耗时堆栈提取"></a>3.5 耗时堆栈提取</h3><p>子线程检测到主线程 Runloop 时，会获得当前的线程快照当做卡顿文件。但是这个当前的主线程堆栈不一定是最耗时的堆栈，不一定是导致主线程超时的主要原因。</p>
+<h4 id="3-4-5-BSBackTracelogger"><a href="#3-4-5-BSBackTracelogger" class="headerlink" title="3.4.5 BSBackTracelogger"></a>3.4.5 BSBackTracelogger</h4><p>见下文</p>
+<h3 id="3-5-耗时堆栈提取"><a href="#3-5-耗时堆栈提取" class="headerlink" title="3.5 耗时堆栈提取"></a>3.5 耗时堆栈提取</h3><p>子线程检测到主线程 Runloop 时，会获得当前的线程快照当做卡顿文件。但是这个当前的主线程堆栈不一定是最耗时的堆栈，不一定是导致主线程超时的主要原因。</p>
 <p>例如，主线程在绘制一个微信logo，过程如下：</p>
 <img src="/images/PerfOpt/draw-wechat-logo.png" style="zoom:80%">
 
@@ -716,7 +723,7 @@ height:40vh;
             <p>Author：<a href="https://tenloy.github.io">Tenloy</a>
             <p>原文链接：<a href="https://tenloy.github.io/2021/07/30/Lag-Monitor.html">https://tenloy.github.io/2021/07/30/Lag-Monitor.html</a>
             <p>发表日期：2021.07.30 , 7:28 PM</p>
-            <p>更新日期：2024.04.17 , 6:01 PM</p>
+            <p>更新日期：2024.04.23 , 3:48 PM</p>
             <p>版权声明：本文采用<a rel="license noopener" target="_blank" href="http://creativecommons.org/licenses/by-nc/4.0/">Crative Commons 4.0 许可协议</a>进行许可</p>
         </div>
     
@@ -1962,9 +1969,14 @@ top:40vh;
     
     
     
+    
+    
+    
+    
+    
     <div class="total-and-search">
         <div class="total-archive">
-        Total : 76
+        Total : 75
         </div>
         <!-- search  -->
         
@@ -2043,12 +2055,7 @@ top:40vh;
     
     
         <li class="archive-post-item">
-            <span class="archive-post-date">10/14</span><a class="archive-post-title" href= "/2021/10/14/compile-vm-asrl.html" >(五) Mach-O 文件之进程(虚拟)地址空间、ASLR</a>
-        </li>
-    
-    
-        <li class="archive-post-item">
-            <span class="archive-post-date">10/10</span><a class="archive-post-title" href= "/2021/10/10/compile-load.html" >(四) Mach-O 文件的装载</a>
+            <span class="archive-post-date">10/10</span><a class="archive-post-title" href= "/2021/10/10/compile-load.html" >(四) Mach-O 文件的装载、ASLR及符号地址</a>
         </li>
     
     
@@ -2143,7 +2150,7 @@ top:40vh;
     
     
         <li class="archive-post-item">
-            <span class="archive-post-date">07/30</span><a class="archive-post-title" href= "/2021/07/30/Lag-Monitor.html" >iOS卡顿监控</a>
+            <span class="archive-post-date">07/30</span><a class="archive-post-title" href= "/2021/07/30/Lag-Monitor.html" >iOS卡顿监控与堆栈获取</a>
         </li>
     
     
@@ -2397,15 +2404,15 @@ top:40vh;
     
         <span class="sidebar-tag-name" data-tags="Soc"><span class="iconfont-archer">&#xe606;</span>Soc</span>
     
-        <span class="sidebar-tag-name" data-tags="多线程"><span class="iconfont-archer">&#xe606;</span>多线程</span>
-    
         <span class="sidebar-tag-name" data-tags="ARM64"><span class="iconfont-archer">&#xe606;</span>ARM64</span>
-    
-        <span class="sidebar-tag-name" data-tags="Docker"><span class="iconfont-archer">&#xe606;</span>Docker</span>
     
         <span class="sidebar-tag-name" data-tags="CLI"><span class="iconfont-archer">&#xe606;</span>CLI</span>
     
         <span class="sidebar-tag-name" data-tags="Shell"><span class="iconfont-archer">&#xe606;</span>Shell</span>
+    
+        <span class="sidebar-tag-name" data-tags="Docker"><span class="iconfont-archer">&#xe606;</span>Docker</span>
+    
+        <span class="sidebar-tag-name" data-tags="多线程"><span class="iconfont-archer">&#xe606;</span>多线程</span>
     
         <span class="sidebar-tag-name" data-tags="DSL"><span class="iconfont-archer">&#xe606;</span>DSL</span>
     
@@ -2413,17 +2420,17 @@ top:40vh;
     
         <span class="sidebar-tag-name" data-tags="Fiber"><span class="iconfont-archer">&#xe606;</span>Fiber</span>
     
-        <span class="sidebar-tag-name" data-tags="SwiftUI"><span class="iconfont-archer">&#xe606;</span>SwiftUI</span>
-    
         <span class="sidebar-tag-name" data-tags="dp"><span class="iconfont-archer">&#xe606;</span>dp</span>
     
-        <span class="sidebar-tag-name" data-tags="Swift-Syntax"><span class="iconfont-archer">&#xe606;</span>Swift-Syntax</span>
+        <span class="sidebar-tag-name" data-tags="SwiftUI"><span class="iconfont-archer">&#xe606;</span>SwiftUI</span>
     
         <span class="sidebar-tag-name" data-tags="RunLoop"><span class="iconfont-archer">&#xe606;</span>RunLoop</span>
     
-        <span class="sidebar-tag-name" data-tags="Log"><span class="iconfont-archer">&#xe606;</span>Log</span>
+        <span class="sidebar-tag-name" data-tags="Swift-Syntax"><span class="iconfont-archer">&#xe606;</span>Swift-Syntax</span>
     
         <span class="sidebar-tag-name" data-tags="LagMonitor"><span class="iconfont-archer">&#xe606;</span>LagMonitor</span>
+    
+        <span class="sidebar-tag-name" data-tags="Log"><span class="iconfont-archer">&#xe606;</span>Log</span>
     
         <span class="sidebar-tag-name" data-tags="CrashMonitor"><span class="iconfont-archer">&#xe606;</span>CrashMonitor</span>
     
