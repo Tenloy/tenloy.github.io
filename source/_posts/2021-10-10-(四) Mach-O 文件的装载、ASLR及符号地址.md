@@ -1,5 +1,5 @@
 ---
-title: (四) Mach-O 文件的装载
+title: (四) Mach-O 文件的装载、ASLR及符号地址
 date: 2021-10-10 04:26:00
 urlname: compile-load.html
 tags:
@@ -56,7 +56,7 @@ categories:
 [(二) Mach-O 文件结构](https://www.jianshu.com/p/332b183c055a) 介绍 `Mach Heade` 中的 `Load Command` 加载命令，结合其用途，就可以简单看出可执行文件的装载流程：
 
 - 首先，是由内核加载器(定义在`bsd/kern/mach_loader.c`文件中)来处理一些需要由内核加载器直接使用的加载命令。**内核的部分(内核加载器)负责新进程的基本设置——分配虚拟内存，创建主线程，以及处理任何可能的代码签名/加密的工作**。（这也是本篇内容主要讲的）
-- 接着，对于需要动态链接(使用了动态库)的可执行文件(大部分可执行文件都是动态链接的)来说，**控制权会转交给链接器，链接器进而接着处理文件头中的其他加载命令**。真正的库加载和符号解析的工作都是通过`LC_LOAD_DY LINKER`命令指定的**动态链接器**在用户态完成的。（下一篇文章再细讲`dyld`及**动态链接**）
+- 接着，对于需要动态链接(使用了动态库)的可执行文件(大部分可执行文件都是动态链接的)来说，**控制权会转交给链接器，链接器进而接着处理文件头中的其他加载命令**。真正的库加载和符号解析的工作都是通过`LC_LOAD_DYLINKER`命令指定的**动态链接器**在用户态完成的。（下一篇文章再细讲`dyld`及**动态链接**）
 
 下面通过代码来看一下具体的过程。下面通过一个调用栈图来说明， 这里面每个方法都做了很多事情，这里只注释了到_dyld_start的关键操作，很简略。有兴趣可以详细看源码`kern_exec.c`、`mach_loader.c`
 
@@ -74,7 +74,7 @@ categories:
         ▶︎ // 首先对Mach-O做检测，会检测Mach-O头部，解析其架构、检查imgp等内容，判断魔数、cputype、cpusubtype等信息。如果image无效，会直接触发assert(exec_failure_reason == OS_REASON_NULL); 退出。
           // 拒绝接受Dylib和Bundle这样的文件，这些文件会由dyld负责加载。然后把Mach-O映射到内存中去，调用load_machfile()
         ▼ load_machfile
-          ▶︎ // load_machfile会加载Mach-O中的各种load monmand命令。在其内部会禁止数据段执行，防止溢出漏洞攻击，还会设置地址空间布局随机化（ASLR），还有一些映射的调整。
+          ▶︎ // load_machfile会加载Mach-O中的各种load command命令。在其内部会禁止数据段执行，防止溢出漏洞攻击，还会设置地址空间布局随机化（ASLR），还有一些映射的调整。
             // 真正负责对加载命令解析的是parse_machfile()
           ▼ parse_machfile  //解析主二进制macho
             ▶︎ /* 
@@ -105,7 +105,193 @@ categories:
         ▼ 这是下篇内容
 ```
 
-## 四、Linux ELF文件的装载（了解）
+## 四、ASLR
+
+### 4.1 引入背景
+
+进程在自己私有的虚拟地址空间中启动。按照传统方式，进程每一次启动时采用的都是固定的可预见的方式。然而，这意味着某个给定程序在某个给定架构上的进程初始虚拟内存镜像都是基本一致的。而且更严重的问题在于，即使是在进程正常运行的生命周期中，大部分内存分配的操作都是按照同样的方式进行的，因此使得内存中的地址分布具有非常强的可预测性。
+
+尽管这有助于调试，但是也给黑客提供了更大的施展空间。黑客主要采用的方法是代码注入：通过重写内存中的函数指针，黑客就可以将程序的执行路径转到自己的代码，将程序的输入转变为自己的输入。重写内存最常用的方法是采用缓冲区溢出(即利用未经保护的内存复制操作越过上数组的边界)，可参考[缓冲区溢出攻击](https://www.jianshu.com/p/4703ad3efbb9)，将函数的返回地址重写为自己的指针。不仅如此，黑客还有更具创意的技术，例如破坏printf()格式化字符串以及基于堆的缓冲区溢出。此外，任何用户指针甚至结构化的异常处理程序都可以导致代码注入。这里的关键问题在于判断重写哪些指针，也就是说，可靠地判断注入的代码应该在内存中的什么位置。
+
+不论被破解程序的薄弱环节在哪里：缓冲区溢出、格式化字符串攻击或其他方式，黑客都可以花大力气破解一个不安全的程序，找到这个程序的地址空间布局，然后精心设计一种方法，这种方法可以可靠地重现程序中的薄弱环节，并且可以在类似的系统上暴露出一样的薄弱环节。
+
+现在大部分操作系统中都采用了一种称为地址空间布局随机化(ASLR) 的技术，这是一种避免攻击的有效保护。进程每一次启动时，地址空间都会被简单地随机化：**只是偏移，而不是搅乱**。基本的布局(程序文本、数据和库)仍然是一样的。然而，这些部分具体的地址都不同了——区别足够大，可以阻挡黑客对地址的猜测。**实现方法是通过内核将Mach-O的段“平移”某个随机系数**。
+
+### 4.2 概述
+
+地址空间布局随机化(Address Space Layout Randomization，ASLR)是一种针对缓冲区溢出的安全保护技术，通过对堆、栈、共享库映射等线性区布局的随机化，通过增加攻击者预测目的地址的难度，防止攻击者直接定位攻击代码位置，达到阻止溢出攻击的目的的一种技术。iOS4.3开始引入了ASLR技术。
+
+下面分别来看一下，未使用ASLR、使用了ASLR下，进程虚拟地址空间内的分布。（如果对`__TEXT`、`__DATA`等Segment概念不清楚的地方，可以看一些第二篇关于Mach-O文件结构的介绍）
+
+<img src="/images/compilelink/46.jpg" alt="26" style="zoom:55%;" />
+
+### 4.3 未使用ASLR的虚拟地址空间
+
+下图中左侧是mach-O可执行文件，右侧是链接之后的虚拟地址空间。
+
+- 函数代码存放在__TEXT段中
+- 全局变量存放在__DATA段中
+- 可执行文件的内存地址是0x0
+- 代码段（__TEXT）的内存地址就是LC_SEGMENT(__TEXT)中的VM Address：arm64设备下，为`0x100000000`；非arm64下为`0x4000`
+- 可以使用`size -l -m -x`来查看Mach-O的内存分布
+
+<img src="/images/compilelink/26.png" alt="26" style="zoom:55%;" />
+
+### 4.4 使用了ASLR的虚拟地址空间
+
+- LC_SEGMENT(__TEXT)的VM Address为`0x100000000`
+- ASLR随机产生的Offset（偏移）为`0x5000`
+- 再次强调：由于ASLR的作用，进程的地址空间变得流动性非常大。但是尽管具体的地址会随机“滑动”某个小的偏移量，但整体布局保持不变。
+
+<img src="/images/compilelink/27.png" alt="26" style="zoom:55%;" />
+
+### 4.5 符号地址计算
+
+> 函数(变量)符号的内存地址、可执行文件地址计算
+
+#### 4.5.1 函数内存地址计算
+
+- **File Offset**：在当前架构(MachO)文件中的偏移量。
+- **VM Address【未偏移/ASLR偏移前】** ：
+  - 编译链接后，映射到虚拟地址中的内存起始地址。 
+  - `VM Address = File Offset + __PAGEZERO Size`(__PAGEZERO段在MachO文件中没有实际大小，在VM中展开)
+- **Load Address【ASLR偏移后的VM Address】**：
+  - 在运行时加载到虚拟内存的起始位置。（真正的运行时地址，也是虚拟地址空间中的地址）。
+  - Slide是加载到内存的偏移，这个偏移值是一个随机值，每次运行都不相同。`Load Address = VM Address + Slide(ASLR Offset)`
+  - 当未开启ASLR时，Load Address(运行时VM Address) ＝ 上面的静态VM Address
+
+注意：
+
+- MachO文件一生成，代码段、数据段在MachO文件中的位置(File Offset)、在运行内存(虚拟内存)中的地址值(vm address)就已经确定了。
+- 运行时，真正的运行内存地址，还得加上ASLR偏移量。
+- 开发者面向的地址，都是虚拟内存中的地址（虚拟地址），而不是真实的硬件设备上的地址（物理地址）。
+
+由于dsym符号表是编译时生成的地址，crash堆栈的地址是运行时地址，这个时候需要经过转换才能正确的符号化。crash日志里的符号地址被称为Stack Address，而编译后的符号地址被称为Symbol Address，他们之间的关系如下：`Stack Address = Symbol Address + Slide`。
+
+符号化就是通过Stack Address到dsym文件中寻找对应符号信息的过程。
+
+**Hopper、IDA图形化工具中的地址都是未使用ASLR前的VM Address**。
+
+#### 4.5.2 ASLR Offset的获取
+
+ASLR Offset有的地方也叫做`slide`，获取方法：
+
+- 在运行时由API `dyld_get_image_vmaddr_slide()`，来获取image虚拟地址的偏移量。
+
+```c
+//函数原型如下：
+extern intptr_t   _dyld_get_image_vmaddr_slide(uint32_t image_index);
+
+//一般使用方法如下：
+uint32_t c = _dyld_image_count();
+for (uint32_t i = 0; i < c; i++) {
+  intptr_t index  = _dyld_get_image_vmaddr_slide(i);
+}
+```
+
+- 通过`lldb`命令`image list -o -f` 进行获取（本地、远程`debugserver`调试都可以），如下图：
+
+  <img src="/images/compilelink/28.png" alt="26" style="zoom:80%;" />
+
+- 根据运行时crash中的 `binary image`信息 和 ELF 文件的 `load command` 计算的到。比如下例：
+
+```c
+//下面是crash信息，其中包括了抛出异常的线程的函数调用栈信息，日志下方有binary image信息，都只摘取了部分：
+/*
+ 第一列，调用顺序
+ 第二列，对应函数所属的 binary image
+ 第三列，stack address
+ 第四列，地址的符号＋偏移的表示法，运算结果等于第三列
+*/
+Last Exception Backtrace:  
+0   CoreFoundation                0x189127100 __exceptionPreprocess + 132  
+1   libobjc.A.dylib               0x1959e01fc objc_exception_throw + 60  
+2   CoreFoundation                0x189127040 +[NSException raise:format:] + 128  
+3   CrashDemo                     0x100a8666c 0x10003c000 + 10790508  
+4   libsystem_platform.dylib      0x19614bb0c _sigtramp + 56  
+5   CrashDemo                     0x1006ef164 0x10003c000 + 7024996  
+6   CrashDemo                     0x1006e8580 0x10003c000 + 6997376  
+7   CrashDemo                     0x1006e8014 0x10003c000 + 6995988  
+8   CrashDemo                     0x1006e7c94 0x10003c000 + 6995092  
+9   CrashDemo                     0x1006f2460 0x10003c000 + 7038048  
+
+/* 
+ 第一列，虚拟地址空间区块；
+ 第二列，映射文件名；
+ 第三列：加载的image的UUID；
+ 第四列，映射文件路径 
+*/
+Binary Images:  
+0x10003c000 - 0x100f7bfff CrashDemo arm64  <b5ae3570a013386688c7007ee2e73978> /var/mobile/Applications/05C398CE-21E9-43C2-967F-26DD0A327932/CrashDemo.app/CrashDemo  
+0x12007c000 - 0x1200a3fff dyld arm64  <628da833271c3f9bb8d44c34060f55e0> /usr/lib/dyld
+
+
+//下面是使用 otool 工具查看到的 MedicalRecordsFolder（我的程序）的 加载命令 。
+$otool -l CrashDemo.app/CrashDemo   
+CrashDemo.app/CrashDemo:  
+Load command 0  
+      cmd LC_SEGMENT_64  
+  cmdsize 72  
+  segname __PAGEZERO  
+   vmaddr 0x0000000000000000  
+   vmsize 0x0000000100000000  
+  fileoff 0  
+ filesize 0  
+  maxprot 0x00000000  
+ initprot 0x00000000  
+   nsects 0  
+    flags 0x0  
+Load command 1  
+      cmd LC_SEGMENT_64  
+  cmdsize 792  
+  segname __TEXT  
+   vmaddr 0x0000000100000000  
+   vmsize 0x000000000000c000  
+  fileoff 0  
+ filesize 49152  
+  maxprot 0x00000005  
+ initprot 0x00000005  
+   nsects 9  
+    flags 0x0  
+……  
+Load command 2 
+……  
+```
+
+在 binary image 第一行可以看出进程空间的 0x10003c000 - 0x100f7bfff 这个区域在运行时被映射为 CrashDemo 内的内容，也就是我们的 ELF 文件(区域起始地址为0x10003c000)。
+而在 Load Command 中看到的`__TEXT`的段起始地址却是 0x0000000100000000。
+显而易见：slide = 0x10003c000(Load Address) - 0x100000000(VM Address) = 0x3c000；之后，就可以通过公式`symbol address = stack address - slide;` 来计算stack address 在crash log 中已经找到了。
+
+#### 4.5.3 Symbol Address符号化
+
+- 利用`dwarfdump`可以从dsym文件中得到symbol Address对应的内容：
+
+  + 拿到crash日志后，我们要先确定dsym文件是否匹配。可以使用下面命令查看dsym文件所有架构的UUID：`dwarfdump --uuid CrashDemo.app.dSYM `，然后跟crash日志中Binary Images中的UUID相比对。
+  + 用得到的Symbol Address去 dsym 文件中查询，命令如下：`dwarfdump --arch arm64 --lookup [Symbol Address] CrashDemo.app.dSYM`，就可以定位下来具体的代码、函数名、所处的文件、行等信息了
+
+- 如果只是简单的获取符号名，可以用`atos`来符号化：
+
+  ```bash
+  atos -o [dsym file path] -l [模块的Load Address] -arch [arch type] [Stack Address]
+  # 比如：5   CrashDemo              0x1006ef164       0x10003c000 + 7024996
+  #                               【stack address】  【模块的加载地址】
+  ```
+
+  + 不需要指定Symbol Address，只需要模块的Load Address、Stack Address即可。
+
+### 4.6 小结
+
+应该注意的是，尽管ASLR是很显著的改进，但也不是万能药。黑客仍然能找到聪明的方法破解程序。事实上，目前臭名昭著的“Star 3.0”漏洞就攻破了ASLR，这个漏洞越狱了 iPad 2 上的iOS 4.3。这种破解使用了Retum-Oriented Programming(ROP)攻击技术，通过缓冲区溢出破坏栈，以设置完整的栈帧， 模拟对libSystem的调用。同样的技术也用在iOS 5.0.1的“corona”漏洞中，这个漏洞成功地攻入了所有的苹果设备，包括当时最新的iPhone 4S。
+
+预防攻击的唯一之道就是编写更加安全的代码，并且采用严格的代码审查，既要包含自动的技术，也要有人工的介入。
+
+### 4.7 参考链接
+
+- 《深入解析Mac OS X & iOS 操作系统》
+- [动态调试之ASLR](https://blog.csdn.net/zhongad007/article/details/90022617)
+- [iOS crash log 解析](https://blog.csdn.net/xiaofei125145/article/details/50456614)
+
+## 五、Linux ELF文件的装载（了解）
 
 首先在用户层面，bash进程会调用fork()系统调用创建一个新的进程，然后新的进程调用 `execve()`系统调用执行指定的ELF文件，原先的bash进程继续返回等待刚才启动的新进程结束，然后继续等待用户输入命令。 execve() 系统调用被定义在unistd.h，它的原型如下：
 ```c

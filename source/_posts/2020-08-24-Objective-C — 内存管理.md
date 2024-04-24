@@ -313,7 +313,7 @@ free(array);
 }
 
 /* 编译器的模拟代码*/
-id obj = obje msqSend (NSObject, @selector (alloc));
+id obj = objc_msgSend(NSObject, @selector (alloc));
 objc_msgSend(obj, @selector(init));
 obic_release(obj);
 ```
@@ -326,14 +326,14 @@ obic_release(obj);
 }
 
 /* 编译器的模拟代码*/
-id obj = objc_msgSend (NSMutableArray, @selector (array)); //返回一个autorelease对象
+id obj = objc_msgSend(NSMutableArray, @selector(array)); //返回一个autorelease对象
 objc_retainAutoreleasedReturnValue (obj); //参数，应为autorelease对象。
 objc_release(obj);
 
 // 那么array方法中到底做了什么，返回了一个autorelease对象
 + (id) array {
-  id obj = objc_msgSend (NSMutableArray, @selector (alloc));
-  objc_msgsend (objc, @selector(init));
+  id obj = objc_msgSend(NSMutableArray, @selector(alloc));
+  objc_msgsend(objc, @selector(init));
   return objc_autoreleaseReturnValue (obj);
 }
 ```
