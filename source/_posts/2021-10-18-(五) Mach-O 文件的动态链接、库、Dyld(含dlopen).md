@@ -1,5 +1,5 @@
 ---
-title: (六) Mach-O 文件的动态链接、库、Dyld(含dlopen)
+title: (五) Mach-O 文件的动态链接、库、Dyld(含dlopen)
 date: 2021-10-18 04:26:09
 urlname: compile-dynamic-link.html
 tags:

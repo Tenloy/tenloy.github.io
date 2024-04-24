@@ -1,5 +1,5 @@
 ---
-title: (七) dyld与Objc—_objc_init、map_images、load_images
+title: (六) dyld与Objc—_objc_init、map_images、load_images
 date: 2021-10-21 10:20:00
 urlname: dyld-objc.html
 tags:
