@@ -230,32 +230,28 @@ CALayer有一个可选的`delegate`属性，实现了`CALayerDelegate`协议，�
 
 ##### 1) 概述
 
-默认实现使用您设置的任何约束来确定每一个子视图的大小和位置。
+默认实现中，会使用你设置的任何约束，来**确定每一个子视图的位置和大小**。
 
-这个 `UIView` 方法处理对视图（view）及其所有子视图（subview）的重新定位和大小调整。它负责给出当前 view 和每个子 view 的位置和大小。这个方法很开销很大，因为它会在每个子视图上起作用并且调用它们相应的 `layoutSubviews` 方法。
+这个 `UIView` 方法处理对所有子视图（subview）的重新定位和大小调整。这个方法很开销很大，因为它会在每个子视图上起作用并且调用它们相应的 `layoutSubviews` 方法。
 
 使用场景：
 
-- 子类可以根据需要覆盖此方法以对其子视图执行更精确的布局。 仅当子视图的自动调整大小和基于约束的行为不提供您想要的行为时，您才应该覆盖此方法。 您可以使用您的实现直接设置子视图的框架矩形。
+- **子类可以根据需要重写此方法，以对其子视图执行更精确的布局**。 仅当子视图的自动调整大小和基于约束的行为不提供您想要的行为时，你才应该重写此方法，可以在实现中直接设置子视图的frame。
+- **通俗地说：当我们在某个类的内部调整子视图位置时，需要调用。反之，如果你想要在外部设置subviews的位置，就不要重写。**
 
-您**不应直接调用**此方法。 如果要强制更新布局，请在下一次绘图更新之前调用 setNeedsLayout 方法。 如果您想立即更新视图的布局，请调用 layoutIfNeeded 方法。
+系统会在任何它需要重新计算视图的 frame 的时候调用这个方法，然而你**不应直接调用**此方法。 如果要强制更新布局，请在下一次绘图更新之前调用 setNeedsLayout 方法。 如果您想立即更新视图的布局，请调用 layoutIfNeeded 方法。
 
 ##### 2) layoutSubviews的自动触发
 
-**layoutSubViews的自动触发 — 下一轮RunLoop结束前调用layoutSubViews。**
+**layoutSubViews的自动触发 — 下一轮RunLoop结束前调用layoutSubViews。**有许多可以在 RunLoop 的不同时间点触发 `layoutSubviews` 调用的机制，这些触发机制比直接调用 `layoutSubviews` 的资源消耗要小得多。
 
-系统会在任何它需要重新计算视图的 frame 的时候调用这个方法，所以你应该在需要更新 frame 来重新定位或更改大小时重载它。
-
-然而你不应该在代码中显式调用这个方法。相反，有许多可以在 RunLoop 的不同时间点触发 `layoutSubviews` 调用的机制，这些触发机制比直接调用 `layoutSubviews` 的资源消耗要小得多。
-
-**更新布局总会重新触发`layoutSubviews`方法**。
-
-有许多事件会**自动给视图打上 “update layout” 标记**，因此 `layoutSubviews` 会在下一个周期中被调用，而不需要开发者手动操作。这些自动通知系统 view 的布局发生变化的方式有：
+**更新布局总会重新触发`layoutSubviews`方法**。有许多事件会**自动给视图打上 “update layout” 标记**，因此 `layoutSubviews` 会在下一个周期中被调用，而不需要开发者手动操作。这些自动通知系统 view 的布局发生变化的方式有：
 
 - 修改 view 的大小
-  - 设置/修改view的frame.size、bounds.size、bounds.origin都会触发superView和自己view的layoutSubviews方法(父类在前)。当然前提是设置前后值发生了变化。修改frame.origin不会触发。
+  - 设置/修改view的frame.size、bounds.size、bounds.origin都会触发superView和自己view的layoutSubviews方法(父类在前)。
+  - 当然前提是设置前后值发生了变化。修改frame.origin不会触发。
 - 新增 subview
-- 用户在 `UIScrollView` 上滚动（`layoutSubviews` 会在 `UIScrollView` 和它的父 view 上被调用）
+- 用户在 `UIScrollView` 上滚动（`layoutSubviews`会在`UIScrollView`和它的父 view 上被调用）
 - 用户旋转设备
 - 更新视图的 constraints
 
@@ -347,7 +343,10 @@ CALayer有一个可选的`delegate`属性，实现了`CALayerDelegate`协议，�
 
 ##### 1) 概述
 
-在传入的矩形内绘制接收者的图像。
+在传入的矩形内绘制接收者的图像。此方法的默认实现不执行任何操作。 
+
+- 如果你要使用 Core Graphics 和 UIKit 等技术来绘制视图内容，那么该子类应该重写此方法并在那里实现其绘制代码。
+- 如果你的视图仅显示背景颜色或者直接使用底层的对象填充其内容，则无需重写此方法。
 
 当这个方法被调用时，UIKit 已经为你的视图配置了合适的绘图环境，你可以简单地调用任何你需要的绘图方法和函数来渲染你的内容。具体来说，UIKit 创建和配置一个用于绘制的图形上下文，并调整该上下文的变换，使其原点与视图边界矩形的原点相匹配。您可以使用 UIGraphicsGetCurrentContext 函数获取对图形上下文的引用，但不要建立对图形上下文的强引用，因为它可以在对 drawRect: 方法的调用之间发生变化。
 

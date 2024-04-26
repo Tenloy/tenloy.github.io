@@ -8,19 +8,69 @@ categories:
 ---
 
 ## 一、动态链接
+
+> 本文只是简单说一下iOS中的装载下半部 — 动态链接。关于动态库的实现细节，比如：如何做到被多个进程共享（地址无关代码PIC、全局偏移表GOT等）没有细说。
+
+### 1.1 流程概述
+
 动态链接的基本思想是把程序按照模块拆分成各个相对独立部分，在程序运行时才将它们链接在一起形成一个完整的程序，而不是像静态链接一样把所有的程序模块都链接成一个个单独的可执行文件。
 
 动态链接涉及运行时的链接及多个文件的装载，必需要有操作系统的支持，因为动态链接的情况下，进程的虚拟地址空间的分布会比静态链接情况下更为复杂，还有一些存储管理、内存共享、进程线程等机制在动态链接下也会有一些微妙的变化。目前主流的操作系统几乎都支持动态链接这种方式。
 
-link 这个过程就是将加载进来的二进制变为可用状态的过程。简单来说就是：`rebase => binding`。
+iOS中，动态链接库的加载步骤大概可以分为5步：([今日头条 iOS 客户端启动速度优化](https://juejin.cn/post/6844903462652608520))
 
+**第一步：load dylibs image 读取库镜像文件。**在每个动态库的加载过程中， dyld需要：
+
+1. 分析所依赖的动态库
+2. 找到动态库的mach-o文件
+3. 打开文件
+4. 验证文件
+5. 在系统核心注册文件签名
+6. 对动态库的每一个segment调用mmap()
+
+**第二步：Rebase image**
+
+**第三步：Bind image**
+
+- 发生在 link 这个过程（下文中的第五步），就是将加载进来的二进制变为可用状态的过程。简单来说就是：`rebase => binding`。
 - 由于ASLR(address space layout randomization)的存在，可执行文件和动态链接库在虚拟内存中的加载地址每次启动都不固定，所以需要这2步来修复镜像中的资源指针，来指向正确的地址。
 - rebase修复的是**指向当前镜像内部资源的指针**。rebase步骤先进行，需要把镜像读入内存，并以page为单位进行加密验证，保证不会被篡改，所以这一步的瓶颈在IO。
 - bind修复的是**指向镜像外部资源的指针**。bind步骤在其后进行，由于要查询符号表，来指向跨镜像的资源，加上在rebase阶段，镜像已被读入和加密验证，所以这一步的瓶颈在于CPU计算。
 
+**第四步：Objc setup**
+
+1. 注册Objc类 (class registration)
+2. 把category的定义插入方法列表 (category registration)
+3. 保证每一个selector唯一 (selctor uniquing)
+
+**第五步：initializers**
+
+以上三步属于静态调整(fix-up)，都是在修改`__DATA` segment中的内容，而这里则开始动态调整，开始在堆和堆栈中写入内容。在这里的工作有：
+
+1. Objc的+load()函数
+2. C++的构造函数属性函数 形如`__attribute__((constructor))` void DoSomeInitializationWork()
+3. 非基本类型的C++静态全局变量的创建(通常是类或结构体)(non-trivial initializer) 比如一个全局静态结构体的构建，如果在构造函数中有繁重的工作，那么会拖慢启动速度
+
+Objc的load函数和C++的静态构造函数采用由底向上的方式执行，来保证每个执行的方法，都可以找到所依赖的动态库。
+
+<img src="/images/compilelink/47.png" style="zoom:87%;" />
+
+上图是在自定义的类XXViewController的+load方法断点的调用堆栈，清楚的看到整个调用栈和顺序：
+
+1. dyld 开始将程序二进制文件初始化
+2. 交由 ImageLoader 读取 image，其中包含了我们的类、方法等各种符号
+3. 由于 runtime 向 dyld 绑定了回调，当 image 加载到内存后，dyld 会通知 runtime 进行处理
+4. runtime 接手后调用 map_images 做解析和处理，接下来 load_images 中调用 call_load_methods 方法，遍历所有加载进来的 Class，按继承层级依次调用 Class 的 +load 方法和其 Category 的 +load 方法
+
+至此，可执行文件中和动态库所有的符号(Class，Protocol，Selector，IMP，…)都已经按格式成功加载到内存中，被 runtime 所管理，再这之后，runtime 的那些方法(动态添加 Class、swizzle 等等才能生效)。
+
+整个事件由 dyld 主导，完成运行环境的初始化后，配合 ImageLoader 将二进制文件按格式加载到内存，动态链接依赖库，并由 runtime 负责加载成 objc 定义的结构，所有初始化工作结束后，dyld 调用真正的 main 函数。
+
+如果程序刚刚被运行过，那么程序的代码会被dyld缓存，因此即使杀掉进程再次重启加载时间也会相对快一点，如果长时间没有启动或者当前dyld的缓存已经被其他应用占据，那么这次启动所花费的时间就要长一点，这就分别是热启动和冷启动的概念。
+
 下面来介绍动态链接中的这几个概念：
 
-### 1.1 rebase
+### 1.2 rebase
 
 rebase就是指针修正的过程。
 
@@ -30,7 +80,7 @@ rebase就是指针修正的过程。
 
 <img src="/images/compilelink/38.png" alt="38" style="zoom:70%;" />
 
-### 1.2 bind
+### 1.3 bind
 
 > “决议”更倾向于静态链接，而“绑定”更倾向于动态链接，即它们所使用的范围不一样。
 
@@ -281,16 +331,16 @@ in-process会做：
 
 ```c
 struct dylib {
-    union lc_str name;              /* library's path name */
-    uint32_t timestamp;             /* library's build time stamp */
-    uint32_t current_version;       /* library's current version number */
-    uint32_t compatibility_version; /* library's compatibility vers number */
+    union lc_str name;                  /* library's path name */
+    uint32_t     timestamp;             /* library's build time stamp */
+    uint32_t     current_version;       /* library's current version number */
+    uint32_t     compatibility_version; /* library's compatibility vers number */
 };
 
 struct dylib_command {
-    uint32_t cmd;         /* LC_ID_DYLIB, LC_LOAD_{,WEAK_}DYLIB, LC_REEXPORT_DYLIB */
-    uint32_t cmdsize;     /* includes pathname string */
-    struct dylib dylib;   /* the library identification */
+    uint32_t     cmd;         /* LC_ID_DYLIB, LC_LOAD_{,WEAK_}DYLIB, LC_REEXPORT_DYLIB */
+    uint32_t     cmdsize;     /* includes pathname string */
+    struct dylib dylib;       /* the library identification */
 };
 ```
 
@@ -301,12 +351,12 @@ struct dylib_command {
 ```c
 //定义在<mach-o/loader.h>中
 struct symtab_command {
-    uint32_t	cmd;		/* 加载命令的前两个参数都是cmd和cmdsize，cmd为加载命令的类型，符号表对应的值为LC_SYMTAB */
-    uint32_t	cmdsize;	/* symtab_command结构体的大小 */
-    uint32_t	symoff;		/* 符号表在文件中的偏移（位置） */
-    uint32_t	nsyms;		/* 符号表入口的个数 */
-    uint32_t	stroff;		/* 字符串表在文件中的偏移(位置) */
-    uint32_t	strsize;	/* 字符串表的大小(字节数) */
+    uint32_t cmd;      /* 加载命令的前两个参数都是cmd和cmdsize，cmd为加载命令的类型，符号表对应的值为LC_SYMTAB */
+    uint32_t cmdsize;  /* symtab_command结构体的大小 */
+    uint32_t symoff;   /* 符号表在文件中的偏移（位置） */
+    uint32_t nsyms;    /* 符号表入口的个数 */
+    uint32_t stroff;   /* 字符串表在文件中的偏移(位置) */
+    uint32_t strsize;  /* 字符串表的大小(字节数) */
 };
 ```
 
@@ -354,23 +404,23 @@ log:
 __dyld_start:
 ; 操作fp栈帧寄存器，sp栈指针寄存器，配置函数栈帧
   mov 	x28, sp
-  and     sp, x28, #~15		// force 16-byte alignment of stack
-  mov	x0, #0
-  mov	x1, #0
-  stp	x1, x0, [sp, #-16]!	// make aligned terminating frame
-  mov	fp, sp			// set up fp to point to terminating frame
-  sub	sp, sp, #16             // make room for local variables
-; L(long 64位) P(point)，在前面的汇编一文中，我们已经知道：r0 - r30 是31个通用整形寄存器。每个寄存器可以存取一个64位大小的数。 
+  and   sp, x28, #~15		// force 16-byte alignment of stack
+  mov   x0, #0
+  mov   x1, #0
+  stp   x1, x0, [sp, #-16]!	// make aligned terminating frame
+  mov   fp, sp			// set up fp to point to terminating frame
+  sub   sp, sp, #16             // make room for local variables
+; L(long 64位) P(point)，在前面的汇编一文中，我们已经知道：r0 - r30 是31个通用整型寄存器。每个寄存器可以存取一个64位大小的数。 
 ; 当使用 x0 - x30访问时，它就是一个64位的数。
 ; 当使用 w0 - w30访问时，访问的是这些寄存器的低32位
 #if __LP64__       
-  ldr     x0, [x28]               // get app's mh into x0
-  ldr     x1, [x28, #8]           // get argc into x1 (kernel passes 32-bit int argc as 64-bits on stack to keep alignment)
-  add     x2, x28, #16            // get argv into x2
+  ldr   x0, [x28]               // get app's mh into x0
+  ldr   x1, [x28, #8]           // get argc into x1 (kernel passes 32-bit int argc as 64-bits on stack to keep alignment)
+  add   x2, x28, #16            // get argv into x2
 #else
-  ldr     w0, [x28]               // get app's mh into x0
-  ldr     w1, [x28, #4]           // get argc into x1 (kernel passes 32-bit int argc as 64-bits on stack to keep alignment)
-  add     w2, w28, #8             // get argv into x2
+  ldr   w0, [x28]               // get app's mh into x0
+  ldr   w1, [x28, #4]           // get argc into x1 (kernel passes 32-bit int argc as 64-bits on stack to keep alignment)
+  add   w2, w28, #8             // get argv into x2
 #endif
   adrp	x3,___dso_handle@page
   add 	x3,x3,___dso_handle@pageoff // get dyld's mh in to x4
@@ -422,8 +472,7 @@ dyld也是Mach-O文件格式的，文件头中的 filetype 字段为`MH_DYLINKER
 ```c++
 // dyld的入口指针，内核加载dyld，跳转到__dyld_start函数：进行了一些寄存器设置，然后就调用了该函数。Entry point for dyld.  The kernel loads dyld and jumps to __dyld_start which sets up some registers and call this function.
 // 返回主程序模块的mian()函数地址，__dyld_start中会跳到该地址。Returns address of main() in target program which __dyld_start jumps to
-uintptr_t
-_main(const macho_header* mainExecutableMH, uintptr_t mainExecutableSlide, 
+uintptr_t _main(const macho_header* mainExecutableMH, uintptr_t mainExecutableSlide, 
     int argc, const char* argv[], const char* envp[], const char* apple[], 
     uintptr_t* startGlue)
 {
@@ -484,7 +533,7 @@ _main(const macho_header* mainExecutableMH, uintptr_t mainExecutableSlide,
     sExecShortName = sExecPath;
 
   // 配置进程受限模式
-    configureProcessRestrictions(mainExecutableMH, envp);
+  configureProcessRestrictions(mainExecutableMH, envp);
     ......
   // 检测环境变量
   checkEnvironmentVariables(envp);
@@ -728,8 +777,8 @@ void ImageLoader::link(const LinkContext& context, bool forceLazysBound, bool pr
   if ( !context.linkingMainExecutable )
     this->recursiveMakeDataReadOnly(context);
 
-    if ( !context.linkingMainExecutable )
-        context.notifyBatch(dyld_image_state_bound, false);
+  if ( !context.linkingMainExecutable )
+    context.notifyBatch(dyld_image_state_bound, false);
   uint64_t t6 = mach_absolute_time();
 
   if ( context.registerDOFs != NULL ) {
@@ -832,7 +881,7 @@ dyld会优先初始化动态库，然后初始化主程序。
 
 ```c++
 #pragma mark -- 第八步 执行初始化方法initialize() 
-        // run all initializers
+    // run all initializers
     //attribute((constructor)) 修饰的函数就是在这一步执行的, 即在主程序的main()函数之前。__DATA中有个Section __mod_init_func就是记录这些函数的。
     //与之对应的是attribute((destructor))修饰的函数, 是主程序 main() 执行之后的一些全局函数析构操作, 也是记录在一个Section __mod_term_func中.
     initializeMainExecutable(); 
@@ -843,15 +892,21 @@ dyld会优先初始化动态库，然后初始化主程序。
 ```
 ##### 2. initializeMainExecutable()
 
-调用函数堆栈：
-
 ```c++
-//先初始化动态库
-for(size_t i=1; i < rootCount; ++i) { 
-   sImageRoots[i]->runInitializers(gLinkContext, initializerTimes[0]); 
-}  // run initialzers for any inserted dylibs
-// 再初始化可执行文件 
-  // run initializers for main executable and everything it brings up
+void initializeMainExecutable()
+{
+  ...
+    // 先初始化动态库
+    // run initialzers for any inserted dylibs
+    for(size_t i=1; i < rootCount; ++i) { 
+       sImageRoots[i]->runInitializers(gLinkContext, initializerTimes[0]); 
+    }  
+    // 再初始化可执行文件 
+    // run initializers for main executable and everything it brings up 
+  	sMainExecutable->runInitializers(gLinkContext, initializerTimes[0]);
+  ...
+}
+// 调用函数堆栈：
 ▼ sMainExecutable->runInitializers() 
   ▼ ImageLoader::processInitializers()
     ▼ ImageLoader::recursiveInitialization()      // 循环遍历images list中所有的imageloader，recursive(递归)初始化。Calling recursive init on all images in images list
@@ -867,14 +922,13 @@ for(size_t i=1; i < rootCount; ++i) {
 
 在上面的`doImageInit`、`doModInitFunctions`函数中，会发现都有判断`libSystem`库是否已加载的代码，即**libSystem要首先加载、初始化**。在上文中，我们已经强调了这个库的重要性。之所以在这里又提到，是因为这个库也起到了将dyld与objc关联起来的作用：
 
-<img src="/images/compilelink/32.png" style="zoom:80%;" />
+<img src="/images/compilelink/32.png" style="zoom:95%;" />
 
 ##### 2. dyld到objc的流程(详细见下篇)
 
 可以从上面的调用堆栈中看到，从dyld到objc的流程：
 
 1. `libSystem` 库的初始化
-
 2. `libdispatch` 库的初始化：`libdispatch` 是实现 GCD 的核心用户空间库。在 `void libdispatch_init(void)` 方法中会调用 `void _os_object_init(void)`
 
 ```c++
@@ -1079,15 +1133,15 @@ enum dyld_image_states
             ▼ ImageLoader::processInitializers()
               ▼ ImageLoader::recursiveInitialization()  // 循环遍历images list中所有的imageloader，recursive(递归)初始化。Calling recursive init on all images in images list
                 ▼ ImageLoaderMachO::doInitialization()  // 初始化这个image. initialize this image
-                  ▼ ImageLoaderMachO::doImageInit()     // 解析LC_ROUTINES_COMMAND 这个加载命令，可以参考loader.h中该命令的说明，这个命令包含了动态共享库初始化函数的地址，该函数必须在库中任意模块初始化函数(如C++ 静态构造函数等)之前调用
-                  ▼ ImageLoaderMachO::doModInitFunctions()  // 内部会调用C++全局对象的构造函数、__attribute__((constructor))修饰的C函数
+                  ▶︎ ImageLoaderMachO::doImageInit()     // 解析LC_ROUTINES_COMMAND 这个加载命令，可以参考loader.h中该命令的说明，这个命令包含了动态共享库初始化函数的地址，该函数必须在库中任意模块初始化函数(如C++ 静态构造函数等)之前调用
+                  ▶︎ ImageLoaderMachO::doModInitFunctions()  // 内部会调用C++全局对象的构造函数、__attribute__((constructor))修饰的C函数
                   // 以上两个函数中，libSystem相关的都是要首先执行的，而且在上述递归加载动态库过程，libSystem是默认引入的，所以栈中会出现libSystem_initializer的初始化方法
           ▶︎ (*gLibSystemHelpers->cxa_atexit)(&runAllStaticTerminators, NULL, NULL);// register cxa_atexit() handler to run static terminators in all loaded images when this process exits
         ▶︎ // 第九步，查找入口点 main() 并返回，调用 getEntryFromLC_MAIN，从 Load Command 读取LC_MAIN入口，如果没有LC_MAIN入口，就读取LC_UNIXTHREAD，然后跳到主程序的入口处执行
         ▶︎ (uintptr_t)sMainExecutable->getEntryFromLC_MAIN();
 ```
 
-<img src="/images/compilelink/34.png" style="zoom:80%;" />
+<img src="/images/compilelink/34.png" style="zoom:100%;" />
 
 关于更多的理论知识，可以阅读下[iOS程序员的自我修养-MachO文件动态链接（四）](https://juejin.im/post/6844903922654511112#heading-23)、[实践篇—fishhook原理](https://juejin.im/post/6844903926051897358)(：程序运行期间通过修改符号表(nl_symbol_ptr和la_symbol_ptr)，来替换要hook的符号对应的地址)，将《程序员的自我修养》中的理论结合iOS系统中的实现机制做了个对比介绍。
 
