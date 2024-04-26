@@ -37,7 +37,7 @@
 <meta property="og:image" content="https://tenloy.github.io/images/caa/layoutdraw2.png">
 <meta property="og:image" content="https://tenloy.github.io/images/caa/7ca0e14ef02231c9aba7cb49c7e9271c.webp">
 <meta property="article:published_time" content="2021-09-07T06:50:38.000Z">
-<meta property="article:modified_time" content="2024-04-07T12:02:59.464Z">
+<meta property="article:modified_time" content="2024-04-26T02:47:47.578Z">
 <meta property="article:author" content="Tenloy">
 <meta property="article:tag" content="Tenloy, iOS, Tenloy Blog, 博客，Swift, 编译, 计算机">
 <meta name="twitter:card" content="summary">
@@ -314,7 +314,7 @@ height:40vh;
                 
                 
                     <div class="post-intro-read">
-                        <span>Word count: <span class="post-count word-count">11.5k</span>Reading time: <span class="post-count reading-time">42 min</span></span>
+                        <span>Word count: <span class="post-count word-count">11.6k</span>Reading time: <span class="post-count reading-time">42 min</span></span>
                     </div>
                 
                 <div class="post-intro-meta">
@@ -564,25 +564,24 @@ height:40vh;
 <p>参考链接：<a target="_blank" rel="noopener" href="https://blog.ibireme.com/2015/11/12/smooth_user_interfaces_for_ios/">iOS 保持界面流畅的技巧 - ibireme</a>、<a target="_blank" rel="noopener" href="https://github.com/ibireme/YYAsyncLayer/tree/master/YYAsyncLayer">YYKit异步渲染的基础 — YYAsyncLayer</a></p>
 <h2 id="3-3-布局计算-—-layoutSubxxxs"><a href="#3-3-布局计算-—-layoutSubxxxs" class="headerlink" title="3.3 布局计算 — layoutSubxxxs"></a>3.3 布局计算 — layoutSubxxxs</h2><p>一个视图的布局指的是它在屏幕上的的大小和位置。每个 view 都有一个 frame 属性，用来表示在父 view 坐标系中的位置和具体的大小。</p>
 <p><code>UIView</code> 给你提供了用来通知系统某个 view 布局发生变化的方法(<em>setNeedsLayout</em>)。也提供了在 view 布局重新计算(<em>layoutSubviews</em>)后调用的可重写的方法(<em>viewDidLayoutSubviews</em>)。</p>
-<h3 id="3-3-1-UIView方法"><a href="#3-3-1-UIView方法" class="headerlink" title="3.3.1 UIView方法"></a>3.3.1 UIView方法</h3><h4 id="1-layoutSubviews"><a href="#1-layoutSubviews" class="headerlink" title="1. -layoutSubviews"></a>1. -layoutSubviews</h4><h5 id="1-概述"><a href="#1-概述" class="headerlink" title="1) 概述"></a>1) 概述</h5><p>默认实现使用您设置的任何约束来确定每一个子视图的大小和位置。</p>
-<p>这个 <code>UIView</code> 方法处理对视图（view）及其所有子视图（subview）的重新定位和大小调整。它负责给出当前 view 和每个子 view 的位置和大小。这个方法很开销很大，因为它会在每个子视图上起作用并且调用它们相应的 <code>layoutSubviews</code> 方法。</p>
+<h3 id="3-3-1-UIView方法"><a href="#3-3-1-UIView方法" class="headerlink" title="3.3.1 UIView方法"></a>3.3.1 UIView方法</h3><h4 id="1-layoutSubviews"><a href="#1-layoutSubviews" class="headerlink" title="1. -layoutSubviews"></a>1. -layoutSubviews</h4><h5 id="1-概述"><a href="#1-概述" class="headerlink" title="1) 概述"></a>1) 概述</h5><p>默认实现中，会使用你设置的任何约束，来<strong>确定每一个子视图的位置和大小</strong>。</p>
+<p>这个 <code>UIView</code> 方法处理对所有子视图（subview）的重新定位和大小调整。这个方法很开销很大，因为它会在每个子视图上起作用并且调用它们相应的 <code>layoutSubviews</code> 方法。</p>
 <p>使用场景：</p>
 <ul>
-<li>子类可以根据需要覆盖此方法以对其子视图执行更精确的布局。 仅当子视图的自动调整大小和基于约束的行为不提供您想要的行为时，您才应该覆盖此方法。 您可以使用您的实现直接设置子视图的框架矩形。</li>
+<li><strong>子类可以根据需要重写此方法，以对其子视图执行更精确的布局</strong>。 仅当子视图的自动调整大小和基于约束的行为不提供您想要的行为时，你才应该重写此方法，可以在实现中直接设置子视图的frame。</li>
+<li><strong>通俗地说：当我们在某个类的内部调整子视图位置时，需要调用。反之，如果你想要在外部设置subviews的位置，就不要重写。</strong></li>
 </ul>
-<p>您<strong>不应直接调用</strong>此方法。 如果要强制更新布局，请在下一次绘图更新之前调用 setNeedsLayout 方法。 如果您想立即更新视图的布局，请调用 layoutIfNeeded 方法。</p>
-<h5 id="2-layoutSubviews的自动触发"><a href="#2-layoutSubviews的自动触发" class="headerlink" title="2) layoutSubviews的自动触发"></a>2) layoutSubviews的自动触发</h5><p><strong>layoutSubViews的自动触发 — 下一轮RunLoop结束前调用layoutSubViews。</strong></p>
-<p>系统会在任何它需要重新计算视图的 frame 的时候调用这个方法，所以你应该在需要更新 frame 来重新定位或更改大小时重载它。</p>
-<p>然而你不应该在代码中显式调用这个方法。相反，有许多可以在 RunLoop 的不同时间点触发 <code>layoutSubviews</code> 调用的机制，这些触发机制比直接调用 <code>layoutSubviews</code> 的资源消耗要小得多。</p>
-<p><strong>更新布局总会重新触发<code>layoutSubviews</code>方法</strong>。</p>
-<p>有许多事件会<strong>自动给视图打上 “update layout” 标记</strong>，因此 <code>layoutSubviews</code> 会在下一个周期中被调用，而不需要开发者手动操作。这些自动通知系统 view 的布局发生变化的方式有：</p>
+<p>系统会在任何它需要重新计算视图的 frame 的时候调用这个方法，然而你<strong>不应直接调用</strong>此方法。 如果要强制更新布局，请在下一次绘图更新之前调用 setNeedsLayout 方法。 如果您想立即更新视图的布局，请调用 layoutIfNeeded 方法。</p>
+<h5 id="2-layoutSubviews的自动触发"><a href="#2-layoutSubviews的自动触发" class="headerlink" title="2) layoutSubviews的自动触发"></a>2) layoutSubviews的自动触发</h5><p><strong>layoutSubViews的自动触发 — 下一轮RunLoop结束前调用layoutSubViews。</strong>有许多可以在 RunLoop 的不同时间点触发 <code>layoutSubviews</code> 调用的机制，这些触发机制比直接调用 <code>layoutSubviews</code> 的资源消耗要小得多。</p>
+<p><strong>更新布局总会重新触发<code>layoutSubviews</code>方法</strong>。有许多事件会<strong>自动给视图打上 “update layout” 标记</strong>，因此 <code>layoutSubviews</code> 会在下一个周期中被调用，而不需要开发者手动操作。这些自动通知系统 view 的布局发生变化的方式有：</p>
 <ul>
 <li>修改 view 的大小<ul>
-<li>设置/修改view的frame.size、bounds.size、bounds.origin都会触发superView和自己view的layoutSubviews方法(父类在前)。当然前提是设置前后值发生了变化。修改frame.origin不会触发。</li>
+<li>设置/修改view的frame.size、bounds.size、bounds.origin都会触发superView和自己view的layoutSubviews方法(父类在前)。</li>
+<li>当然前提是设置前后值发生了变化。修改frame.origin不会触发。</li>
 </ul>
 </li>
 <li>新增 subview</li>
-<li>用户在 <code>UIScrollView</code> 上滚动（<code>layoutSubviews</code> 会在 <code>UIScrollView</code> 和它的父 view 上被调用）</li>
+<li>用户在 <code>UIScrollView</code> 上滚动（<code>layoutSubviews</code>会在<code>UIScrollView</code>和它的父 view 上被调用）</li>
 <li>用户旋转设备</li>
 <li>更新视图的 constraints</li>
 </ul>
@@ -629,7 +628,11 @@ height:40vh;
 <h4 id="3-layoutIfNeeded-立即-1"><a href="#3-layoutIfNeeded-立即-1" class="headerlink" title="3. -layoutIfNeeded(立即)"></a>3. -layoutIfNeeded(立即)</h4><p> 如果需要，立即重新计算图层的布局。</p>
 <p> 收到此消息后，将遍历该图层的父图层，直到找到不需要布局的祖先图层。然后在该祖先下的整个层树上执行布局。</p>
 <h2 id="3-4-内容绘制-—-draw-display"><a href="#3-4-内容绘制-—-draw-display" class="headerlink" title="3.4 内容绘制 — draw | display"></a>3.4 内容绘制 — draw | display</h2><p>一个视图的显示包含了颜色、文本、图片和 Core Graphics 绘制等视图属性，不包括其本身和子视图的大小和位置。和<font color='red'>布局</font>的方法类似，<font color='red'>显示</font>也有触发更新的方法，它们由系统在检测到更新时被自动调用，或者我们可以手动调用直接刷新。</p>
-<h3 id="3-4-1-UIView方法-UIViewRendering分类"><a href="#3-4-1-UIView方法-UIViewRendering分类" class="headerlink" title="3.4.1 UIView方法 (UIViewRendering分类)"></a>3.4.1 UIView方法 (UIViewRendering分类)</h3><h4 id="1-drawRect"><a href="#1-drawRect" class="headerlink" title="1. drawRect:"></a>1. drawRect:</h4><h5 id="1-概述-1"><a href="#1-概述-1" class="headerlink" title="1) 概述"></a>1) 概述</h5><p>在传入的矩形内绘制接收者的图像。</p>
+<h3 id="3-4-1-UIView方法-UIViewRendering分类"><a href="#3-4-1-UIView方法-UIViewRendering分类" class="headerlink" title="3.4.1 UIView方法 (UIViewRendering分类)"></a>3.4.1 UIView方法 (UIViewRendering分类)</h3><h4 id="1-drawRect"><a href="#1-drawRect" class="headerlink" title="1. drawRect:"></a>1. drawRect:</h4><h5 id="1-概述-1"><a href="#1-概述-1" class="headerlink" title="1) 概述"></a>1) 概述</h5><p>在传入的矩形内绘制接收者的图像。此方法的默认实现不执行任何操作。 </p>
+<ul>
+<li>如果你要使用 Core Graphics 和 UIKit 等技术来绘制视图内容，那么该子类应该重写此方法并在那里实现其绘制代码。</li>
+<li>如果你的视图仅显示背景颜色或者直接使用底层的对象填充其内容，则无需重写此方法。</li>
+</ul>
 <p>当这个方法被调用时，UIKit 已经为你的视图配置了合适的绘图环境，你可以简单地调用任何你需要的绘图方法和函数来渲染你的内容。具体来说，UIKit 创建和配置一个用于绘制的图形上下文，并调整该上下文的变换，使其原点与视图边界矩形的原点相匹配。您可以使用 UIGraphicsGetCurrentContext 函数获取对图形上下文的引用，但不要建立对图形上下文的强引用，因为它可以在对 drawRect: 方法的调用之间发生变化。</p>
 <p>当第一次显示视图或发生使视图的可见部分无效的事件时，将调用此方法。你永远不应该自己直接调用这个方法。要使视图的一部分无效，从而导致该部分被重绘，请调用 setNeedsDisplay 或 setNeedsDisplayInRect: 方法。</p>
 <figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">- (<span class="keyword">void</span>)drawRect:(<span class="built_in">CGRect</span>)rect;</span><br></pre></td></tr></table></figure>
@@ -777,7 +780,7 @@ height:40vh;
             <p>Author：<a href="https://tenloy.github.io">Tenloy</a>
             <p>原文链接：<a href="https://tenloy.github.io/2021/09/07/core-animation01.html">https://tenloy.github.io/2021/09/07/core-animation01.html</a>
             <p>发表日期：2021.09.07 , 2:50 PM</p>
-            <p>更新日期：2024.04.07 , 8:02 PM</p>
+            <p>更新日期：2024.04.26 , 10:47 AM</p>
             <p>版权声明：本文采用<a rel="license noopener" target="_blank" href="http://creativecommons.org/licenses/by-nc/4.0/">Crative Commons 4.0 许可协议</a>进行许可</p>
         </div>
     
@@ -977,6 +980,18 @@ top:40vh;
 </div>
           <div class="sidebar-panel-archives">
     <!-- 在ejs中将archive按照时间排序 -->
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
     
     
     
@@ -2450,11 +2465,11 @@ top:40vh;
     
         <span class="sidebar-tag-name" data-tags="Swift-Syntax"><span class="iconfont-archer">&#xe606;</span>Swift-Syntax</span>
     
-        <span class="sidebar-tag-name" data-tags="Log"><span class="iconfont-archer">&#xe606;</span>Log</span>
-    
         <span class="sidebar-tag-name" data-tags="LagMonitor"><span class="iconfont-archer">&#xe606;</span>LagMonitor</span>
     
         <span class="sidebar-tag-name" data-tags="CrashMonitor"><span class="iconfont-archer">&#xe606;</span>CrashMonitor</span>
+    
+        <span class="sidebar-tag-name" data-tags="Log"><span class="iconfont-archer">&#xe606;</span>Log</span>
     
         <span class="sidebar-tag-name" data-tags="AFN"><span class="iconfont-archer">&#xe606;</span>AFN</span>
     

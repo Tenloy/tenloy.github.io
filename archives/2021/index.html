@@ -459,8 +459,10 @@
                 <span>(五) Mach-O 文件的动态链接、库、Dyld(含dlopen)</span>
         </a>
         <div class="abstract-content">
-            一、动态链接动态链接的基本思想是把程序按照模块拆分成各个相对独立部分，在程序运行时才将它们链接在一起形成一个完整的程序，而不是像静态链接一样把所有的程序模块都链接成一个个单独的可执行文件。
-动态链接涉及运行时的链接及多个文件的装载，必...
+            一、动态链接
+本文只是简单说一下iOS中的装载下半部 — 动态链接。关于动态库的实现细节，比如：如何做到被多个进程共享（地址无关代码PIC、全局偏移表GOT等）没有细说。
+
+1.1 流程概述动态链接的基本思想是把程序按照模块拆分成各个...
         </div>
         <div class="abstract-post-meta">
             <!-- date  -->
@@ -2051,6 +2053,18 @@ Core Animation是一个复合引擎，它的职责就是尽可能快地组...
     
     
     
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
     <div class="total-and-search">
         <div class="total-archive">
         Total : 75
@@ -2505,11 +2519,11 @@ Core Animation是一个复合引擎，它的职责就是尽可能快地组...
     
         <span class="sidebar-tag-name" data-tags="Swift-Syntax"><span class="iconfont-archer">&#xe606;</span>Swift-Syntax</span>
     
-        <span class="sidebar-tag-name" data-tags="Log"><span class="iconfont-archer">&#xe606;</span>Log</span>
-    
         <span class="sidebar-tag-name" data-tags="LagMonitor"><span class="iconfont-archer">&#xe606;</span>LagMonitor</span>
     
         <span class="sidebar-tag-name" data-tags="CrashMonitor"><span class="iconfont-archer">&#xe606;</span>CrashMonitor</span>
+    
+        <span class="sidebar-tag-name" data-tags="Log"><span class="iconfont-archer">&#xe606;</span>Log</span>
     
         <span class="sidebar-tag-name" data-tags="AFN"><span class="iconfont-archer">&#xe606;</span>AFN</span>
     
