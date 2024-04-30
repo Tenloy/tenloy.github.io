@@ -28,8 +28,12 @@
 <meta property="og:description" content="一、设置 注册远程通知[[UIApplication sharedApplication] registerForRemoteNotifications]; 如果使用极光的话，[JPUSHService registerForRemoteNotificationConfig:entity delegate:self]; 包装实现了上述api的功能 注意：  registerForRemoteNot">
 <meta property="og:locale" content="en_US">
 <meta property="og:image" content="https://tenloy.github.io/images/ios/push.webp">
+<meta property="og:image" content="https://tenloy.github.io/images/ios/app-extension.webp">
+<meta property="og:image" content="https://tenloy.github.io/images/ios/app-extension2.webp">
+<meta property="og:image" content="https://tenloy.github.io/images/ios/app-extension3.webp">
+<meta property="og:image" content="https://tenloy.github.io/images/ios/app-extension4.webp">
 <meta property="article:published_time" content="2020-07-01T03:30:00.000Z">
-<meta property="article:modified_time" content="2024-04-07T12:02:59.452Z">
+<meta property="article:modified_time" content="2024-04-29T02:04:27.274Z">
 <meta property="article:author" content="Tenloy">
 <meta property="article:tag" content="Tenloy, iOS, Tenloy Blog, 博客，Swift, 编译, 计算机">
 <meta name="twitter:card" content="summary">
@@ -306,7 +310,7 @@ height:40vh;
                 
                 
                     <div class="post-intro-read">
-                        <span>Word count: <span class="post-count word-count">3.4k</span>Reading time: <span class="post-count reading-time">12 min</span></span>
+                        <span>Word count: <span class="post-count word-count">4.8k</span>Reading time: <span class="post-count reading-time">18 min</span></span>
                     </div>
                 
                 <div class="post-intro-meta">
@@ -517,6 +521,90 @@ height:40vh;
 
 <p>当APP被杀死，状态栏上的也算远程通知吧，走方法：</p>
 <figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">- (<span class="built_in">BOOL</span>)application:(<span class="built_in">UIApplication</span> *)application didFinishLaunchingWithOptions:(<span class="built_in">NSDictionary</span> *)launchOptions</span><br><span class="line"><span class="comment">// 远程推送的内容</span></span><br><span class="line">   <span class="built_in">NSDictionary</span> *remoteNotificationUserInfo = launchOptions[<span class="built_in">UIApplicationLaunchOptionsRemoteNotificationKey</span>];</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="八、NotificationServiceExtension的集成与调试"><a href="#八、NotificationServiceExtension的集成与调试" class="headerlink" title="八、NotificationServiceExtension的集成与调试"></a>八、NotificationServiceExtension的集成与调试</h2><p><code>NotificationServiceExtension</code>属于<code>AppExtension</code>（扩展）的范畴，属于官方推出的扩展。同<code>NotificationContentExtension</code>一同丰富用户的推送体验，让开发者可以本地拦截和修改推送内容的机会，可以自定义自己的推送内容展示样式。大大提高了整体的用户体验。</p>
+<ul>
+<li>只允许修改推送内容，不能包含任何的UI显示。</li>
+<li>开发者无法自己初始化，在推送到达的时候iOS系统会自动创建<code>UNNotificationServiceExtension</code>对象。开发者只能通过扩展Target下的<code>NotificationServiceExtension</code>的子类来修改自己App推送的内容。</li>
+<li>iOS收到App的推送的时候，系统自动初始化<code>UNNotificationServiceExtension</code>对象，然后回调给App的扩展子类的方法<code>didReceiveNotificationRequest:withContentHandler:</code>。</li>
+<li>响应函数的操作时间只有30秒；如果未处理超时处理，系统会按照默认显示推送。</li>
+<li>服务端推送的payload格式要求：必须是alert类型。<ul>
+<li><code>aps</code>字段必须包含有<code>alert</code>字段，<code>alert</code>里必须是<code>title、subtitle、body</code>任何一个。</li>
+<li><code>aps</code>字段必须包含有<code>mutable-content</code>字段，其值必须为1。</li>
+</ul>
+</li>
+</ul>
+<p>调试：（网上说的几种方式）</p>
+<ul>
+<li>方式1：(<em>不生效</em>)<ul>
+<li>主工程编译，真机运行；</li>
+<li>扩展Target编译运行，选择主工程App，Attachment连接启动。</li>
+<li>模拟推送一波，<code>UNNotificationServiceExtension</code>的扩展之类，断点即可执行。</li>
+</ul>
+</li>
+<li>方式2：(<em>代码编译报错</em>)<ul>
+<li>直接运行扩展的Target，会弹窗让你<code>Choose an app to run</code>，选择主工程APP运行</li>
+</ul>
+</li>
+<li>方式3：<a target="_blank" rel="noopener" href="https://blog.ficowshen.com/page/post/78">如何用 Xcode 来调试 App Extension？</a>（<em>NICE！</em>）</li>
+</ul>
+<p>不同的 App Extension 有不同的使用场景，这个启用了 App Extension 的场景（系统区域）叫做扩展点（extension point）。（App Extension 只会在其所属的扩展点被启动，所以如果要调试 App Extension，我们要先确定 App Extension 的扩展点。）</p>
+<p><code>Notification Service Extension</code> 的扩展点就是 <strong>在系统收到远程推送后至系统展示推送内容之前</strong>。我们需要确保该 Extension 的进程在这个场景被正常启动，随后我们才可以对其进行调试（在 Xcode 中为该 Extension 设置的断点才会被击中）。</p>
+<ul>
+<li>如果 App Extension 已经在运行，您可以通过 Xcode 的菜单 <code>Debug</code> - <code>Attach to Process</code> 浏览并查找该进程。</li>
+<li>不过，对于类似 <code>Notification Service Extension</code> 这种会在某个时期启动，然后自动停止的进程：<ul>
+<li>一种方式：您可能需要在发送了远程推送后，尽快去 <code>Attach to Process</code> 列表寻找相关的进程。如果进程在被启动后很快又被终结了，导致您无法在列表中发现该进程，您也可以尝试让该进程睡眠一段时间，比如：<code>sleep(10)</code>。</li>
+<li>另一种方式：如果您已经知道进程的 ID 或者名称，您可以直接进行查找： <code>Debug</code> - <code>Attach to Process by PID or Name</code> (对于推送扩展进程，这里是指 UNNotificationServiceExtension 的实现 Target 名称)。<ul>
+<li>如果该进程未运行，调试器会一直等待。The debugger will wait for processes that aren’t running.</li>
+<li>如果报错，那么很可能是没有找对进程，建议先确认输入的名称或者 PID 是否正确。如果进程名存在重名情况，您就需要自行检查 Xcode 应该连接的是哪一个进程，通过PID来选定。</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h2 id="九、补充：AppExtension"><a href="#九、补充：AppExtension" class="headerlink" title="九、补充：AppExtension"></a>九、补充：AppExtension</h2><h3 id="9-1-概述"><a href="#9-1-概述" class="headerlink" title="9.1 概述"></a>9.1 概述</h3><p>三个概念：</p>
+<ul>
+<li>App Extension，Apple定义为”扩展“，也可以理解为”插件“。</li>
+<li>Host App，能够调起extension的app被称为host app。例如，如果创建的是share extension，host app可能是Safari浏览器；如果创建的是widget extension，host app可能是系统的Today app。</li>
+<li>Containing App，包含一个或者多个的Extension的App叫做ContainingApp，也叫做宿主App。</li>
+</ul>
+<p>扩展不是独立App，系统将其初始化为单独的进程。</p>
+<p>基于安全和性能的考虑，每一个扩展运行在一个单独的进程中，它拥有自己的<code>bundle</code>， <code>bundle</code>后缀名是<code>.appex</code>。</p>
+<p>iOS系统把扩展定义为 额外功能的触发入口点，它不是一个独立的App。因此，它必须依赖于宿主App，不能单独存在，也就没办法单独提审AppStore。</p>
+<h3 id="9-2-生命周期-Life-Cycle"><a href="#9-2-生命周期-Life-Cycle" class="headerlink" title="9.2 生命周期(Life Cycle)"></a>9.2 生命周期(Life Cycle)</h3><ol>
+<li>用户触发“扩展”，如UI触发或者代码触发。</li>
+<li>iOS系统自动唤起“扩展”。</li>
+<li>执行“扩展”代码。</li>
+<li>执行完成后，系统杀死“扩展”，回收资源。</li>
+</ol>
+<img src="/images/ios/app-extension.webp" alt="app-extension" style="zoom:80%;" />
+
+<h3 id="9-3-扩展与宿主APP的通信"><a href="#9-3-扩展与宿主APP的通信" class="headerlink" title="9.3 扩展与宿主APP的通信"></a>9.3 扩展与宿主APP的通信</h3><ul>
+<li><p>Host App 与 ContainingApp 无法直接通信！</p>
+</li>
+<li><p>扩展与Host App的通信是基于<code>request/response</code>模型。</p>
+<ul>
+<li><code>request/response</code>是通过 ”上下文“ 机制实现。HostApp为”扩展“提供运行的<code>上下文(an extension context)</code>。大致流程是，HostApp将 <code>RequestData</code> 通过<code>上下文(an extension context)</code> 输送给 扩展AppExtension，扩展进行处理（UI显示，用户交互，代码处理等），处理完成后将 <code>ResponseData</code> 返回给HostApp。</li>
+<li>由于”扩展“是一个独立的进程，一般一个App也是一个独立进程，因此它们间通信应该是基于进程间的通信方式。例如Socket、管道等，至于哪一种官方好像未说明（待研究）。<img src="/images/ios/app-extension2.webp" alt="app-extension2" style="zoom:68%;" /></li>
+</ul>
+</li>
+<li><p>一般，扩展与ContainingApp是无法直接通信的，例如扩展允许的时候，宿主App可能还未运行。受限的通信：</p>
+<img src="/images/ios/app-extension3.webp" alt="app-extension3" style="zoom:68%;" />
+
+<ul>
+<li><code>A Today widget</code> 可以通过UrlSchemes的方式唤起ContainingApp。通过<code>NSExtensionContext</code>的方法<code>openURL:completionHandler:</code>。</li>
+<li>扩展和ContainingApp可以通过<code>shared container</code>实现间接、双向通信。<ul>
+<li>虽然AppExtension的Bundle被导入如ContainingApp的包内，但是彼此的沙盒是没办法访问的。Apple发明了<code>share container</code>的中间层，来实现彼此的数据共享问题。也被称之为<code>AppGroup</code>的概念。</li>
+<li>这也映射软件工程的一句经典话语：多了个中间层，一切都显得那么美好。</li>
+<li>基本原理如下：Apple允许 <strong>App进程</strong> 和 <strong>扩展进程</strong> 都可以对<code>SharedContainer</code>的共享数据区进行操作。</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+  <img src="/images/ios/app-extension4.webp" alt="app-extension3" style="zoom:68%;" />
+
+
     </article>
     <!-- license  -->
     
@@ -524,7 +612,7 @@ height:40vh;
             <p>Author：<a href="https://tenloy.github.io">Tenloy</a>
             <p>原文链接：<a href="https://tenloy.github.io/2020/07/01/ios-apns.html">https://tenloy.github.io/2020/07/01/ios-apns.html</a>
             <p>发表日期：2020.07.01 , 11:30 AM</p>
-            <p>更新日期：2024.04.07 , 8:02 PM</p>
+            <p>更新日期：2024.04.29 , 10:04 AM</p>
             <p>版权声明：本文采用<a rel="license noopener" target="_blank" href="http://creativecommons.org/licenses/by-nc/4.0/">Crative Commons 4.0 许可协议</a>进行许可</p>
         </div>
     
@@ -666,7 +754,7 @@ top:40vh;
         <div class="toc-catalog">
             <span class="iconfont-archer catalog-icon">&#xe613;</span><span>CATALOG</span>
         </div>
-        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E3%80%81%E8%AE%BE%E7%BD%AE-%E6%B3%A8%E5%86%8C%E8%BF%9C%E7%A8%8B%E9%80%9A%E7%9F%A5"><span class="toc-text">一、设置 注册远程通知</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8C%E3%80%81%E5%A4%84%E7%90%86-%E6%B3%A8%E5%86%8C%E8%BF%9C%E7%A8%8B%E9%80%9A%E7%9F%A5%E6%88%90%E5%8A%9F%E3%80%81%E5%A4%B1%E8%B4%A5%E5%9B%9E%E8%B0%83"><span class="toc-text">二、处理 注册远程通知成功、失败回调</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%89%E3%80%81%E5%A4%84%E7%90%86-%E8%AE%BE%E5%A4%87%E6%8E%A5%E6%94%B6%E5%88%B0%E9%80%9A%E7%9F%A5%E7%9A%84%E5%9B%9E%E8%B0%83"><span class="toc-text">三、处理 设备接收到通知的回调</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#3-1-iOS-10%E4%B9%8B%E5%89%8D"><span class="toc-text">3.1 iOS 10之前</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-2-iOS-10%E5%8F%8A%E4%BB%A5%E5%90%8E"><span class="toc-text">3.2 iOS 10及以后</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9B%9B%E3%80%81%E6%B5%8B%E8%AF%95%E6%8E%A5%E6%94%B6%E5%88%B0APNS%E6%97%B6%EF%BC%8CAPI%E7%9A%84%E8%B0%83%E7%94%A8"><span class="toc-text">四、测试接收到APNS时，API的调用</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%94%E3%80%81%E6%80%BB%E7%BB%93"><span class="toc-text">五、总结</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%AD%E3%80%81%E9%9D%99%E9%BB%98%E6%8E%A8%E9%80%81"><span class="toc-text">六、静默推送</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%83%E3%80%81%E8%9E%8D%E4%BA%91%E6%8E%A8%E9%80%81%E6%B6%88%E6%81%AF%E7%9A%84%E5%8F%91%E9%80%81%E6%9C%BA%E5%88%B6"><span class="toc-text">七、融云推送消息的发送机制</span></a></li></ol>
+        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E3%80%81%E8%AE%BE%E7%BD%AE-%E6%B3%A8%E5%86%8C%E8%BF%9C%E7%A8%8B%E9%80%9A%E7%9F%A5"><span class="toc-text">一、设置 注册远程通知</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8C%E3%80%81%E5%A4%84%E7%90%86-%E6%B3%A8%E5%86%8C%E8%BF%9C%E7%A8%8B%E9%80%9A%E7%9F%A5%E6%88%90%E5%8A%9F%E3%80%81%E5%A4%B1%E8%B4%A5%E5%9B%9E%E8%B0%83"><span class="toc-text">二、处理 注册远程通知成功、失败回调</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%89%E3%80%81%E5%A4%84%E7%90%86-%E8%AE%BE%E5%A4%87%E6%8E%A5%E6%94%B6%E5%88%B0%E9%80%9A%E7%9F%A5%E7%9A%84%E5%9B%9E%E8%B0%83"><span class="toc-text">三、处理 设备接收到通知的回调</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#3-1-iOS-10%E4%B9%8B%E5%89%8D"><span class="toc-text">3.1 iOS 10之前</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-2-iOS-10%E5%8F%8A%E4%BB%A5%E5%90%8E"><span class="toc-text">3.2 iOS 10及以后</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9B%9B%E3%80%81%E6%B5%8B%E8%AF%95%E6%8E%A5%E6%94%B6%E5%88%B0APNS%E6%97%B6%EF%BC%8CAPI%E7%9A%84%E8%B0%83%E7%94%A8"><span class="toc-text">四、测试接收到APNS时，API的调用</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%94%E3%80%81%E6%80%BB%E7%BB%93"><span class="toc-text">五、总结</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%AD%E3%80%81%E9%9D%99%E9%BB%98%E6%8E%A8%E9%80%81"><span class="toc-text">六、静默推送</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%83%E3%80%81%E8%9E%8D%E4%BA%91%E6%8E%A8%E9%80%81%E6%B6%88%E6%81%AF%E7%9A%84%E5%8F%91%E9%80%81%E6%9C%BA%E5%88%B6"><span class="toc-text">七、融云推送消息的发送机制</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%AB%E3%80%81NotificationServiceExtension%E7%9A%84%E9%9B%86%E6%88%90%E4%B8%8E%E8%B0%83%E8%AF%95"><span class="toc-text">八、NotificationServiceExtension的集成与调试</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B9%9D%E3%80%81%E8%A1%A5%E5%85%85%EF%BC%9AAppExtension"><span class="toc-text">九、补充：AppExtension</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#9-1-%E6%A6%82%E8%BF%B0"><span class="toc-text">9.1 概述</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#9-2-%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F-Life-Cycle"><span class="toc-text">9.2 生命周期(Life Cycle)</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#9-3-%E6%89%A9%E5%B1%95%E4%B8%8E%E5%AE%BF%E4%B8%BBAPP%E7%9A%84%E9%80%9A%E4%BF%A1"><span class="toc-text">9.3 扩展与宿主APP的通信</span></a></li></ol></li></ol>
     </div>
     
     <div class="back-top iconfont-archer">&#xe639;</div>
@@ -724,18 +812,6 @@ top:40vh;
 </div>
           <div class="sidebar-panel-archives">
     <!-- 在ejs中将archive按照时间排序 -->
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
     
     
     
