@@ -23,11 +23,11 @@ Core Animation基于一个假设，说屏幕上的任何东西都可以（或者
 
 **几乎所有的图层的属性都是隐性可动画的。**你可以在文档中看到它们的简介是以 'animatable' 结尾的。这不仅包括了比如位置，尺寸，颜色或者透明度这样的绝大多数的数值属性，甚至也囊括了像 isHidden 和 doubleSided 这样的布尔值。 像 paths 这样的属性也是 animatable 的，但是它不支持隐式动画。
 
-## 1.2 CATransaction
+## 1.2 CATransaction(显式/隐式事务)
 
 [CATransaction](https://developer.apple.com/documentation/quartzcore/catransaction)是Core Animation中的事务类，负责批量的把多个对图层树(layer-tree)的修改作为一个原子更新到渲染树。
 
-- 事务是Core Animation用来包含一系列属性动画集合的机制，任何用指定事务去改变可动画的图层属性都不会立刻发生变化，而是当事务一旦*提交*的时候开始用一个动画过渡到新值。
+- 事务是Core Animation用来包含一系列属性动画集合的机制，任何用指定事务去改变可动画的图层属性都不会立刻发生变化，而是当事务一旦**提交**的时候开始用一个动画过渡到新值。
 - 事务是通过`CATransaction`类来做管理，这个类的设计有些奇怪，不像你从它的命名预期的那样去管理一个简单的事务，而是管理了一叠你不能访问的事务。`CATransaction`没有属性或者实例方法，并且也不能用`+alloc`和`-init`方法创建它。而是用类方法`+begin`和`+commit`分别来入栈或者出栈。
 - 支持嵌套事务。
 
@@ -86,6 +86,15 @@ Core Animation支持两种类型的事务：隐式事务和显式事务。
 
 # 二、隐式动画
 
+CoreAnimation支持两种类型的动画：显式动画、隐式动画。
+
+- 隐式动画：之所以叫隐式，是因为我们并没有指定任何动画的类型。我们仅仅改变了一个属性，然后Core Animation来决定**如何**并且**何时**去做动画。
+- 显式动画：
+  - 需要创建一个动画对象，并设置开始和结束值，直到把动画应用到某图层上，动画才开始执行。
+  - 显式动画既可以直接对图层属性做动画，也可以覆盖默认的图层行为。
+
+隐式动画底层是显式动画。（*详见3.2节、5.1.1节*）
+
 ## 2.1 演示
 
 隐式动画看起来这太棒了，似乎不太真实，我们用一个demo来解释一下：首先和第一章“图层树”一样创建一个蓝色的方块，然后添加一个按钮，随机改变它的颜色。点击按钮，你会发现图层的颜色平滑过渡到一个新值，而不是跳变。代码及显示效果如下：
@@ -127,17 +136,14 @@ Core Animation支持两种类型的事务：隐式事务和显式事务。
 
 <img src="/images/caa/7.1.jpg" alt="" style="zoom:60%;" />
 
-这其实就是所谓的**隐式动画**。之所以叫隐式是因为我们并没有指定任何动画的类型。我们仅仅改变了一个属性，然后Core Animation来决定如何并且何时去做动画。Core Animaiton同样支持**显式动画**，下章详细说明。
-
-当你改变一个属性，Core Animation是如何判断动画类型和持续时间的呢？实际上动画执行的时间取决于当前*事务*的设置，动画类型取决于**图层行为**(**action**)。
+这其实就是所谓的**隐式动画**。当你改变一个属性，Core Animation是如何判断动画类型和持续时间的呢？实际上动画执行的时间取决于当前*事务*的设置，动画类型取决于**图层行为**(**action**)。
 
 我们当然可以用当前事务的`+setAnimationDuration:`方法来修改动画时间，但在这里我们首先起一个新的事务，于是修改时间就不会有别的副作用。因为修改当前事务的时间可能会导致同一时刻别的动画（如屏幕旋转），所以最好还是在调整动画之前压入一个新的事务。
 
-修改后的代码见清单7.2。运行程序，你会发现色块颜色比之前变得更慢了。
-
-清单7.2 使用`CATransaction`控制动画时间
+修改后的代码见下方。运行程序，你会发现色块颜色比之前变得更慢了。
 
 ```objectivec
+// 使用 CATransaction 控制动画时间（代码7.2）
 - (IBAction)changeColor
 {
     //begin a new transaction
@@ -259,7 +265,7 @@ UIKit建立在Core Animation之上，而Core Animation默认对`CALayer`的所�
 
 无论何时，一个可动画的 layer 属性改变时，layer 都会寻找并运行合适的 'action' 来实行这个改变。在 Core Animation 的专业术语中把这种改变属性时`CALayer`自动应用的动画称为action，或者 `CAAction`，中文译作动作，也称行为（**以下统称 行为**）。
 
-**行为通常是一个被Core Animation*隐式*调用的*显式*动画对象。**
+<font color='red'>CAAction(行为)通常是一个</font>被Core Animation隐式调用的<font color='red'>显式动画对象</font>（`CAAnimation` 实现了`<CAAction>` 协议）。
 
 ### 3.2.1 CALayer与CAAction协议
 
@@ -274,6 +280,9 @@ UIKit建立在Core Animation之上，而Core Animation默认对`CALayer`的所�
 @protocol CAAction
 //当一个 action object 被调用时，它接收三个参数：事件的名称、事件发生的对象（layer）以及特定于每种事件类型的命名参数字典。
 - (void)runActionForKey:(NSString *)event object:(id)anObject arguments:(nullable NSDictionary *)dict;
+@end
+  
+@interface CAAnimation : NSObject <NSSecureCoding, NSCopying, CAMediaTiming, CAAction>
 @end
   
 @interface CALayer
@@ -384,7 +393,7 @@ $ LayerTest[21215:c07] Inside: <CABasicAnimation: 0x757f090>
 
 ## 3.3 +setDisableActions
 
-当然返回`NSNull`并不是禁用隐式动画唯一的办法，`CATransaction`有个方法叫做`+setDisableActions:`，可以用来对所有属性打开或者关闭隐式动画。如果在清单7.2的`[CATransaction begin]`之后添加下面的代码，同样也会阻止动画的发生：
+当然返回`NSNull`并不是禁用隐式动画唯一的办法，`CATransaction`有个方法叫做`+setDisableActions:`，可以用来对所有属性打开或者关闭隐式动画。如果在*代码7.2*的`[CATransaction begin]`之后添加下面的代码，同样也会阻止动画的发生：
 
 ```objectivec
 [CATransaction setDisableActions:YES];
@@ -458,9 +467,11 @@ $ LayerTest[21215:c07] Inside: <CABasicAnimation: 0x757f090>
 
 当你改变一个图层的属性，属性值的确是立刻更新的（如果你读取它的数据，你会发现它的值在你设置它的那一刻就已经生效了），但是屏幕上并没有马上发生改变。这是因为你设置的属性并没有直接调整图层的外观，相反，他只是定义了图层动画结束之后将要变化的外观。
 
-当设置`CALayer`的属性，实际上是在定义当前事务结束之后图层如何显示的**模型**。Core Animation扮演了一个**控制器**的角色，并且负责根据图层行为和事务设置去不断更新**视图**的这些属性在屏幕上的状态。
+当设置`CALayer`的属性，实际上是在定义当前事务结束之后图层如何显示的**模型**。这里就是一个典型的**微型MVC模式**：
 
-我们讨论的就是一个典型的**微型MVC模式**。`CALayer`是一个连接用户界面（就是MVC中的**view**）虚构的类，但是在界面本身这个场景下，`CALayer`的行为更像是存储了视图如何显示和动画的数据模型。实际上，在苹果自己的文档中，图层树通常都是值的图层树模型。
+- Core Animation扮演了一个**控制器**的角色，并且负责根据图层行为和事务设置去不断更新**视图**的这些属性在屏幕上的状态。
+- `CALayer`是一个连接用户界面（就是MVC中的**view**）虚构的类，但是在界面本身这个场景下，`CALayer`的行为更像是存储了视图如何显示和动画的数据模型。
+- 实际上，在苹果自己的文档中，图层树通常都是指的图层树模型。
 
 在iOS中，屏幕每秒钟重绘60次。如果动画时长比60分之一秒要长，Core Animation就需要在设置一次新值和新值生效之间，对屏幕上的图层进行重新组织。这意味着`CALayer`除了“真实”值（就是你设置的值）之外，必须要知道**当前显示**在屏幕上的属性值的记录。
 
@@ -906,7 +917,7 @@ UIImageView 动画是一个完全不同的更高层次的动画 API 的实现方
 
 动画 APIs 可以以很多不同形式出现，而对于你自己写的动画 API 来说，也是这样的。
 
-## 总结
+# 六、总结
 
 这一章讨论了：
 
@@ -914,5 +925,3 @@ UIImageView 动画是一个完全不同的更高层次的动画 API 的实现方
 - UIKit是如何充分利用Core Animation的隐式动画机制来强化它的显式系统，
 - 以及动画是如何被默认禁用并且当需要的时候启用的。
 - 最后，你了解了呈现和模型图层，以及Core Animation是如何通过它们来判断出图层当前位置以及将要到达的位置。
-
-下一章将研究Core Animation提供的*显式*动画类型，既可以直接对图层属性做动画，也可以覆盖默认的图层行为。

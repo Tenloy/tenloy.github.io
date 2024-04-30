@@ -238,12 +238,18 @@ CALayer有一个可选的`delegate`属性，实现了`CALayerDelegate`协议，�
 
 - **子类可以根据需要重写此方法，以对其子视图执行更精确的布局**。 仅当子视图的自动调整大小和基于约束的行为不提供您想要的行为时，你才应该重写此方法，可以在实现中直接设置子视图的frame。
 - **通俗地说：当我们在某个类的内部调整子视图位置时，需要调用。反之，如果你想要在外部设置subviews的位置，就不要重写。**
+  ```objc
+  - (void)layoutSubviews {
+      [super layoutSubviews];
+      self.datePicker.frame = self.bounds;
+  }
+  ```
 
 系统会在任何它需要重新计算视图的 frame 的时候调用这个方法，然而你**不应直接调用**此方法。 如果要强制更新布局，请在下一次绘图更新之前调用 setNeedsLayout 方法。 如果您想立即更新视图的布局，请调用 layoutIfNeeded 方法。
 
 ##### 2) layoutSubviews的自动触发
 
-**layoutSubViews的自动触发 — 下一轮RunLoop结束前调用layoutSubViews。**有许多可以在 RunLoop 的不同时间点触发 `layoutSubviews` 调用的机制，这些触发机制比直接调用 `layoutSubviews` 的资源消耗要小得多。
+**layoutSubViews的自动触发 — 本轮RunLoop结束前调用layoutSubViews。**有许多可以在 RunLoop 的不同时间点触发 `layoutSubviews` 调用的机制，这些触发机制比直接调用 `layoutSubviews` 的资源消耗要小得多。
 
 **更新布局总会重新触发`layoutSubviews`方法**。有许多事件会**自动给视图打上 “update layout” 标记**，因此 `layoutSubviews` 会在下一个周期中被调用，而不需要开发者手动操作。这些自动通知系统 view 的布局发生变化的方式有：
 
@@ -264,12 +270,12 @@ CALayer有一个可选的`delegate`属性，实现了`CALayerDelegate`协议，�
 
 ##### 3) layoutSubviews的手动触发
 
-**setNeedsLayout手动标记 — 下一轮RunLoop结束前调用layoutSubviews。**
+**setNeedsLayout手动标记 — 本轮RunLoop结束前调用layoutSubviews。**
 
 - 标记为需要重新布局。调用这个方法代表向系统表示视图的布局需要重新计算。
-- `setNeedsLayout` 方法会立刻执行并返回，但在返回前不会真正更新视图。视图会在下一个update cycle(*下一轮runloop结束前*)中通过调用视图们以及他们的所有子视图的 `layoutSubviews` ，来更新。对于这一轮`runloop`之内的所有布局和UI上的更新只会刷新一次。
+- `setNeedsLayout` 方法会立刻执行并返回，但在返回前不会真正更新视图。视图会在下一个update cycle(*本轮runloop结束前*)中通过调用视图们以及他们的所有子视图的 `layoutSubviews` 来更新。对于这一轮`runloop`之内的所有布局和UI上的更新只会刷新一次。
 - 即从 `setNeedsLayout` 返回后到视图被重新绘制并布局之间有一段任意时间的间隔，但是这个延迟不会对用户造成影响，因为永远不会长到对界面造成卡顿。
-- **`layoutSubviews`一定会被调用（有延迟，在下一轮runloop结束前）**。
+- **`layoutSubviews`一定会被调用（有延迟，在下一个update cycle）**。
 
 **layoutIfNeeded — 不一定会调用，若满足条件，则立即调用layoutSubviews。**
 
