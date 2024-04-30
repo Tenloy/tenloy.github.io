@@ -2559,7 +2559,7 @@ html::-webkit-scrollbar-track:hover,
 }
 
 .article-entry ul,
-.article-entry ul li {
+.article-entry ul>li {
     list-style-type: initial;
     margin: 4px 0;
     line-height: 1.5rem
@@ -2571,7 +2571,7 @@ html::-webkit-scrollbar-track:hover,
 }
 
 .article-entry ol,
-.article-entry ol li {
+.article-entry ol>li {
     list-style-type: decimal;
     margin: 4px 0;
     line-height: 1.5rem
