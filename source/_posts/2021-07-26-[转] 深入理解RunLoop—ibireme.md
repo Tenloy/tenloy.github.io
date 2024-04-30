@@ -326,6 +326,10 @@ int CFRunLoopRunSpecific(runloop, modeName, seconds, stopAfterHandle) {
 - Darwin是macOS和iOS操作环境的操作系统部分。苹果公司于2000年把Darwin发布给开放源代码社区。
   - 既然是OS，那肯定要包括系统内核XNU、驱动、Shell 等内容，这一层是开源的，其所有源码都可以在 [opensource.apple.com](http://opensource.apple.com/) 里找到。
   - XNU是一个混合内核，它采用了来自OSF的OSFMK 7.3(Open Software Foundation Mach Kernel)和FreeBSD的各种要素(包括过程模型，网络堆栈和虚拟文件系统)，还有一个称为I/O Kit的面向对象的设备驱动程序API。
+    - [Mach](https://zh.wikipedia.org/wiki/Mach)是一个由卡内基梅隆大学开发的计算机操作系统微内核，为了用于操作系统之研究，特别是在分布式与并行运算上。是最早实现微核心操作系统的例子之一，是许多其它相似的项目的标准。
+    - OSFMK 是 Unix 操作系统的一个变体，是很早的使用 Mach kernel 的操作系统之一。
+    - BSD伯克利软件套件(Berkeley Software Distribution UNIX)，是一个派生自Unix（类Unix）的操作系统。
+    - FreeBSD是FreeBSD项目的发展成果，是开放源代码的类Unix操作系统，基于BSD Unix的源代码派生发展而来。
   - XNU将宏内核与微内核两者的特性兼收并蓄，以期同时拥有两种内核的优点。**微内核的灵活性**：比如在微内核中提高操作系统模块化程度以及让操作系统更多的部分接受内存保护的消息传递机制。**宏内核的性能**：宏内核在高负荷下表现的高性能。
 
 我们在深入看一下 Darwin 这个核心的架构：

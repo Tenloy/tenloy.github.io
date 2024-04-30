@@ -969,7 +969,7 @@ void _os_object_init(void) {
 ```
 
 
-3. 然后就是 [objc的源码](https://opensource.apple.com/tarballs/objc4/) `objc-os.mm`中的 `_object_init` 函数了：
+3. 然后就是 [objc的源码](https://opensource.apple.com/tarballs/objc4/) `objc-os.mm`中的 `_objc_init` 函数了：
 
 ```c++
 /**
