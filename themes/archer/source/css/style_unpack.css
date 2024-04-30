@@ -2577,14 +2577,6 @@ html::-webkit-scrollbar-track:hover,
     line-height: 1.5rem
 }
 
-.article-entry ol ul li {
-    list-style-type: circle;
-}
-
-.article-entry ul ol li {
-    list-style-type: decimal;
-}
-
 .article-entry ul,
 .article-entry ol {
     padding-left: 20px;
