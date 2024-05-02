@@ -318,7 +318,7 @@ CALayer 的 animatable 属性通常都具有相应的 action object 来启动实
 
 layer 将像 [CALayer 的 actionForKey: 文档](https://developer.apple.com/documentation/quartzcore/calayer/1410844-actionforkey) 中所写的的那样去寻找对应属性变化的 action，整个过程分为四个步骤：
 
-1. 如果该 layer 具有实现 `actionForLayer:forKey:` 方法的 delegate，则 layer 调用该方法并返回结果。返回值：
+1. 如果该 layer 具有实现 `actionForLayer:forKey:` 方法的 delegate，则 layer 调用该方法并返回结果。delegate 可以通过返回以下三者之一来进行响应：
    - 返回给定 key 的 action object，这种情况下 layer 将使用这个行为。
    - 如果它不处理 action，则返回 NSNull 对象，告诉 layer 这里不需要执行一个行为，明确地强制不再进行进一步的搜索。
    - 返回一个 `nil`， 这样 layer 就会到其他地方继续寻找。
@@ -330,7 +330,7 @@ layer 将像 [CALayer 的 actionForKey: 文档](https://developer.apple.com/docu
 
 所以一轮完整的搜索结束之后，`-actionForKey:`要么返回空（这种情况下将不会有动画发生），要么是`CAAction`协议对应的对象，最后`CALayer`拿这个结果去对先前和当前的值做动画。
 
-**上面的步骤，是对于单独的 layer 来说的。对于 view 中的 layer，对行为的搜索只会到第一步为止（至少我没有见过 view 返回一个 `nil` 然后导致继续搜索行为的情况）。**
+**注意：上面的步骤，是对于单独的 layer 来说的。对于 view 中的 layer，对行为的搜索只会到第一步为止（至少我没有见过 view 返回一个 `nil` 然后仍然继续搜索行为的情况）。**
 
 让这一切变得有趣的是，当 layer 在背后支持一个 view 的时候，view 就是它的 delegate；
 
