@@ -1,5 +1,5 @@
 ---
-title: (六) dyld与Objc—_objc_init、map_images、load_images
+title: (六) dyld与Runtime—_objc_init、map_images、load_images
 date: 2021-10-21 10:20:00
 urlname: dyld-objc.html
 tags:
@@ -9,7 +9,7 @@ categories:
 
 ## 一、前文回顾
 
-上一篇[(六) Mach-O 文件的动态链接、库、Dyld(含dlopen)](https://tenloy.github.io/2021/09/27/compile-dynamic-link.html)，大概梳理了dyld的加载流程，这一次主要展开**“第八步 执行初始化方法”**，其是我们日常紧密接触的OBJC Runtime初始化启动的上文。
+上一篇[(五) Mach-O 文件的动态链接、库、Dyld(含dlopen)](https://tenloy.github.io/2021/10/18/compile-dynamic-link.html)，大概梳理了dyld的加载流程，这一次主要展开**“第八步 执行初始化方法”**，其是我们日常紧密接触的OBJC Runtime初始化启动的上文。
 
 先简单回顾一下Runtime的初始化之前的流程：
 1. 内核XNU加载Mach-O
@@ -30,7 +30,7 @@ load_images的调用堆栈(之一)：
 
 <img src="/images/compilelink/31.png" alt="35" style="zoom:90%;" />
 
-在进入 `libobjc` 之前，我们必须要先了解 OC 中类的底层结构，可以先阅读[下篇](https://tenloy.github.io/2021/10/11/runtime-data-structure.html)(如果已经熟悉，那略过)。
+在进入 `libobjc` 之前，我们必须要先了解 OC 中类的底层结构，可以先阅读[下篇](https://tenloy.github.io/2020/10/28/runtime-data-structure.html)(如果已经熟悉，那略过)。
 
 ## 二、_objc_init()
 
@@ -205,8 +205,8 @@ void cache_t::init()
 
 在 dyld3 中，`_dyld_objc_notify_register` 函数的实现逻辑有一些改变，此处不再赘述了。
 
-- map_images : dyld 将 image 加载进内存时 , 会触发该函数进行image的一些处理：如果是首次，初始化执行环境等，之后`_read_images`进行读取，进行类、元类、方法、协议、分类的一些加载。
-- load_images : dyld 初始化 image 会触发该方法，进行+load的调用
+- map_images : dyld 将 image 加载进内存时 , 会触发该函数进行image的一些处理：如果是首次，初始化执行环境等，之后`_read_images`进行读取，进行类、元类、方法、协议、分类的加载并存储到对应的表中。(注意：分类里的数据不是单独存储，而是通过attachLists方法把分类的数据添加到类里面)。
+- load_images : dyld 初始化 image 会触发该方法，调用所有类、分类的load方法。
 - unmap_image : dyld 将 image 移除时 , 会触发该函数
 
 ## 三、map_images() 
@@ -223,6 +223,23 @@ void map_images(unsigned count, const char * const paths[],
     rwlock_writer_t lock(runtimeLock);
     return map_images_nolock(count, paths, mhdrs);
 }
+```
+
+调用流程大致如下：
+
+```c
+▼ map_images
+  ▼ map_images_nolock
+    ▼ _read_images
+      ▶ readClass                // 把类和类名都加入到对应的表中
+      ▼ realizeClassWithoutSwift // 给class以及父类和元类对象的ro赋值给rw等成员赋值，经过此步后class中的ro以及rw都已经有值了，最后调用methodizeClass
+        ▼ methodizeClass         // 给方法排序，如果存在rwe，给rwe赋值，内部接着调用attachToClass函数
+          ▼ attachToClass        // 内部判断是否可以调用attachCategories函数
+            ▼ attachCategories   // 如果来到这里，内部通过attachLists函数将分类的方法列表、属性列表、协议列表合并到主类中
+              ▶ attachLists      // 主要是将新的list插入到旧的list的前面（内存平移以及内存拷贝的方式）
+              // 可以看到，合并时先将原来类中的方法向后移动，再将分类方法放到方法列表前面。因此，进行方法查找时，先找到分类方法，找到后不再查找，这就形成了分类方法会覆盖类方法的错觉。
+              // 事实上，如果分类和原来类都有同样方法时，category附加完成后方法列表会有两个相同的方法，只是分类方法位于列表前面，优先查找到分类方法。
+              // 分类的方法列表和类的实例方法一样，最终放在同一个类对象的方法列表，并不会存放在单独的方法列表中。协议、属性等类似。
 ```
 
 ### 3.1 map_images_nolock()
@@ -432,6 +449,7 @@ void map_images_nolock(unsigned mhCount, const char * const mhPaths[],
 - **future class**（未来要解析的类，也称懒加载类）
   - named class（已确定名称类）：将`cls`标记为 named class，以`cls->mangledName()`类名为关键字添加到全局记录的`gdb_objc_realized_classes`哈希表中，表示 runtime 开始可以通过类名查找类（注意元类不需要添加）；
   - allocated class（已分配内存类）：将`cls`及其元类标记为 allocated class，并将两者均添加到全局记录的`allocatedClasses`哈希表中（无需关键字），表示已为类分配固定内存空间；
+  - 懒加载类与⾮懒加载类：是指当前类是否实现load⽅法、是否有静态实例。（*详见3.3.8小节*）
 - **remapped class**（已重映射类）
 - **realized class**（已认识/实现类）
 - loaded class（已加载类）：已执行`load`方法的类
@@ -1195,13 +1213,14 @@ static void remapClassRef(Class *clsref)
 这里并不会执行，didInitialAttachCategories 是一个静态全局变量，默认是 false，对于启动时出现的 categories，discovery 被推迟到 `_dyld_objc_notify_register` 调用完成后的第一个 `load_images` 调用。所以这里 if 里面的 Discover categories 是不会执行的。
 
 ```c++    
-    // Discover categories. 发现类别。
-    // 仅在完成 initial category attachment 后才执行此操作。
-    // 对于启动时出现的 categories，discovery 被推迟到 _dyld_objc_notify_register 调用完成后的第一个 load_images 调用。
-    // 这里 if 里面的 category 数据加载是不会执行的。
-    
+    // Discover categories. Only do this after the initial category attachment has been done. 
+    // For categories present at startup, discovery is deferred until the first load_images call after the call to _dyld_objc_notify_register completes. rdar://problem/53119145
+    // 发现类别。仅在完成 initial category attachment 后才执行此操作。
+    // 对于启动时出现的categories，discovery被推迟到_dyld_objc_notify_register调用完成后的第一个load_images调用后。
     // didInitialAttachCategories 是一个静态全局变量，默认是 false，
     // static bool didInitialAttachCategories = false; 在load_images()函数体中，才会置为true
+
+    // 所以，这里 if 里面的 category 数据加载是不会执行的。
 
     if (didInitialAttachCategories) {
         for (EACH_HEADER) {
@@ -1222,9 +1241,11 @@ static void remapClassRef(Class *clsref)
 
 #### 8. realize非懒加载类 — realized class
 
-懒加载：类没有实现 +load 函数，在使用的第一次才会加载，当我们给这个类的发送消息时，如果是第一次，在消息查找的过程中就会判断这个类是否加载，没有加载就会加载这个类。懒加载类在首次调用方法的时候，才会去调用 `realizeClassWithoutSwift` 函数去进行加载。
+懒加载类与⾮懒加载类: 下面有一行注释 `Realize non-lazy classes (for +load methods and static instances)`，意思是指当前类是否实现load⽅法、是否有静态实例？(*很多博客中只提到了前者*)
 
-非懒加载：类的内部实现了 +load 函数，类的加载就会提前。
+懒加载：在类第一次使用的时候才会加载，当我们给这个类的发送消息时，在消息查找的过程中就会判断这个类是否加载，没有加载就会加载这个类。`lookUpImpOrForward --> realizeClassMaybeSwiftMaybeRelock -- > realizeClassWithoutSwift --> methodizeClass`
+
+非懒加载：map_images的时候，加载所有类数据 `_getObjc2NonlazyClassList --> readClass -- > realizeClassWithoutSwift --> methodizeClass`
 
 ```c++
     // Realize non-lazy classes (for +load methods and static instances)
@@ -1494,6 +1515,37 @@ static void methodizeClass(Class cls, Class previously)
                                              isMeta ? ATTACH_METACLASS : ATTACH_CLASS);
 }
 ```
+
+##### 3) attachToClass
+
+```c++
+void attachToClass(Class cls, Class previously, int flags)
+{
+    lockdebug::assert_locked(&runtimeLock.get());
+    ASSERT((flags & ATTACH_CLASS) ||
+           (flags & ATTACH_METACLASS) ||
+           (flags & ATTACH_CLASS_AND_METACLASS));
+
+    auto &map = get();
+    auto it = map.find(previously);
+
+    if (it != map.end()) {
+        category_list &list = it->second;
+        if (flags & ATTACH_CLASS_AND_METACLASS) {
+            int otherFlags = flags & ~ATTACH_CLASS_AND_METACLASS;
+            attachCategories(cls, list.array(), list.count(), otherFlags | ATTACH_CLASS);
+            attachCategories(cls->ISA(), list.array(), list.count(), otherFlags | ATTACH_METACLASS);
+        } else {
+            attachCategories(cls, list.array(), list.count(), flags);
+        }
+        map.erase(it);
+    }
+}
+```
+
+##### 4) attachCategories
+
+*见4.2.3小节*
 
 #### 9. 处理没有使用的类
 
@@ -1870,6 +1922,8 @@ void prepare_load_methods(const headerType *mhdr)
 
 #### 4.4.1 schedule_class_load
 
+schedule_class_load()会递归调用，从传入的cls依次向上查找superClass，并调用add_class_to_loadable_list方法，将实现了load方法的类的：Class cls、IMP method收集，添加到 `loadable_classes` 数组，准备加载。父类、子类都通过该方法收集出来，父类们先被收集，即先被调用。
+
 ```c++
 // schedule_class_load 将其 +load 函数添加到 loadable_classes 数组中，优先添加其父类的 +load 方法。（用于后续 call_load_methods 函数调用）
 static void schedule_class_load(Class cls)
@@ -1940,7 +1994,50 @@ void add_class_to_loadable_list(Class cls)
 }
 ```
 
+#### 4.4.2 add_category_to_loadable_list
+
+add_category_to_loadable_list()函数遍历分类，并将Category cat、IMP method收集到 `loadable_categories` 数组中保存。
+
+```c++
+/***********************************************************************
+* add_category_to_loadable_list
+* 如果分类的父类存在，并且该分类已附加(attached)到主类。在父类调用自己的+load方法后，调度此分类的+load。
+**********************************************************************/
+void add_category_to_loadable_list(Category cat)
+{
+    IMP method;
+    lockdebug::assert_locked(&loadMethodLock.get());
+    method = _category_getLoadMethod(cat);
+
+    // Don't bother if cat has no +load method
+    if (!method) return;
+
+    if (PrintLoading) {
+        _objc_inform("LOAD: category '%s(%s)' scheduled for +load", 
+                     _category_getClassName(cat), _category_getName(cat));
+    }
+    
+    if (loadable_categories_used == loadable_categories_allocated) {
+        loadable_categories_allocated = loadable_categories_allocated*2 + 16;
+        loadable_categories = (struct loadable_category *)
+            realloc(loadable_categories,
+                              loadable_categories_allocated *
+                              sizeof(struct loadable_category));
+    }
+
+    loadable_categories[loadable_categories_used].cat = cat;
+    loadable_categories[loadable_categories_used].method = method;
+    loadable_categories_used++;
+}
+```
+
 ### 4.5 call_load_methods()
+
+call_load_methods()函数先调用父类的+load，等父类的+load结束后才会调用分类的+load方法。
+
+- `call_class_loads()` 函数调用所有挂起(pending)类的+load方法。如果有新的类变为可加载(loadable)，并不会调用他们的+load方法。找到+load方法函数地址后，直接调用。
+- `call_category_loads()` 调用分类的+load方法与调用类的+load方法类似，也是通过函数指针直接指向函数，拿到函数地址，找到函数直接调用。
+- 通过源码可以看到调用类、分类+load方法时，都是通过for循环loadable_classes、loadable_categories数组进行的。因此，知道数组的顺序，就可以知道方法调用顺序。
 
 `+load` 函数的调用顺序：父类 -> 子类 -> 分类。
 
@@ -2035,7 +2132,31 @@ A: 不需要，只要这个类的符号被编译到最后的可执行文件中�
 
 > 注意：最后的 class initializing 严格意义上应该不属于类的加载过程，可以将其归为独立的类初始化阶段。类的加载在`load()`方法执行后就算是完成了。
 
-## 六、unmap_images()
+## 六、分类的加载
+
+从上面的源码分析，可以看到，分类的加载就有两条线路：
+
+```c++
+// map_images ->_read_images(非懒加载类) ->realizeClassWithoutSwift -> methodizeClass -> attachToClass -> attachCategories
+
+// load_images -> loadAllCategories -> load_categories_nolock -> attachCategories
+```
+
+分类加载时机，测试：
+
+- `realizeClassWithoutSwift` 方法中打断点，通过ro内是否包含分类的数据判断分类是编译器加载还是运行时加载。
+- `attachCategories` 方法中断点，查看是否进入该方法，运行时加载分类。然后查看调用堆栈，确定调用时机(是_read_images中调用，还是load_images中调用)
+
+总结（是否是懒加载，取决于是否实现了load方法）：
+
+- **本类是懒加载，分类是懒加载**：本类是在第一次发送消息的时候加载，分类在编译时就已经加载完成（在编译的时期就已经添加到ro中去了）
+- **本类是懒加载，分类是非懒加载类**：本类会在read_image方法中去加载，分类在编译时就已经加载完成（分类实现了load，会迫使主类提前加载）
+- **本类是非懒加载，分类是懒加载**，本类会在read_images方法中加载，分类在编译时就已经加载完成。
+- **本类是非懒加载，分类是非懒加载**，本类的加载还是在_read_images方法中，分类的加载推迟到了load_image方法中。
+
+注意：只要有一个分类是非懒加载分类，那么所有的分类都会被标记位非懒加载分类。所以当多个分类中，有的实现了load方法，有的没有实现load方法，那等同于上面的分类是懒加载的场景。
+
+## 七、unmap_images()
 
 ```c++
 /*
@@ -2050,7 +2171,7 @@ unmap_image(const char *path __unused, const struct mach_header *mh)
 }
 ```
 
-### 6.1 unmap_image_nolock()
+### 7.1 unmap_image_nolock()
 
 ```c++
 void 
@@ -2086,7 +2207,7 @@ unmap_image_nolock(const struct mach_header *mh)
 }
 ```
 
-### 6.2 _unload_image()
+### 7.2 _unload_image()
 
 ```c++
 /***********************************************************************
@@ -2162,9 +2283,8 @@ void _unload_image(header_info *hi)
 ```
 
 
-
-
-## 七、参考链接
+## 八、参考链接
 
 - [Runtime源代码解读2（类和对象）](https://juejin.cn/post/6844903965201530888#heading-0)
+- [类的加载（下）-分类的加载](https://juejin.cn/post/6924591116306087944)
 
