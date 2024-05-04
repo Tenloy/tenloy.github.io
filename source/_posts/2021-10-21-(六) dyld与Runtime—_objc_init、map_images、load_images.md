@@ -1245,7 +1245,7 @@ static void remapClassRef(Class *clsref)
 
 懒加载：在类第一次使用的时候才会加载，当我们给这个类的发送消息时，在消息查找的过程中就会判断这个类是否加载，没有加载就会加载这个类。`lookUpImpOrForward --> realizeClassMaybeSwiftMaybeRelock -- > realizeClassWithoutSwift --> methodizeClass`
 
-非懒加载：map_images的时候，加载所有类数据 `_getObjc2NonlazyClassList --> readClass -- > realizeClassWithoutSwift --> methodizeClass`
+非懒加载：map_images的时候，加载所有类数据 `readClass --> realizeClassWithoutSwift --> methodizeClass`
 
 ```c++
     // Realize non-lazy classes (for +load methods and static instances)
