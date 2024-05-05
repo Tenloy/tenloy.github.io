@@ -232,7 +232,11 @@ void map_images(unsigned count, const char * const paths[],
   ▼ map_images_nolock
     ▼ _read_images
       ▶ readClass                // 把类和类名都加入到对应的表中
-      ▼ realizeClassWithoutSwift // 给class以及父类和元类对象的ro赋值给rw等成员赋值，经过此步后class中的ro以及rw都已经有值了，最后调用methodizeClass
+      ▼ realizeClassWithoutSwift // 给class以及父类和元类对象的rw等成员(及rw->ro)赋值，经过此步后class中rw以及ro都已经有值了，最后调用methodizeClass
+            // 1.从class_data_bits_t调用data方法，将结果从class_rw_t强制转换为 class_ro_t指针；
+            // 2.初始化一个 class_rw_t结构体；设置结构体 ro的值以及 flag；
+            // 3.将rw设置为 data
+            // 但是，方法运行之后class_rw_t中的方法，属性以及协议列表均为空。这时需要调用methodizeClass方法来将类自己实现的方法（包括分类）、属性和遵循的协议加载到成员变量methods、properties和protocols列表中。
         ▼ methodizeClass         // 给方法排序，如果存在rwe，给rwe赋值，内部接着调用attachToClass函数
           ▼ attachToClass        // 内部判断是否可以调用attachCategories函数
             ▼ attachCategories   // 如果来到这里，内部通过attachLists函数将分类的方法列表、属性列表、协议列表合并到主类中

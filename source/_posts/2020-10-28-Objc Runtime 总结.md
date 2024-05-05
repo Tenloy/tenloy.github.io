@@ -228,7 +228,6 @@ static inline mask_t cache_hash(SEL sel, mask_t mask)
   - 当缓存使用达到3/4后，进行缓存扩容，扩容系数为2；
   - 扩容时，会清空缓存，否则hash值就不对了；
   - 旧版本中，类的方法缓存大小是有没有限制的，在新的runtime中增加了限制；
-
   ```c++
   /* Initial cache bucket count. INIT_CACHE_SIZE must be a power of two. */
   enum {
@@ -248,7 +247,6 @@ static inline mask_t cache_hash(SEL sel, mask_t mask)
       //...
   }
   ```
-
 - 为什么类的方法列表不直接做成散列表呢，做成list，还要单独缓存，多费事？这个问题么，我觉得有以下三个原因：
   - 散列表是没有顺序的，Objective-C的方法列表是一个list，是有顺序的；Objective-C在查找方法的时候会顺着list依次寻找，并且category的方法在原始方法list的前面，需要先被找到，如果直接用hash存方法，方法的顺序就没法保证。
   - list的方法还保存了除了selector和imp之外其他很多属性
@@ -809,9 +807,10 @@ meta-class之所以重要，是因为它存储着一个类的所有类方法。�
 - 类创建对象，调用的是实例方法
 - 元类创建类对象，调用的是类方法。
 
-所有元类使用基类的元类（即继承链顶端的类的元类）作为它们的类，而所有类的基类都是 NSObject（大多数类是这样的），所以大多数元类使用 NSObject 的元类作为它的类。
+所有元类使用基类的元类（即继承链顶端的类的元类）作为它们的类，而所有类的基类都是 NSObject（大多数类是这样的）。所以：
 
-根据规则所有元类使用基类的元类作为它们的类，那么基类的元类就是它自己的类（它们的isa指针指向了自己）。这表明NSObject的元类的指针指向的是它自己（它是一个它自己的实例）。
+- 大多数元类使用 NSObject 的元类作为它的类。
+- 基类的元类就是它自己的类，即NSObject的元类的isa指针指向的是它自己（它是一个它自己的实例）。
 
 ### 2.5.3 元类的superclass — 父类
 
@@ -1496,6 +1495,7 @@ const char *ivar_getTypeEncoding(Ivar ivar);
 ### 3.1.2 Ivar的获取
 
 ```c++
+// 获取整个成员变量列表(必须使用free()来释放这个数组)
 Ivar *class_copyIvarList(Class cls, unsigned int *outCount)
 ```
 
@@ -1527,7 +1527,11 @@ struct property_t {
 typedef struct property_t *objc_property_t;
 ```
 
-属性attributes是一个字符串：该字符串以T开头，后面跟着@encode类型和一个逗号，以V结尾，后面跟着后台实例变量的名称。在这些属性之间，由以下描述符指定，以逗号分隔。官方文档 [Declared Properties](https://developer.apple.com/library/archive/documentation/Cocoa/Conceptual/ObjCRuntimeGuide/Articles/ocrtPropertyIntrospection.html#//apple_ref/doc/uid/TP40008048-CH101-SW24)。
+属性attributes是一个字符串：`T<属性的类型>,[属性修饰符,[属性修饰符, ...]]V<实例变量名>`
+
+- 该字符串以T开头
+- 后面跟着属性的类型([Type Encodings](https://developer.apple.com/library/archive/documentation/Cocoa/Conceptual/ObjCRuntimeGuide/Articles/ocrtTypeEncodings.html#//apple_ref/doc/uid/TP40008048-CH100-SW1))、属性修饰符（*见下图*），以逗号分隔。
+- 然后是V，后面跟着实例变量的名称。(*官方文档 [Declared Properties](https://developer.apple.com/library/archive/documentation/Cocoa/Conceptual/ObjCRuntimeGuide/Articles/ocrtPropertyIntrospection.html#//apple_ref/doc/uid/TP40008048-CH101-SW24)，不过官方文档中的示例貌似有误或是过时，以下方示例为准*)
 
 <img src="/images/runtime/02.png" alt="02" style="zoom:90%;" />
 
@@ -1582,13 +1586,12 @@ objc_property_attribute_t *property_copyAttributeList(objc_property_t prop,
 
 ### 3.2.4 示例
 
-```c++
-@interface Lender : NSObject {
-     float alone;
-}
+```objc
+@interface Lender : NSObject 
 @property float alone;
+@property char charDefault;
+@property(nonatomic,readonly,copy)id idReadonlyCopyNonatomic;
 @end
-
 
 //获取属性列表
 id LenderClass = objc_getClass("Lender");
@@ -1609,9 +1612,20 @@ for (i = 0; i < outCount; i++) {
 }
 
 //输出
-log: ======= alone Tf,V_alone
-log: ======= T f
-log: ======= V _alone
+alone Tf,V_alone
+T f
+V _alone
+  
+charDefault Tc,V_charDefault
+T c
+V _charDefault
+  
+idReadonlyCopyNonatomic T@,R,C,N,V_idReadonlyCopyNonatomic
+T @
+R 
+C 
+N 
+V _idReadonlyCopyNonatomic
 ```
 
 ## 3.3 关联对象
@@ -1692,7 +1706,7 @@ struct method_t {
 typedef struct method_t *Method;
 ```
 
-iOS中提供了一个叫做@encode的指令，可以将具体的类型表示成字符串编码。
+iOS中提供了一个叫做@encode的指令，可以将具体的类型表示成字符串编码。([Type Encodings](https://developer.apple.com/library/archive/documentation/Cocoa/Conceptual/ObjCRuntimeGuide/Articles/ocrtTypeEncodings.html#//apple_ref/doc/uid/TP40008048-CH100-SW1))
 
 ```c++
 - (void)test;
@@ -2038,13 +2052,13 @@ OC是否支持多继承？有没有模拟多继承特性的办法？
 `NSStringFromClass([self class])` 和 `NSStringFromClass([super class])` 输出都是self的类名。原因如下：
 
 ```c++
-//[super message]的底层实现:
-//super调用，底层会转换为objc_msgSendSuper2函数的调用，接收2个参数
-     struct objc_super2 {
-         id receiver;         // receiver是self，表示消息接收者仍然是子类对象
-         Class current_class; // 会从父类current_class.superclass开始查找方法的实现
-     };
-     SEL
+// [super message]的底层实现:
+// super调用，底层会转换为objc_msgSendSuper2函数的调用，接收2个参数
+struct objc_super2 {
+   id receiver;         // receiver是self，表示消息接收者仍然是子类对象
+   Class current_class; // 会从父类current_class.superclass开始查找方法的实现
+};
+SEL
 ```
 
 ```c++
@@ -2052,14 +2066,11 @@ OC是否支持多继承？有没有模拟多继承特性的办法？
  * Sends a message with a simple return value to the superclass of an instance of a class.
  *
  * @param super 指向objc_super数据结构的指针。传递消息发送的上下文的值，包括要接收消息的类的实例和开始搜索方法实现的超类。including the instance of the class that is to receive the message and the superclass at which to start searching for the method implementation。
- *
  * 由此可知，消息仍然是receiver来处理，superclass指定了`消息发送`阶段，方法从isa->superclass->superclass.superclass...->NSObject链中superclass为起点开始向上寻找。
  *
- * @param op SEL类型的指针。传递将处理消息的方法的选择器。
- * @param ... A variable argument list containing the arguments to the method.
- *
- * @return The return value of the method identified by \e op.
- *
+ * @param op   SEL类型的指针。传递将处理消息的方法的选择器。
+ * @param ...  A variable argument list containing the arguments to the method.
+ * @return     The return value of the method identified by \e op.
  * @see objc_msgSend
  */
 id objc_msgSendSuper(struct objc_super * _Nonnull super, SEL _Nonnull op, ...);
@@ -2245,10 +2256,18 @@ method_setImplementation(m2, imp1);
 
 ### 5.1.1 分类概述
 
-category是Objective-C 2.0之后添加的语言特性，category的主要作用是为已经存在的类添加方法。除此之外，apple还推荐了category的另外两个使用场景[1](https://developer.apple.com/library/ios/documentation/General/Conceptual/DevPedia-CocoaCore/Category.html)
+Category是Objective-C 2.0之后添加的语言特性。
 
-- 可以把类的实现分开在几个不同的文件里面。这样做有几个显而易见的好处，a)可以减少单个文件的体积 b)可以把不同的功能组织到不同的category里 c)可以由多个开发者共同完成一个类 d)可以按需加载想要的category 等等。
-- 声明私有方法
+Category 有那些用途？
+
+- 主要作用是为已经存在的类添加方法。常见的是给系统类添加方法、属性（需要关联对象）。
+- 除此之外，apple还推荐了category的另外两个使用场景：[官方文档](https://developer.apple.com/library/ios/documentation/General/Conceptual/DevPedia-CocoaCore/Category.html)
+  - 可以把类的实现分开在几个不同的文件里面。这样做有几个显而易见的好处：
+    - 可以减少单个文件的体积 
+    - 可以把不同的功能组织到不同的category里，实现按照不同的特性归类。
+    - 可以由多个开发者共同完成一个类
+    - 可以按需加载想要的category 等等。
+  - 声明私有方法：为在.m文件中实现的方法，添加声明，使得外部可以调用。
 
 不过除了apple推荐的使用场景，广大开发者脑洞大开，还衍生出了category的其他几个使用场景：
 
@@ -2376,13 +2395,17 @@ static struct IMAGE_INFO { unsigned version; unsigned flag; } _OBJC_IMAGE_INFO =
 
 ### 5.1.4 分类的运行时处理
 
-见[dyld与Objc—_objc_init、map_images、load_images的4.2小节：分类的加载](https://tenloy.github.io/2021/09/28/dyld-objc.html#4-2-loadAllCategories-%E5%88%86%E7%B1%BB%E5%8A%A0%E8%BD%BD)
+见[dyld与Runtime—_objc_init、map_images、load_images的4.2小节：分类的加载](https://tenloy.github.io/2021/10/21/dyld-objc.html#4-2-loadAllCategories-%E5%88%86%E7%B1%BB%E5%8A%A0%E8%BD%BD)
 
 ## 5.2 类扩展(Extension)
 
-extension看起来很像一个匿名的category，但是extension和有名字的category几乎完全是两个东西。 extension在编译期决议，它就是类的一部分，在编译期和头文件里的@interface以及实现文件里的@implement一起形成一个完整的类，它伴随类的产生而产生，亦随之一起消亡。extension一般用来隐藏类的私有信息，你必须有一个类的源码才能为一个类添加extension，所以你无法为系统的类比如NSString添加extension。（详见官方文档[Customizing Existing Classes](https://developer.apple.com/library/mac/documentation/Cocoa/Conceptual/ProgrammingWithObjectiveC/CustomizingExistingClasses/CustomizingExistingClasses.html)）
+extension看起来很像一个匿名的category，但是extension和有名字的category几乎完全是两个东西。 
 
-但是category则完全不一样，它是在运行期决议的。 就category和extension的区别来看，我们可以推导出一个明显的事实，extension可以添加实例变量，而category是无法添加实例变量的（因为在运行期，对象的内存布局已经确定，如果添加实例变量就会破坏类的内部布局，这对编译型语言来说是灾难性的）。
+extension在编译期决议，它就是类的一部分，在编译期和头文件里的@interface以及实现文件里的@implement一起形成一个完整的类，它伴随类的产生而产生，亦随之一起消亡。extension一般用来隐藏类的私有信息，你必须有一个类的源码才能为一个类添加extension，所以你无法为系统的类比如NSString添加extension。（详见官方文档[Customizing Existing Classes](https://developer.apple.com/library/mac/documentation/Cocoa/Conceptual/ProgrammingWithObjectiveC/CustomizingExistingClasses/CustomizingExistingClasses.html)）
+
+但是category则完全不一样，它是在运行期决议的。可以为系统 framework、第三方框架等添加 category。 
+
+就category和extension的区别来看，我们可以推导出一个明显的事实，extension可以添加实例变量，而category是无法添加实例变量的（因为在运行期，对象的内存布局已经确定，如果添加实例变量就会破坏类的内部布局，这对编译型语言来说是灾难性的）。
 
 ## 5.3 Protocol
 
@@ -2528,11 +2551,8 @@ BOOL imp_removeBlock(IMP anImp);
 
 ```objc
 @interface MyRuntimeBlock : NSObject
-
 @end
-
 @implementation MyRuntimeBlock
-
 @end
 
 IMP imp = imp_implementationWithBlock(^(id obj, NSString *str) {
@@ -2553,7 +2573,7 @@ MyRuntimeBlock *runtime = [[MyRuntimeBlock alloc] init];
 主要函数
 
 ```c++
-// 获取所有加载的objectivec框架和动态库的名称
+// 获取所有加载的objective-c框架和动态库的名称
 const char **objc_copyImageNames(unsigned int *outCount);
 
 // 获取指定类所在动态库
