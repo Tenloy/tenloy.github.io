@@ -2644,7 +2644,7 @@ html::-webkit-scrollbar-track:hover,
 
 .abstract-content blockquote,
 .article-entry blockquote {
-    margin: 1.5em 0 1.5rem 0;
+    margin: 1rem 0 0.8rem 0;
     padding: 10px 20px;
     position: relative;
     background-color: #f6f6f6;
