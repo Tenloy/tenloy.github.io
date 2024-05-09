@@ -1492,11 +1492,16 @@ const char *ivar_getName(Ivar ivar);
 const char *ivar_getTypeEncoding(Ivar ivar);
 ```
 
-### 3.1.2 Ivar的获取
+### 3.1.2 Ivar的获取和添加
 
 ```c++
 // 获取整个成员变量列表(必须使用free()来释放这个数组)
 Ivar *class_copyIvarList(Class cls, unsigned int *outCount)
+  
+// 添加成员变量(这个只能够向在runtime时创建的类添加成员变量)
+// This function may only be called after objc_allocateClassPair and before objc_registerClassPair. 
+// Adding an instance variable to an existing class is not supported.
+BOOL class_addIvar(Class cls, const char *name, size_t size, uint8_t alignment, const char *type)
 ```
 
 ### 3.1.3 实例变量操作函数
@@ -1545,7 +1550,7 @@ const char *property_getName(objc_property_t prop);
 const char *property_getAttributes(objc_property_t prop);
 ```
 
-### 3.2.2 property的获取
+### 3.2.2 property的获取和添加
 
 获取类和协议的属性列表
 
@@ -1565,6 +1570,22 @@ objc_property_t *protocol_copyPropertyList(Protocol *proto, unsigned int *outCou
 objc_property_t class_getProperty(Class cls, const char *name);
 
 objc_property_t protocol_getProperty(Protocol *proto, const char *name, BOOL isRequiredProperty, BOOL isInstanceProperty);
+```
+
+添加和修改：
+
+```c++
+/*
+对于已经存在的类我们用class_addProperty方法来添加属性。
+记得同时使用class_addMethod()添加setter和getter方法。但这样添加的属性没有对应的成员变量，所以得自己在setter和getter方法中决定数据的存取逻辑。
+对于已经存在的类，class_addIvar是不能够添加属性的。class_addIvar只能为动态创建的类添加属性。
+ */
+void class_addProperty(Class _Nullable cls, const char * _Nonnull name,
+                  const objc_property_attribute_t * _Nullable attributes,
+                  unsigned int attributeCount);
+void class_replaceProperty(Class _Nullable cls, const char * _Nonnull name,
+                      const objc_property_attribute_t * _Nullable attributes,
+                      unsigned int attributeCount);
 ```
 
 ### 3.2.3 property的特性attributes
