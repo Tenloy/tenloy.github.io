@@ -53,7 +53,7 @@
 <meta property="og:image" content="https://tenloy.github.io/images/caa/vibrancyeffect2.png">
 <meta property="og:image" content="https://tenloy.github.io/images/caa/performance-inverstigation-mindset.png">
 <meta property="article:published_time" content="2021-09-11T12:04:46.000Z">
-<meta property="article:modified_time" content="2024-04-07T12:02:59.464Z">
+<meta property="article:modified_time" content="2024-05-07T03:12:53.850Z">
 <meta property="article:author" content="Tenloy">
 <meta property="article:tag" content="Tenloy, iOS, Tenloy Blog, 博客，Swift, 编译, 计算机">
 <meta name="twitter:card" content="summary">
@@ -330,7 +330,7 @@ height:40vh;
                 
                 
                     <div class="post-intro-read">
-                        <span>Word count: <span class="post-count word-count">12.6k</span>Reading time: <span class="post-count reading-time">45 min</span></span>
+                        <span>Word count: <span class="post-count word-count">12.7k</span>Reading time: <span class="post-count reading-time">45 min</span></span>
                     </div>
                 
                 <div class="post-intro-meta">
@@ -466,18 +466,18 @@ height:40vh;
 <img src="/images/iosrender/15.png" alt="01" style="zoom:55%;" />
 
 <ol>
-<li><p>CPU(Central Processing Unit，中央处理器)：完成对象的创建和销毁、对象属性的调整、布局计算、文本的计算和排版、图片的格式转换和解码、图像的绘制（Core Graphics）。</p>
+<li>CPU(Central Processing Unit，中央处理器)：完成对象的创建和销毁、对象属性的调整、布局计算、文本的计算和排版、图片的格式转换和解码、图像的绘制（Core Graphics）。</li>
+<li>GPU(Graphics Processing Unit，图形处理器)：GPU拿到CPU计算好的显示内容，完成纹理的渲染， 渲染完成后将渲染结果放入帧缓冲区。</li>
+<li>帧缓冲区（Frame Buffer）（双缓冲机制，不再赘述）<ul>
+<li>正常情况下，在当前屏幕显示的内容，由 GPU 渲染完成后放到当前屏幕的帧缓存区，不需要额外的渲染空间。我们知道 iPhone 的屏幕刷新率是 60Hz，也就是刷新一帧的时间是 16.67 ms， 每隔这段时间视频控制器就会去读一次缓存区的内容来显示。 </li>
+<li>假如 GPU 遇到性能瓶颈，导致无法在一帧内更新渲染结果到帧缓存区，那么从缓存区读到的会是上一帧的内容，导致帧率降低界面卡顿。</li>
+</ul>
 </li>
-<li><p>GPU(Graphics Processing Unit，图形处理器)：GPU拿到CPU计算好的显示内容，完成纹理的渲染， 渲染完成后将渲染结果放入帧缓冲区。</p>
-</li>
-<li><p>帧缓冲区（Frame Buffer）（双缓冲机制，不再赘述）</p>
-<p>正常情况下，在当前屏幕显示的内容，由 GPU 渲染完成后放到当前屏幕的帧缓存区，不需要额外的渲染空间。我们知道 iPhone 的屏幕刷新率是 60Hz，也就是刷新一帧的时间是 16.67 ms， 每隔这段时间视频控制器就会去读一次缓存区的内容来显示。 </p>
-<p>假如 GPU 遇到性能瓶颈，导致无法在一帧内更新渲染结果到帧缓存区，那么从缓存区读到的会是上一帧的内容，导致帧率降低界面卡顿。</p>
-</li>
-<li><p>视频控制器读取 Frame Buffer 中的数据 （视频控制器一般由显卡驱动程序或DirectX(微软公司创建的一系列专为多媒体以及游戏开发的应用程序接口)中自带，是芯片与显示平台的数据接口）</p>
-<p>视频控制器会按照 VSync信号(开始新的帧缓冲的读取)、HSync信号(开始帧缓冲新的一行的读取)读取前帧缓冲区的数据，经过可能的数模转换传递给显示器显示。</p>
-<p>GPU开始会绘制后缓存里的画面，然后视频控制器读取完前缓存的画面， 就会去读取后缓存里的画面。</p>
-<p>然后GPU再去绘制前缓存里的画面，即两者交替进行。</p>
+<li>视频控制器读取 Frame Buffer 中的数据 （视频控制器一般由显卡驱动程序或DirectX(微软公司创建的一系列专为多媒体以及游戏开发的应用程序接口)中自带，是芯片与显示平台的数据接口）<ul>
+<li>视频控制器会按照 VSync信号(开始新的帧缓冲的读取)、HSync信号(开始帧缓冲新的一行的读取)读取前帧缓冲区的数据，经过可能的数模转换传递给显示器显示。</li>
+<li>GPU开始会绘制后缓存里的画面，然后视频控制器读取完前缓存的画面， 就会去读取后缓存里的画面。</li>
+<li>然后GPU再去绘制前缓存里的画面，即两者交替进行。</li>
+</ul>
 </li>
 </ol>
 <p>将上图更细化一点：</p>
@@ -506,7 +506,7 @@ height:40vh;
 <li>Render：一旦视图资源可用， GPU 就开始它的渲染工作，希望在下个重新同步完成，因为要交换缓冲区给用户。</li>
 <li>Display：显示给用户看。</li>
 </ul>
-<p>在上述情况下，这些不同的步骤总共跨越三帧。在最后一个步骤 display 后，是可以平行操作的，在 Draw call 的时候可以处理下一个 handler event 和 Commit Transaction 。如下图所示</p>
+<p>在上述情况下，这些不同的步骤总共跨越三帧。在最后一个步骤 display 前，是可以平行操作的，在 Draw call 的时候可以处理下一个 handler event 和 Commit Transaction 。如下图所示</p>
 <img src="/images/caa/pipeline2.png" alt="Animation Pipeline2" style="zoom:90%;" />
 
 <h1 id="二、渲染步骤详解"><a href="#二、渲染步骤详解" class="headerlink" title="二、渲染步骤详解"></a>二、渲染步骤详解</h1><h2 id="2-1-APP-—-Commit-Transaction"><a href="#2-1-APP-—-Commit-Transaction" class="headerlink" title="2.1 APP — Commit Transaction"></a>2.1 APP — Commit Transaction</h2><h3 id="2-1-1-事务提交的4个阶段"><a href="#2-1-1-事务提交的4个阶段" class="headerlink" title="2.1.1 事务提交的4个阶段"></a>2.1.1 事务提交的4个阶段</h3><p>先聚焦 Commit transaction（事务是什么就不再赘述了）这个阶段，因为这是开发者接触最多的，主要有四个阶段，如下图所示：</p>
@@ -538,11 +538,11 @@ height:40vh;
 <h2 id="2-2-Render-Server"><a href="#2-2-Render-Server" class="headerlink" title="2.2 Render Server"></a>2.2 Render Server</h2><h3 id="2-2-1-渲染服务"><a href="#2-2-1-渲染服务" class="headerlink" title="2.2.1 渲染服务"></a>2.2.1 渲染服务</h3><p>Core Animation处在iOS的核心地位：应用内和应用间都会用到它。一个简单的动画可能同步显示多个app的内容，例如当在iPad上多个程序之间使用手势切换，会使得多个程序同时显示在屏幕上。在一个特定的应用中用代码实现它是没有意义的，因为在iOS中不可能实现这种效果（App都是被沙箱管理，不能访问别的视图）。</p>
 <p>动画和屏幕上组合的图层实际上被一个单独的进程管理，而不是你的应用程序。这个进程就是所谓的<strong>渲染服务</strong>(Render Server)。在iOS5和之前的版本是 SpringBoard 进程（同时管理着iOS的主屏）。在iOS6之后的版本中叫做<code>BackBoard</code>。</p>
 <p>一旦 commit Transition 打包的图层和动画到达渲染服务进程，他们会被反序列化来形成另一个叫做<strong>渲染树</strong>的图层树（在第一章“图层树”中提到过）。使用这个树状结构，渲染服务对动画的每一帧做出如下工作：</p>
-<ul>
+<ol start="5">
 <li>对所有的图层属性计算中间值，设置OpenGL几何形状（纹理化的三角形）来执行渲染</li>
 <li>在屏幕上渲染可见的三角形</li>
-</ul>
-<p>加上前面事务提交时的<strong>布局</strong>、<strong>显示</strong>、<strong>准备</strong>、<strong>提交</strong>，一共有六个阶段（在动画过程中，最后两个阶段不停地重复）。前五个阶段都在软件层面处理（通过CPU），只有最后一个被GPU执行。而且，你真正只能控制前两个阶段：布局和显示。Core Animation框架在内部处理剩下的事务，你也控制不了它。</p>
+</ol>
+<p>加上前面事务提交时的<strong>布局</strong>、<strong>显示</strong>、<strong>准备</strong>、<strong>提交</strong>，一共有六个阶段（在动画过程中，最后两个阶段不停地重复）。<strong>前五个阶段都在软件层面处理（通过CPU），只有最后一个被GPU执行</strong>。而且，你真正只能控制前两个阶段：布局和显示。Core Animation框架在内部处理剩下的事务，你也控制不了它。</p>
 <p>这并不是个问题，因为在布局和显示阶段，你可以决定哪些由CPU执行，哪些交给GPU去做。那么该如何判断呢？</p>
 <h3 id="2-2-2-GPU相关的操作"><a href="#2-2-2-GPU相关的操作" class="headerlink" title="2.2.2 GPU相关的操作"></a>2.2.2 GPU相关的操作</h3><p>GPU为一个具体的任务做了优化：它用来采集图片和形状（三角形），运行变换，应用纹理和混合然后把它们输送到屏幕上。现代iOS设备上可编程的GPU在这些操作的执行上又很大的灵活性，但是Core Animation并没有暴露出直接的接口。除非你想绕开Core Animation并编写你自己的OpenGL着色器，从根本上解决硬件加速的问题，那么剩下的所有都还是需要在CPU的软件层面上完成。</p>
 <p>宽泛的说，大多数<code>CALayer</code>的属性都是用GPU来绘制。比如如果你设置图层背景或者边框的颜色，那么这些可以通过着色的三角板实时绘制出来。如果对一个<code>contents</code>属性设置一张图片，然后裁剪它 - 它就会被纹理的三角形绘制出来，而不需要软件层面做任何绘制。</p>
@@ -573,7 +573,7 @@ height:40vh;
 <li><strong>Core Graphics绘制</strong>：如果对视图实现了<code>-drawRect:</code>方法，或者<code>CALayerDelegate</code>的<code>-drawLayer:inContext:</code>方法，那么在绘制任何东西之前都会产生一个巨大的性能开销。为了支持对图层内容的任意绘制，Core Animation必须创建一个内存中等大小的寄宿图片。然后一旦绘制结束之后，必须把图片数据通过IPC传到渲染服务器。在此基础上，Core Graphics绘制就会变得十分缓慢，所以在一个对性能十分挑剔的场景下这样做十分不好。</li>
 <li><strong>解压图片</strong>PNG或者JPEG压缩之后的图片文件会比同质量的位图小得多。但是在图片绘制到屏幕上之前，必须把它扩展成完整的未解压的尺寸（<strong>通常等同于图片宽 x 长 x 4个字节</strong>）。为了节省内存，iOS通常直到真正绘制的时候才去解码图片。根据你加载图片的方式，第一次对图层内容赋值的时候（直接或者间接使用<code>UIImageView</code>）或者把它绘制到Core Graphics中，都需要对它解压，这样的话，对于一个较大的图片，都会占用一定的时间。</li>
 </ul>
-<p>当图层被成功打包，发送到渲染服务器之后，CPU仍然要做如下工作：为了显示屏幕上的图层，Core Animation必须对渲染树中的每个可见图层通过OpenGL循环转换成纹理三角板。由于GPU并不知晓Core Animation图层的任何结构，所以必须要由CPU做这些事情。这里CPU涉及的工作和图层个数成正比，所以如果在你的层级关系中有太多的图层，就会导致CPU每一帧的渲染，即使这些事情不是你的应用程序可控的。</p>
+<p>当图层被成功打包，发送到渲染服务器之后，CPU仍然要做如下工作：为了显示屏幕上的图层，<strong>Core Animation必须对渲染树中的每个可见图层通过OpenGL循环转换成纹理三角板</strong>。由于GPU并不知晓Core Animation图层的任何结构，所以必须要由CPU做这些事情。这里CPU涉及的工作和图层个数成正比，所以如果在你的层级关系中有太多的图层，就会导致CPU每一帧的渲染，即使这些事情不是你的应用程序可控的。</p>
 <h3 id="2-2-4-IO相关操作"><a href="#2-2-4-IO相关操作" class="headerlink" title="2.2.4 IO相关操作"></a>2.2.4 IO相关操作</h3><p>还有一项没涉及的就是IO相关工作。上下文中的IO（输入/输出）指的是例如闪存或者网络接口的硬件访问。一些动画可能需要从闪存（甚至是远程URL）来加载。一个典型的例子就是两个视图控制器之间的过渡效果，这就需要从一个nib文件或者是它的内容中懒加载，或者一个旋转的图片，可能在内存中尺寸太大，需要动态滚动来加载。</p>
 <p>IO比内存访问更慢，所以如果动画涉及到IO，就是一个大问题。总的来说，这就需要使用聪敏但尴尬的技术，也就是多线程，缓存和投机加载（提前加载当前不需要的资源，但是之后可能需要用到）。</p>
 <h2 id="2-3-OpenGL-ES"><a href="#2-3-OpenGL-ES" class="headerlink" title="2.3 OpenGL ES"></a>2.3 OpenGL ES</h2><h3 id="2-3-1-OpenGL是什么？"><a href="#2-3-1-OpenGL是什么？" class="headerlink" title="2.3.1 OpenGL是什么？"></a>2.3.1 OpenGL是什么？</h3><p>从上面的渲染架构图可以看到，OpenGL位于硬件驱动层和软件层之间，</p>
@@ -762,12 +762,17 @@ height:40vh;
 <p><strong>输出：新的图元</strong>。</p>
 <p>到这一步我们已经为OpenGL描述了一个图形的样子，但是要转换为图像还需要颜色信息。↓</p>
 <h2 id="4-5-光栅化阶段-Rasterization-Stage"><a href="#4-5-光栅化阶段-Rasterization-Stage" class="headerlink" title="4.5 光栅化阶段(Rasterization Stage)"></a>4.5 光栅化阶段(Rasterization Stage)</h2><p>将上阶段输出的 — 图元映射为最终屏幕上相应的像素，生成供片段着色器使用的片段(Fragment)，即实现通过插值运算将连续的值用一个个像素片段表示出来。</p>
+<p>光栅化：将图转化为一个个栅格组成的图像。每个栅格此处又称为片元/片段(Fragment)，OpenGL中的一个片段是OpenGL渲染一个像素所需的所有数据。</p>
+<p>光栅化其实是一种将几何图元变为二维图像的过程。把物体的数学描述、与物体相关的颜色信息转换为屏幕上用于对应位置的像素及用于填充像素的颜色。该过程包含了两部分的工作：</p>
+<ol>
+<li>决定窗口坐标中的哪些整型栅格区域被基本图元占用；</li>
+<li>分配一个颜色值和一个深度值到各个区域。</li>
+</ol>
 <img src="/images/iosrender/20.png" alt="" style="zoom:70%;" />
 
 <p>在片段着色器运行之前会执行裁切(Clipping)。裁切会丢弃超出你的视图以外的所有像素，用来提升执行效率。</p>
 <p><strong>输出：片元/片段</strong>(<strong>Fragment</strong>)</p>
 <ul>
-<li>光栅化：将图转化为一个个栅格组成的图像，每个栅格此处又称为片元/片段(Fragment)，OpenGL中的一个片段是OpenGL渲染一个像素所需的所有数据。</li>
 <li>片元其实已经很接近像素了，但是它还不是像素。片元包含了比RGBA更多的信息，比如可能有深度值，法线，纹理坐标等等信息。</li>
 <li>片元需要在通过一些测试（如深度测试）后才会最终成为像素。可能会有多个片元竞争同一个像素，而这些测试会最终筛选出一个合适的片元，丢弃法线和纹理坐标等不需要的信息后，成为像素。</li>
 </ul>
@@ -912,7 +917,7 @@ height:40vh;
             <p>Author：<a href="https://tenloy.github.io">Tenloy</a>
             <p>原文链接：<a href="https://tenloy.github.io/2021/09/11/core-animation03.html">https://tenloy.github.io/2021/09/11/core-animation03.html</a>
             <p>发表日期：2021.09.11 , 8:04 PM</p>
-            <p>更新日期：2024.04.07 , 8:02 PM</p>
+            <p>更新日期：2024.05.07 , 11:12 AM</p>
             <p>版权声明：本文采用<a rel="license noopener" target="_blank" href="http://creativecommons.org/licenses/by-nc/4.0/">Crative Commons 4.0 许可协议</a>进行许可</p>
         </div>
     
@@ -1112,6 +1117,22 @@ top:40vh;
 </div>
           <div class="sidebar-panel-archives">
     <!-- 在ejs中将archive按照时间排序 -->
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
     
     
     
@@ -2569,8 +2590,6 @@ top:40vh;
     
         <span class="sidebar-tag-name" data-tags="GCD"><span class="iconfont-archer">&#xe606;</span>GCD</span>
     
-        <span class="sidebar-tag-name" data-tags="hexo"><span class="iconfont-archer">&#xe606;</span>hexo</span>
-    
         <span class="sidebar-tag-name" data-tags="ISA"><span class="iconfont-archer">&#xe606;</span>ISA</span>
     
         <span class="sidebar-tag-name" data-tags="Microarch"><span class="iconfont-archer">&#xe606;</span>Microarch</span>
@@ -2581,25 +2600,27 @@ top:40vh;
     
         <span class="sidebar-tag-name" data-tags="Shell"><span class="iconfont-archer">&#xe606;</span>Shell</span>
     
-        <span class="sidebar-tag-name" data-tags="ARM64"><span class="iconfont-archer">&#xe606;</span>ARM64</span>
-    
         <span class="sidebar-tag-name" data-tags="多线程"><span class="iconfont-archer">&#xe606;</span>多线程</span>
     
         <span class="sidebar-tag-name" data-tags="Docker"><span class="iconfont-archer">&#xe606;</span>Docker</span>
+    
+        <span class="sidebar-tag-name" data-tags="hexo"><span class="iconfont-archer">&#xe606;</span>hexo</span>
+    
+        <span class="sidebar-tag-name" data-tags="ARM64"><span class="iconfont-archer">&#xe606;</span>ARM64</span>
     
         <span class="sidebar-tag-name" data-tags="DSL"><span class="iconfont-archer">&#xe606;</span>DSL</span>
     
         <span class="sidebar-tag-name" data-tags="协程"><span class="iconfont-archer">&#xe606;</span>协程</span>
     
-        <span class="sidebar-tag-name" data-tags="Fiber"><span class="iconfont-archer">&#xe606;</span>Fiber</span>
-    
         <span class="sidebar-tag-name" data-tags="dp"><span class="iconfont-archer">&#xe606;</span>dp</span>
     
-        <span class="sidebar-tag-name" data-tags="RunLoop"><span class="iconfont-archer">&#xe606;</span>RunLoop</span>
+        <span class="sidebar-tag-name" data-tags="Fiber"><span class="iconfont-archer">&#xe606;</span>Fiber</span>
     
         <span class="sidebar-tag-name" data-tags="SwiftUI"><span class="iconfont-archer">&#xe606;</span>SwiftUI</span>
     
         <span class="sidebar-tag-name" data-tags="Swift-Syntax"><span class="iconfont-archer">&#xe606;</span>Swift-Syntax</span>
+    
+        <span class="sidebar-tag-name" data-tags="RunLoop"><span class="iconfont-archer">&#xe606;</span>RunLoop</span>
     
         <span class="sidebar-tag-name" data-tags="LagMonitor"><span class="iconfont-archer">&#xe606;</span>LagMonitor</span>
     
