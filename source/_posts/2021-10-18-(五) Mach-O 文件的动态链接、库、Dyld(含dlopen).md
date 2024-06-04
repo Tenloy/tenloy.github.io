@@ -1145,7 +1145,7 @@ enum dyld_image_states
 
 关于更多的理论知识，可以阅读下[iOS程序员的自我修养-MachO文件动态链接（四）](https://juejin.im/post/6844903922654511112#heading-23)、[实践篇—fishhook原理](https://juejin.im/post/6844903926051897358)(：程序运行期间通过修改符号表(nl_symbol_ptr和la_symbol_ptr)，来替换要hook的符号对应的地址)，将《程序员的自我修养》中的理论结合iOS系统中的实现机制做了个对比介绍。
 
-## 五、加载动态库方式二: dlopen
+## 五、加载动态库的其他方式: dlopen
 
 > 加载动态库的另一种方式：显式运行时链接dlopen
 
@@ -1160,7 +1160,23 @@ enum dyld_image_states
 - dlopen打开动态库后返回的是模块的指针(句柄/文件描述符(FD))
 - dlsym的作用就是通过dlopen返回的动态库指针和函数的符号，得到函数的地址然后使用。
 
-**不过，通过这种运行时加载远程动态库的 App，苹果公司是不允许上线 App Store 的，所以只能用于线下调试环节。**
+**不过，通过这种运行时加载远程动态库的 App，苹果公司是不允许上线 App Store 的，所以只能用于线下调试环节。**（*有人说加签过的动态库可以使用dlopen，签名是在App打包的时候完成，如果从其他途径（如网络下载）获取的动态库是无法完成验签的。未验证*）
+
+除此之外，还有另一种 NSBundle load/loadAndReturnError 的方式，其底层也是使用dlopen实现，只是增加了验签，也是在App打包的时候完成签名。
+
+```objc
+NSString *path = [[NSBundle mainBundle] pathForResource:@"TestLib" ofType:@"framework" inDirectory:@"Frameworks"];
+NSError *err = nil;
+NSBundle *bundle =  [NSBundle bundleWithPath:path];
+if ([bundle loadAndReturnError:&err]) {
+   Class c = NSClassFromString(@"TestClass");
+   [c performSelector:@selector(printLog)];
+} else {
+   // 动态库加载失败
+}
+```
+
+适用场景：当动态库是二方、三方库，无法修改为静态库，此时为了启动优化，可以选择使用上面的方法进行延迟加载动态库。
 
 ## 六、参考链接
 - [《深入理解Mach OS X & iOS 操作系统》]()
