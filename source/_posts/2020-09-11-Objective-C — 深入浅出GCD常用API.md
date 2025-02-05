@@ -1901,7 +1901,7 @@ again:
 
 ```c
 /*!
- * 当与一个group相关联的所有block都完成时，将一个block提交到队列中。
+ * 当与一个group相关联的所有block都完成时，将一个block提交到队列中。【或者当dispatch_group_enter、dispatch_group_leave调用次数匹配时】
  * 不管指定什么样的Dispatch Queue，在追加指定的Block时，之前与Dispatch Group相关联的block都已执行结束。
  *
  * @param group 要监视的Dispatch Group
