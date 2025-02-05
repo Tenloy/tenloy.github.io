@@ -1626,7 +1626,10 @@ long _dispatch_semaphore_signal_slow(dispatch_semaphore_t dsema) {
 
 #### 5. 总结篇
 
-Dispatch Semaphore信号量主要是`dispatch_semaphore_wait`和`dispatch_semaphore_signal`函数，`wait`会将信号量值减一，如果大于等于0就立即返回，否则等待信号量唤醒或者超时；`signal`会将信号量值加一，如果value大于0立即返回，否则唤醒某个等待中的线程。
+Dispatch Semaphore信号量主要是`dispatch_semaphore_wait`和`dispatch_semaphore_signal`函数：
+
+- `wait`会将信号量值减一，如果大于等于0就立即返回，否则等待信号量唤醒或者超时；
+- `signal`会将信号量值加一，如果value大于0立即返回，否则**唤醒某个等待中的线程【会由系统唤醒最先等待的线程执行】**。
 
 需要注意的是信号量在销毁或重新创建的时候如果还在使用则会引起崩溃，详见上面的分析。
 
