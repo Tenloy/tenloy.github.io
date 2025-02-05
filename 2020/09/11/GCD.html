@@ -40,7 +40,7 @@
 <meta property="og:image" content="https://tenloy.github.io/images/GCD/dispatch_queue-8.png">
 <meta property="og:image" content="https://tenloy.github.io/images/GCD/dispatch_once.png">
 <meta property="article:published_time" content="2020-09-11T01:12:21.000Z">
-<meta property="article:modified_time" content="2024-04-08T06:36:12.000Z">
+<meta property="article:modified_time" content="2025-02-05T06:39:07.180Z">
 <meta property="article:author" content="Tenloy">
 <meta property="article:tag" content="GCD">
 <meta name="twitter:card" content="summary">
@@ -962,7 +962,7 @@ height:40vh;
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">static</span> <span class="keyword">long</span> _dispatch_group_wait_slow(<span class="keyword">dispatch_semaphore_t</span> dsema, <span class="keyword">dispatch_time_t</span> timeout) &#123;</span><br><span class="line">    <span class="keyword">long</span> orig;</span><br><span class="line">    <span class="keyword">mach_timespec_t</span> _timeout;</span><br><span class="line">    <span class="keyword">kern_return_t</span> kr;</span><br><span class="line">again:</span><br><span class="line">    <span class="keyword">if</span> (dsema-&gt;dsema_value == LONG_MAX) &#123;</span><br><span class="line">        <span class="keyword">return</span> _dispatch_group_wake(dsema);</span><br><span class="line">    &#125;</span><br><span class="line">    (<span class="keyword">void</span>)dispatch_atomic_inc2o(dsema, dsema_group_waiters, relaxed);</span><br><span class="line">    <span class="keyword">if</span> (dsema-&gt;dsema_value == LONG_MAX) &#123;</span><br><span class="line">        <span class="keyword">return</span> _dispatch_group_wake(dsema);</span><br><span class="line">    &#125;</span><br><span class="line">    _dispatch_semaphore_create_port(&amp;dsema-&gt;dsema_port);</span><br><span class="line">    <span class="keyword">switch</span> (timeout) &#123;</span><br><span class="line">    <span class="keyword">default</span>:</span><br><span class="line">        <span class="keyword">do</span> &#123;</span><br><span class="line">            <span class="keyword">uint64_t</span> nsec = _dispatch_timeout(timeout);</span><br><span class="line">            _timeout.tv_sec = (typeof(_timeout.tv_sec))(nsec / NSEC_PER_SEC);</span><br><span class="line">            _timeout.tv_nsec = (typeof(_timeout.tv_nsec))(nsec % NSEC_PER_SEC);</span><br><span class="line">            kr = slowpath(semaphore_timedwait(dsema-&gt;dsema_port, _timeout));</span><br><span class="line">        &#125; <span class="keyword">while</span> (kr == KERN_ABORTED);</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (kr != KERN_OPERATION_TIMED_OUT) &#123;</span><br><span class="line">            DISPATCH_SEMAPHORE_VERIFY_KR(kr);</span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    <span class="keyword">case</span> DISPATCH_TIME_NOW:</span><br><span class="line">        orig = dsema-&gt;dsema_group_waiters;</span><br><span class="line">        <span class="keyword">while</span> (orig) &#123;</span><br><span class="line">            <span class="keyword">if</span> (dispatch_atomic_cmpxchgvw2o(dsema, dsema_group_waiters, orig,</span><br><span class="line">                    orig - <span class="number">1</span>, &amp;orig, relaxed)) &#123;</span><br><span class="line">                <span class="keyword">return</span> KERN_OPERATION_TIMED_OUT;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    <span class="keyword">case</span> DISPATCH_TIME_FOREVER:</span><br><span class="line">        <span class="keyword">do</span> &#123;</span><br><span class="line">            kr = semaphore_wait(dsema-&gt;dsema_port);</span><br><span class="line">        &#125; <span class="keyword">while</span> (kr == KERN_ABORTED);</span><br><span class="line">        DISPATCH_SEMAPHORE_VERIFY_KR(kr);</span><br><span class="line">        <span class="keyword">break</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">goto</span> again;</span><br><span class="line"> &#125;</span><br></pre></td></tr></table></figure>
 
 <p>可以看到跟dispatch_semaphore的<code>_dispatch_semaphore_wait_slow</code>方法很类似，不同点在于等待完之后调用的again函数会调用<code>_dispatch_group_wake</code>唤醒当前group。</p>
-<h3 id="4-3-6-dispatch-group-notify"><a href="#4-3-6-dispatch-group-notify" class="headerlink" title="4.3.6 dispatch_group_notify"></a>4.3.6 dispatch_group_notify</h3><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/*!</span></span><br><span class="line"><span class="comment"> * 当与一个group相关联的所有block都完成时，将一个block提交到队列中。</span></span><br><span class="line"><span class="comment"> * 不管指定什么样的Dispatch Queue，在追加指定的Block时，之前与Dispatch Group相关联的block都已执行结束。</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * @param group 要监视的Dispatch Group</span></span><br><span class="line"><span class="comment"> * @param queue/block 在追加到该Dispatch Group中的全部处理执行结束时，将第三个参数的Block追加到第二个参数的Dispatch Queue中</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">dispatch_group_notify</span><span class="params">(<span class="keyword">dispatch_group_t</span> group,</span></span></span><br><span class="line"><span class="function"><span class="params">                           <span class="keyword">dispatch_queue_t</span> <span class="built_in">queue</span>,</span></span></span><br><span class="line"><span class="function"><span class="params">                           <span class="keyword">dispatch_block_t</span> block)</span></span>;</span><br></pre></td></tr></table></figure>
+<h3 id="4-3-6-dispatch-group-notify"><a href="#4-3-6-dispatch-group-notify" class="headerlink" title="4.3.6 dispatch_group_notify"></a>4.3.6 dispatch_group_notify</h3><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/*!</span></span><br><span class="line"><span class="comment"> * 当与一个group相关联的所有block都完成时，将一个block提交到队列中。【或者当dispatch_group_enter、dispatch_group_leave调用次数匹配时】</span></span><br><span class="line"><span class="comment"> * 不管指定什么样的Dispatch Queue，在追加指定的Block时，之前与Dispatch Group相关联的block都已执行结束。</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * @param group 要监视的Dispatch Group</span></span><br><span class="line"><span class="comment"> * @param queue/block 在追加到该Dispatch Group中的全部处理执行结束时，将第三个参数的Block追加到第二个参数的Dispatch Queue中</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">dispatch_group_notify</span><span class="params">(<span class="keyword">dispatch_group_t</span> group,</span></span></span><br><span class="line"><span class="function"><span class="params">                           <span class="keyword">dispatch_queue_t</span> <span class="built_in">queue</span>,</span></span></span><br><span class="line"><span class="function"><span class="params">                           <span class="keyword">dispatch_block_t</span> block)</span></span>;</span><br></pre></td></tr></table></figure>
 
 <p>源码如下：</p>
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">dispatch_group_notify</span><span class="params">(<span class="keyword">dispatch_group_t</span> dg, <span class="keyword">dispatch_queue_t</span> dq,</span></span></span><br><span class="line"><span class="function"><span class="params">        <span class="keyword">dispatch_block_t</span> db)</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="comment">//封装调用dispatch_group_notify_f函数</span></span><br><span class="line">    dispatch_group_notify_f(dg, dq, _dispatch_Block_copy(db),</span><br><span class="line">            _dispatch_call_block_and_release);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">//真正的入口函数</span></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">dispatch_group_notify_f</span><span class="params">(<span class="keyword">dispatch_group_t</span> dg, <span class="keyword">dispatch_queue_t</span> dq, <span class="keyword">void</span> *ctxt,</span></span></span><br><span class="line"><span class="function"><span class="params">        <span class="keyword">void</span> (*func)(<span class="keyword">void</span> *))</span> </span>&#123;</span><br><span class="line">    <span class="keyword">dispatch_semaphore_t</span> dsema = (<span class="keyword">dispatch_semaphore_t</span>)dg;</span><br><span class="line">    <span class="comment">//封装结构体</span></span><br><span class="line">    <span class="keyword">dispatch_continuation_t</span> prev, dsn = _dispatch_continuation_alloc();</span><br><span class="line">    dsn-&gt;do_vtable = (<span class="keyword">void</span> *)DISPATCH_OBJ_ASYNC_BIT;</span><br><span class="line">    dsn-&gt;dc_data = dq;</span><br><span class="line">    dsn-&gt;dc_ctxt = ctxt;</span><br><span class="line">    dsn-&gt;dc_func = func;</span><br><span class="line">    dsn-&gt;do_next = <span class="literal">NULL</span>;</span><br><span class="line">    _dispatch_retain(dq);</span><br><span class="line">    <span class="comment">//将结构体放到链表尾部，如果链表为空同时设置链表头部节点并唤醒group</span></span><br><span class="line">    prev = dispatch_atomic_xchg2o(dsema, dsema_notify_tail, dsn, release);</span><br><span class="line">    <span class="keyword">if</span> (fastpath(prev)) &#123;</span><br><span class="line">        prev-&gt;do_next = dsn;</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        _dispatch_retain(dg);</span><br><span class="line">        dispatch_atomic_store2o(dsema, dsema_notify_head, dsn, seq_cst);</span><br><span class="line">        dispatch_atomic_barrier(seq_cst); <span class="comment">// &lt;rdar://problem/11750916&gt;</span></span><br><span class="line">        <span class="keyword">if</span> (dispatch_atomic_load2o(dsema, dsema_value, seq_cst) == LONG_MAX) &#123;</span><br><span class="line">            _dispatch_group_wake(dsema);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
@@ -1124,7 +1124,7 @@ height:40vh;
             <p>Author：<a href="https://tenloy.github.io">Tenloy</a>
             <p>原文链接：<a href="https://tenloy.github.io/2020/09/11/GCD.html">https://tenloy.github.io/2020/09/11/GCD.html</a>
             <p>发表日期：2020.09.11 , 9:12 AM</p>
-            <p>更新日期：2024.04.08 , 2:36 PM</p>
+            <p>更新日期：2025.02.05 , 2:39 PM</p>
             <p>版权声明：本文采用<a rel="license noopener" target="_blank" href="http://creativecommons.org/licenses/by-nc/4.0/">Crative Commons 4.0 许可协议</a>进行许可</p>
         </div>
     
@@ -1324,28 +1324,6 @@ top:40vh;
 </div>
           <div class="sidebar-panel-archives">
     <!-- 在ejs中将archive按照时间排序 -->
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
     
     
     
@@ -2789,9 +2767,9 @@ top:40vh;
     
         <span class="sidebar-tag-name" data-tags="AutoreleasePool"><span class="iconfont-archer">&#xe606;</span>AutoreleasePool</span>
     
-        <span class="sidebar-tag-name" data-tags="hexo"><span class="iconfont-archer">&#xe606;</span>hexo</span>
-    
         <span class="sidebar-tag-name" data-tags="GCD"><span class="iconfont-archer">&#xe606;</span>GCD</span>
+    
+        <span class="sidebar-tag-name" data-tags="hexo"><span class="iconfont-archer">&#xe606;</span>hexo</span>
     
         <span class="sidebar-tag-name" data-tags="ISA"><span class="iconfont-archer">&#xe606;</span>ISA</span>
     
@@ -2799,13 +2777,13 @@ top:40vh;
     
         <span class="sidebar-tag-name" data-tags="Soc"><span class="iconfont-archer">&#xe606;</span>Soc</span>
     
-        <span class="sidebar-tag-name" data-tags="多线程"><span class="iconfont-archer">&#xe606;</span>多线程</span>
-    
         <span class="sidebar-tag-name" data-tags="CLI"><span class="iconfont-archer">&#xe606;</span>CLI</span>
     
         <span class="sidebar-tag-name" data-tags="Shell"><span class="iconfont-archer">&#xe606;</span>Shell</span>
     
         <span class="sidebar-tag-name" data-tags="ARM64"><span class="iconfont-archer">&#xe606;</span>ARM64</span>
+    
+        <span class="sidebar-tag-name" data-tags="多线程"><span class="iconfont-archer">&#xe606;</span>多线程</span>
     
         <span class="sidebar-tag-name" data-tags="Docker"><span class="iconfont-archer">&#xe606;</span>Docker</span>
     
@@ -2823,9 +2801,9 @@ top:40vh;
     
         <span class="sidebar-tag-name" data-tags="RunLoop"><span class="iconfont-archer">&#xe606;</span>RunLoop</span>
     
-        <span class="sidebar-tag-name" data-tags="Log"><span class="iconfont-archer">&#xe606;</span>Log</span>
-    
         <span class="sidebar-tag-name" data-tags="LagMonitor"><span class="iconfont-archer">&#xe606;</span>LagMonitor</span>
+    
+        <span class="sidebar-tag-name" data-tags="Log"><span class="iconfont-archer">&#xe606;</span>Log</span>
     
         <span class="sidebar-tag-name" data-tags="CrashMonitor"><span class="iconfont-archer">&#xe606;</span>CrashMonitor</span>
     
