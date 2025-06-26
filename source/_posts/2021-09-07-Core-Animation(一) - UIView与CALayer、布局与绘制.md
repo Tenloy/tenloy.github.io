@@ -251,13 +251,15 @@ CALayer有一个可选的`delegate`属性，实现了`CALayerDelegate`协议，�
 
 **layoutSubViews的自动触发 — 本轮RunLoop结束前调用layoutSubViews。**有许多可以在 RunLoop 的不同时间点触发 `layoutSubviews` 调用的机制，这些触发机制比直接调用 `layoutSubviews` 的资源消耗要小得多。
 
-**更新布局总会重新触发`layoutSubviews`方法**。有许多事件会**自动给视图打上 “update layout” 标记**，因此 `layoutSubviews` 会在下一个周期中被调用，而不需要开发者手动操作。这些自动通知系统 view 的布局发生变化的方式有：
+**更新布局总会重新触发`layoutSubviews`方法**。有许多事件会**自动给视图打上 “update layout” 标记**，因此 `layoutSubviews` 会在下一个周期中被调用，而不需要开发者手动操作。
+
+这些自动通知系统 view 的布局发生变化的方式有：（**触发时，父视图layoutSubViews调用在前，子视图调用在后。**）
 
 - 修改 view 的大小
-  - 设置/修改view的frame.size、bounds.size、bounds.origin都会触发superView和自己view的layoutSubviews方法(父类在前)。
+  - 设置/修改view的frame.size、bounds.size、bounds.origin都会触发superView和自身的layoutSubviews方法。
   - 当然前提是设置前后值发生了变化。修改frame.origin不会触发。
-- 新增 subview
-- 用户在 `UIScrollView` 上滚动（`layoutSubviews`会在`UIScrollView`和它的父 view 上被调用）
+- 新增/移除 subview。
+- 用户在 `UIScrollView` 上滚动
 - 用户旋转设备
 - 更新视图的 constraints
 
