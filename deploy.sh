@@ -7,10 +7,10 @@ work_dir=$(
 cd $work_dir
 pwd
 
-mkdir -p .deploy/.git
+mkdir -p .deploy
 cp -r .git .deploy/
 cd .deploy
-git checkout gh-pages && git pull
+git checkout gh-pages && git pull || exit 1   # 切分支失败就退出，别继续
 rm -rf `ls`
 cd ../
 hexo clean && hexo generate
