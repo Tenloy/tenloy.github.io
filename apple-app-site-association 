@@ -1,0 +1,16 @@
+{
+    "applinks": {
+        "apps": [],
+        "details": [
+            {
+                "appID": "Z3KNLJSTK9.com.shuqu.banyan",
+                "paths": [ "*", "/qq_conn/1106418125/*"]
+            },
+            {
+                "appID": "8JWF696VYR.com.shuqu.banyan",
+                "paths": [ "*", "/qq_conn/1106418125/*"]
+            }
+        ]
+    }
+}
+
