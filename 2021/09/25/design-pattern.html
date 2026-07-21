@@ -90,7 +90,7 @@
 <meta property="og:image" content="https://tenloy.github.io/images/pattern/72.png">
 <meta property="og:image" content="https://tenloy.github.io/images/pattern/74.png">
 <meta property="article:published_time" content="2021-09-25T01:37:12.000Z">
-<meta property="article:modified_time" content="2026-07-21T12:28:24.290Z">
+<meta property="article:modified_time" content="2026-07-21T12:36:23.769Z">
 <meta property="article:author" content="Tenloy">
 <meta property="article:tag" content="Tenloy, iOS, Tenloy Blog, 博客，Swift, 编译, 计算机">
 <meta name="twitter:card" content="summary">
@@ -1679,9 +1679,9 @@ height:40vh;
 <li>第一种设计方案是为每一种形状都提供一套各种颜色的版本。</li>
 <li>第二种设计方案是根据实际需要对形状和颜色进行组合</li>
 </ul>
-<p>对于有两个变化维度（即两个变化的原因）的系统，采用方案二来进行设计系统中类的个数更少，且系统扩展更为方便。设计方案二即是桥接模式的应用。<strong>桥接模式将继承关系转换为关联关系（一个对象(名词)持有另一个对象(定语)），从而降低了类与类之间的耦合，减少了代码编写量。</strong></p>
+<p>对于有两个变化维度（即两个变化的原因）的系统，采用方案二来进行设计系统中类的个数更少，且系统扩展更为方便。设计方案二即是桥接模式的应用。<strong>桥接模式将继承关系转换为关联关系，从而降低了类与类之间的耦合，减少了代码编写量。</strong></p>
 <blockquote>
-<p>如果一个类因为两个不同维度的变化而不断组合，导致子类越来越多，就把这两个维度拆开，用组合（一个对象持有另一个对象）代替继承，这就是桥接模式。</p>
+<p>如果一个类因为两个不同维度的变化而不断组合，导致子类越来越多，就把这两个维度拆开，用组合（一个对象持有另一个对象）代替继承，这就是桥接模式。（维度：[小米|华为|索尼][普通|中端|高端]遥控器，这就是三个维度，遥控器算抽象）</p>
 </blockquote>
 <h3 id="定义-12"><a href="#定义-12" class="headerlink" title="定义"></a>定义</h3><p>桥接模式(Bridge Pattern)：将抽象部分与它的实现部分分离，使它们都可以独立地变化。它是一种对象结构型模式，又称为柄体(Handle and Body)模式或接口(Interface)模式。</p>
 <h4 id="抽象、实现部分？-先见1-7小节"><a href="#抽象、实现部分？-先见1-7小节" class="headerlink" title="抽象、实现部分？(先见1.7小节)"></a>抽象、实现部分？(先见1.7小节)</h4><p>注意，这里提到的抽象部分、实现部分与编程语言中的接口或抽象类、实现类是不同的含义。这里的抽象部分是指接口(interface，或者界面 — <strong>提供统一接口，隐藏具体实现细节</strong>)：</p>
@@ -2478,7 +2478,7 @@ height:40vh;
             <p>Author：<a href="https://tenloy.github.io">Tenloy</a>
             <p>原文链接：<a href="https://tenloy.github.io/2021/09/25/design-pattern.html">https://tenloy.github.io/2021/09/25/design-pattern.html</a>
             <p>发表日期：2021.09.25 , 9:37 AM</p>
-            <p>更新日期：2026.07.21 , 8:28 PM</p>
+            <p>更新日期：2026.07.21 , 8:36 PM</p>
             <p>版权声明：本文采用<a rel="license noopener" target="_blank" href="http://creativecommons.org/licenses/by-nc/4.0/">Crative Commons 4.0 许可协议</a>进行许可</p>
         </div>
     
@@ -2678,24 +2678,6 @@ top:40vh;
 </div>
           <div class="sidebar-panel-archives">
     <!-- 在ejs中将archive按照时间排序 -->
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
     
     
     
@@ -4153,15 +4135,15 @@ top:40vh;
     
         <span class="sidebar-tag-name" data-tags="Soc"><span class="iconfont-archer">&#xe606;</span>Soc</span>
     
-        <span class="sidebar-tag-name" data-tags="ARM64"><span class="iconfont-archer">&#xe606;</span>ARM64</span>
-    
-        <span class="sidebar-tag-name" data-tags="多线程"><span class="iconfont-archer">&#xe606;</span>多线程</span>
-    
         <span class="sidebar-tag-name" data-tags="CLI"><span class="iconfont-archer">&#xe606;</span>CLI</span>
     
         <span class="sidebar-tag-name" data-tags="Shell"><span class="iconfont-archer">&#xe606;</span>Shell</span>
     
+        <span class="sidebar-tag-name" data-tags="ARM64"><span class="iconfont-archer">&#xe606;</span>ARM64</span>
+    
         <span class="sidebar-tag-name" data-tags="Docker"><span class="iconfont-archer">&#xe606;</span>Docker</span>
+    
+        <span class="sidebar-tag-name" data-tags="多线程"><span class="iconfont-archer">&#xe606;</span>多线程</span>
     
         <span class="sidebar-tag-name" data-tags="DSL"><span class="iconfont-archer">&#xe606;</span>DSL</span>
     
@@ -4173,11 +4155,11 @@ top:40vh;
     
         <span class="sidebar-tag-name" data-tags="SwiftUI"><span class="iconfont-archer">&#xe606;</span>SwiftUI</span>
     
-        <span class="sidebar-tag-name" data-tags="Swift-Syntax"><span class="iconfont-archer">&#xe606;</span>Swift-Syntax</span>
-    
         <span class="sidebar-tag-name" data-tags="RunLoop"><span class="iconfont-archer">&#xe606;</span>RunLoop</span>
     
         <span class="sidebar-tag-name" data-tags="LagMonitor"><span class="iconfont-archer">&#xe606;</span>LagMonitor</span>
+    
+        <span class="sidebar-tag-name" data-tags="Swift-Syntax"><span class="iconfont-archer">&#xe606;</span>Swift-Syntax</span>
     
         <span class="sidebar-tag-name" data-tags="CrashMonitor"><span class="iconfont-archer">&#xe606;</span>CrashMonitor</span>
     
